@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Common Files">
+      <UniqueIdentifier>{d0390cf7-d807-4d62-ab5f-8c994d4e1505}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation">
+      <UniqueIdentifier>{fdcbab6e-2dac-480f-a5fa-b0c93ba0ee7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Render">
+      <UniqueIdentifier>{f26657b7-adcf-414e-a6e3-3bb376580aa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Debug">
+      <UniqueIdentifier>{823b9d16-99e3-4655-acf5-f6b80b397e03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Foundation">
+      <UniqueIdentifier>{b34666ac-b571-44f6-afa6-f41db7231b35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{0fb14b19-5fd4-4cbd-bb45-0d49e693b7ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Foundation">
+      <UniqueIdentifier>{b17c3c8e-dfd2-458d-8602-8890d0eb81f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Foundation">
+      <UniqueIdentifier>{94bb1c29-b173-4e55-b6f9-295e24938dbc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\HWInfo.hpp">
+      <Filter>Common Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
+      <Filter>Common Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\SwapChain.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingConvention.h">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\d3dx12.h">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\DepthStencilBuffer.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\GpuResource.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\D3D12Util.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\Render\DX\DxRenderer.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\DxLowRenderer.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\HWInfo.cpp">
+      <Filter>Common Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
+      <Filter>Common Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\SwapChain.cpp">
+      <Filter>Resource Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp">
+      <Filter>Resource Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\DepthStencilBuffer.cpp">
+      <Filter>Resource Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\GpuResource.cpp">
+      <Filter>Resource Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\D3D12Util.cpp">
+      <Filter>Resource Files\Foundation</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\inc\Common\Render\Renderer.inl">
+      <Filter>Common Files\Render</Filter>
+    </None>
+    <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli">
+      <Filter>Shader Files\Foundation</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\GpuResource.inl">
+      <Filter>Header Files\Foundation</Filter>
+    </None>
+  </ItemGroup>
+</Project>

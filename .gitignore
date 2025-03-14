@@ -7,7 +7,5 @@ assets/
 bin/
 obj/
 
-build/
-
 lib/
 externs/
