@@ -1,11 +1,13 @@
 #include "GameWorld/GameWorld.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/HWInfo.hpp"
+#include "Common/Render/Renderer.hpp"
 
 namespace {
 	LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		// Forward hwnd on because we can get messages (e.g., WM_CREATE)
 		// before CreateWindow returns, and thus before mhMainWnd is valid
-		return GameWorld::sGameWorld->MsgProc(hwnd, msg, wParam, lParam);
+		return GameWorld::spGameWorld->MsgProc(hwnd, msg, wParam, lParam);
 	}
 
 	UINT InitClientWidth = 1280;
@@ -15,20 +17,38 @@ namespace {
 	UINT InputFrameCount  = 0;
 	UINT UpdateFrameCount = 0;
 	UINT DrawFrameCount	  = 0;
+
+	typedef Render::Renderer* (*CreateRendererFunc)();
+	typedef void (*DestroyRendererFunc)(Render::Renderer*);
 }
 
-GameWorld* GameWorld::sGameWorld = nullptr;
+GameWorld* GameWorld::spGameWorld = nullptr;
 
-GameWorld::GameWorld() {
-	sGameWorld = this;
+GameWorld::GameWorld() : mpLogFile(nullptr) {
+	spGameWorld = this;
 }
 
 GameWorld::~GameWorld() {
 	CleanUp();
 }
 
-BOOL GameWorld::Initialize() {
-	CheckReturn(CreateMainWindow());
+BOOL GameWorld::Initialize(Common::Debug::LogFile* const pLogFile) {
+	mpLogFile = pLogFile;
+
+	CheckReturn(mpLogFile, CreateMainWindow());
+	CheckReturn(mpLogFile, GetHWInfo());
+
+	const auto hRendererDLL = LoadLibraryW(L"Renderer.dll");
+	if (!hRendererDLL) ReturnFalse(mpLogFile, L"Failed to load Renderer.dll");
+
+	CreateRendererFunc createFunc = (CreateRendererFunc)GetProcAddress(hRendererDLL, "CreateRenderer");
+	DestroyRendererFunc destroyFunc = (DestroyRendererFunc)GetProcAddress(hRendererDLL, "DestroyRenderer");
+	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
+
+	mRenderer = std::unique_ptr<Render::Renderer>(createFunc());
+	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mhMainWnd, InitClientWidth, InitClientHeight));
+
+	bInitialized = TRUE;
 
 	return TRUE;
 }
@@ -77,12 +97,15 @@ BOOL GameWorld::RunLoop() {
 	mInputCV.notify_one();
 	mUpdateCV.notify_one();
 	mDrawCV.notify_one();
+
 	for (auto& thread : threads)
 		thread.join();
 
-	WLogln(L"Input Frame Count: \t\t", std::to_wstring(InputFrameCount));
-	WLogln(L"Updpate Frame Count: \t", std::to_wstring(UpdateFrameCount));
-	WLogln(L"Draw Frame Count: \t\t", std::to_wstring(DrawFrameCount));
+#ifdef _DEBUG
+	WLogln(mpLogFile, L"Input Frame Count: \t\t", std::to_wstring(InputFrameCount));
+	WLogln(mpLogFile, L"Updpate Frame Count: \t", std::to_wstring(UpdateFrameCount));
+	WLogln(mpLogFile, L"Draw Frame Count: \t\t", std::to_wstring(DrawFrameCount));
+#endif
 
 	return TRUE;
 }
@@ -98,10 +121,10 @@ LRESULT GameWorld::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	//if ((mGameState == EGameStates::EGS_UI) && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam)) return 0;
 
 	switch (msg) {
-		// WM_ACTIVATE is sent when the window is activated or deactivated.  
-		// We pause the game when the window is deactivated and unpause it 
-		// when it becomes active.
-	case WM_ACTIVATE:
+	// WM_ACTIVATE is sent when the window is activated or deactivated.  
+	// We pause the game when the window is deactivated and unpause it 
+	// when it becomes active.
+	case WM_ACTIVATE: {
 		if (LOWORD(wParam) == WA_INACTIVE) {
 			bAppPaused = TRUE;
 		}
@@ -109,10 +132,9 @@ LRESULT GameWorld::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			bAppPaused = FALSE;
 		}
 		return 0;
-
-		// WM_SIZE is sent when the user resizes the window.  
-	case WM_SIZE:
-	{
+	}
+	// WM_SIZE is sent when the user resizes the window.  
+	case WM_SIZE: {
 		// Save the new client area dimensions.
 		width = LOWORD(lParam);
 		height = HIWORD(lParam);
@@ -159,43 +181,42 @@ LRESULT GameWorld::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		}
 		return 0;
 	}
-
 	// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
-	case WM_ENTERSIZEMOVE:
+	case WM_ENTERSIZEMOVE: {
 		bAppPaused = TRUE;
 		bResizing = TRUE;
 		return 0;
-
-		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-		// Here we reset everything based on the new window dimensions.
-	case WM_EXITSIZEMOVE:
+	}
+	// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+	// Here we reset everything based on the new window dimensions.
+	case WM_EXITSIZEMOVE: {
 		bAppPaused = FALSE;
 		bResizing = FALSE;
 		OnResize(width, height);
 		return 0;
-
-		// WM_DESTROY is sent when the window is being destroyed.
-	case WM_DESTROY:
+	}
+	// WM_DESTROY is sent when the window is being destroyed.
+	case WM_DESTROY: {
 		bDestroying = TRUE;
 		PostQuitMessage(0);
 		return 0;
-
-		// The WM_MENUCHAR message is sent when a menu is active and the user presses 
-		// a key that does not correspond to any mnemonic or accelerator key. 
-	case WM_MENUCHAR:
+	}
+	// The WM_MENUCHAR message is sent when a menu is active and the user presses 
+	// a key that does not correspond to any mnemonic or accelerator key. 
+	case WM_MENUCHAR: {
 		// Don't beep when we alt-enter.
 		return MAKELRESULT(0, MNC_CLOSE);
-
-		// Catch this message so to prevent the window from becoming too small.
-	case WM_GETMINMAXINFO:
+	}
+	// Catch this message so to prevent the window from becoming too small.
+	case WM_GETMINMAXINFO: {
 		return 0;
-
-	case WM_KEYUP:
+	}
+	case WM_KEYUP: {
 		return 0;
-
-	case WM_KEYDOWN:
+	}
+	case WM_KEYDOWN: {
 		return 0;
-
+	}
 	case WM_LBUTTONDOWN: {
 		return 0;
 	}
@@ -216,7 +237,7 @@ BOOL GameWorld::CreateMainWindow() {
 	wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(DKGRAY_BRUSH));
 	wc.lpszMenuName	 = 0;
 	wc.lpszClassName = L"MyNewGameEngine";
-	if (!RegisterClass(&wc)) ReturnFalse(L"Failed to register the window class");
+	if (!RegisterClass(&wc)) ReturnFalse(mpLogFile, L"Failed to register the window class");
 
 	// Compute window rectangle dimensions based on requested client area dimensions.
 	RECT R = { 0, 0, static_cast<LONG>(InitClientWidth), static_cast<LONG>(InitClientHeight) };
@@ -236,7 +257,7 @@ BOOL GameWorld::CreateMainWindow() {
 		clientPosX, clientPosY,
 		width, height,
 		0, 0, mhInst, 0);
-	if (!mhMainWnd) ReturnFalse(L"Failed to create the window");
+	if (!mhMainWnd) ReturnFalse(mpLogFile, L"Failed to create the window");
 
 	ShowWindow(mhMainWnd, SW_SHOW);
 	UpdateWindow(mhMainWnd);
@@ -244,8 +265,45 @@ BOOL GameWorld::CreateMainWindow() {
 	return TRUE;
 }
 
+BOOL GameWorld::GetHWInfo() {
+	Common::Foundation::Processor processor;
+	Common::Foundation::HWInfo::ProcessorInfo(mpLogFile, processor);
+
+#ifdef _DEBUG
+	const auto& YesOrNo = [](BOOL state) {
+		return state ? L"YES" : L"NO";
+		};
+
+	WLogln(mpLogFile, L"--------------------------------------------------------------------");
+	WLogln(mpLogFile, L"Processor: ", processor.Name.c_str());
+	WLogln(mpLogFile, L"Instruction support:");
+	WLogln(mpLogFile, L"    MMX: ", YesOrNo(processor.SupportMMX));
+	WLogln(mpLogFile, L"    SSE: ", YesOrNo(processor.SupportSSE));
+	WLogln(mpLogFile, L"    SSE2: ", YesOrNo(processor.SupportSSE2));
+	WLogln(mpLogFile, L"    SSE3: ", YesOrNo(processor.SupportSSE3));
+	WLogln(mpLogFile, L"    SSSE3: ", YesOrNo(processor.SupportSSSE3));
+	WLogln(mpLogFile, L"    SSE4.1: ", YesOrNo(processor.SupportSSE4_1));
+	WLogln(mpLogFile, L"    SSE4.2: ", YesOrNo(processor.SupportSSE4_2));
+	WLogln(mpLogFile, L"    AVX: ", YesOrNo(processor.SupportAVX));
+	WLogln(mpLogFile, L"    AVX2: ", YesOrNo(processor.SupportAVX2));
+	WLogln(mpLogFile, L"    AVX512: ", YesOrNo(processor.SupportAVX512F && processor.SupportAVX512DQ && processor.SupportAVX512BW));
+	WLogln(mpLogFile, L"Physical core count: ", std::to_wstring(processor.Physical));
+	WLogln(mpLogFile, L"Logical core count: ", std::to_wstring(processor.Logical));
+	WLogln(mpLogFile, L"Total physical memory: ", std::to_wstring(processor.TotalPhysicalMemory), L"MB");
+	WLogln(mpLogFile, L"Total virtual memory: ", std::to_wstring(processor.TotalVirtualMemory), L"MB");
+	WLogln(mpLogFile, L"--------------------------------------------------------------------");
+#endif
+
+	return TRUE;
+}
+
 void GameWorld::OnResize(UINT width, UINT height) {
-	
+	if (!bInitialized) return;
+	if (!mRenderer->OnResize(width, height)) {
+		WLogln(mpLogFile, L"Resizing failed");
+		bDestroying = TRUE;
+		PostQuitMessage(0);
+	}
 }
 
 BOOL GameWorld::ProcessInput() {

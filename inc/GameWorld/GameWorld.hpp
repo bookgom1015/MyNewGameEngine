@@ -1,8 +1,18 @@
 #pragma once
 
 #include <condition_variable>
+#include <memory>
 #include <mutex>
+
 #include <Windows.h>
+
+namespace Common::Debug {
+	struct LogFile;
+}
+
+namespace Render {
+	class Renderer;
+}
 
 class GameWorld {
 private:
@@ -20,7 +30,7 @@ public:
 	virtual ~GameWorld();
 
 public:
-	BOOL Initialize();
+	BOOL Initialize(Common::Debug::LogFile* const pLogFile);
 	BOOL RunLoop();
 	void CleanUp();
 
@@ -28,6 +38,7 @@ public:
 
 private: // Functions that called only once
 	BOOL CreateMainWindow();
+	BOOL GetHWInfo();
 
 private: // Functions that called whenever a message is called
 	void OnResize(UINT width, UINT height);
@@ -38,7 +49,7 @@ private: // Main loop stage functions
 	BOOL Draw();
 
 public:
-	static GameWorld* sGameWorld;
+	static GameWorld* spGameWorld;
 
 private:
 	// Variables which is associated with main window
@@ -50,6 +61,9 @@ private:
 	BOOL	  bResizing			= FALSE;	// Are the resize bars being dragged?
 	BOOL	  bFullscreenState  = FALSE;	// Fullscreen enabled 
 	BOOL	  bDestroying		= FALSE;
+	BOOL	  bInitialized		= FALSE;
+
+	Common::Debug::LogFile* mpLogFile;
 
 	// Multi-threading variables
 	std::mutex mStageMutex;
@@ -58,4 +72,7 @@ private:
 	std::condition_variable mInputCV;
 	std::condition_variable mUpdateCV;
 	std::condition_variable mDrawCV;
+
+	// Renderer
+	std::unique_ptr<Render::Renderer> mRenderer;
 };

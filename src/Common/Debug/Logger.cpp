@@ -1,35 +1,33 @@
 #include "Common/Debug/Logger.hpp"
 
-using namespace Debug;
+using namespace Common::Debug;
 
-HANDLE Logger::sLogFile = CreateFile(
-	L"./log.txt",
-	GENERIC_WRITE,
-	FILE_SHARE_WRITE,
-	NULL,
-	CREATE_ALWAYS,
-	FILE_ATTRIBUTE_NORMAL,
-	NULL
-);
+BOOL Logger::Initialize(LogFile* const pLogFile, LPCWSTR pFilePath) {
+	pLogFile->Handle = CreateFile(
+		pFilePath,
+		GENERIC_WRITE,
+		FILE_SHARE_WRITE,
+		NULL,
+		CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL
+	);
 
-std::mutex Logger::sLogFileMutex;
-
-BOOL Logger::Initialize() {
 	DWORD writtenBytes = 0;
 	WORD bom = 0xFEFF;
-	return WriteFile(Logger::sLogFile, &bom, 2, &writtenBytes, NULL);
+	return WriteFile(pLogFile->Handle, &bom, 2, &writtenBytes, NULL);
 }
 
-void Debug::Logger::LogFn(const std::string& msg) {
+void Logger::LogFn(LogFile* const pLogFile, const std::string& msg) {
 	std::wstring wstr;
 	wstr.assign(msg.begin(), msg.end());
 	{
-		std::lock_guard<std::mutex> lock(Logger::sLogFileMutex);
+		std::lock_guard<std::mutex> lock(pLogFile->Mutex);
 
 		DWORD writtenBytes = 0;
 
 		WriteFile(
-			Logger::sLogFile,
+			pLogFile->Handle,
 			wstr.c_str(),
 			static_cast<DWORD>(wstr.length() * sizeof(WCHAR)),
 			&writtenBytes,
@@ -38,13 +36,13 @@ void Debug::Logger::LogFn(const std::string& msg) {
 	}
 }
 
-void Debug::Logger::LogFn(const std::wstring& msg) {
-	std::lock_guard<std::mutex> lock(Logger::sLogFileMutex);
+void Logger::LogFn(LogFile* const pLogFile, const std::wstring& msg) {
+	std::lock_guard<std::mutex> lock(pLogFile->Mutex);
 
 	DWORD writtenBytes = 0;
 
 	WriteFile(
-		Logger::sLogFile,
+		pLogFile->Handle,
 		msg.c_str(),
 		static_cast<DWORD>(msg.length() * sizeof(WCHAR)),
 		&writtenBytes,
@@ -52,20 +50,20 @@ void Debug::Logger::LogFn(const std::wstring& msg) {
 	);
 }
 
-BOOL Debug::Logger::SetTextToWnd(HWND hWnd, LPCWSTR text) {
-	CheckReturn(SetWindowTextW(hWnd, text));
+BOOL Logger::SetTextToWnd(LogFile* const pLogFile, HWND hWnd, LPCWSTR pText) {
+	CheckReturn(pLogFile, SetWindowTextW(hWnd, pText));
 
 	return TRUE;
 }
 
-BOOL Debug::Logger::AppendTextToWnd(HWND hWnd, LPCWSTR text) {
-	const INT length = GetWindowTextLengthW(hWnd) + lstrlenW(text) + 1;
+BOOL Logger::AppendTextToWnd(LogFile* const pLogFile, HWND hWnd, LPCWSTR pText) {
+	const INT length = GetWindowTextLengthW(hWnd) + lstrlenW(pText) + 1;
 
 	std::vector<WCHAR> buffer(length);
 
-	CheckLastError(GetWindowTextW(hWnd, buffer.data(), length));
-	wcscat_s(buffer.data(), length, text);
-	CheckReturn(SetWindowTextW(hWnd, buffer.data()));
+	CheckLastError(pLogFile, GetWindowTextW(hWnd, buffer.data(), length));
+	wcscat_s(buffer.data(), length, pText);
+	CheckReturn(pLogFile, SetWindowTextW(hWnd, buffer.data()));
 
 	return TRUE;
 }
