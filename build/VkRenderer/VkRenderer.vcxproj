@@ -57,14 +57,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs\VulkanSDK\1.3.250.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)externs\VulkanSDK\1.3.250.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -73,28 +74,40 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs\VulkanSDK\1.3.250.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)externs\VulkanSDK\1.3.250.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\VulkanUtil.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\VkLowRenderer.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\VulkanUtil.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\VkLowRenderer.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\VkRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

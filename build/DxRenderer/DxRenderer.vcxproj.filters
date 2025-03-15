@@ -78,6 +78,9 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\D3D12Util.hpp">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp">
+      <Filter>Common Files\Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Render\DX\DxRenderer.cpp">
@@ -109,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\D3D12Util.cpp">
       <Filter>Resource Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp">
+      <Filter>Common Files\Foundation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

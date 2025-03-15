@@ -39,6 +39,9 @@
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp">
+      <Filter>Common Files\Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -55,6 +58,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\GameWorld\Main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp">
+      <Filter>Common Files\Foundation</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

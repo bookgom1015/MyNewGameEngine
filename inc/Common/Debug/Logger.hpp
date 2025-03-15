@@ -128,14 +128,20 @@
 #endif
 
 #ifndef ConsoleLog
-	#define ConsoleLog(__msg) {							\
-		std::cout << "[Log] " << __msg << std::endl;	\
+	#define ConsoleLog(__x, ...) {								\
+		std::vector<std::string> _msgs = { __x, __VA_ARGS__ };	\
+		std::stringstream _sstream;								\
+		for (const auto& _msg : _msgs) _sstream << _msg;		\
+		std::cout << _sstream.str() << std::endl;				\
 	}
 #endif
 
 #ifndef ConsoleErr
-	#define ConsoleErr(__msg) {							\
-		std::err << "[Error] " << __msg << std::endl;	\
+	#define ConsoleErr(__x, ...) {								\
+		std::vector<std::string> _msgs = { __x, __VA_ARGS__ };	\
+		std::stringstream _sstream;								\
+		for (const auto& _msg : _msgs) _sstream << _msg;		\
+		std::err << _sstream.str() << std::endl;				\
 	}
 #endif
 

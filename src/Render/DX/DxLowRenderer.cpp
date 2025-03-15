@@ -55,9 +55,7 @@ DxLowRenderer::DxLowRenderer() : mpLogFile(nullptr) {
 	mDepthStencilBuffer = std::make_unique<Foundation::DepthStencilBuffer>();
 }
 
-DxLowRenderer::~DxLowRenderer() {
-	CleanUp();
-}
+DxLowRenderer::~DxLowRenderer() {}
 
 Common::Debug::LogFile* DxLowRenderer::LogFile() const {
 	return mpLogFile;

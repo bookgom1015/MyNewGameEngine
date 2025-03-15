@@ -19,15 +19,63 @@
     <Filter Include="Common Files\Render">
       <UniqueIdentifier>{557bab85-c31e-4846-be68-b898ff1c52c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files\Debug">
+      <UniqueIdentifier>{6be896fc-4498-4daa-8712-69a7f4543508}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation">
+      <UniqueIdentifier>{0339dc08-6ca1-40d8-b5fa-2551806ae308}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Foundation">
+      <UniqueIdentifier>{d2a429b7-a924-4d6b-8aa6-a3b1e695f1f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Foundation">
+      <UniqueIdentifier>{a5cf3d0d-7119-4d44-9426-a4cd2c0cdc2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
       <Filter>Common Files\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\HWInfo.cpp">
+      <Filter>Common Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\VK\VkLowRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\VK\VkRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\VK\Foundation\VulkanUtil.cpp">
+      <Filter>Source Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp">
+      <Filter>Common Files\Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
       <Filter>Common Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\HWInfo.hpp">
+      <Filter>Common Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\VK\VkLowRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\VulkanUtil.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp">
+      <Filter>Common Files\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

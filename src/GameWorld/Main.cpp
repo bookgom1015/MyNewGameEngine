@@ -10,6 +10,8 @@ void CreateDebuggingConsole() {
 	freopen_s(&fp, "CONOUT$", "w", stdout);
 	freopen_s(&fp, "CONOUT$", "w", stderr);
 
+	SetConsoleOutputCP(CP_UTF8);
+
 	ConsoleLog("Debugging Console Initialized");
 }
 

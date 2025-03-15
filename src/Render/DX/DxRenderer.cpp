@@ -16,7 +16,7 @@ DxRenderer::DxRenderer() {
 }
 
 DxRenderer::~DxRenderer() {
-
+	CleanUp();
 }
 
 BOOL DxRenderer::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height) {

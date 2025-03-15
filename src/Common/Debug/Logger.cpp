@@ -1,4 +1,5 @@
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/StringUtil.hpp"
 
 using namespace Common::Debug;
 
@@ -21,10 +22,10 @@ BOOL Logger::Initialize(LogFile* const pLogFile, LPCWSTR pFilePath) {
 void Logger::LogFn(LogFile* const pLogFile, const std::string& msg) {
 	std::wstring wstr;
 	wstr.assign(msg.begin(), msg.end());
+
+	DWORD writtenBytes = 0;
 	{
 		std::lock_guard<std::mutex> lock(pLogFile->Mutex);
-
-		DWORD writtenBytes = 0;
 
 		WriteFile(
 			pLogFile->Handle,
@@ -34,20 +35,28 @@ void Logger::LogFn(LogFile* const pLogFile, const std::string& msg) {
 			NULL
 		);
 	}
+#ifdef _DEBUG
+	std::cout << msg;
+#endif
 }
 
 void Logger::LogFn(LogFile* const pLogFile, const std::wstring& msg) {
-	std::lock_guard<std::mutex> lock(pLogFile->Mutex);
-
 	DWORD writtenBytes = 0;
+	{
+		std::lock_guard<std::mutex> lock(pLogFile->Mutex);
 
-	WriteFile(
-		pLogFile->Handle,
-		msg.c_str(),
-		static_cast<DWORD>(msg.length() * sizeof(WCHAR)),
-		&writtenBytes,
-		NULL
-	);
+		WriteFile(
+			pLogFile->Handle,
+			msg.c_str(),
+			static_cast<DWORD>(msg.length() * sizeof(WCHAR)),
+			&writtenBytes,
+			NULL
+		);
+	}	
+#ifdef _DEBUG
+	auto str = Foundation::StringUtil::WStringToString(msg);;
+	std::cout << str;
+#endif
 }
 
 BOOL Logger::SetTextToWnd(LogFile* const pLogFile, HWND hWnd, LPCWSTR pText) {

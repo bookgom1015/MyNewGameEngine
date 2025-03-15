@@ -36,16 +36,13 @@ namespace Render::DX {
 		virtual ~DxLowRenderer();
 
 	public:
-		RendererAPI Common::Debug::LogFile* LogFile() const;
+		Common::Debug::LogFile* LogFile() const;
 
 	protected: // Functions that called only once
 		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height);
 		virtual void CleanUp();
 
 		virtual BOOL CreateRtvAndDsvDescriptorHeaps(UINT numCbvSrvUavDescs, UINT numRtvDescs, UINT numDsvDescs);
-
-	protected: // Functions that called by inherited class to access interferace member variables
-
 
 	protected: // Functions that called whenever a message is called
 		virtual BOOL OnResize(UINT width, UINT height);

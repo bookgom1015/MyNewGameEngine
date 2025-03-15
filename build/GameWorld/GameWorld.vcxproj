@@ -151,12 +151,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
     <ClInclude Include="..\..\inc\GameWorld\GameWorld.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
     <ClCompile Include="..\..\src\GameWorld\GameWorld.cpp" />
     <ClCompile Include="..\..\src\GameWorld\Main.cpp" />
