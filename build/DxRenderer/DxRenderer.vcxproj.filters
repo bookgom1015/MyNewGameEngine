@@ -34,8 +34,35 @@
     <Filter Include="Shader Files\Foundation">
       <UniqueIdentifier>{b17c3c8e-dfd2-458d-8602-8890d0eb81f8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Foundation">
+    <Filter Include="Source Files\Foundation">
       <UniqueIdentifier>{94bb1c29-b173-4e55-b6f9-295e24938dbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Core">
+      <UniqueIdentifier>{86de3285-e2af-4bef-8a43-c12bf77d5404}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Util">
+      <UniqueIdentifier>{dfd8c91e-7643-4c72-b03a-a3eae2d5e3ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Foundation\Core">
+      <UniqueIdentifier>{5a0fc8f2-8b28-4950-a2ff-fc13978bb61a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Foundation\Util">
+      <UniqueIdentifier>{d13cbd55-3c8c-4fe9-a66c-ecc2e0c0a796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Foundation\Core">
+      <UniqueIdentifier>{b2dcdf4f-fda4-474c-bd90-1d9fd0ca2070}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Foundation\Util">
+      <UniqueIdentifier>{6b6795b5-7b60-4485-8866-1842d1a8d45e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files">
+      <UniqueIdentifier>{35fa897f-16dc-41be-acee-c4e6dc0c2560}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files\FrankLuna">
+      <UniqueIdentifier>{e3a671b2-65f0-48ea-bc5f-bf1c58409e69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Foundation\Mesh">
+      <UniqueIdentifier>{63a720fd-ae25-42e7-8815-4adb00da0f9f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -45,76 +72,112 @@
     <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\HWInfo.hpp">
-      <Filter>Common Files\Foundation</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
       <Filter>Common Files\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\SwapChain.hpp">
-      <Filter>Header Files\Foundation</Filter>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp">
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingConvention.h">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h">
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\d3dx12.h">
-      <Filter>Header Files\Foundation</Filter>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp">
+      <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\DepthStencilBuffer.hpp">
-      <Filter>Header Files\Foundation</Filter>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\d3dx12.h">
+      <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\GpuResource.hpp">
-      <Filter>Header Files\Foundation</Filter>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\GpuResource.hpp">
+      <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\D3D12Util.hpp">
-      <Filter>Header Files\Foundation</Filter>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp">
-      <Filter>Common Files\Foundation</Filter>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\DepthStencilBuffer.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\Device.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\Factory.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\externs\FrankLuna\GeometryGenerator.h">
+      <Filter>External Files\FrankLuna</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Mesh\MeshGeometry.hpp">
+      <Filter>Header Files\Foundation\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Render\DX\DxRenderer.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\DxLowRenderer.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\HWInfo.cpp">
-      <Filter>Common Files\Foundation</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
       <Filter>Common Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
       <Filter>Common Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\SwapChain.cpp">
-      <Filter>Resource Files\Foundation</Filter>
+    <ClCompile Include="..\..\src\Render\DX\DxLowRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\DxRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\CommandObject.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\DepthStencilBuffer.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\DescriptorHeap.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Device.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Factory.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\SwapChain.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp">
+      <Filter>Source Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\GpuResource.cpp">
+      <Filter>Source Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp">
+      <Filter>External Files\FrankLuna</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp">
-      <Filter>Resource Files\Foundation</Filter>
+      <Filter>Source Files\Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\DepthStencilBuffer.cpp">
-      <Filter>Resource Files\Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\GpuResource.cpp">
-      <Filter>Resource Files\Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\D3D12Util.cpp">
-      <Filter>Resource Files\Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp">
-      <Filter>Common Files\Foundation</Filter>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Mesh\MeshGeometry.cpp">
+      <Filter>Header Files\Foundation\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,8 +187,20 @@
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli">
       <Filter>Shader Files\Foundation</Filter>
     </None>
-    <None Include="..\..\inc\Render\DX\Foundation\GpuResource.inl">
-      <Filter>Header Files\Foundation</Filter>
+    <None Include="..\..\inc\Render\DX\Foundation\Util\GpuResource.inl">
+      <Filter>Header Files\Foundation\Util</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Core\Device.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Core\Factory.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
     </None>
   </ItemGroup>
 </Project>

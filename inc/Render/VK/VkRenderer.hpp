@@ -3,11 +3,11 @@
 #include "Render/VK/VkLowRenderer.hpp"
 
 namespace Render {
-	extern "C" RendererAPI Renderer* CreateRenderer();
-	extern "C" RendererAPI void DestroyRenderer(Render::Renderer* renderer);
+	extern "C" RendererAPI Common::Render::Renderer* CreateRenderer();
+	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace VK {
-		class VkRenderer : public Renderer, VkLowRenderer {
+		class VkRenderer : public Common::Render::Renderer, VkLowRenderer {
 		public:
 			VkRenderer();
 			virtual ~VkRenderer();
@@ -22,6 +22,10 @@ namespace Render {
 		public: // Functions that called in every frame
 			RendererAPI virtual BOOL Update(FLOAT deltaTime) override;
 			RendererAPI virtual BOOL Draw() override;
+
+		public:
+			RendererAPI virtual BOOL AddMesh() override;
+			RendererAPI virtual BOOL RemoveMesh() override;
 		};
 	}
 }

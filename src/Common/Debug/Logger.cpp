@@ -1,5 +1,5 @@
 #include "Common/Debug/Logger.hpp"
-#include "Common/Foundation/StringUtil.hpp"
+#include "Common/Foundation/Util/StringUtil.hpp"
 
 using namespace Common::Debug;
 
@@ -54,7 +54,7 @@ void Logger::LogFn(LogFile* const pLogFile, const std::wstring& msg) {
 		);
 	}	
 #ifdef _DEBUG
-	auto str = Foundation::StringUtil::WStringToString(msg);;
+	auto str = Foundation::Util::StringUtil::WStringToString(msg);;
 	std::cout << str;
 #endif
 }

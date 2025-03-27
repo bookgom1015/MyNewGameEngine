@@ -1,7 +1,7 @@
 #ifndef __RENDERER_INL__
 #define __RENDERER_INL__
 
-constexpr BOOL Render::Renderer::IsShadowEnabled() const {
+constexpr BOOL Common::Render::Renderer::IsShadowEnabled() const {
 	return mbShadowEnabled;
 }
 

@@ -3,11 +3,11 @@
 
 using namespace Render::VK;
 
-extern "C" RendererAPI Render::Renderer* Render::CreateRenderer() {
+extern "C" RendererAPI Common::Render::Renderer* Render::CreateRenderer() {
 	return new VkRenderer();
 }
 
-extern "C" RendererAPI void Render::DestroyRenderer(Render::Renderer* renderer) {
+extern "C" RendererAPI void Render::DestroyRenderer(Common::Render::Renderer* const renderer) {
 	delete renderer;
 }
 
@@ -40,5 +40,13 @@ BOOL VkRenderer::Update(FLOAT deltaTime) {
 }
 
 BOOL VkRenderer::Draw() {
+	return TRUE;
+}
+
+BOOL VkRenderer::AddMesh() {
+	return TRUE;
+}
+
+BOOL VkRenderer::RemoveMesh() {
 	return TRUE;
 }

@@ -6,12 +6,22 @@
 
 #include <Windows.h>
 
-namespace Common::Debug {
-	struct LogFile;
-}
+namespace Common {
+	namespace Debug {
+		struct LogFile;
+	}
 
-namespace Render {
-	class Renderer;
+	namespace Foundation::Core {
+		class GameTimer;
+	}
+
+	namespace Render {
+		class Renderer;
+	}
+
+	namespace Input {
+		class InputProcessor;
+	}
 }
 
 class GameWorld {
@@ -34,13 +44,13 @@ public:
 	BOOL RunLoop();
 	void CleanUp();
 
-	LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private: // Functions that called only once
+private: // Functions that is called only once
 	BOOL CreateMainWindow();
 	BOOL GetHWInfo();
+	BOOL CreateRenderer();
+	BOOL CreateInputProcessor();
 
-private: // Functions that called whenever a message is called
+private: // Functions that is called whenever a message is called
 	void OnResize(UINT width, UINT height);
 
 private: // Main loop stage functions
@@ -55,15 +65,9 @@ private:
 	// Variables which is associated with main window
 	HINSTANCE mhInst			= NULL;		// Application instance handle
 	HWND	  mhMainWnd			= NULL;		// Main window handle
-	BOOL	  bAppPaused		= FALSE;	// Is the application paused?
-	BOOL	  bMinimized		= FALSE;	// Is the application minimized?
-	BOOL	  bMaximized		= FALSE;	// Is the application maximized?
-	BOOL	  bResizing			= FALSE;	// Are the resize bars being dragged?
-	BOOL	  bFullscreenState  = FALSE;	// Fullscreen enabled 
-	BOOL	  bDestroying		= FALSE;
 	BOOL	  bInitialized		= FALSE;
 
-	Common::Debug::LogFile* mpLogFile;
+	Common::Debug::LogFile* mpLogFile = nullptr;
 
 	// Multi-threading variables
 	std::mutex mStageMutex;
@@ -74,5 +78,12 @@ private:
 	std::condition_variable mDrawCV;
 
 	// Renderer
-	std::unique_ptr<Render::Renderer> mRenderer;
+	std::unique_ptr<Common::Render::Renderer> mRenderer;
+
+	// Timer
+	std::unique_ptr<Common::Foundation::Core::GameTimer> mGameTimer;
+
+public:
+	// Input processor
+	std::unique_ptr<Common::Input::InputProcessor> mInputProcessor;
 };

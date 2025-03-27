@@ -25,13 +25,19 @@
     <Filter Include="Common Files\Render">
       <UniqueIdentifier>{a8c27547-a82a-4597-afe3-a2b328240f52}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files\Foundation\Core">
+      <UniqueIdentifier>{53280179-e825-4e6e-8176-275825fc4bc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Util">
+      <UniqueIdentifier>{e108967a-5d7b-4cc8-b779-830abe0c9f16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Mesh">
+      <UniqueIdentifier>{94db08bf-085a-4e24-a999-c1cba7661f0f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\GameWorld\GameWorld.hpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\HWInfo.hpp">
-      <Filter>Common Files\Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
       <Filter>Common Files\Debug</Filter>
@@ -39,16 +45,34 @@
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp">
-      <Filter>Common Files\Foundation</Filter>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\GameTimer.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\HashUtil.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.hpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.hpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\MathUtil.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
       <Filter>Common Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\HWInfo.cpp">
-      <Filter>Common Files\Foundation</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
       <Filter>Common Files\Render</Filter>
@@ -59,8 +83,34 @@
     <ClCompile Include="..\..\src\GameWorld\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp">
-      <Filter>Common Files\Foundation</Filter>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\GameTimer.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Mesh.cpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\MathUtil.cpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\inc\Common\Foundation\Util\MathUtil.inl">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </None>
   </ItemGroup>
 </Project>

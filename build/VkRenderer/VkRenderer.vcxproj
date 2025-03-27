@@ -89,24 +89,39 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
-    <ClInclude Include="..\..\inc\Common\Foundation\HWInfo.hpp" />
-    <ClInclude Include="..\..\inc\Common\Foundation\StringUtil.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
-    <ClInclude Include="..\..\inc\Render\VK\Foundation\VulkanUtil.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\CommandObject.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Device.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Instance.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Surface.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\SwapChain.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Util\VulkanUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\VkLowRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\HWInfo.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\StringUtil.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
-    <ClCompile Include="..\..\src\Render\VK\Foundation\VulkanUtil.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\CommandObject.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Device.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Instance.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\ShadingObject.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Surface.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\SwapChain.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Util\VulkanUtil.cpp" />
     <ClCompile Include="..\..\src\Render\VK\VkLowRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\VK\VkRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
+    <None Include="..\..\inc\Render\VK\Foundation\Core\Device.inl" />
+    <None Include="..\..\inc\Render\VK\Foundation\Core\Instance.inl" />
+    <None Include="..\..\inc\Render\VK\Foundation\Core\Surface.inl" />
+    <None Include="..\..\inc\Render\VK\Foundation\Surface.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
