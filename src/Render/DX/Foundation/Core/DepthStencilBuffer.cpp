@@ -1,4 +1,6 @@
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
+#include "Render/DX/Foundation/Core/Device.hpp"
+#include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 using namespace Render::DX::Foundation::Core;
 
@@ -14,13 +16,17 @@ UINT DepthStencilBuffer::CbvSrvUavDescCount() const { return 0; }
 UINT DepthStencilBuffer::RtvDescCount() const { return 0; }
 UINT DepthStencilBuffer::DsvDescCount() const { return 1; }
 
-BOOL DepthStencilBuffer::Initialize(void* const pData) {
-	if (pData == nullptr) return FALSE;
+DepthStencilBuffer::InitDataPtr DepthStencilBuffer::MakeInitData() {
+	return std::unique_ptr<InitData>(new InitData());
+}
+
+BOOL DepthStencilBuffer::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
+	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));
 
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
-	CheckReturn(mInitData.LogFile, BuildDepthStencilBuffer());
+	CheckReturn(mpLogFile, BuildDepthStencilBuffer());
 
 	return TRUE;
 }
@@ -28,7 +34,7 @@ BOOL DepthStencilBuffer::Initialize(void* const pData) {
 BOOL DepthStencilBuffer::BuildDescriptors(DescriptorHeap* const pDescHeap) {
 	mhDepthStencilBufferCpuDsv = pDescHeap->DsvCpuOffset(0);
 
-	CheckReturn(mInitData.LogFile, BuildDescriptors());
+	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
 }
@@ -37,8 +43,8 @@ BOOL DepthStencilBuffer::OnResize(UINT width, UINT height) {
 	mInitData.Width = width;
 	mInitData.Height = height;
 
-	CheckReturn(mInitData.LogFile, BuildDepthStencilBuffer());
-	CheckReturn(mInitData.LogFile, BuildDescriptors());
+	CheckReturn(mpLogFile, BuildDepthStencilBuffer());
+	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
 }
@@ -63,8 +69,8 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 	optClear.DepthStencil.Depth = 1.f;
 	optClear.DepthStencil.Stencil = 0;
 
-	CheckReturn(mInitData.LogFile, mDepthStencilBuffer->Initialize(
-		mInitData.LogFile,
+	CheckReturn(mpLogFile, mDepthStencilBuffer->Initialize(
+		mpLogFile,
 		mInitData.Device,
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
@@ -79,7 +85,7 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 
 BOOL DepthStencilBuffer::BuildDescriptors() {
 	// Create descriptor to mip level 0 of entire resource using the format of the resource.
-	mInitData.Device->CreateDepthStencilView(mDepthStencilBuffer->Resource(), nullptr, mhDepthStencilBufferCpuDsv);
+	Util::D3D12Util::CreateDepthStencilView(mInitData.Device, mDepthStencilBuffer->Resource(), nullptr, mhDepthStencilBufferCpuDsv);
 
 	return TRUE;
 }

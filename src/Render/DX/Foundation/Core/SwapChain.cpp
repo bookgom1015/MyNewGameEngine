@@ -1,4 +1,8 @@
 #include "Render/DX/Foundation/Core/SwapChain.hpp"
+#include "Render/DX/Foundation/Core/Factory.hpp"
+#include "Render/DX/Foundation/Core/Device.hpp"
+#include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 using namespace Render::DX::Foundation::Core;
 
@@ -17,14 +21,18 @@ UINT SwapChain::CbvSrvUavDescCount() const { return SwapChainBufferCount; }
 UINT SwapChain::RtvDescCount() const { return SwapChainBufferCount; }
 UINT SwapChain::DsvDescCount() const { return 0; }
 
-BOOL SwapChain::Initialize(void* const pData) {
-	if (pData == nullptr) return FALSE;
+SwapChain::InitDataPtr SwapChain::MakeInitData() {
+	return std::unique_ptr<InitData>(new InitData());
+}
+
+BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
+	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));
 
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
-	CheckReturn(mInitData.LogFile, CreateSwapChain());
-	CheckReturn(mInitData.LogFile, BuildSwapChainBuffers());
+	CheckReturn(mpLogFile, CreateSwapChain());
+	CheckReturn(mpLogFile, BuildSwapChainBuffers());
 
 	return TRUE;
 }
@@ -37,7 +45,7 @@ BOOL SwapChain::BuildDescriptors(DescriptorHeap* const pDescHeap) {
 		mhBackBufferCpuRtvs[i] = pDescHeap->RtvCpuOffset(offset);
 	}
 
-	CheckReturn(mInitData.LogFile, BuildDescriptors());
+	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
 }
@@ -64,7 +72,7 @@ BOOL SwapChain::CreateSwapChain() {
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 	// Note: Swap chain uses queue to perfrom flush.
-	CheckHRESULT(mInitData.LogFile, mInitData.DxgiFactory->CreateSwapChain(mInitData.CommandQueue, &sd, &mSwapChain));
+	CheckHRESULT(mpLogFile, mInitData.Factory->DxgiFactory()->CreateSwapChain(mInitData.CommandObject->CommandQueue(), &sd, &mSwapChain));
 
 	return TRUE;
 }
@@ -75,7 +83,7 @@ BOOL SwapChain::BuildSwapChainBuffers() {
 		mSwapChainBuffers[i]->Reset();
 
 	// Resize the swap chain.
-	CheckHRESULT(mInitData.LogFile, mSwapChain->ResizeBuffers(
+	CheckHRESULT(mpLogFile, mSwapChain->ResizeBuffers(
 		SwapChainBufferCount,
 		mInitData.Width,
 		mInitData.Height,
@@ -103,8 +111,8 @@ BOOL SwapChain::BuildDescriptors() {
 
 	for (UINT i = 0; i < SwapChainBufferCount; ++i) {
 		const auto backBuffer = mSwapChainBuffers[i]->Resource();
-		mInitData.Device->CreateShaderResourceView(backBuffer, &srvDesc, mhBackBufferCpuSrvs[i]);
-		mInitData.Device->CreateRenderTargetView(backBuffer, nullptr, mhBackBufferCpuRtvs[i]);
+		Util::D3D12Util::CreateShaderResourceView(mInitData.Device, backBuffer, &srvDesc, mhBackBufferCpuSrvs[i]);
+		Util::D3D12Util::CreateRenderTargetView(mInitData.Device, backBuffer, nullptr, mhBackBufferCpuRtvs[i]);
 	}
 
 	return TRUE;
@@ -114,8 +122,8 @@ BOOL SwapChain::OnResize(UINT width, UINT height) {
 	mInitData.Width = width;
 	mInitData.Height = height;
 
-	CheckReturn(mInitData.LogFile, BuildSwapChainBuffers());
-	CheckReturn(mInitData.LogFile, BuildDescriptors());
+	CheckReturn(mpLogFile, BuildSwapChainBuffers());
+	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
 }

@@ -9,3 +9,6 @@ obj/
 
 lib/
 externs/
+
+packages/
+build/**/packages.config

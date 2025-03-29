@@ -124,9 +124,11 @@ LRESULT SimpleInputProcessor::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		return 0;
 	}
 	case WM_KEYUP: {
+		OnKeyboardInput(WM_KEYUP, wParam, lParam);
 		return 0;
 	}
 	case WM_KEYDOWN: {
+		OnKeyboardInput(WM_KEYDOWN, wParam, lParam);
 		return 0;
 	}
 	case WM_LBUTTONDOWN: {
@@ -140,4 +142,16 @@ LRESULT SimpleInputProcessor::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 void SimpleInputProcessor::RegisterOnResizeFunc(const OnResizeFunc& func) {
 	mOnResizeFunc = func;
 	bRegisteredOnResizeFunc = TRUE;
+}
+
+void SimpleInputProcessor::OnKeyboardInput(UINT msg, WPARAM wParam, LPARAM lParam) {
+	switch (wParam) {
+	case VK_ESCAPE: {
+		if (msg == WM_KEYUP) {
+			bDestroying = TRUE;
+			PostQuitMessage(0);
+		}
+		return;
+	}
+	}
 }

@@ -9,6 +9,8 @@
 #include <d3d12.h>
 #include <DirectXCollision.h>
 
+#include "Common/Foundation/Util/HashUtil.hpp"
+
 namespace Render::DX::Foundation::Mesh {
 	struct SubmeshGeometry {
 		UINT IndexCount			= 0;
@@ -38,5 +40,17 @@ namespace Render::DX::Foundation::Mesh {
 		D3D12_VERTEX_BUFFER_VIEW VertexBufferView() const;
 		D3D12_INDEX_BUFFER_VIEW IndexBufferView() const;
 		void DisposeUploaders();
+
+		static Common::Foundation::Hash Hash(MeshGeometry* ptr);
+	};
+}
+
+namespace std {
+	template <>
+	struct hash<Render::DX::Foundation::Mesh::MeshGeometry*> {
+		Common::Foundation::Hash operator()(const Render::DX::Foundation::Mesh::MeshGeometry* const ptr) const {
+			uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+			return Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(addr));
+		}
 	};
 }

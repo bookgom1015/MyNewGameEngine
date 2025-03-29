@@ -5,21 +5,26 @@
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
 namespace Render::DX::Foundation::Core {
+	class Factory;
+	class Device;
+	class CommandObject;
+
 	class SwapChain : public ShadingObject {
 	public:
 		static const UINT SwapChainBufferCount = 2;
 
 	public:
 		struct InitData {
-			Common::Debug::LogFile* LogFile;
-			IDXGIFactory4* DxgiFactory;
-			ID3D12Device5* Device;
-			ID3D12CommandQueue* CommandQueue;
-			HWND MainWnd;
-			UINT Width;
-			UINT Height;
-			BOOL AllowTearing;
+			Factory*	   Factory;
+			Device*		   Device;
+			CommandObject* CommandObject;
+			HWND		   MainWnd;
+			UINT		   Width;
+			UINT		   Height;
+			BOOL		   AllowTearing;
 		};
+
+		using InitDataPtr = std::unique_ptr<InitData>;
 
 	public:
 		SwapChain();
@@ -31,7 +36,10 @@ namespace Render::DX::Foundation::Core {
 		virtual UINT DsvDescCount() const override;
 
 	public:
-		virtual BOOL Initialize(void* const pData) override;
+		static InitDataPtr MakeInitData();
+
+	public:
+		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 		virtual BOOL BuildDescriptors(DescriptorHeap* const pDescHeap) override;
 		virtual BOOL OnResize(UINT width, UINT height) override;

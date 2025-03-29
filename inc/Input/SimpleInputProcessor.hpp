@@ -21,7 +21,10 @@ namespace Input {
 		InputProcessorAPI virtual void RegisterOnResizeFunc(const OnResizeFunc& func) override;
 
 	private:
+		void OnKeyboardInput(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	private:
 		OnResizeFunc mOnResizeFunc;
-		BOOL bRegisteredOnResizeFunc;
+		BOOL bRegisteredOnResizeFunc = FALSE;
 	};
 }

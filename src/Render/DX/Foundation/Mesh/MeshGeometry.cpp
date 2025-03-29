@@ -24,3 +24,8 @@ void MeshGeometry::DisposeUploaders() {
 	VertexBufferUploader = nullptr;
 	IndexBufferUploader = nullptr;
 }
+
+Common::Foundation::Hash Render::DX::Foundation::Mesh::MeshGeometry::Hash(MeshGeometry* ptr) {
+	std::hash<Render::DX::Foundation::Mesh::MeshGeometry*> hasher;
+	return hasher(ptr);
+}

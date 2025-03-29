@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <wrl.h>
 #include <Windows.h>
 
@@ -19,13 +21,15 @@ namespace Render::DX::Foundation {
 		virtual UINT DsvDescCount() const = 0;
 
 	protected:
-		virtual BOOL Initialize(void* const pData) = 0;
+		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData);
 
-	protected:
 		virtual BOOL CompileShaders();
 		virtual BOOL BuildRootSignatures();
 		virtual BOOL BuildPipelineStates();
 		virtual BOOL BuildDescriptors(Core::DescriptorHeap* const pDescHeap);
 		virtual BOOL OnResize(UINT width, UINT height);
+
+	protected:
+		Common::Debug::LogFile* mpLogFile = nullptr;
 	};
 }

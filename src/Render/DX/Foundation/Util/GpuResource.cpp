@@ -1,12 +1,13 @@
 #include "Render/DX/Foundation/Util/GpuResource.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
+#include "Render/DX/Foundation/Core/Device.hpp"
 
 using namespace Render::DX::Foundation::Util;
 
 BOOL GpuResource::Initialize(
 		Common::Debug::LogFile* const pLogFile,
-		ID3D12Device* const pDevice,
+		Core::Device* const pDevice,
 		const D3D12_HEAP_PROPERTIES* const pHeapProp,
 		D3D12_HEAP_FLAGS heapFlag,
 		const D3D12_RESOURCE_DESC* const pRscDesc,
@@ -15,7 +16,7 @@ BOOL GpuResource::Initialize(
 		LPCWSTR pName) {
 	mpLogFile = pLogFile;
 
-	CheckHRESULT(mpLogFile, pDevice->CreateCommittedResource(
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateCommittedResource(
 		pHeapProp,
 		heapFlag,
 		pRscDesc,

@@ -1,5 +1,6 @@
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Render/DX/Foundation/Core/Device.hpp"
 
 using namespace Render::DX::Foundation::Core;
 
@@ -40,9 +41,9 @@ namespace {
 	}
 }
 
-BOOL CommandObject::Initialize(Common::Debug::LogFile* const pLogFile, ID3D12Device5* const pDevice, UINT numThreads) {
+BOOL CommandObject::Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads) {
 	mpLogFile = pLogFile;
-	md3dDevice = pDevice;
+	mDevice = pDevice;
 
 	mMultiCommandLists.resize(numThreads);
 
@@ -97,58 +98,34 @@ BOOL CommandObject::ResetDirectCommandList() {
 }
 
 BOOL CommandObject::CreateDebugObjects() {
-	CheckHRESULT(mpLogFile, md3dDevice->QueryInterface(IID_PPV_ARGS(&mInfoQueue)));
+	CheckReturn(mpLogFile, mDevice->QueryInterface(mInfoQueue));
 	CheckHRESULT(mpLogFile, mInfoQueue->RegisterMessageCallback(D3D12MessageCallback, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, mpLogFile, &mCallbakCookie));
 
 	return TRUE;
 }
 
 BOOL CommandObject::CreateCommandQueue() {
-	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	CheckHRESULT(mpLogFile, md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
+	CheckReturn(mpLogFile, mDevice->CreateCommandQueue(mCommandQueue));
 
 	return TRUE;
 }
 
 BOOL CommandObject::CreateDirectCommandObjects() {
-	CheckHRESULT(mpLogFile, md3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf())));
-
-	CheckHRESULT(mpLogFile, md3dDevice->CreateCommandList(
-		0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		mDirectCmdListAlloc.Get(),	// Associated command allocator
-		nullptr,					// Initial PipelineStateObject
-		IID_PPV_ARGS(mDirectCommandList.GetAddressOf())
-	));
-
-	// Start off in a closed state.  This is because the first time we refer 
-	// to the command list we will Reset it, and it needs to be closed before
-	// calling Reset.
-	mDirectCommandList->Close();
+	CheckReturn(mpLogFile, mDevice->CreateCommandAllocator(mDirectCmdListAlloc));
+	CheckReturn(mpLogFile, mDevice->CreateCommandList(mDirectCmdListAlloc.Get(), mDirectCommandList));
 
 	return TRUE;
 }
 
 BOOL CommandObject::CreateMultiCommandObjects(UINT numThreads) {
-	for (UINT i = 0; i < numThreads; ++i) {
-		CheckHRESULT(mpLogFile, md3dDevice->CreateCommandList(
-			0,
-			D3D12_COMMAND_LIST_TYPE_DIRECT,
-			mDirectCmdListAlloc.Get(),
-			nullptr,
-			IID_PPV_ARGS(mMultiCommandLists[i].GetAddressOf())
-		));
-
-		mMultiCommandLists[i]->Close();
-	}
+	for (UINT i = 0; i < numThreads; ++i) 
+		CheckReturn(mpLogFile, mDevice->CreateCommandList(mDirectCmdListAlloc.Get(), mMultiCommandLists[i]));
 
 	return TRUE;
 }
 
 BOOL CommandObject::CreateFence() {
-	CheckHRESULT(mpLogFile, md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
+	CheckReturn(mpLogFile, mDevice->CreateFence(mFence));
 
 	return TRUE;
 }

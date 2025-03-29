@@ -50,7 +50,7 @@ BOOL DxLowRenderer::GetHWInfo() {
 }
 
 BOOL DxLowRenderer::CreateDescriptorHeaps() {
-	CheckReturn(mpLogFile, mDescriptorHeap->CreateDescriptorHeaps(0, 0, 0));	
+	CheckReturn(mpLogFile, mDescriptorHeap->CreateDescriptorHeaps(0, 0, 0));
 
 	return TRUE;
 }
@@ -66,11 +66,16 @@ BOOL DxLowRenderer::OnResize(UINT width, UINT height) {
 }
 
 BOOL DxLowRenderer::InitDirect3D(UINT width, UINT height) {
+	const auto device = mDevice.get();
+
 	CheckReturn(mpLogFile, mFactory->Initialize(mpLogFile));
 	CheckReturn(mpLogFile, mFactory->SortAdapters());
-	CheckReturn(mpLogFile, mFactory->SelectAdapter(mDevice.get()));
-	CheckReturn(mpLogFile, mCommandObject->Initialize(mpLogFile, mDevice->GetDevice(), static_cast<UINT>(mProcessor->Logical)));
-	CheckReturn(mpLogFile, mDescriptorHeap->Initialize(mpLogFile, mDevice->GetDevice(), mSwapChain.get(), mDepthStencilBuffer.get()));
+	CheckReturn(mpLogFile, mFactory->SelectAdapter(device));
+
+	CheckReturn(mpLogFile, mCommandObject->Initialize(mpLogFile, device, static_cast<UINT>(mProcessor->Logical)));
+
+	CheckReturn(mpLogFile, mDescriptorHeap->Initialize(mpLogFile, device, mSwapChain.get(), mDepthStencilBuffer.get()));
+
 	CheckReturn(mpLogFile, CreateSwapChain());
 	CheckReturn(mpLogFile, CreateDepthStencilBuffer());
 	CheckReturn(mpLogFile, CreateDescriptorHeaps());
@@ -79,29 +84,27 @@ BOOL DxLowRenderer::InitDirect3D(UINT width, UINT height) {
 }
 
 BOOL DxLowRenderer::CreateSwapChain() {
-	const auto initData = std::make_unique<Foundation::Core::SwapChain::InitData>();
-	initData->LogFile = mpLogFile;
-	initData->DxgiFactory = mFactory->DxgiFactory();
-	initData->Device = mDevice->GetDevice();
-	initData->CommandQueue = mCommandObject->CommandQueue();
+	auto initData = Foundation::Core::SwapChain::MakeInitData();
+	initData->Factory = mFactory.get();
+	initData->Device = mDevice.get();
+	initData->CommandObject = mCommandObject.get();
 	initData->MainWnd = mhMainWnd;
 	initData->Width = mClientWidth;
 	initData->Height = mClientHeight;
 	initData->AllowTearing = mFactory->AllowTearing();
 
-	CheckReturn(mpLogFile, mSwapChain->Initialize(initData.get()));
+	CheckReturn(mpLogFile, mSwapChain->Initialize(mpLogFile, initData.get()));
 
 	return TRUE;
 }
 
 BOOL DxLowRenderer::CreateDepthStencilBuffer() {
-	const auto initData = std::make_unique<Foundation::Core::DepthStencilBuffer::InitData>();
-	initData->LogFile = mpLogFile;
+	auto initData = Foundation::Core::DepthStencilBuffer::MakeInitData();
 	initData->Width = mClientWidth;
 	initData->Height = mClientHeight;
-	initData->Device = mDevice->GetDevice();
+	initData->Device = mDevice.get();
 
-	CheckReturn(mpLogFile, mDepthStencilBuffer->Initialize(initData.get()));
+	CheckReturn(mpLogFile, mDepthStencilBuffer->Initialize(mpLogFile, initData.get()));
 
 	return TRUE;
 }

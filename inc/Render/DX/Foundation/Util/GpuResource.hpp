@@ -9,42 +9,48 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
-namespace Render::DX::Foundation::Util {
-	class GpuResource {
-	public:
-		GpuResource() = default;
-		virtual ~GpuResource() = default;
+namespace Render::DX::Foundation {
+	namespace Core {
+		class Device;
+	}
 
-	public:
-		BOOL Initialize(
-			Common::Debug::LogFile* const pLogFile,
-			ID3D12Device* const pDevice,
-			const D3D12_HEAP_PROPERTIES* const pHeapProp,
-			D3D12_HEAP_FLAGS heapFlag,
-			const D3D12_RESOURCE_DESC* const pRscDesc,
-			D3D12_RESOURCE_STATES initialState,
-			const D3D12_CLEAR_VALUE* const pOptClear,
-			LPCWSTR pName = nullptr);
+	namespace Util {
+		class GpuResource {
+		public:
+			GpuResource() = default;
+			virtual ~GpuResource() = default;
 
-		BOOL OnResize(IDXGISwapChain* const pSwapChain, UINT index);
+		public:
+			BOOL Initialize(
+				Common::Debug::LogFile* const pLogFile,
+				Core::Device* const pDevice,
+				const D3D12_HEAP_PROPERTIES* const pHeapProp,
+				D3D12_HEAP_FLAGS heapFlag,
+				const D3D12_RESOURCE_DESC* const pRscDesc,
+				D3D12_RESOURCE_STATES initialState,
+				const D3D12_CLEAR_VALUE* const pOptClear,
+				LPCWSTR pName = nullptr);
 
-		void Swap(Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource, D3D12_RESOURCE_STATES initialState);
-		void Transite(ID3D12GraphicsCommandList* const pCmdList, D3D12_RESOURCE_STATES state);
+			BOOL OnResize(IDXGISwapChain* const pSwapChain, UINT index);
 
-		__forceinline void Reset();
+			void Swap(Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource, D3D12_RESOURCE_STATES initialState);
+			void Transite(ID3D12GraphicsCommandList* const pCmdList, D3D12_RESOURCE_STATES state);
 
-	public:
-		__forceinline ID3D12Resource* const Resource() const;
-		__forceinline D3D12_RESOURCE_DESC Desc() const;
-		__forceinline D3D12_RESOURCE_STATES State() const;
+			__forceinline void Reset();
 
-	private:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		public:
+			__forceinline ID3D12Resource* const Resource() const;
+			__forceinline D3D12_RESOURCE_DESC Desc() const;
+			__forceinline D3D12_RESOURCE_STATES State() const;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> mResource;
+		private:
+			Common::Debug::LogFile* mpLogFile = nullptr;
 
-		D3D12_RESOURCE_STATES mCurrState = D3D12_RESOURCE_STATE_COMMON;
-	};
+			Microsoft::WRL::ComPtr<ID3D12Resource> mResource;
+
+			D3D12_RESOURCE_STATES mCurrState = D3D12_RESOURCE_STATE_COMMON;
+		};
+	}
 }
 
 #include "GpuResource.inl"

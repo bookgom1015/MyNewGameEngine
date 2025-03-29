@@ -1,5 +1,6 @@
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Util/GpuResource.hpp"
 
 #include <vector>
@@ -9,14 +10,14 @@ using namespace Microsoft::WRL;
 
 BOOL D3D12Util::CreateDefaultBuffer(
 		Common::Debug::LogFile* const pLogFile,
-		ID3D12Device5* const device,
+		Core::Device* const pDevice,
 		ID3D12GraphicsCommandList4* const cmdList,
-		const void* const initData,
+		const void* const pInitData,
 		UINT64 byteSize,
 		ComPtr<ID3D12Resource>& uploadBuffer,
 		ComPtr<ID3D12Resource>& defaultBuffer) {
 	// Create the actual default buffer resource.
-	CheckHRESULT(pLogFile, device->CreateCommittedResource(
+	CheckHRESULT(pLogFile, pDevice->md3dDevice->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
@@ -27,7 +28,7 @@ BOOL D3D12Util::CreateDefaultBuffer(
 
 	// In order to copy CPU memory data into our default buffer, we need to create
 	// an intermediate upload heap. 
-	CheckHRESULT(pLogFile, device->CreateCommittedResource(
+	CheckHRESULT(pLogFile, pDevice->md3dDevice->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
@@ -38,7 +39,7 @@ BOOL D3D12Util::CreateDefaultBuffer(
 
 	// Describe the data we want to copy into the default buffer.
 	D3D12_SUBRESOURCE_DATA subResourceData = {};
-	subResourceData.pData = initData;
+	subResourceData.pData = pInitData;
 	subResourceData.RowPitch = byteSize;
 	subResourceData.SlicePitch = subResourceData.RowPitch;
 
@@ -98,4 +99,28 @@ void D3D12Util::UavBarriers(ID3D12GraphicsCommandList* const pCmdList, GpuResour
 		uavBarriers.push_back(uavBarrier);
 	}
 	pCmdList->ResourceBarrier(static_cast<UINT>(uavBarriers.size()), uavBarriers.data());
+}
+
+void D3D12Util::CreateShaderResourceView(
+		Core::Device* const pDevice,
+		ID3D12Resource* const pResource,
+		const D3D12_SHADER_RESOURCE_VIEW_DESC* const pDesc,
+		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
+	pDevice->md3dDevice->CreateShaderResourceView(pResource, pDesc, destDescriptor);
+}
+
+void D3D12Util::CreateRenderTargetView(
+		Core::Device* const pDevice,
+		ID3D12Resource* const pResource,
+		const D3D12_RENDER_TARGET_VIEW_DESC* const pDesc,
+		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
+	pDevice->md3dDevice->CreateRenderTargetView(pResource, pDesc, destDescriptor);
+}
+
+void D3D12Util::CreateDepthStencilView(
+		Core::Device* const pDevice,
+		ID3D12Resource* const pResource,
+		const D3D12_DEPTH_STENCIL_VIEW_DESC* const pDesc,
+		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
+	pDevice->md3dDevice->CreateDepthStencilView(pResource, pDesc, destDescriptor);
 }

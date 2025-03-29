@@ -9,6 +9,7 @@ namespace Common::Debug {
 }
 
 namespace Render::DX::Foundation::Core {
+	class Device;
 	class SwapChain;
 	class DepthStencilBuffer;
 
@@ -20,7 +21,7 @@ namespace Render::DX::Foundation::Core {
 	public:
 		BOOL Initialize(
 			Common::Debug::LogFile* const pLogFile, 
-			ID3D12Device5* const pDevice, 
+			Device* const pDevice,
 			SwapChain* const pSwapChain, 
 			DepthStencilBuffer* const pDepthStencilBuffer);
 		BOOL CreateDescriptorHeaps(UINT numCbvSrvUav, UINT numRtv, UINT numDsv);
@@ -37,7 +38,7 @@ namespace Render::DX::Foundation::Core {
 	private:
 		Common::Debug::LogFile* mpLogFile = nullptr;
 
-		ID3D12Device5* md3dDevice = nullptr;
+		Device* mDevice = nullptr;
 
 		SwapChain* mpSwapChain = nullptr;
 		DepthStencilBuffer* mpDepthStencilBuffer = nullptr;

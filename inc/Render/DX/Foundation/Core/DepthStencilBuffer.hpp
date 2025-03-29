@@ -8,14 +8,17 @@ namespace Render::DX::Foundation {
 	}
 
 	namespace Core {
+		class Device;
+
 		class DepthStencilBuffer : public ShadingObject {
 		public:
 			struct InitData {
-				Common::Debug::LogFile* LogFile;
-				ID3D12Device5* Device;
-				UINT Width;
-				UINT Height;
+				Device* Device;
+				UINT	Width;
+				UINT	Height;
 			};
+
+			using InitDataPtr = std::unique_ptr<InitData>;
 
 		public:
 			DepthStencilBuffer();
@@ -27,7 +30,10 @@ namespace Render::DX::Foundation {
 			virtual UINT DsvDescCount() const override;
 
 		public:
-			virtual BOOL Initialize(void* const pData) override;
+			static InitDataPtr MakeInitData();
+
+		public:
+			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 			virtual BOOL BuildDescriptors(DescriptorHeap* const pDescHeap) override;
 			virtual BOOL OnResize(UINT width, UINT height) override;

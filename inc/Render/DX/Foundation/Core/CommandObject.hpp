@@ -11,13 +11,15 @@ namespace Common::Debug {
 }
 
 namespace Render::DX::Foundation::Core {
+	class Device;
+
 	class CommandObject {
 	public:
 		CommandObject() = default;
 		virtual ~CommandObject() = default;
 
 	public: // Functions that is called only once
-		BOOL Initialize(Common::Debug::LogFile* const pLogFile, ID3D12Device5* const pDevice, UINT numThreads);
+		BOOL Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads);
 
 	public: // Functions that is called whenever a renderer calls
 		BOOL FlushCommandQueue();
@@ -39,7 +41,7 @@ namespace Render::DX::Foundation::Core {
 	private:
 		Common::Debug::LogFile* mpLogFile = nullptr;
 
-		ID3D12Device5* md3dDevice = nullptr;
+		Device* mDevice = nullptr;
 
 #ifdef _DEBUG
 		// Debugging

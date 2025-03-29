@@ -1,8 +1,12 @@
 #pragma once
 
-namespace Common::Foundation::Util {
-	class HashUtil {
-	public:
-		static size_t HashCombine(size_t seed, size_t value);
-	};
+namespace Common::Foundation {
+	typedef size_t Hash;
+
+	namespace Util {
+		class HashUtil {
+		public:
+			static Hash HashCombine(Hash seed, Hash value);
+		};
+	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common/Foundation/Mesh/Mesh.hpp"
+#include "Common/Foundation/Util/HashUtil.hpp"
 #include "Render/DX/DxLowRenderer.hpp"
 
 namespace Render {
@@ -11,6 +12,14 @@ namespace Render {
 		namespace Foundation::Mesh {
 			struct MeshGeometry;
 			struct SubmeshGeometry;
+		}
+
+		namespace Shading {
+			namespace Util {
+				class ShaderManager;
+			}
+
+			class EnvironmentMap;
 		}
 
 		class DxRenderer : public Common::Render::Renderer, DxLowRenderer {
@@ -33,6 +42,9 @@ namespace Render {
 			RendererAPI virtual BOOL AddMesh() override;
 			RendererAPI virtual BOOL RemoveMesh() override;
 
+		protected:
+			virtual BOOL CreateDescriptorHeaps() override;
+
 		private:
 			BOOL BuildMeshGeometry(
 				Foundation::Mesh::SubmeshGeometry* const submesh, 
@@ -40,11 +52,22 @@ namespace Render {
 				const std::vector<std::uint16_t>& indices,
 				const std::string& name);
 
-		private:
+		private: // Functions that is called only once in Initialize
+			BOOL InitShadingObjects();
+			BOOL CompileShaders();
+			BOOL BuildRootSignatures();
+			BOOL BuildPipelineStates();
+			BOOL BuildDescriptors();
+
 			BOOL BuildSkySphere();
 
 		private:
-			std::unordered_map<std::string, std::unique_ptr<Foundation::Mesh::MeshGeometry>> mMeshGeometries;
+			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Mesh::MeshGeometry>> mMeshGeometries;
+
+			// Shading objects
+			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
+
+			std::unique_ptr<Shading::EnvironmentMap> mEnvironmentMap;
 		};
 	}
 }

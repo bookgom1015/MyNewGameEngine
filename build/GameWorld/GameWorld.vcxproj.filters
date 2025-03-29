@@ -69,6 +69,9 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Util\MathUtil.hpp">
       <Filter>Common Files\Foundation\Util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\TaskQueue.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -106,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Util\MathUtil.cpp">
       <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\TaskQueue.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

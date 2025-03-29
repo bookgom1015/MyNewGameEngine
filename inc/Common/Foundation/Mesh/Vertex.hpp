@@ -31,17 +31,17 @@ struct Vertex {
 	namespace std {
 		template<> 
 		struct hash<Vertex> {
-			size_t operator()(const Vertex& vert) const {
-				size_t pos = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<size_t>(vert.Position.x));
-				pos = Common::Foundation::Util::HashUtil::HashCombine(pos, static_cast<size_t>(vert.Position.y));
-				pos = Common::Foundation::Util::HashUtil::HashCombine(pos, static_cast<size_t>(vert.Position.z));
+			Common::Foundation::Hash operator()(const Vertex& vert) const {
+				Common::Foundation::Hash pos = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.Position.x));
+				pos = Common::Foundation::Util::HashUtil::HashCombine(pos, static_cast<Common::Foundation::Hash>(vert.Position.y));
+				pos = Common::Foundation::Util::HashUtil::HashCombine(pos, static_cast<Common::Foundation::Hash>(vert.Position.z));
 	
-				size_t normal = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<size_t>(vert.Normal.x));
-				normal = Common::Foundation::Util::HashUtil::HashCombine(normal, static_cast<size_t>(vert.Normal.y));
-				normal = Common::Foundation::Util::HashUtil::HashCombine(normal, static_cast<size_t>(vert.Normal.z));
+				Common::Foundation::Hash normal = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.Normal.x));
+				normal = Common::Foundation::Util::HashUtil::HashCombine(normal, static_cast<Common::Foundation::Hash>(vert.Normal.y));
+				normal = Common::Foundation::Util::HashUtil::HashCombine(normal, static_cast<Common::Foundation::Hash>(vert.Normal.z));
 	
-				size_t texc = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<size_t>(vert.TexCoord.x));
-				texc = Common::Foundation::Util::HashUtil::HashCombine(texc, static_cast<size_t>(vert.TexCoord.y));
+				Common::Foundation::Hash texc = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.TexCoord.x));
+				texc = Common::Foundation::Util::HashUtil::HashCombine(texc, static_cast<Common::Foundation::Hash>(vert.TexCoord.y));
 	
 				return Common::Foundation::Util::HashUtil::HashCombine(Common::Foundation::Util::HashUtil::HashCombine(pos, normal), texc);
 			}

@@ -64,6 +64,18 @@
     <Filter Include="Header Files\Foundation\Mesh">
       <UniqueIdentifier>{63a720fd-ae25-42e7-8815-4adb00da0f9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Shading Files">
+      <UniqueIdentifier>{a73cbafb-ecb5-4c83-8873-391cd778e67b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shading Files">
+      <UniqueIdentifier>{f6c0ddb2-5514-435f-b92d-4d63370db147}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shading Files\Util">
+      <UniqueIdentifier>{d6c19d06-3c21-472b-a8a9-e3b73ad5e72a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shading Files\Util">
+      <UniqueIdentifier>{0ad60dbe-4736-439d-90c5-004ddd9f0a52}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -126,6 +138,18 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Mesh\MeshGeometry.hpp">
       <Filter>Header Files\Foundation\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\HashUtil.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.hpp">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\TaskQueue.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -179,6 +203,18 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Mesh\MeshGeometry.cpp">
       <Filter>Header Files\Foundation\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp">
+      <Filter>Source Files\Shading Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\TaskQueue.cpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -202,5 +238,6 @@
     <None Include="..\..\inc\Render\DX\Foundation\Core\Factory.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
