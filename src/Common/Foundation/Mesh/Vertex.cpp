@@ -1,4 +1,4 @@
-#include "Common/Foundation/Mesh/Vertex.hpp"
+#include "Common/Foundation/Mesh/Vertex.h"
 #include "Common/Foundation/Util/MathUtil.hpp"
 
 BOOL Vertex::operator==(const Vertex& other) const {

@@ -21,6 +21,7 @@
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\ConstantBuffer.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\DepthStencilBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.hpp" />
@@ -28,12 +29,16 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\Factory.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h" />
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Mesh\MeshGeometry.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\Texture.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingConvention.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\d3dx12.h" />
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\GpuResource.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.hpp" />
   </ItemGroup>
@@ -53,10 +58,12 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Factory.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\SwapChain.cpp" />
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Mesh\MeshGeometry.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\GpuResource.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\MeshGeometry.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\Texture.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\GpuResource.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp" />
   </ItemGroup>
@@ -67,8 +74,14 @@
     <None Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\Device.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\Factory.inl" />
-    <None Include="..\..\inc\Render\DX\Foundation\Util\GpuResource.inl" />
+    <None Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.inl" />
+    <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\DrawSkySphere.hlsl">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -96,21 +109,21 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)bin\GameWorld\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\DxDebug\</OutDir>
     <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)bin\GameWorld\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\DxRelease\</OutDir>
     <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -126,6 +139,14 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -144,15 +165,21 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\directxtk12_desktop_2019.2025.3.21.3\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\..\packages\directxtk12_desktop_2019.2025.3.21.3\build\native\directxtk12_desktop_2019.targets')" />
     <Import Project="..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\directxtk12_desktop_2019.2025.3.21.3\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\directxtk12_desktop_2019.2025.3.21.3\build\native\directxtk12_desktop_2019.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets'))" />
   </Target>

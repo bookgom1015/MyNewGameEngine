@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Core/SwapChain.hpp"
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 #include <algorithm>
 
@@ -31,6 +32,9 @@ BOOL DxLowRenderer::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd
 
 	mClientWidth = width;
 	mClientHeight = height;
+
+	CheckReturn(mpLogFile, Foundation::Resource::GpuResource::Initialize(mpLogFile));
+	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::Initialize(mpLogFile));
 
 	CheckReturn(mpLogFile, GetHWInfo());
 	CheckReturn(mpLogFile, InitDirect3D(width, height));

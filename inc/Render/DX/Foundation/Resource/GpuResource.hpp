@@ -14,15 +14,17 @@ namespace Render::DX::Foundation {
 		class Device;
 	}
 
-	namespace Util {
+	namespace Resource {
 		class GpuResource {
 		public:
 			GpuResource() = default;
 			virtual ~GpuResource() = default;
 
 		public:
+			static BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+
+		public:
 			BOOL Initialize(
-				Common::Debug::LogFile* const pLogFile,
 				Core::Device* const pDevice,
 				const D3D12_HEAP_PROPERTIES* const pHeapProp,
 				D3D12_HEAP_FLAGS heapFlag,
@@ -44,8 +46,9 @@ namespace Render::DX::Foundation {
 			__forceinline D3D12_RESOURCE_STATES State() const;
 
 		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+			static Common::Debug::LogFile* mpLogFile;
 
+		private:
 			Microsoft::WRL::ComPtr<ID3D12Resource> mResource;
 
 			D3D12_RESOURCE_STATES mCurrState = D3D12_RESOURCE_STATE_COMMON;

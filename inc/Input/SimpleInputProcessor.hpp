@@ -18,10 +18,12 @@ namespace Input {
 
 	public:
 		InputProcessorAPI virtual LRESULT MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
+
 		InputProcessorAPI virtual void RegisterOnResizeFunc(const OnResizeFunc& func) override;
 
 	private:
 		void OnKeyboardInput(UINT msg, WPARAM wParam, LPARAM lParam);
+		void OnMouseInput(HWND hWnd);
 
 	private:
 		OnResizeFunc mOnResizeFunc;

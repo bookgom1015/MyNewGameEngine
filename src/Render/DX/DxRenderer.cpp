@@ -3,8 +3,9 @@
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
-#include "Render/DX/Foundation/Mesh/MeshGeometry.hpp"
+#include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "FrankLuna/GeometryGenerator.h"
@@ -35,6 +36,7 @@ BOOL DxRenderer::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, U
 	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, hWnd, width, height));
 
 	CheckReturn(mpLogFile, InitShadingObjects());
+	CheckReturn(mpLogFile, BuildFrameResources());
 
 	CheckReturn(mpLogFile, CompileShaders());
 	CheckReturn(mpLogFile, BuildRootSignatures());
@@ -42,6 +44,8 @@ BOOL DxRenderer::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, U
 	CheckReturn(mpLogFile, BuildDescriptors());
 
 	CheckReturn(mpLogFile, BuildSkySphere());
+
+	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
 
 	return TRUE;
 }
@@ -83,12 +87,12 @@ BOOL DxRenderer::CreateDescriptorHeaps() {
 }
 
 BOOL DxRenderer::BuildMeshGeometry(
-		Foundation::Mesh::SubmeshGeometry* const submesh, 
+		Foundation::Resource::SubmeshGeometry* const submesh,
 		const std::vector<Vertex>& vertices, 
 		const std::vector<std::uint16_t>& indices,
 		const std::string& name) {
-	auto geo = std::make_unique<Foundation::Mesh::MeshGeometry>();
-	const auto hash = Foundation::Mesh::MeshGeometry::Hash(geo.get());
+	auto geo = std::make_unique<Foundation::Resource::MeshGeometry>();
+	const auto hash = Foundation::Resource::MeshGeometry::Hash(geo.get());
 
 	const UINT vbByteSize = static_cast<UINT>(vertices.size() * sizeof(Vertex));
 	const UINT ibByteSize = static_cast<UINT>(indices.size() * sizeof(std::uint16_t));
@@ -105,7 +109,6 @@ BOOL DxRenderer::BuildMeshGeometry(
 	const auto cmdList = mCommandObject->DirectCommandList();
 
 	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateDefaultBuffer(
-		mpLogFile,
 		device,
 		cmdList,
 		vertices.data(),
@@ -115,7 +118,6 @@ BOOL DxRenderer::BuildMeshGeometry(
 	);
 
 	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateDefaultBuffer(
-		mpLogFile,
 		device,
 		cmdList,
 		indices.data(),
@@ -145,8 +147,20 @@ BOOL DxRenderer::InitShadingObjects() {
 	{
 		auto initData = Shading::EnvironmentMap::MakeInitData();
 		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
 		initData->ShaderManager = mShaderManager.get();
-		mEnvironmentMap->Initialize(mpLogFile, initData.get());
+		CheckReturn(mpLogFile, mEnvironmentMap->Initialize(mpLogFile, initData.get()));
+		CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(L"./../../../../assets/textures/forest_hdr.dds"));
+	}
+
+	return TRUE;
+}
+
+BOOL DxRenderer::BuildFrameResources() {
+	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; i++) {
+		mFrameResources.push_back(std::make_unique<Foundation::Resource::FrameResource>());
+
+		CheckReturn(mpLogFile, mFrameResources.back()->Initialize(mpLogFile, mDevice.get(), static_cast<UINT>(mProcessor->Logical), 2, 32));
 	}
 
 	return TRUE;
@@ -184,7 +198,7 @@ BOOL DxRenderer::BuildSkySphere() {
 	GeometryGenerator geoGen;
 	GeometryGenerator::MeshData sphere = geoGen.CreateSphere(1.f, 32, 32);
 
-	Foundation::Mesh::SubmeshGeometry sphereSubmesh;
+	Foundation::Resource::SubmeshGeometry sphereSubmesh;
 	sphereSubmesh.StartIndexLocation = 0;
 	sphereSubmesh.BaseVertexLocation = 0;
 

@@ -57,4 +57,9 @@
       <Filter>Common Files\Foundation\Util</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\inc\Common\Input\InputProcessor.inl">
+      <Filter>Common Files\Input</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
+#include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 #include <algorithm>
 

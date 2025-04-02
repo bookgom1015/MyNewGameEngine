@@ -1,7 +1,7 @@
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Factory.hpp"
-#include "Render/DX/Foundation/Util/GpuResource.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 using namespace Render::DX::Foundation::Core;

@@ -1,6 +1,6 @@
-#include "Render/DX/Foundation/Mesh/MeshGeometry.hpp"
+#include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
 
-using namespace Render::DX::Foundation::Mesh;
+using namespace Render::DX::Foundation::Resource;
 
 D3D12_VERTEX_BUFFER_VIEW MeshGeometry::VertexBufferView() const {
 	D3D12_VERTEX_BUFFER_VIEW vbv;
@@ -25,7 +25,7 @@ void MeshGeometry::DisposeUploaders() {
 	IndexBufferUploader = nullptr;
 }
 
-Common::Foundation::Hash Render::DX::Foundation::Mesh::MeshGeometry::Hash(MeshGeometry* ptr) {
-	std::hash<Render::DX::Foundation::Mesh::MeshGeometry*> hasher;
+Common::Foundation::Hash Render::DX::Foundation::Resource::MeshGeometry::Hash(MeshGeometry* ptr) {
+	std::hash<Render::DX::Foundation::Resource::MeshGeometry*> hasher;
 	return hasher(ptr);
 }

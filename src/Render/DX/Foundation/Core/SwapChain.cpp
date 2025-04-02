@@ -2,6 +2,7 @@
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 using namespace Render::DX::Foundation::Core;
@@ -9,7 +10,7 @@ using namespace Render::DX::Foundation::Core;
 SwapChain::SwapChain() {
 	mInitData = {};
 	for (UINT i = 0; i < SwapChainBufferCount; ++i)
-		mSwapChainBuffers[i] = std::make_unique<Util::GpuResource>();
+		mSwapChainBuffers[i] = std::make_unique<Resource::GpuResource>();
 	mhBackBufferCpuSrvs = {};
 	mhBackBufferGpuSrvs = {};
 	mhBackBufferCpuRtvs = {};
@@ -72,7 +73,7 @@ BOOL SwapChain::CreateSwapChain() {
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 	// Note: Swap chain uses queue to perfrom flush.
-	CheckHRESULT(mpLogFile, mInitData.Factory->DxgiFactory()->CreateSwapChain(mInitData.CommandObject->CommandQueue(), &sd, &mSwapChain));
+	CheckReturn(mpLogFile, Util::D3D12Util::CreateSwapChain(mInitData.Factory, mInitData.CommandObject, &sd, &mSwapChain));
 
 	return TRUE;
 }

@@ -11,42 +11,50 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
-namespace Render::DX::Foundation::Core {
-	class Device;
+namespace Render::DX::Foundation {
+	namespace Util {
+		class D3D12Util;
+	}
 
-	class Factory {
-	public:
-		using Adapters = std::vector<std::pair<UINT, IDXGIAdapter*>>;
+	namespace Core {
+		class Device;
 
-	public:
-		Factory() = default;
-		virtual ~Factory() = default;
+		class Factory {
+		private:
+			friend class Util::D3D12Util;
 
-	public:
-		BOOL Initialize(Common::Debug::LogFile* const pLogFile);
-		BOOL SortAdapters();
-		BOOL SelectAdapter(Device* const pDevice);
+		public:
+			using Adapters = std::vector<std::pair<UINT, IDXGIAdapter*>>;
 
-	public:
-		__forceinline IDXGIFactory4* DxgiFactory() const;
-		__forceinline BOOL AllowTearing() const;
+		public:
+			Factory() = default;
+			virtual ~Factory() = default;
 
-	private:
-		BOOL CreateFactory();
+		public:
+			BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+			BOOL SortAdapters();
+			BOOL SelectAdapter(Device* const pDevice);
 
-	private:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		public:
+			__forceinline BOOL AllowTearing() const;
 
-		// Debugging
-		Microsoft::WRL::ComPtr<ID3D12Debug> mDebugController;
+		private:
+			BOOL CreateFactory();
 
-		Microsoft::WRL::ComPtr<IDXGIFactory4> mDxgiFactory;
-		UINT mdxgiFactoryFlags = 0;
+		private:
+			Common::Debug::LogFile* mpLogFile = nullptr;
 
-		BOOL mbAllowTearing = FALSE;
+			// Debugging
+			Microsoft::WRL::ComPtr<ID3D12Debug> mDebugController;
 
-		Adapters mAdapters;
-	};
+			Microsoft::WRL::ComPtr<IDXGIFactory4> mDxgiFactory;
+			UINT mdxgiFactoryFlags = 0;
+
+			BOOL mbAllowTearing = FALSE;
+
+			Adapters mAdapters;
+		};
+	}
 }
 
 #include "Render/DX/Foundation/Core/Factory.inl"

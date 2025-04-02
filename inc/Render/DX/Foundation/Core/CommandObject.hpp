@@ -10,54 +10,64 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
-namespace Render::DX::Foundation::Core {
-	class Device;
+namespace Render::DX::Foundation {
+	namespace Util {
+		class D3D12Util;
+	}
 
-	class CommandObject {
-	public:
-		CommandObject() = default;
-		virtual ~CommandObject() = default;
+	namespace Core {
+		class Device;
 
-	public: // Functions that is called only once
-		BOOL Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads);
+		class CommandObject {
+		private:
+			friend class Util::D3D12Util;
 
-	public: // Functions that is called whenever a renderer calls
-		BOOL FlushCommandQueue();
+		public:
+			CommandObject() = default;
+			virtual ~CommandObject() = default;
 
-		BOOL ExecuteDirectCommandList();
-		BOOL ResetDirectCommandList();
+		public: // Functions that is called only once
+			BOOL Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads);
 
-	private:
-		BOOL CreateDebugObjects();
-		BOOL CreateCommandQueue();
-		BOOL CreateDirectCommandObjects();
-		BOOL CreateMultiCommandObjects(UINT numThreads);
-		BOOL CreateFence();
+		public: // Functions that is called whenever a renderer calls
+			BOOL FlushCommandQueue();
 
-	public:
-		__forceinline ID3D12CommandQueue* CommandQueue() const;
-		__forceinline ID3D12GraphicsCommandList4* DirectCommandList() const;
+			BOOL ExecuteDirectCommandList();
+			BOOL ResetDirectCommandList();
 
-	private:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		private:
+#ifdef _DEBUG
+			BOOL CreateDebugObjects();
+#endif
+			BOOL CreateCommandQueue();
+			BOOL CreateDirectCommandObjects();
+			BOOL CreateMultiCommandObjects(UINT numThreads);
+			BOOL CreateFence();
 
-		Device* mDevice = nullptr;
+		public:
+			__forceinline ID3D12GraphicsCommandList4* DirectCommandList() const;
+
+		private:
+			Common::Debug::LogFile* mpLogFile = nullptr;
+
+			Device* mDevice = nullptr;
 
 #ifdef _DEBUG
-		// Debugging
-		Microsoft::WRL::ComPtr<ID3D12InfoQueue1> mInfoQueue;
-		DWORD mCallbakCookie = 0x01010101;
+			// Debugging
+			Microsoft::WRL::ComPtr<ID3D12InfoQueue1> mInfoQueue;
+			DWORD mCallbakCookie = 0x01010101;
 #endif
 
-		// Command objects
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> mDirectCommandList;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>> mMultiCommandLists;
+			// Command objects
+			Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
+			Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
+			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> mDirectCommandList;
+			std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>> mMultiCommandLists;
 
-		Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
-		UINT64 mCurrentFence = 0;
-	};
+			Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
+			UINT64 mCurrentFence = 0;
+		};
+	}
 }
 
 #include "Render/DX/Foundation/Core/CommandObject.inl"

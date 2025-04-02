@@ -163,9 +163,17 @@ BOOL ShaderManager::BuildPdb(IDxcResult* const result, LPCWSTR fileName) {
 	auto extIdx = fileNameW.rfind(L'.');
 	std::wstring fileNameWithExtW = fileNameW.substr(0, extIdx);
 	fileNameWithExtW.append(L".pdb");
+	auto delimIdx = fileNameWithExtW.rfind(L'\\');
 
-	std::filesystem::path debugDir(fileNameWithExtW);
-	if (!std::filesystem::exists(debugDir)) std::filesystem::create_directory(debugDir);
+	{
+		std::wstring filePathW = fileNameWithExtW.substr(0, delimIdx);
+		filePathW.append(L"\\PDB");
+
+		std::filesystem::path debugDir(filePathW);
+		if (!std::filesystem::exists(debugDir)) std::filesystem::create_directory(debugDir);
+	}
+
+	fileNameWithExtW.insert(delimIdx, L"\\PDB");
 
 	const auto& fileNameA = Common::Foundation::Util::StringUtil::WStringToString(fileNameWithExtW);
 

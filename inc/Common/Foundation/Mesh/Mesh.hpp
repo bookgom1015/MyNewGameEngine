@@ -8,8 +8,8 @@
 
 #include <DirectXMath.h>
 
-#include "Common/Foundation/Mesh/Vertex.hpp"
-#include "Common/Foundation/Mesh/Material.hpp"
+#include "Common/Foundation/Mesh/Vertex.h"
+#include "Common/Foundation/Mesh/Material.h"
 
 namespace Common {
 	namespace Debug {

@@ -1,12 +1,13 @@
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 using namespace Render::DX::Foundation::Core;
 
 DepthStencilBuffer::DepthStencilBuffer() {
 	mInitData = {};
-	mDepthStencilBuffer = std::make_unique<Util::GpuResource>();
+	mDepthStencilBuffer = std::make_unique<Resource::GpuResource>();
 	mhDepthStencilBufferCpuDsv = {};
 }
 
@@ -70,7 +71,6 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 	optClear.DepthStencil.Stencil = 0;
 
 	CheckReturn(mpLogFile, mDepthStencilBuffer->Initialize(
-		mpLogFile,
 		mInitData.Device,
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,

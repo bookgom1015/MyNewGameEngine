@@ -3,7 +3,7 @@
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
 namespace Render::DX::Foundation {
-	namespace Util {
+	namespace Resource {
 		class GpuResource;
 	}
 
@@ -45,7 +45,7 @@ namespace Render::DX::Foundation {
 		private:
 			InitData mInitData;
 
-			std::unique_ptr<Util::GpuResource> mDepthStencilBuffer;
+			std::unique_ptr<Resource::GpuResource> mDepthStencilBuffer;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuDsv;
 		};
 	}

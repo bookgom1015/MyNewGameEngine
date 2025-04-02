@@ -9,8 +9,11 @@ namespace Common::Debug {
 }
 
 namespace Render::DX::Foundation {
-	namespace Util {
+	namespace Resource {
 		class GpuResource;
+	}
+
+	namespace Util {
 		class D3D12Util;
 	}
 
@@ -20,7 +23,7 @@ namespace Render::DX::Foundation {
 		class Device {
 		private:
 			friend class Factory;
-			friend class Util::GpuResource;
+			friend class Resource::GpuResource;
 			friend class Util::D3D12Util;
 
 		public:

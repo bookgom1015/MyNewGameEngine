@@ -23,7 +23,7 @@ struct Vertex {
 	#define VERTEX_IN
 		struct VertexIn {
 			float3 Position : POSITION;
-			float3 Normal : NORMAL;
+			float3 Normal	: NORMAL;
 			float2 TexCoord : TEXCOORD;
 		};
 	#endif

@@ -1,6 +1,7 @@
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
+#include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 using namespace Render::DX::Foundation::Core;
 
@@ -97,12 +98,14 @@ BOOL CommandObject::ResetDirectCommandList() {
 	return TRUE;
 }
 
+#ifdef _DEBUG
 BOOL CommandObject::CreateDebugObjects() {
 	CheckReturn(mpLogFile, mDevice->QueryInterface(mInfoQueue));
 	CheckHRESULT(mpLogFile, mInfoQueue->RegisterMessageCallback(D3D12MessageCallback, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, mpLogFile, &mCallbakCookie));
 
 	return TRUE;
 }
+#endif
 
 BOOL CommandObject::CreateCommandQueue() {
 	CheckReturn(mpLogFile, mDevice->CreateCommandQueue(mCommandQueue));

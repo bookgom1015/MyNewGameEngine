@@ -1,12 +1,22 @@
 #pragma once
 
-#include <string>
+#ifdef _HLSL
+	struct Material {
+		float4 Albedo;
+		float3 FresnelR0;
+		float  Shininess;
+		float  Metalic;
+	};
+#else
+	#include <string>
 
-#include <Windows.h>
+	#include <Windows.h>
 
-#include <DirectXMath.h>
+	#include <DirectXMath.h>
+#endif // _HLSL
 
 namespace Common::Foundation::Mesh {
+#ifndef _HLSL
 	struct Material {
 		std::string Name;
 
@@ -27,4 +37,5 @@ namespace Common::Foundation::Mesh {
 		std::string SpecularMap;
 		DirectX::XMFLOAT3 Specular = { 0.08f, 0.08f, 0.08f };
 	};
+#endif // _HLSL
 }

@@ -8,9 +8,9 @@
 #include <dxgi1_6.h>
 
 #include "Common/Debug/Logger.hpp"
-#include "Render/DX/Foundation/Util/d3dx12.h"
-#include "Render/DX/Foundation/Util/GpuResource.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
+#include "Render/DX/Foundation/Util/d3dx12.h"
 #include "Render/DX/Foundation/HlslCompaction.h"
 
 namespace Render::DX::Foundation {

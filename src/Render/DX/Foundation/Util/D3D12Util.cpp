@@ -1,15 +1,54 @@
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
-#include "Render/DX/Foundation/Util/GpuResource.hpp"
+#include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
+#include "Render/DX/Foundation/Resource/Texture.hpp"
 
 #include <vector>
 
+#include <DDSTextureLoader.h>
+#include <ResourceUploadBatch.h>
+
 using namespace Render::DX::Foundation::Util;
 using namespace Microsoft::WRL;
+using namespace DirectX;
+
+Common::Debug::LogFile* D3D12Util::mpLogFile = nullptr;
+
+BOOL D3D12Util::Initialize(Common::Debug::LogFile* const pLogFile) {
+	mpLogFile = pLogFile;
+
+	return TRUE;
+}
+
+BOOL D3D12Util::CreateSwapChain(
+		Core::Factory* const pFactory,
+		Core::CommandObject* const pCmdObject,
+		DXGI_SWAP_CHAIN_DESC* pDesc,
+		IDXGISwapChain** ppSwapChain) {
+	CheckHRESULT(mpLogFile, pFactory->mDxgiFactory->CreateSwapChain(pCmdObject->mCommandQueue.Get(), pDesc, ppSwapChain));
+
+	return TRUE;
+}
+
+BOOL D3D12Util::CalcConstantBufferByteSize(UINT byteSize) {
+	// Constant buffers must be a multiple of the minimum hardware
+	// allocation size (usually 256 bytes).  So round up to nearest
+	// multiple of 256.  We do this by adding 255 and then masking off
+	// the lower 2 bytes which store all bits < 256.
+	// Example: Suppose byteSize = 300.
+	// (300 + 255) & ~255
+	// 555 & ~255
+	// 0x022B & ~0x00ff
+	// 0x022B & 0xff00
+	// 0x0200
+	// 512
+	return (byteSize + 255) & ~255;
+}
 
 BOOL D3D12Util::CreateDefaultBuffer(
-		Common::Debug::LogFile* const pLogFile,
 		Core::Device* const pDevice,
 		ID3D12GraphicsCommandList4* const cmdList,
 		const void* const pInitData,
@@ -17,7 +56,7 @@ BOOL D3D12Util::CreateDefaultBuffer(
 		ComPtr<ID3D12Resource>& uploadBuffer,
 		ComPtr<ID3D12Resource>& defaultBuffer) {
 	// Create the actual default buffer resource.
-	CheckHRESULT(pLogFile, pDevice->md3dDevice->CreateCommittedResource(
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
@@ -28,7 +67,7 @@ BOOL D3D12Util::CreateDefaultBuffer(
 
 	// In order to copy CPU memory data into our default buffer, we need to create
 	// an intermediate upload heap. 
-	CheckHRESULT(pLogFile, pDevice->md3dDevice->CreateCommittedResource(
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
@@ -61,6 +100,29 @@ BOOL D3D12Util::CreateDefaultBuffer(
 	return TRUE;
 }
 
+BOOL D3D12Util::CreateUploadBuffer(
+		Core::Device* const pDevice,
+		UINT64 byteSize,
+		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer) {
+	if (FAILED(
+		pDevice->md3dDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&uploadBuffer)))) return FALSE;
+	return TRUE;
+}
+
+void D3D12Util::Transite(
+		Core::CommandObject* const pCmdObect,
+		ID3D12Resource* const pResource,
+		D3D12_RESOURCE_STATES stateBefore,
+		D3D12_RESOURCE_STATES stateAfter) {
+	pCmdObect->mDirectCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pResource, stateBefore, stateAfter));
+}
+
 void D3D12Util::UavBarrier(ID3D12GraphicsCommandList* const pCmdList, ID3D12Resource* pResource) {
 	D3D12_RESOURCE_BARRIER uavBarrier;
 	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
@@ -81,7 +143,7 @@ void D3D12Util::UavBarriers(ID3D12GraphicsCommandList* const pCmdList, ID3D12Res
 	pCmdList->ResourceBarrier(static_cast<UINT>(uavBarriers.size()), uavBarriers.data());
 }
 
-void D3D12Util::UavBarrier(ID3D12GraphicsCommandList* const pCmdList, GpuResource* pResource) {
+void D3D12Util::UavBarrier(ID3D12GraphicsCommandList* const pCmdList, Resource::GpuResource* pResource) {
 	D3D12_RESOURCE_BARRIER uavBarrier;
 	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
 	uavBarrier.UAV.pResource = pResource->Resource();
@@ -89,7 +151,7 @@ void D3D12Util::UavBarrier(ID3D12GraphicsCommandList* const pCmdList, GpuResourc
 	pCmdList->ResourceBarrier(1, &uavBarrier);
 }
 
-void D3D12Util::UavBarriers(ID3D12GraphicsCommandList* const pCmdList, GpuResource* pResources[], UINT length) {
+void D3D12Util::UavBarriers(ID3D12GraphicsCommandList* const pCmdList, Resource::GpuResource* pResources[], UINT length) {
 	std::vector<D3D12_RESOURCE_BARRIER> uavBarriers;
 	for (UINT i = 0; i < length; ++i) {
 		D3D12_RESOURCE_BARRIER uavBarrier;
@@ -123,4 +185,31 @@ void D3D12Util::CreateDepthStencilView(
 		const D3D12_DEPTH_STENCIL_VIEW_DESC* const pDesc,
 		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
 	pDevice->md3dDevice->CreateDepthStencilView(pResource, pDesc, destDescriptor);
+}
+
+BOOL D3D12Util::CreateTexture(
+		Core::Device* const pDevice, 
+		Core::CommandObject* const pCmdObject, 
+		Resource::Texture* const pTexture, 
+		LPCWSTR filePath) {
+	ResourceUploadBatch resourceUpload(pDevice->md3dDevice.Get());
+	resourceUpload.Begin();
+	
+	const HRESULT status = DirectX::CreateDDSTextureFromFile(
+		pDevice->md3dDevice.Get(),
+		resourceUpload,
+		filePath,
+		pTexture->Resource.ReleaseAndGetAddressOf()
+	);
+	
+	auto finished = resourceUpload.End(pCmdObject->mCommandQueue.Get());
+	finished.wait();
+	
+	if (FAILED(status)) {
+		std::wstringstream wsstream;
+		wsstream << L"Returned 0x" << std::hex << status << L"; when creating texture:  " << filePath;
+		ReturnFalse(mpLogFile, wsstream.str());
+	}
+
+	return TRUE;
 }

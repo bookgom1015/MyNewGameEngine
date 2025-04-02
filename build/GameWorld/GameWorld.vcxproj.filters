@@ -60,10 +60,10 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp">
       <Filter>Common Files\Foundation\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.hpp">
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h">
       <Filter>Common Files\Foundation\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.hpp">
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.h">
       <Filter>Common Files\Foundation\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Util\MathUtil.hpp">
@@ -103,9 +103,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp">
       <Filter>Common Files\Foundation\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Material.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Util\MathUtil.cpp">
       <Filter>Common Files\Foundation\Util</Filter>

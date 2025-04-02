@@ -3,8 +3,15 @@
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
 namespace Render::DX {
-	namespace Foundation::Core {
-		class Device;
+	namespace Foundation {
+		namespace Core {
+			class Device;
+			class CommandObject;
+		}
+
+		namespace Resource {
+			class GpuResource;
+		}
 	}
 
 	namespace Shading {
@@ -15,14 +22,15 @@ namespace Render::DX {
 		class EnvironmentMap : public Render::DX::Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Foundation::Core::Device* Device   = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
+				Foundation::Core::Device* Device			   = nullptr;
+				Foundation::Core::CommandObject* CommandObject = nullptr;
+				Util::ShaderManager* ShaderManager			   = nullptr;
 			};
 
 			using InitDataPtr = std::unique_ptr<InitData>;
 
 		public:
-			EnvironmentMap() = default;
+			EnvironmentMap();
 			virtual ~EnvironmentMap() = default;
 
 		public:
@@ -41,8 +49,13 @@ namespace Render::DX {
 			virtual BOOL BuildPipelineStates() override;
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 
+		public:
+			BOOL SetEnvironmentMap(LPCWSTR filePath);
+
 		private:
 			InitData mInitData;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mEquirectangularMap;
 		};
 	}
 }

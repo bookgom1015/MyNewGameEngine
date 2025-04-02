@@ -61,9 +61,6 @@
     <Filter Include="External Files\FrankLuna">
       <UniqueIdentifier>{e3a671b2-65f0-48ea-bc5f-bf1c58409e69}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Foundation\Mesh">
-      <UniqueIdentifier>{63a720fd-ae25-42e7-8815-4adb00da0f9f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Shading Files">
       <UniqueIdentifier>{a73cbafb-ecb5-4c83-8873-391cd778e67b}</UniqueIdentifier>
     </Filter>
@@ -75,6 +72,15 @@
     </Filter>
     <Filter Include="Source Files\Shading Files\Util">
       <UniqueIdentifier>{0ad60dbe-4736-439d-90c5-004ddd9f0a52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Foundation\Resource">
+      <UniqueIdentifier>{63a720fd-ae25-42e7-8815-4adb00da0f9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Foundation\Resource">
+      <UniqueIdentifier>{3d9cafab-43d2-47e3-a4cd-fe4d2ba78e26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Environment">
+      <UniqueIdentifier>{9598fff4-ed53-4205-bf52-c04850fb9d40}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -111,9 +117,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\d3dx12.h">
       <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\GpuResource.hpp">
-      <Filter>Header Files\Foundation\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.hpp">
       <Filter>Header Files\Foundation\Core</Filter>
     </ClInclude>
@@ -135,9 +138,6 @@
     <ClInclude Include="..\..\externs\FrankLuna\GeometryGenerator.h">
       <Filter>External Files\FrankLuna</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Mesh\MeshGeometry.hpp">
-      <Filter>Header Files\Foundation\Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Util\HashUtil.hpp">
       <Filter>Common Files\Foundation\Util</Filter>
     </ClInclude>
@@ -149,6 +149,27 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Util\TaskQueue.hpp">
       <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\Texture.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\ConstantBuffer.h">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h">
+      <Filter>Header Files\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -191,17 +212,11 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp">
       <Filter>Source Files\Foundation\Util</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\GpuResource.cpp">
-      <Filter>Source Files\Foundation\Util</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp">
       <Filter>External Files\FrankLuna</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp">
       <Filter>Source Files\Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Mesh\MeshGeometry.cpp">
-      <Filter>Header Files\Foundation\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp">
       <Filter>Common Files\Foundation\Util</Filter>
@@ -215,6 +230,18 @@
     <ClCompile Include="..\..\src\Common\Foundation\Util\TaskQueue.cpp">
       <Filter>Common Files\Foundation\Util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\GpuResource.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\MeshGeometry.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\Texture.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -222,9 +249,6 @@
     </None>
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli">
       <Filter>Shader Files\Foundation</Filter>
-    </None>
-    <None Include="..\..\inc\Render\DX\Foundation\Util\GpuResource.inl">
-      <Filter>Header Files\Foundation\Util</Filter>
     </None>
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl">
       <Filter>Header Files\Foundation\Core</Filter>
@@ -238,6 +262,15 @@
     <None Include="..\..\inc\Render\DX\Foundation\Core\Factory.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.inl">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </None>
     <None Include="packages.config" />
+    <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\DrawSkySphere.hlsl">
+      <Filter>Shader Files\Environment</Filter>
+    </None>
   </ItemGroup>
 </Project>

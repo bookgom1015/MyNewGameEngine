@@ -243,8 +243,9 @@ BOOL GameWorld::ProcessInput() {
 		mInputCV.wait(lock, [&] { return (mStage == ProcessingStage::E_InputReady) || mInputProcessor->Destroying(); });
 		if (mInputProcessor->Destroying()) break;
 
-		++InputFrameCount;
+		//
 
+		++InputFrameCount;
 		mStage = ProcessingStage::E_InputFinished;
 	}
 
@@ -257,8 +258,9 @@ BOOL GameWorld::Update() {
 		mUpdateCV.wait(lock, [&] { return (mStage == ProcessingStage::E_UpdateReady) || mInputProcessor->Destroying(); });
 		if (mInputProcessor->Destroying()) break;
 
-		++UpdateFrameCount;
+		//
 
+		++UpdateFrameCount;
 		mStage = ProcessingStage::E_UpdateFinished;
 	}
 
@@ -271,8 +273,9 @@ BOOL GameWorld::Draw() {
 		mDrawCV.wait(lock, [&] { return (mStage == ProcessingStage::E_DrawReady) || mInputProcessor->Destroying(); });
 		if (mInputProcessor->Destroying()) break;
 
-		++DrawFrameCount;
+		// 
 
+		++DrawFrameCount;
 		mStage = ProcessingStage::E_DrawFinished;
 	}
 

@@ -1,6 +1,6 @@
 #include "Common/Foundation/Mesh/Mesh.hpp"
 #include "Common/Debug/Logger.hpp"
-#include "Common/Foundation/Mesh/Material.hpp"
+#include "Common/Foundation/Mesh/Material.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tinyobjloader/tiny_obj_loader.h"

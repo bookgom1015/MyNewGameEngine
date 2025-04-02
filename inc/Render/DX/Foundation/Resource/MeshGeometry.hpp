@@ -11,7 +11,7 @@
 
 #include "Common/Foundation/Util/HashUtil.hpp"
 
-namespace Render::DX::Foundation::Mesh {
+namespace Render::DX::Foundation::Resource {
 	struct SubmeshGeometry {
 		UINT IndexCount			= 0;
 		UINT StartIndexLocation = 0;
@@ -47,8 +47,8 @@ namespace Render::DX::Foundation::Mesh {
 
 namespace std {
 	template <>
-	struct hash<Render::DX::Foundation::Mesh::MeshGeometry*> {
-		Common::Foundation::Hash operator()(const Render::DX::Foundation::Mesh::MeshGeometry* const ptr) const {
+	struct hash<Render::DX::Foundation::Resource::MeshGeometry*> {
+		Common::Foundation::Hash operator()(const Render::DX::Foundation::Resource::MeshGeometry* const ptr) const {
 			uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
 			return Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(addr));
 		}

@@ -36,12 +36,12 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		CheckReturn(logFile, gw.RunLoop());
 		gw.CleanUp();
 
-		WLogln(logFile, L"GameWorld successfully shotdowned");
+		WLogln(logFile, L"Game successfully shotdowned");
 
 		return 0;
 	}
 	catch (std::exception& e) {
-		Logln(logFile, "GameWorld catched exception: ", e.what());
+		Logln(logFile, "Game catched exception: ", e.what());
 		return -1;
 	}
 	

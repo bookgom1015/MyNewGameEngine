@@ -9,9 +9,11 @@ namespace Render {
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace DX {
-		namespace Foundation::Mesh {
+		namespace Foundation::Resource {
 			struct MeshGeometry;
 			struct SubmeshGeometry;
+
+			class FrameResource;
 		}
 
 		namespace Shading {
@@ -47,13 +49,14 @@ namespace Render {
 
 		private:
 			BOOL BuildMeshGeometry(
-				Foundation::Mesh::SubmeshGeometry* const submesh, 
+				Foundation::Resource::SubmeshGeometry* const submesh,
 				const std::vector<Vertex>& vertices, 
 				const std::vector<std::uint16_t>& indices,
 				const std::string& name);
 
 		private: // Functions that is called only once in Initialize
 			BOOL InitShadingObjects();
+			BOOL BuildFrameResources();
 			BOOL CompileShaders();
 			BOOL BuildRootSignatures();
 			BOOL BuildPipelineStates();
@@ -62,7 +65,10 @@ namespace Render {
 			BOOL BuildSkySphere();
 
 		private:
-			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Mesh::MeshGeometry>> mMeshGeometries;
+			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries;
+
+			// Frame resource
+			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources;
 
 			// Shading objects
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
