@@ -33,7 +33,7 @@
     <ClCompile Include="..\..\src\Common\Input\InputProcessor.cpp">
       <Filter>Common Files\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Input\SimpleProcessor.cpp">
+    <ClCompile Include="..\..\src\Input\SimpleInputProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">

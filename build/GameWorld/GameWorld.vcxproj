@@ -170,6 +170,7 @@
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\GameTimer.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h" />
@@ -184,6 +185,7 @@
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\GameTimer.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Mesh.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp" />
@@ -195,6 +197,7 @@
     <ClCompile Include="..\..\src\GameWorld\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Foundation\Util\MathUtil.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

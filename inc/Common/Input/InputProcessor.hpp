@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include <Windows.h>
 
 #include <DirectXMath.h>
@@ -96,30 +94,16 @@ namespace Common::Input {
 
 	class InputProcessor {
 	public:
-		using OnResizeFunc = std::function<void(UINT width, UINT height)>;
-
-	public:
-		__forceinline constexpr BOOL AppPaused() const;
-		__forceinline constexpr BOOL Minimized() const;
-		__forceinline constexpr BOOL Maximized() const;
-		__forceinline constexpr BOOL Resizing() const;
-		__forceinline constexpr BOOL Fullscreen() const;
-		__forceinline constexpr BOOL Destroying() const;
-
-	public:
 		InputProcessorAPI virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile);
 		InputProcessorAPI virtual void CleanUp() = 0;
-
+				
 	public:
-		InputProcessorAPI virtual LRESULT MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
+		InputProcessorAPI virtual void SetCursorVisibility(BOOL visible);
+		InputProcessorAPI virtual void SetMouseMode(MouseState::MouseModes mode);
+		InputProcessorAPI virtual void IgnoreMouseInput();
 
-		InputProcessorAPI virtual void RegisterOnResizeFunc(const OnResizeFunc& func) = 0;
-		InputProcessorAPI virtual void Halt();
-
-	public:
-		InputProcessorAPI void virtual SetCursorVisibility(BOOL visible);
-		InputProcessorAPI void virtual SetMouseMode(MouseState::MouseModes mode);
-		InputProcessorAPI void virtual IgnoreMouseInput();
+		InputProcessorAPI virtual void OnKeyboardInput(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
+		InputProcessorAPI virtual void OnMouseInput(HWND hWnd) = 0;
 
 	protected:
 		void SetMousePosition(FLOAT x, FLOAT y);
@@ -132,13 +116,6 @@ namespace Common::Input {
 
 	protected:
 		Common::Debug::LogFile* mpLogFile = nullptr;
-
-		BOOL	  bAppPaused	   = FALSE; // Is the application paused?
-		BOOL	  bMinimized	   = FALSE; // Is the application minimized?
-		BOOL	  bMaximized	   = FALSE; // Is the application maximized?
-		BOOL	  bResizing		   = FALSE; // Are the resize bars being dragged?
-		BOOL	  bFullscreenState = FALSE; // Fullscreen enabled 
-		BOOL	  bDestroying	   = FALSE;
 
 		InputState mInputState;
 	};

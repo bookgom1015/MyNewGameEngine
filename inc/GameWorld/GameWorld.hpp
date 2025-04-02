@@ -12,6 +12,7 @@ namespace Common {
 	}
 
 	namespace Foundation::Core {
+		class WindowsManager;
 		class GameTimer;
 	}
 
@@ -40,13 +41,16 @@ public:
 	virtual ~GameWorld();
 
 public:
-	BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+	__forceinline Common::Input::InputProcessor* InputProcessor() const;
+
+public:
+	BOOL Initialize(Common::Debug::LogFile* const pLogFile, HINSTANCE hInstance);
 	BOOL RunLoop();
 	void CleanUp();
 
 private: // Functions that is called only once
-	BOOL CreateMainWindow();
-	BOOL GetHWInfo();
+	BOOL BuildHWInfo();
+	BOOL InitialWindowsManager(HINSTANCE hInstance);
 	BOOL CreateRenderer();
 	BOOL CreateInputProcessor();
 
@@ -62,9 +66,6 @@ public:
 	static GameWorld* spGameWorld;
 
 private:
-	// Variables which is associated with main window
-	HINSTANCE mhInst			= NULL;		// Application instance handle
-	HWND	  mhMainWnd			= NULL;		// Main window handle
 	BOOL	  bInitialized		= FALSE;
 
 	Common::Debug::LogFile* mpLogFile = nullptr;
@@ -77,13 +78,19 @@ private:
 	std::condition_variable mUpdateCV;
 	std::condition_variable mDrawCV;
 
+	// Windows
+	std::unique_ptr<Common::Foundation::Core::WindowsManager> mWindowsManager;
+
 	// Renderer
 	std::unique_ptr<Common::Render::Renderer> mRenderer;
 
 	// Timer
 	std::unique_ptr<Common::Foundation::Core::GameTimer> mGameTimer;
 
-public:
 	// Input processor
 	std::unique_ptr<Common::Input::InputProcessor> mInputProcessor;
 };
+
+Common::Input::InputProcessor* GameWorld::InputProcessor() const {
+	return mInputProcessor.get();
+}

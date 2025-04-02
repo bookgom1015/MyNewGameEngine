@@ -1,19 +1,14 @@
 #include "GameWorld/GameWorld.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Core/GameTimer.hpp"
 #include "Common/Render/Renderer.hpp"
 #include "Common/Input/InputProcessor.hpp"
 
 namespace {
-	LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-		// Forward hwnd on because we can get messages (e.g., WM_CREATE)
-		// before CreateWindow returns, and thus before mhMainWnd is valid
-		return GameWorld::spGameWorld->mInputProcessor->MsgProc(hwnd, msg, wParam, lParam);
-	}
-
-	UINT InitClientWidth = 1280;
-	UINT InitClientHeight = 720;
+	const UINT InitClientWidth = 1280;
+	const UINT InitClientHeight = 720;
 
 	UINT InputFrameCount  = 0;
 	UINT UpdateFrameCount = 0;
@@ -31,6 +26,7 @@ GameWorld* GameWorld::spGameWorld = nullptr;
 GameWorld::GameWorld() {
 	spGameWorld = this;
 
+	mWindowsManager = std::make_unique<Common::Foundation::Core::WindowsManager>();
 	mGameTimer = std::make_unique<Common::Foundation::Core::GameTimer>();
 }
 
@@ -38,13 +34,16 @@ GameWorld::~GameWorld() {
 	CleanUp();
 }
 
-BOOL GameWorld::Initialize(Common::Debug::LogFile* const pLogFile) {
+BOOL GameWorld::Initialize(Common::Debug::LogFile* const pLogFile, HINSTANCE hInstance) {
 	mpLogFile = pLogFile;
 
-	CheckReturn(mpLogFile, GetHWInfo());
+	CheckReturn(mpLogFile, BuildHWInfo());
+	CheckReturn(mpLogFile, InitialWindowsManager(hInstance));
 	CheckReturn(mpLogFile, CreateInputProcessor());
-	CheckReturn(mpLogFile, CreateMainWindow());
 	CheckReturn(mpLogFile, CreateRenderer());
+
+	mWindowsManager->RegisterOnResizeFunc(std::bind(&GameWorld::OnResize, this, std::placeholders::_1, std::placeholders::_2));
+	mWindowsManager->RegisterInputProcessor(mInputProcessor.get());
 
 	mGameTimer->SetFrameTimeLimit(Common::Foundation::Core::GameTimer::FrameTimeLimits::E_60f);
 
@@ -114,9 +113,9 @@ BOOL GameWorld::RunLoop() {
 		thread.join();
 
 #ifdef _DEBUG
-	WLogln(mpLogFile, L"Input Frame Count: \t\t", std::to_wstring(InputFrameCount));
-	WLogln(mpLogFile, L"Updpate Frame Count: \t", std::to_wstring(UpdateFrameCount));
-	WLogln(mpLogFile, L"Draw Frame Count: \t\t", std::to_wstring(DrawFrameCount));
+	WLogln(mpLogFile, L"Input Frame Count: ", std::to_wstring(InputFrameCount));
+	WLogln(mpLogFile, L"Updpate Frame Count: ", std::to_wstring(UpdateFrameCount));
+	WLogln(mpLogFile, L"Draw Frame Count: ", std::to_wstring(DrawFrameCount));
 #endif
 
 	return TRUE;
@@ -124,47 +123,7 @@ BOOL GameWorld::RunLoop() {
 
 void GameWorld::CleanUp() {}
 
-BOOL GameWorld::CreateMainWindow() {
-	WNDCLASS wc;
-	wc.style		 = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc	 = MainWndProc;
-	wc.cbClsExtra	 = 0;
-	wc.cbWndExtra	 = 0;
-	wc.hInstance	 = mhInst;
-	wc.hIcon		 = LoadIcon(0, IDI_APPLICATION);
-	wc.hCursor		 = LoadCursor(0, IDC_ARROW);
-	wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(DKGRAY_BRUSH));
-	wc.lpszMenuName	 = 0;
-	wc.lpszClassName = L"MyNewGameEngine";
-	if (!RegisterClass(&wc)) ReturnFalse(mpLogFile, L"Failed to register the window class");
-	
-	// Compute window rectangle dimensions based on requested client area dimensions.
-	RECT R = { 0, 0, static_cast<LONG>(InitClientWidth), static_cast<LONG>(InitClientHeight) };
-	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, FALSE);
-	INT width  = R.right - R.left;
-	INT height = R.bottom - R.top;
-	
-	INT outputWidth  = GetSystemMetrics(SM_CXSCREEN);
-	INT outputHeight = GetSystemMetrics(SM_CYSCREEN);
-
-	INT clientPosX = static_cast<INT>((outputWidth  - InitClientWidth)  * 0.5f);
-	INT clientPosY = static_cast<INT>((outputHeight - InitClientHeight) * 0.5f);
-	
-	mhMainWnd = CreateWindow(
-		L"MyNewGameEngine", L"MyNewGameEngine",
-		WS_OVERLAPPEDWINDOW,
-		clientPosX, clientPosY,
-		width, height,
-		0, 0, mhInst, 0);
-	if (!mhMainWnd) ReturnFalse(mpLogFile, L"Failed to create the window");
-	
-	ShowWindow(mhMainWnd, SW_SHOW);
-	UpdateWindow(mhMainWnd);
-	
-	return TRUE;
-}
-
-BOOL GameWorld::GetHWInfo() {
+BOOL GameWorld::BuildHWInfo() {
 	Common::Foundation::Core::Processor processor;
 	Common::Foundation::Core::HWInfo::ProcessorInfo(mpLogFile, processor);
 
@@ -196,6 +155,12 @@ BOOL GameWorld::GetHWInfo() {
 	return TRUE;
 }
 
+BOOL GameWorld::InitialWindowsManager(HINSTANCE hInstance) {
+	CheckReturn(mpLogFile, mWindowsManager->Initialize(mpLogFile, hInstance, InitClientWidth, InitClientHeight));
+
+	return TRUE;
+}
+
 BOOL GameWorld::CreateRenderer() {
 	const auto hRendererDLL = LoadLibraryW(L"Renderer.dll");
 	if (!hRendererDLL) ReturnFalse(mpLogFile, L"Failed to load Renderer.dll");
@@ -205,7 +170,7 @@ BOOL GameWorld::CreateRenderer() {
 	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
 
 	mRenderer = std::unique_ptr<Common::Render::Renderer>(createFunc());
-	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mhMainWnd, InitClientWidth, InitClientHeight));
+	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager->MainWindowHandle(), InitClientWidth, InitClientHeight));
 
 	return TRUE;
 }
@@ -221,8 +186,6 @@ BOOL GameWorld::CreateInputProcessor() {
 	mInputProcessor = std::unique_ptr<Common::Input::InputProcessor>(createFunc());
 	CheckReturn(mpLogFile, mInputProcessor->Initialize(mpLogFile));
 
-	mInputProcessor->RegisterOnResizeFunc(std::bind(&GameWorld::OnResize, this, std::placeholders::_1, std::placeholders::_2));
-
 	return TRUE;
 }
 
@@ -230,7 +193,7 @@ void GameWorld::OnResize(UINT width, UINT height) {
 	if (!bInitialized) return;
 	if (!mRenderer->OnResize(width, height)) {
 		WLogln(mpLogFile, L"Resizing failed");
-		mInputProcessor->Halt();
+		mWindowsManager->DestroyWindow();
 	}
 #ifdef _DEBUG
 	std::cout << "Resized (Width: " << width << " Height: " << height << ")" << std::endl;
@@ -238,10 +201,10 @@ void GameWorld::OnResize(UINT width, UINT height) {
 }
 
 BOOL GameWorld::ProcessInput() {
-	while (!mInputProcessor->Destroying()) {
+	while (!mWindowsManager->Destroyed()) {
 		std::unique_lock<std::mutex> lock(mStageMutex);
-		mInputCV.wait(lock, [&] { return (mStage == ProcessingStage::E_InputReady) || mInputProcessor->Destroying(); });
-		if (mInputProcessor->Destroying()) break;
+		mInputCV.wait(lock, [&] { return (mStage == ProcessingStage::E_InputReady) || mWindowsManager->Destroyed(); });
+		if (mWindowsManager->Destroyed()) break;
 
 		//
 
@@ -253,10 +216,10 @@ BOOL GameWorld::ProcessInput() {
 }
 
 BOOL GameWorld::Update() {
-	while (!mInputProcessor->Destroying()) {
+	while (!mWindowsManager->Destroyed()) {
 		std::unique_lock<std::mutex> lock(mStageMutex);
-		mUpdateCV.wait(lock, [&] { return (mStage == ProcessingStage::E_UpdateReady) || mInputProcessor->Destroying(); });
-		if (mInputProcessor->Destroying()) break;
+		mUpdateCV.wait(lock, [&] { return (mStage == ProcessingStage::E_UpdateReady) || mWindowsManager->Destroyed(); });
+		if (mWindowsManager->Destroyed()) break;
 
 		//
 
@@ -268,10 +231,10 @@ BOOL GameWorld::Update() {
 }
 
 BOOL GameWorld::Draw() {
-	while (!mInputProcessor->Destroying()) {
+	while (!mWindowsManager->Destroyed()) {
 		std::unique_lock<std::mutex> lock(mStageMutex);
-		mDrawCV.wait(lock, [&] { return (mStage == ProcessingStage::E_DrawReady) || mInputProcessor->Destroying(); });
-		if (mInputProcessor->Destroying()) break;
+		mDrawCV.wait(lock, [&] { return (mStage == ProcessingStage::E_DrawReady) || mWindowsManager->Destroyed(); });
+		if (mWindowsManager->Destroyed()) break;
 
 		// 
 

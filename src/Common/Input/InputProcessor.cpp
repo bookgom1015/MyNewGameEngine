@@ -49,11 +49,6 @@ BOOL InputProcessor::Initialize(Common::Debug::LogFile* const pLogFile) {
 	return TRUE;
 }
 
-void InputProcessor::Halt() {
-	bDestroying = TRUE;
-	PostQuitMessage(0);
-}
-
 void InputProcessor::SetCursorVisibility(BOOL visible) {
 	ShowCursor(visible);
 }

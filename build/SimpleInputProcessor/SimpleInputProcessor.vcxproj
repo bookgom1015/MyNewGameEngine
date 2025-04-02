@@ -274,7 +274,7 @@
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Input\InputProcessor.cpp" />
-    <ClCompile Include="..\..\src\Input\SimpleProcessor.cpp" />
+    <ClCompile Include="..\..\src\Input\SimpleInputProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Input\InputProcessor.inl" />

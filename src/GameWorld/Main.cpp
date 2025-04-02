@@ -32,7 +32,7 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	try {
 		GameWorld gw;
 		
-		CheckReturn(logFile, gw.Initialize(logFile));
+		CheckReturn(logFile, gw.Initialize(logFile, hInstance));
 		CheckReturn(logFile, gw.RunLoop());
 		gw.CleanUp();
 

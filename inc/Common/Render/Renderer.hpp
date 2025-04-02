@@ -39,6 +39,7 @@ namespace Common {
 			__forceinline constexpr BOOL IsShadowEnabled() const;
 
 		protected:
+			BOOL mbRaytracingSupported = FALSE;
 			BOOL mbShadowEnabled = TRUE;
 		};
 	}

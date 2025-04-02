@@ -16,17 +16,8 @@ namespace Input {
 		InputProcessorAPI virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile) override;
 		InputProcessorAPI virtual void CleanUp() override;
 
-	public:
-		InputProcessorAPI virtual LRESULT MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
-
-		InputProcessorAPI virtual void RegisterOnResizeFunc(const OnResizeFunc& func) override;
-
 	private:
-		void OnKeyboardInput(UINT msg, WPARAM wParam, LPARAM lParam);
-		void OnMouseInput(HWND hWnd);
-
-	private:
-		OnResizeFunc mOnResizeFunc;
-		BOOL bRegisteredOnResizeFunc = FALSE;
+		InputProcessorAPI virtual void OnKeyboardInput(UINT msg, WPARAM wParam, LPARAM lParam) override;
+		InputProcessorAPI virtual void OnMouseInput(HWND hWnd) override;
 	};
 }
