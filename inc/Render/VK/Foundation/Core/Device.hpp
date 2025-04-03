@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #ifndef VK_USE_PLATFORM_WIN32_KHR
 	#define VK_USE_PLATFORM_WIN32_KHR
 #endif
@@ -23,8 +26,12 @@ namespace Render::VK::Foundation::Core {
 		__forceinline VkPhysicalDevice PhysicalDevice() const;
 		__forceinline VkDevice LogicalDevice() const;
 
+	public:
+		BOOL SortPhysicalDevices();
+		BOOL GetPhysicalDevices(std::vector<std::wstring>& physicalDevices);
+		BOOL SelectPhysicalDevices(UINT selectedPhysicalDeviceIndex, BOOL& bRaytracingSupported);
+
 	private:
-		BOOL SelectPhysicalDevice();
 		BOOL CreateLogicalDevice();
 
 	private:
@@ -32,6 +39,8 @@ namespace Render::VK::Foundation::Core {
 
 		VkInstance mInstance;
 		VkSurfaceKHR mSurface;
+
+		std::vector<std::pair<INT, VkPhysicalDevice>> mCandidates;
 
 		VkPhysicalDevice mPhysicalDevice;
 		VkDevice mDevice;

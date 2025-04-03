@@ -2,6 +2,8 @@
 
 #include <functional>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <Windows.h>
 
@@ -18,8 +20,9 @@ namespace Common {
 		class WindowsManager {
 		public:
 			struct SelectDialogInitData {
-				HINSTANCE Instance;
-				std::vector<LPCWSTR> Items;
+				HINSTANCE InstanceHandle;
+				std::vector<std::wstring> Items;
+				UINT SelectedItemIndex;
 			};
 
 			using OnResizeFunc = std::function<void(UINT, UINT)>;
@@ -44,6 +47,10 @@ namespace Common {
 			__forceinline constexpr HWND MainWindowHandle() const;
 
 		public:
+			static INT ToDLUsWidth(INT width);
+			static INT ToDLUsHeight(INT height);
+
+		public:
 			LRESULT CALLBACK MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 		public:
@@ -62,6 +69,9 @@ namespace Common {
 
 		public:
 			static WindowsManager* sWindowsManager;
+
+		private:
+			static INT DialogBaseUnits;
 
 		private:
 			Common::Debug::LogFile* mpLogFile = nullptr;

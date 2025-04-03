@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <wrl.h>
@@ -33,7 +34,8 @@ namespace Render::DX::Foundation {
 		public:
 			BOOL Initialize(Common::Debug::LogFile* const pLogFile);
 			BOOL SortAdapters();
-			BOOL SelectAdapter(Device* const pDevice);
+			BOOL GetAdapters(std::vector<std::wstring>& adapters);
+			BOOL SelectAdapter(Device* const pDevice, UINT adapterIndex, BOOL& bRaytracingSupported);
 
 		public:
 			__forceinline BOOL AllowTearing() const;

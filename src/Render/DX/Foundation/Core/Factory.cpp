@@ -76,46 +76,97 @@ BOOL Factory::SortAdapters() {
 	return TRUE;
 }
 
-BOOL Factory::SelectAdapter(Device* const pDevice) {
-	BOOL found = FALSE;
-	for (auto begin = mAdapters.begin(), end = mAdapters.end(); begin != end; ++begin) {
-		const auto adapter = begin->second;
+BOOL Factory::GetAdapters(std::vector<std::wstring>& adapters) {
+	for (const auto& pair : mAdapters) {
+		auto adapter = pair.second;
 
-		// Try to create hardware device.
-		const HRESULT hr = D3D12CreateDevice(
-			adapter,
-			D3D_FEATURE_LEVEL_12_1,
-			__uuidof(ID3D12Device5), 
-			static_cast<void**>(&pDevice->md3dDevice)
-		);
+		DXGI_ADAPTER_DESC desc;
+		if (FAILED(adapter->GetDesc(&desc))) continue;
 		
-		if (SUCCEEDED(hr)) {
-			DXGI_ADAPTER_DESC desc;
-			adapter->GetDesc(&desc);
+		adapters.push_back(desc.Description);
+	}
 
-			// Checks that device supports ray-tracing.
-			D3D12_FEATURE_DATA_D3D12_OPTIONS5 ops = {};
-			const auto featureSupport = pDevice->md3dDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &ops, sizeof(ops));
-			if (FAILED(featureSupport)) {
-				pDevice->md3dDevice = nullptr;
-				WLogln(mpLogFile, desc.Description, STR_FAIL_NOT_SUPPORT_FEATURES);
-				continue;
-			}
-			else if (ops.RaytracingTier < D3D12_RAYTRACING_TIER_1_0) {
-				pDevice->md3dDevice = nullptr;
-				WLogln(mpLogFile, desc.Description, STR_FAIL_NOT_SUPPORT_RAYTRACING);
-				continue;
-			}
+	return TRUE;
+}
 
-			found = TRUE;
+BOOL Factory::SelectAdapter(Device* const pDevice, UINT adapterIndex, BOOL& bRaytracingSupported) {
+	//BOOL found = FALSE;
+	//for (auto begin = mAdapters.begin(), end = mAdapters.end(); begin != end; ++begin) {
+	//	const auto adapter = begin->second;
+	//
+	//	// Try to create hardware device.
+	//	const HRESULT hr = D3D12CreateDevice(
+	//		adapter,
+	//		D3D_FEATURE_LEVEL_12_1,
+	//		__uuidof(ID3D12Device5), 
+	//		static_cast<void**>(&pDevice->md3dDevice)
+	//	);
+	//	
+	//	if (SUCCEEDED(hr)) {
+	//		DXGI_ADAPTER_DESC desc;
+	//		adapter->GetDesc(&desc);
+	//
+	//		// Checks that device supports ray-tracing.
+	//		D3D12_FEATURE_DATA_D3D12_OPTIONS5 ops = {};
+	//		const auto featureSupport = pDevice->md3dDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &ops, sizeof(ops));
+	//		if (FAILED(featureSupport)) {
+	//			pDevice->md3dDevice = nullptr;
+	//			WLogln(mpLogFile, desc.Description, STR_FAIL_NOT_SUPPORT_FEATURES);
+	//			continue;
+	//		}
+	//		else if (ops.RaytracingTier < D3D12_RAYTRACING_TIER_1_0) {
+	//			pDevice->md3dDevice = nullptr;
+	//			WLogln(mpLogFile, desc.Description, STR_FAIL_NOT_SUPPORT_RAYTRACING);
+	//			continue;
+	//		}
+	//
+	//		found = TRUE;
+	//#ifdef _DEBUG
+	//		WLogln(mpLogFile, desc.Description, L" is selected");
+	//#endif
+	//
+	//		break;
+	//	}
+	//}
+	//if (!found) ReturnFalse(mpLogFile, STR_FAIL_NOT_SUPPORT_FEATURES);
+
+	const auto adapter = mAdapters[adapterIndex].second;
+
+	// Try to create hardware device.
+	const HRESULT hr = D3D12CreateDevice(
+		adapter,
+		D3D_FEATURE_LEVEL_12_1,
+		__uuidof(ID3D12Device5), 
+		static_cast<void**>(&pDevice->md3dDevice)
+	);
+		
+	if (FAILED(hr)) ReturnFalse(mpLogFile, L"Failed to create device");
+
+	DXGI_ADAPTER_DESC desc;
+	adapter->GetDesc(&desc);
+
 #ifdef _DEBUG
-			WLogln(mpLogFile, desc.Description, L" is selected");
+	WLogln(mpLogFile, desc.Description, L" is selected");
 #endif
 
-			break;
-		}
+	// Checks that device supports ray-tracing.
+	D3D12_FEATURE_DATA_D3D12_OPTIONS5 ops = {};
+	const auto featureSupport = pDevice->md3dDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &ops, sizeof(ops));
+	if (FAILED(featureSupport)) {
+		pDevice->md3dDevice = nullptr;
+		std::wstringstream wsstream;
+		wsstream << desc.Description << STR_FAIL_NOT_SUPPORT_FEATURES;
+		ReturnFalse(mpLogFile, wsstream.str().c_str());
 	}
-	if (!found) ReturnFalse(mpLogFile, STR_FAIL_NOT_SUPPORT_FEATURES);
+
+	if (ops.RaytracingTier >= D3D12_RAYTRACING_TIER_1_0) {
+		bRaytracingSupported = TRUE;
+		WLogln(mpLogFile, desc.Description, L" supports ray-tracing");
+	}
+	else {
+		bRaytracingSupported = FALSE;
+		WLogln(mpLogFile, desc.Description, L" does not support ray-tracing");
+	}
 
 	return TRUE;
 }

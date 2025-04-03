@@ -1,5 +1,6 @@
 #include "Render/DX/DxLowRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
@@ -14,6 +15,10 @@
 using namespace Microsoft::WRL;
 using namespace Render::DX;
 
+namespace {
+	Common::Foundation::Core::WindowsManager::SelectDialogInitDataPtr InitDataPtr;
+}
+
 DxLowRenderer::DxLowRenderer() {
 	mProcessor = std::make_unique<Common::Foundation::Core::Processor>();
 	mFactory = std::make_unique<Foundation::Core::Factory>();
@@ -26,9 +31,12 @@ DxLowRenderer::DxLowRenderer() {
 
 DxLowRenderer::~DxLowRenderer() {}
 
-BOOL DxLowRenderer::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height) {
-	mhMainWnd = hWnd;
+BOOL DxLowRenderer::Initialize(
+		Common::Debug::LogFile* const pLogFile,
+		Common::Foundation::Core::WindowsManager* const pWndManager, 
+		UINT width, UINT height) {
 	mpLogFile = pLogFile;
+	mpWindowsManager = pWndManager;
 
 	mClientWidth = width;
 	mClientHeight = height;
@@ -53,12 +61,6 @@ BOOL DxLowRenderer::GetHWInfo() {
 	return TRUE;
 }
 
-BOOL DxLowRenderer::CreateDescriptorHeaps() {
-	CheckReturn(mpLogFile, mDescriptorHeap->CreateDescriptorHeaps(0, 0, 0));
-
-	return TRUE;
-}
-
 BOOL DxLowRenderer::OnResize(UINT width, UINT height) {
 	mClientWidth = width;
 	mClientHeight = height;
@@ -69,15 +71,25 @@ BOOL DxLowRenderer::OnResize(UINT width, UINT height) {
 	return TRUE;
 }
 
+BOOL DxLowRenderer::Update(FLOAT deltaTime) { return TRUE; }
+
+BOOL DxLowRenderer::Draw() { return TRUE; }
+
+BOOL DxLowRenderer::AddMesh() { return TRUE; }
+
+BOOL DxLowRenderer::RemoveMesh() { return TRUE; }
+
+BOOL DxLowRenderer::CreateDescriptorHeaps() {
+	CheckReturn(mpLogFile, mDescriptorHeap->CreateDescriptorHeaps(0, 0, 0));
+
+	return TRUE;
+}
+
 BOOL DxLowRenderer::InitDirect3D(UINT width, UINT height) {
+	CheckReturn(mpLogFile, CreateDevice());
 	const auto device = mDevice.get();
 
-	CheckReturn(mpLogFile, mFactory->Initialize(mpLogFile));
-	CheckReturn(mpLogFile, mFactory->SortAdapters());
-	CheckReturn(mpLogFile, mFactory->SelectAdapter(device));
-
 	CheckReturn(mpLogFile, mCommandObject->Initialize(mpLogFile, device, static_cast<UINT>(mProcessor->Logical)));
-
 	CheckReturn(mpLogFile, mDescriptorHeap->Initialize(mpLogFile, device, mSwapChain.get(), mDepthStencilBuffer.get()));
 
 	CheckReturn(mpLogFile, CreateSwapChain());
@@ -87,12 +99,25 @@ BOOL DxLowRenderer::InitDirect3D(UINT width, UINT height) {
 	return TRUE;
 }
 
+BOOL DxLowRenderer::CreateDevice() {
+	CheckReturn(mpLogFile, mFactory->Initialize(mpLogFile));
+	CheckReturn(mpLogFile, mFactory->SortAdapters());
+
+	InitDataPtr = Common::Foundation::Core::WindowsManager::MakeSelectDialogInitData();
+	CheckReturn(mpLogFile, mFactory->GetAdapters(InitDataPtr->Items));
+	CheckReturn(mpLogFile, mpWindowsManager->SelectDialog(InitDataPtr.get()));
+
+	CheckReturn(mpLogFile, mFactory->SelectAdapter(mDevice.get(), InitDataPtr->SelectedItemIndex, mbRaytracingSupported));
+
+	return TRUE;
+}
+
 BOOL DxLowRenderer::CreateSwapChain() {
 	auto initData = Foundation::Core::SwapChain::MakeInitData();
 	initData->Factory = mFactory.get();
 	initData->Device = mDevice.get();
 	initData->CommandObject = mCommandObject.get();
-	initData->MainWnd = mhMainWnd;
+	initData->MainWnd = mpWindowsManager->MainWindowHandle();
 	initData->Width = mClientWidth;
 	initData->Height = mClientHeight;
 	initData->AllowTearing = mFactory->AllowTearing();

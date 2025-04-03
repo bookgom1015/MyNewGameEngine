@@ -21,17 +21,28 @@ namespace Render::VK {
 		class CommandObject;
 	}
 
-	class VkLowRenderer {
+	class VkLowRenderer : public Common::Render::Renderer {
 	protected:
 		VkLowRenderer();
 		virtual ~VkLowRenderer();
 
 	protected: // Functions that is called only once
-		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height);
-		virtual void CleanUp();
+		RendererAPI virtual BOOL Initialize(
+			Common::Debug::LogFile* const pLogFile,
+			Common::Foundation::Core::WindowsManager* const pWndManager,
+			UINT width, UINT height) override;
+		RendererAPI virtual void CleanUp() override;
 
 	protected: // Functions that is called whenever a message is called
-		virtual BOOL OnResize(UINT width, UINT height);
+		RendererAPI virtual BOOL OnResize(UINT width, UINT height) override;
+
+	public: // Functions that is called in every frame
+		RendererAPI virtual BOOL Update(FLOAT deltaTime) override;
+		RendererAPI virtual BOOL Draw() override;
+
+	public:
+		RendererAPI virtual BOOL AddMesh() override;
+		RendererAPI virtual BOOL RemoveMesh() override;
 
 	private:
 		BOOL CreateInstance();
@@ -42,8 +53,6 @@ namespace Render::VK {
 
 	protected:
 		Common::Debug::LogFile* mpLogFile = nullptr;
-
-		HWND mhMainWnd = NULL;
 
 		UINT mClientWidth = 0;
 		UINT mClientHeight = 0;

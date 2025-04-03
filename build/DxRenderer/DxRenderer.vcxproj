@@ -15,6 +15,7 @@
     <ClInclude Include="..\..\externs\FrankLuna\GeometryGenerator.h" />
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\HashUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\TaskQueue.hpp" />
@@ -46,6 +47,7 @@
     <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp" />
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\TaskQueue.cpp" />
@@ -69,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
+    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.inl" />

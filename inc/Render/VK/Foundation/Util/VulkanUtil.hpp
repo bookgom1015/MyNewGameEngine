@@ -56,6 +56,8 @@ namespace Render::VK::Foundation::Util {
 		static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface);
 		static BOOL IsDeviceSuitable(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface);
 		static INT RateDeviceSuitability(Common::Debug::LogFile* const pLogFile, const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface);
+		static BOOL ShowDeviceInfo(Common::Debug::LogFile* const pLogFile, const VkPhysicalDevice& physicalDevice);
+		static BOOL IsRaytracingSupported(VkPhysicalDevice physicalDevice);
 
 		static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& inAvailableFormats);
 		static VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& inAvailablePresentMods);

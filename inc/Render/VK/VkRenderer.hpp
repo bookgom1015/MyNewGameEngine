@@ -7,13 +7,16 @@ namespace Render {
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace VK {
-		class VkRenderer : public Common::Render::Renderer, VkLowRenderer {
+		class VkRenderer : public VkLowRenderer {
 		public:
 			VkRenderer();
 			virtual ~VkRenderer();
 
 		public:
-			RendererAPI virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height) override;
+			RendererAPI virtual BOOL Initialize(
+				Common::Debug::LogFile* const pLogFile,
+				Common::Foundation::Core::WindowsManager* const pWndManager,
+				UINT width, UINT height) override;
 			RendererAPI virtual void CleanUp() override;
 
 		public: // Functions that called whenever a message is called

@@ -1,5 +1,6 @@
 #include "Render/VK/VkLowRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Render/VK/Foundation/Core/Instance.hpp"
 #include "Render/VK/Foundation/Core/Surface.hpp"
 #include "Render/VK/Foundation/Core/Device.hpp"
@@ -14,6 +15,10 @@
 
 using namespace Render::VK;
 
+namespace {
+	Common::Foundation::Core::WindowsManager::SelectDialogInitDataPtr InitDataPtr;
+}
+
 VkLowRenderer::VkLowRenderer() {
 	mInstance = std::make_unique<Foundation::Core::Instance>();
 	mSurface = std::make_unique<Foundation::Core::Surface>();
@@ -24,9 +29,12 @@ VkLowRenderer::VkLowRenderer() {
 
 VkLowRenderer::~VkLowRenderer() {}
 
-BOOL VkLowRenderer::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height) {
-	mhMainWnd = hWnd;
+BOOL VkLowRenderer::Initialize(
+		Common::Debug::LogFile* const pLogFile,
+		Common::Foundation::Core::WindowsManager* const pWndManager,
+		UINT width, UINT height) {
 	mpLogFile = pLogFile;
+	mpWindowsManager = pWndManager;
 
 	mClientWidth = width;
 	mClientHeight = height;
@@ -48,11 +56,15 @@ void VkLowRenderer::CleanUp() {
 	mInstance->CleanUp();
 }
 
-BOOL VkLowRenderer::OnResize(UINT width, UINT height) {
-	CheckReturn(mpLogFile, mSwapChain->OnResize(width, height));
+BOOL VkLowRenderer::OnResize(UINT width, UINT height) { return TRUE; }
 
-	return TRUE;
-}
+BOOL VkLowRenderer::Update(FLOAT deltaTime) { return TRUE; }
+
+BOOL VkLowRenderer::Draw() { return TRUE; }
+
+BOOL VkLowRenderer::AddMesh() { return TRUE; }
+
+BOOL VkLowRenderer::RemoveMesh() { return TRUE; }
 
 BOOL VkLowRenderer::CreateInstance() {
 	CheckReturn(mpLogFile, mInstance->Initalize(mpLogFile));
@@ -61,13 +73,23 @@ BOOL VkLowRenderer::CreateInstance() {
 }
 
 BOOL VkLowRenderer::CreateSurface() {
-	CheckReturn(mpLogFile, mSurface->Initalize(mpLogFile, mhMainWnd, mInstance->GetInstance()));
+	CheckReturn(mpLogFile, mSurface->Initalize(mpLogFile, mpWindowsManager->MainWindowHandle(), mInstance->GetInstance()));
 	
 	return TRUE;
 }
 
 BOOL VkLowRenderer::CreateDevice() {
 	CheckReturn(mpLogFile, mDevice->Initialize(mpLogFile, mInstance->GetInstance(), mSurface->GetSurface()));
+	CheckReturn(mpLogFile, mDevice->SortPhysicalDevices());
+
+	std::vector<std::wstring> physicalDevices;
+	CheckReturn(mpLogFile, mDevice->GetPhysicalDevices(physicalDevices));
+
+	InitDataPtr = Common::Foundation::Core::WindowsManager::MakeSelectDialogInitData();
+	CheckReturn(mpLogFile, mDevice->GetPhysicalDevices(InitDataPtr->Items));
+	CheckReturn(mpLogFile, mpWindowsManager->SelectDialog(InitDataPtr.get()));
+
+	CheckReturn(mpLogFile, mDevice->SelectPhysicalDevices(InitDataPtr->SelectedItemIndex, mbRaytracingSupported));
 
 	return TRUE;
 }

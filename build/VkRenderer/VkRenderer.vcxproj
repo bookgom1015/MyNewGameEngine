@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\CommandObject.hpp" />
@@ -104,6 +105,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\CommandObject.cpp" />
@@ -117,6 +119,7 @@
     <ClCompile Include="..\..\src\Render\VK\VkRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\VK\Foundation\Core\Device.inl" />
     <None Include="..\..\inc\Render\VK\Foundation\Core\Instance.inl" />

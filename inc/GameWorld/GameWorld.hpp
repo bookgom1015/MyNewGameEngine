@@ -50,7 +50,7 @@ public:
 
 private: // Functions that is called only once
 	BOOL BuildHWInfo();
-	BOOL InitialWindowsManager(HINSTANCE hInstance);
+	BOOL InitWindowsManager(HINSTANCE hInstance);
 	BOOL CreateRenderer();
 	BOOL CreateInputProcessor();
 

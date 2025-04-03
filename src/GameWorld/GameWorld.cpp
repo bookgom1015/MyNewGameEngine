@@ -38,7 +38,7 @@ BOOL GameWorld::Initialize(Common::Debug::LogFile* const pLogFile, HINSTANCE hIn
 	mpLogFile = pLogFile;
 
 	CheckReturn(mpLogFile, BuildHWInfo());
-	CheckReturn(mpLogFile, InitialWindowsManager(hInstance));
+	CheckReturn(mpLogFile, InitWindowsManager(hInstance));
 	CheckReturn(mpLogFile, CreateInputProcessor());
 	CheckReturn(mpLogFile, CreateRenderer());
 
@@ -155,7 +155,7 @@ BOOL GameWorld::BuildHWInfo() {
 	return TRUE;
 }
 
-BOOL GameWorld::InitialWindowsManager(HINSTANCE hInstance) {
+BOOL GameWorld::InitWindowsManager(HINSTANCE hInstance) {
 	CheckReturn(mpLogFile, mWindowsManager->Initialize(mpLogFile, hInstance, InitClientWidth, InitClientHeight));
 
 	return TRUE;
@@ -170,7 +170,7 @@ BOOL GameWorld::CreateRenderer() {
 	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
 
 	mRenderer = std::unique_ptr<Common::Render::Renderer>(createFunc());
-	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager->MainWindowHandle(), InitClientWidth, InitClientHeight));
+	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager.get(), InitClientWidth, InitClientHeight));
 
 	return TRUE;
 }

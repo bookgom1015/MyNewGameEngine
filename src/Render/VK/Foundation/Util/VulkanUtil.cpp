@@ -213,6 +213,40 @@ INT VulkanUtil::RateDeviceSuitability(Common::Debug::LogFile* const pLogFile, co
 	VkPhysicalDeviceProperties deviceProperties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
+	switch (deviceProperties.deviceType) {
+	case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+		score += 100;
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+		score += 300;
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+		score += 1000;
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+		score += 150;
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_CPU:
+		score += 10;
+		break;
+	}
+	score += deviceProperties.limits.maxImageDimension2D;
+
+	VkPhysicalDeviceFeatures deviceFeatures;
+	vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+
+	if (!deviceFeatures.geometryShader || !IsDeviceSuitable(physicalDevice, surface)) {
+		WLogln(pLogFile, L"    This device is not suitable");
+		return 0;
+	}
+
+	return score;
+}
+
+BOOL VulkanUtil::ShowDeviceInfo(Common::Debug::LogFile* const pLogFile, const VkPhysicalDevice& physicalDevice) {
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+
 	WLogln(pLogFile, L"Physical device properties:");
 	Logln(pLogFile, "    Device name: ", deviceProperties.deviceName);
 
@@ -221,23 +255,18 @@ INT VulkanUtil::RateDeviceSuitability(Common::Debug::LogFile* const pLogFile, co
 	switch (deviceProperties.deviceType) {
 	case VK_PHYSICAL_DEVICE_TYPE_OTHER:
 		wsstream << L"Other type";
-		score += 1000;
 		break;
 	case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
 		wsstream << L"Integrated GPU";
-		score += 500;
 		break;
 	case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
 		wsstream << L"Discrete GPU";
-		score += 250;
 		break;
 	case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
 		wsstream << L"Virtual GPU";
-		score += 100;
 		break;
 	case VK_PHYSICAL_DEVICE_TYPE_CPU:
 		wsstream << L"CPU type";
-		score += 50;
 		break;
 	}
 	WLogln(pLogFile, wsstream.str().c_str());
@@ -265,17 +294,22 @@ INT VulkanUtil::RateDeviceSuitability(Common::Debug::LogFile* const pLogFile, co
 			std::to_wstring(patch));
 	}
 
-	score += deviceProperties.limits.maxImageDimension2D;
+	return TRUE;
+}
 
-	VkPhysicalDeviceFeatures deviceFeatures;
-	vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+BOOL VulkanUtil::IsRaytracingSupported(VkPhysicalDevice physicalDevice) {
+	uint32_t extensionCount = 0;
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
 
-	if (!deviceFeatures.geometryShader || !IsDeviceSuitable(physicalDevice, surface)) {
-		WLogln(pLogFile, L"    This device is not suitable");
-		return 0;
+	std::vector<VkExtensionProperties> extensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, extensions.data());
+
+	for (const auto& ext : extensions) {
+		if (strcmp(ext.extensionName, VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME) == 0) 
+			return TRUE;
 	}
 
-	return score;
+	return FALSE;
 }
 
 VkSurfaceFormatKHR VulkanUtil::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& inAvailableFormats) {

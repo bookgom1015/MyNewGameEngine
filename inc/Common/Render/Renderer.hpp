@@ -17,10 +17,17 @@ namespace Common {
 		struct LogFile;
 	}
 
+	namespace Foundation::Core {
+		class WindowsManager;
+	}
+
 	namespace Render {
 		class Renderer {
 		public: // Functions that is called only once
-			RendererAPI virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height) = 0;
+			RendererAPI virtual BOOL Initialize(
+				Common::Debug::LogFile* const pLogFile,
+				Common::Foundation::Core::WindowsManager* const pWndManager,
+				UINT width, UINT height) = 0;
 			RendererAPI virtual void CleanUp() = 0;
 
 		public: // Functions that is called whenever a message is called
@@ -39,6 +46,9 @@ namespace Common {
 			__forceinline constexpr BOOL IsShadowEnabled() const;
 
 		protected:
+			Common::Debug::LogFile* mpLogFile = nullptr;
+			Common::Foundation::Core::WindowsManager* mpWindowsManager = nullptr;
+
 			BOOL mbRaytracingSupported = FALSE;
 			BOOL mbShadowEnabled = TRUE;
 		};

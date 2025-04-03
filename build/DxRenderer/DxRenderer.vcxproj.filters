@@ -171,6 +171,9 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -242,6 +245,9 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp">
       <Filter>Source Files\Foundation\Resource</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -271,6 +277,9 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\DrawSkySphere.hlsl">
       <Filter>Shader Files\Environment</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl">
+      <Filter>Common Files\Foundation\Core</Filter>
     </None>
   </ItemGroup>
 </Project>

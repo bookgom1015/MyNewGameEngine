@@ -32,8 +32,11 @@ DxRenderer::~DxRenderer() {
 	CleanUp();
 }
 
-BOOL DxRenderer::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height) {
-	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, hWnd, width, height));
+BOOL DxRenderer::Initialize(
+		Common::Debug::LogFile* const pLogFile, 
+		Common::Foundation::Core::WindowsManager* const pWndManager, 
+		UINT width, UINT height) {
+	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, width, height));
 
 	CheckReturn(mpLogFile, InitShadingObjects());
 	CheckReturn(mpLogFile, BuildFrameResources());

@@ -2,23 +2,105 @@
 #include "Common/Debug/Logger.hpp"
 #include "Common/Input/InputProcessor.hpp"
 
+#include <string>
+
+#define ID_BTN_SELECT	202
+
+#define ID_RADIO_BTN_0	1000
+#define ID_RADIO_BTN_1	1001
+#define ID_RADIO_BTN_2	1002
+#define ID_RADIO_BTN_3	1003
+#define ID_RADIO_BTN_4	1004
+#define ID_RADIO_BTN_5	1005
+#define ID_RADIO_BTN_6	1006
+#define ID_RADIO_BTN_7	1007
+
 using namespace Common::Foundation::Core;
 
+INT WindowsManager::DialogBaseUnits = GetDialogBaseUnits();
+
 namespace {
-	LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	const INT DialogBoxWidth = 300;
+	const INT ButtonWidth = 80;
+	const INT ButtonHeight = 30;
+	const INT RadioButtonHeight = 40;
+
+	LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		// Forward hwnd on because we can get messages (e.g., WM_CREATE)
 		// before CreateWindow returns, and thus before mhMainWnd is valid
-		return WindowsManager::sWindowsManager->MsgProc(hwnd, msg, wParam, lParam);
+		return WindowsManager::sWindowsManager->MsgProc(hWnd, msg, wParam, lParam);
 	}
 
-	INT_PTR CALLBACK DialogProc(HWND hDialog, UINT msg, WPARAM wParam, LPARAM lParam) {
+	INT_PTR CALLBACK DialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+		static WindowsManager::SelectDialogInitData* initData = nullptr;
+		static std::vector<HWND> radioButtons;
+
 		switch (msg) {
 		case WM_INITDIALOG: {
+			initData = reinterpret_cast<WindowsManager::SelectDialogInitData*>(lParam);
+
+			const auto dialogBoxHeight = static_cast<INT>((initData->Items.size() + 2) * RadioButtonHeight);
+			const auto itemCount = initData->Items.size();
+
+			// Set caption title
+			if (!SetWindowTextW(hDlg, L"Select GPU")) break;
+
+			// Select button
+			{
+				CreateWindow(
+					TEXT("BUTTON"), 
+					TEXT("Select"),
+					WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+					DialogBoxWidth - ButtonWidth - 15,		// X
+					dialogBoxHeight - ButtonHeight - 15,	// Y
+					ButtonWidth,							// Width
+					ButtonHeight,							// Height
+					hDlg, (HMENU)ID_BTN_SELECT, initData->InstanceHandle, nullptr);
+			}
+			// Radio buttons
+			for (size_t i = 0; i < itemCount; ++i) {
+				const INT yPos = static_cast<INT>(15 + i * RadioButtonHeight);
+				const HWND hRadioButton = CreateWindowW(
+					TEXT("BUTTON"), 
+					initData->Items[i].c_str(),
+					WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | (i == 0 ? WS_GROUP : 0),
+					15,						// X
+					yPos,					// Y
+					DialogBoxWidth - 30,	// Width
+					30,						// Height
+					hDlg, (HMENU)(ID_RADIO_BTN_0 + i), initData->InstanceHandle, nullptr);
+				radioButtons.push_back(hRadioButton);
+			}
+
+			initData->SelectedItemIndex = 0;
+			return CheckRadioButton(hDlg, ID_RADIO_BTN_0, ID_RADIO_BTN_0 + static_cast<INT>(itemCount), ID_RADIO_BTN_0);
+		}
+		case WM_ERASEBKGND: {
+			HDC hdc = (HDC)wParam;
+			RECT rc;
+			if (!GetClientRect(hDlg, &rc)) break;
+
+			HBRUSH hBrush = static_cast<HBRUSH>(GetStockObject(DKGRAY_BRUSH));
+			FillRect(hdc, &rc, hBrush);
 			return TRUE;
 		}
-		case WM_CLOSE:
-			EndDialog(hDialog, 0);
+		case WM_CLOSE: {
+			EndDialog(hDlg, 0);
 			break;
+		}
+		case WM_COMMAND: {
+			if (LOWORD(wParam) == ID_BTN_SELECT) {
+				for (size_t i = 0, end = initData->Items.size(); i < end; ++i) {
+					if (SendMessageW(radioButtons[i], BM_GETCHECK, 0, 0) == BST_CHECKED) {
+						initData->SelectedItemIndex = static_cast<UINT>(i);
+						break;
+					}
+				}
+
+				EndDialog(hDlg, 0);
+			}
+			break;
+		}
 		}
 		return FALSE;
 	}
@@ -33,6 +115,10 @@ WindowsManager* WindowsManager::sWindowsManager = nullptr;
 WindowsManager::WindowsManager() {
 	sWindowsManager = this;
 }
+
+INT WindowsManager::ToDLUsWidth(INT width) { return (width * 4) / LOWORD(DialogBaseUnits); }
+
+INT WindowsManager::ToDLUsHeight(INT height) { return (height * 8) / HIWORD(DialogBaseUnits); }
 
 LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
@@ -184,13 +270,24 @@ BOOL WindowsManager::SelectDialog(SelectDialogInitData* const pInitData) {
 	BYTE dlgBuffer[1024] = { 0 };
 	dialogTemplate = (DLGTEMPLATE*)dlgBuffer;
 
-	dialogTemplate->style = WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | WS_CAPTION;
+	RECT rc;
+	if (!GetClientRect(mhMainWnd, &rc)) rc = { 0, 0, 0, 0 };
+
+	const INT parentW = rc.right - rc.left;
+	const INT parentH = rc.bottom - rc.top;
+
+	const INT dialogBoxHeight = static_cast<INT>((pInitData->Items.size() + 2) * RadioButtonHeight);
+
+	const INT clientPosX = ToDLUsWidth(static_cast<INT>((parentW - DialogBoxWidth) * 0.5f));
+	const INT clientPosY = ToDLUsWidth(static_cast<INT>((parentH - dialogBoxHeight) * 0.5f));
+
+	dialogTemplate->style = WS_POPUP | WS_BORDER | DS_MODALFRAME | WS_CAPTION;
 	dialogTemplate->dwExtendedStyle = 0;
 	dialogTemplate->cdit = 0;
-	dialogTemplate->x = 10;
-	dialogTemplate->y = 10;
-	dialogTemplate->cx = 200;
-	dialogTemplate->cy = 150;
+	dialogTemplate->x = clientPosX;
+	dialogTemplate->y = clientPosY;
+	dialogTemplate->cx = ToDLUsWidth(DialogBoxWidth);
+	dialogTemplate->cy = ToDLUsHeight(dialogBoxHeight);
 
 	DialogBoxIndirectParamW(mhInst, dialogTemplate, mhMainWnd, DialogProc, reinterpret_cast<LPARAM>(pInitData));
 
@@ -213,15 +310,16 @@ BOOL WindowsManager::InitMainWnd(UINT wndWidth, UINT wndHeight) {
 
 	// Compute window rectangle dimensions based on requested client area dimensions.
 	RECT R = { 0, 0, static_cast<LONG>(wndWidth), static_cast<LONG>(wndHeight) };
-	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, FALSE);
-	INT width = R.right - R.left;
-	INT height = R.bottom - R.top;
+	if (!AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, FALSE)) ReturnFalse(mpLogFile, L"Failed to get window rect");
 
-	INT outputWidth = GetSystemMetrics(SM_CXSCREEN);
-	INT outputHeight = GetSystemMetrics(SM_CYSCREEN);
+	const INT width = R.right - R.left;
+	const INT height = R.bottom - R.top;
 
-	INT clientPosX = static_cast<INT>((outputWidth - wndWidth) * 0.5f);
-	INT clientPosY = static_cast<INT>((outputHeight - wndHeight) * 0.5f);
+	const INT outputWidth = GetSystemMetrics(SM_CXSCREEN);
+	const INT outputHeight = GetSystemMetrics(SM_CYSCREEN);
+
+	const INT clientPosX = static_cast<INT>((outputWidth - wndWidth) * 0.5f);
+	const INT clientPosY = static_cast<INT>((outputHeight - wndHeight) * 0.5f);
 
 	mhMainWnd = CreateWindowW(
 		L"MyNewGameEngine", L"MyNewGameEngine",
@@ -232,7 +330,7 @@ BOOL WindowsManager::InitMainWnd(UINT wndWidth, UINT wndHeight) {
 	if (!mhMainWnd) ReturnFalse(mpLogFile, L"Failed to create the window");
 
 	ShowWindow(mhMainWnd, SW_SHOW);
-	UpdateWindow(mhMainWnd);
+	if (!UpdateWindow(mhMainWnd)) ReturnFalse(mpLogFile, L"Failed to update window");
 
 	return TRUE;
 }

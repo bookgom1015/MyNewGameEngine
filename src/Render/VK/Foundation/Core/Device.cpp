@@ -1,5 +1,6 @@
 #include "Render/VK/Foundation/Core/Device.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Util/StringUtil.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 
 #include <algorithm>
@@ -16,9 +17,6 @@ BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile, VkInstance insta
 	mInstance = instance;
 	mSurface = surface;
 
-	CheckReturn(mpLogFile, SelectPhysicalDevice());
-	CheckReturn(mpLogFile, CreateLogicalDevice());
-
 	return TRUE;
 }
 
@@ -26,7 +24,7 @@ void Device::CleanUp() {
 	vkDestroyDevice(mDevice, nullptr);
 }
 
-BOOL Device::SelectPhysicalDevice() {
+BOOL Device::SortPhysicalDevices() {
 	UINT deviceCount = 0;
 	vkEnumeratePhysicalDevices(mInstance, &deviceCount, nullptr);
 	if (deviceCount == 0) ReturnFalse(mpLogFile, L"Failed to find GPU(s) with Vulkan support");
@@ -34,29 +32,53 @@ BOOL Device::SelectPhysicalDevice() {
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(mInstance, &deviceCount, devices.data());
 
-	std::vector<std::pair<INT, VkPhysicalDevice>> candidates;
 	for (const auto& device : devices) {
 		INT score = Foundation::Util::VulkanUtil::RateDeviceSuitability(mpLogFile, device, mSurface);
-		candidates.emplace_back(score, device);
+		mCandidates.emplace_back(score, device);
 	}
 
-	std::sort(candidates.begin(), candidates.end(), [](const auto& a, const auto& b) {
+	std::sort(mCandidates.begin(), mCandidates.end(), [](const auto& a, const auto& b) {
 		return a.first > b.first;
-		});
+	});
 
-	BOOL found = FALSE;
-	for (auto begin = candidates.begin(), end = candidates.end(); begin != end; ++begin) {
+	for (const auto& pair : mCandidates) {
+		const auto device = pair.second;
+		CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::ShowDeviceInfo(mpLogFile, device));
+	}
+
+	return TRUE;
+}
+
+BOOL Device::GetPhysicalDevices(std::vector<std::wstring>& physicalDevices) {
+	for (auto begin = mCandidates.begin(), end = mCandidates.end(); begin != end; ++begin) {
 		const auto& physicalDevice = begin->second;
-		mPhysicalDevice = physicalDevice;
 
 		VkPhysicalDeviceProperties deviceProperties;
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-		Logln(mpLogFile, "Selected physical device: ", deviceProperties.deviceName);
 
-		found = TRUE;
-		break;
+		physicalDevices.push_back(Common::Foundation::Util::StringUtil::StringToWString(deviceProperties.deviceName));
 	}
-	if (!found) ReturnFalse(mpLogFile, L"Failed to find a suitable GPU");
+
+	return TRUE;
+}
+
+BOOL Device::SelectPhysicalDevices(UINT selectedPhysicalDeviceIndex, BOOL& bRaytracingSupported) {
+	mPhysicalDevice = mCandidates[selectedPhysicalDeviceIndex].second;
+
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProperties);
+	Logln(mpLogFile, "Selected physical device: ", deviceProperties.deviceName);
+
+	if (Foundation::Util::VulkanUtil::IsRaytracingSupported(mPhysicalDevice)) {
+		bRaytracingSupported = TRUE;
+		Logln(mpLogFile, deviceProperties.deviceName, " supports ray-tracing");
+	}
+	else {
+		bRaytracingSupported = FALSE;
+		Logln(mpLogFile, deviceProperties.deviceName, " does not support ray-tracing");
+	}
+
+	CheckReturn(mpLogFile, CreateLogicalDevice());
 
 	return TRUE;
 }

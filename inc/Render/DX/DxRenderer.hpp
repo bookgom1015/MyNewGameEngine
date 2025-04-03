@@ -24,13 +24,16 @@ namespace Render {
 			class EnvironmentMap;
 		}
 
-		class DxRenderer : public Common::Render::Renderer, DxLowRenderer {
+		class DxRenderer : public DxLowRenderer {
 		public:
 			DxRenderer();
 			virtual ~DxRenderer();
 
 		public: // Functions that is called only once
-			RendererAPI virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd, UINT width, UINT height) override;
+			RendererAPI virtual BOOL Initialize(
+				Common::Debug::LogFile* const pLogFile, 
+				Common::Foundation::Core::WindowsManager* const pWndManager, 
+				UINT width, UINT height) override;
 			RendererAPI virtual void CleanUp() override;
 
 		public: // Functions that is called whenever a message is called
