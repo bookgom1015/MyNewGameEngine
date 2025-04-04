@@ -191,7 +191,9 @@ BOOL D3D12Util::CreateTexture(
 		Core::Device* const pDevice, 
 		Core::CommandObject* const pCmdObject, 
 		Resource::Texture* const pTexture, 
-		LPCWSTR filePath) {
+		LPCWSTR filePath,
+		BOOL bGenerateMipmapIfMissing,
+		UINT maxSize) {
 	ResourceUploadBatch resourceUpload(pDevice->md3dDevice.Get());
 	resourceUpload.Begin();
 	
@@ -199,7 +201,9 @@ BOOL D3D12Util::CreateTexture(
 		pDevice->md3dDevice.Get(),
 		resourceUpload,
 		filePath,
-		pTexture->Resource.ReleaseAndGetAddressOf()
+		pTexture->Resource.ReleaseAndGetAddressOf(),
+		bGenerateMipmapIfMissing,
+		maxSize
 	);
 	
 	auto finished = resourceUpload.End(pCmdObject->mCommandQueue.Get());
@@ -211,5 +215,102 @@ BOOL D3D12Util::CreateTexture(
 		ReturnFalse(mpLogFile, wsstream.str());
 	}
 
+	return TRUE;
+}
+
+BOOL D3D12Util::CreateRootSignature(
+		Core::Device* const pDevice,
+		const D3D12_ROOT_SIGNATURE_DESC& rootSignatureDesc,
+		const IID& riid,
+		void** const ppRootSignature,
+		LPCWSTR name) {
+	ComPtr<ID3DBlob> serializedRootSig = nullptr;
+	ComPtr<ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(
+		&rootSignatureDesc,
+		D3D_ROOT_SIGNATURE_VERSION_1,
+		serializedRootSig.GetAddressOf(),
+		errorBlob.GetAddressOf()
+	);
+
+	std::wstringstream wsstream;
+	if (errorBlob != nullptr)
+		wsstream << reinterpret_cast<char*>(errorBlob->GetBufferPointer());
+
+	if (FAILED(hr))
+		ReturnFalse(mpLogFile, wsstream.str().c_str());
+
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateRootSignature(
+		0,
+		serializedRootSig->GetBufferPointer(),
+		serializedRootSig->GetBufferSize(),
+		riid,
+		ppRootSignature
+	));
+	if (name != nullptr) {
+		auto rootSig = reinterpret_cast<ID3D12RootSignature*>(*ppRootSignature);
+		rootSig->SetName(name);
+	}
+
+	return TRUE;
+}
+
+D3D12_GRAPHICS_PIPELINE_STATE_DESC D3D12Util::DefaultPsoDesc(D3D12_INPUT_LAYOUT_DESC inputLayout, DXGI_FORMAT dsvFormat) {
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	psoDesc.InputLayout = inputLayout;
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.SampleDesc.Quality = 0;
+	psoDesc.DSVFormat = dsvFormat;
+
+	return psoDesc;
+}
+
+D3D12_GRAPHICS_PIPELINE_STATE_DESC D3D12Util::ScreenPsoDesc() {
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	psoDesc.InputLayout = { nullptr, 0 };
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.SampleDesc.Quality = 0;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.DepthStencilState.DepthEnable = FALSE;
+	psoDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
+
+	return psoDesc;
+}
+
+BOOL D3D12Util::CreateComputePipelineState(
+		Core::Device* const pDevice,
+		const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc,
+		const IID& riid,
+		void** const ppPipelineState,
+		LPCWSTR name) {
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateComputePipelineState(&desc, riid, ppPipelineState));
+	if (name != nullptr) {
+		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
+		pso->SetName(name);
+	}
+	return TRUE;
+}
+
+BOOL D3D12Util::CreateGraphicsPipelineState(
+		Core::Device* const pDevice,
+		const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc,
+		const IID& riid,
+		void** const ppPipelineState,
+		LPCWSTR name) {
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateGraphicsPipelineState(&desc, riid, ppPipelineState));
+	if (name != nullptr) {
+		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
+		pso->SetName(name);
+	}
 	return TRUE;
 }

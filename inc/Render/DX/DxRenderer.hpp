@@ -21,7 +21,7 @@ namespace Render {
 				class ShaderManager;
 			}
 
-			class EnvironmentMap;
+			namespace EnvironmentMap { class EnvironmentMapClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -53,7 +53,7 @@ namespace Render {
 		private:
 			BOOL BuildMeshGeometry(
 				Foundation::Resource::SubmeshGeometry* const submesh,
-				const std::vector<Vertex>& vertices, 
+				const std::vector<Common::Foundation::Mesh::Vertex>& vertices, 
 				const std::vector<std::uint16_t>& indices,
 				const std::string& name);
 
@@ -76,7 +76,7 @@ namespace Render {
 			// Shading objects
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
 
-			std::unique_ptr<Shading::EnvironmentMap> mEnvironmentMap;
+			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
 		};
 	}
 }

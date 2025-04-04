@@ -47,24 +47,28 @@ void ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundat
 	mShaderInfos[hash] = shaderInfo;
 }
 
-BOOL ShaderManager::CompileShaders() {
+BOOL ShaderManager::CompileShaders(LPCWSTR baseDir) {
 	Common::Foundation::Util::TaskQueue taskQueue;
 
 	for (const auto& shaderInfo : mShaderInfos) 
-		taskQueue.AddTask([&]() -> BOOL { return CompileShader(shaderInfo.first); });
+		taskQueue.AddTask([&]() -> BOOL { return CompileShader(shaderInfo.first, baseDir); });
 
 	CheckReturn(mpLogFile, taskQueue.ExecuteTasks(mpLogFile, mThreadCount));
 
 	return TRUE;
 }
 
-BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash) {
+BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir) {
 	const auto shaderInfo = mShaderInfos[hash];
 
-	std::ifstream fin(shaderInfo.FileName, std::ios::ate | std::ios::binary);
+	std::wstringstream wsstream;
+	wsstream << baseDir << shaderInfo.FileName;
+	std::wstring filePath = wsstream.str();
+
+	std::ifstream fin(filePath.c_str(), std::ios::ate | std::ios::binary);
 	if (!fin.is_open()) { 
 		std::wstring msg(L"Failed to open shader file: ");
-		msg.append(shaderInfo.FileName);
+		msg.append(filePath.c_str());
 		ReturnFalse(mpLogFile, msg);
 	}
 	
@@ -146,7 +150,7 @@ BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash) {
 	}
 
 #ifdef _DEBUG
-	CheckReturn(mpLogFile, BuildPdb(result, shaderInfo.FileName));
+	CheckReturn(mpLogFile, BuildPdb(result, filePath.c_str()));
 #endif
 
 	CheckHRESULT(mpLogFile, result->GetResult(&mShaders[hash]));

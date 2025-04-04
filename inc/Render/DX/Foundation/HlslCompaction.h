@@ -2,14 +2,17 @@
 #define __HLSLCOMPACTION_H__
 
 #ifdef _HLSL
-	#include "HlslCompaction.hlsli"
+	#include "./../../../../assets/Shaders/HLSL/HlslCompaction.hlsli"
 	#include "./../../../../inc/Common/Foundation/Mesh/Vertex.h"
 	#include "./../../../../inc/Common/Foundation/Mesh/Material.h"
+	#include "./../../../../inc/Render/DX/Foundation/ShadingConvention.h"
+	#include "./../../../../inc/Render/DX/Foundation/ConstantBuffer.h"
 #else
+	#include <DirectXMath.h>
 	#include <dxgiformat.h>
-#endif
 
-#include "Render/DX/Foundation/ShadingConvention.h"
-#include "Render/DX/Foundation/ConstantBuffer.h"
+	#include "Render/DX/Foundation/ShadingConvention.h"
+	#include "Render/DX/Foundation/ConstantBuffer.h"
+#endif
 
 #endif // __HLSLCOMPACTION_H__

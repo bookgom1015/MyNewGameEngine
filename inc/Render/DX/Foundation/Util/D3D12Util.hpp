@@ -78,7 +78,32 @@ namespace Render::DX::Foundation {
 				Core::Device* const pDevice, 
 				Core::CommandObject* const pCmdObject, 
 				Resource::Texture* const pTexture, 
-				LPCWSTR filePath);
+				LPCWSTR filePath,
+				BOOL bGenerateMipmapIfMissing = FALSE,
+				UINT maxSize = 0);
+
+			static BOOL CreateRootSignature(
+				Core::Device* const pDevice,
+				const D3D12_ROOT_SIGNATURE_DESC& rootSignatureDesc,
+				const IID& riid,
+				void** const ppRootSignature,
+				LPCWSTR name);
+
+			static D3D12_GRAPHICS_PIPELINE_STATE_DESC DefaultPsoDesc(D3D12_INPUT_LAYOUT_DESC inputLayout, DXGI_FORMAT dsvFormat);
+			static D3D12_GRAPHICS_PIPELINE_STATE_DESC ScreenPsoDesc();
+
+			static BOOL CreateComputePipelineState(
+				Core::Device* const pDevice,
+				const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc,
+				const IID& riid,
+				void** const ppPipelineState,
+				LPCWSTR name);
+			static BOOL CreateGraphicsPipelineState(
+				Core::Device* const pDevice,
+				const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc,
+				const IID& riid,
+				void** const ppPipelineState,
+				LPCWSTR name);
 
 		private:
 			static Common::Debug::LogFile* mpLogFile;

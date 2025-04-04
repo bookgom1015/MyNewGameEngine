@@ -1,6 +1,10 @@
 #pragma once
 
-#include "Render/DX/Foundation/Light.h"
+#ifdef _HLSL
+	#include "./../../../../inc/Render/DX/Foundation/Light.h"
+#else
+	#include "Render/DX/Foundation/Light.h"
+#endif
 
 namespace ConstantBuffers {
 	struct PassCB {

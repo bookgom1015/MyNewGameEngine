@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -25,7 +26,7 @@ DxRenderer::DxRenderer() {
 	// Shading objets
 	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
 
-	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap>();
+	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap::EnvironmentMapClass>();
 }
 
 DxRenderer::~DxRenderer() {
@@ -91,13 +92,13 @@ BOOL DxRenderer::CreateDescriptorHeaps() {
 
 BOOL DxRenderer::BuildMeshGeometry(
 		Foundation::Resource::SubmeshGeometry* const submesh,
-		const std::vector<Vertex>& vertices, 
+		const std::vector<Common::Foundation::Mesh::Vertex>& vertices,
 		const std::vector<std::uint16_t>& indices,
 		const std::string& name) {
 	auto geo = std::make_unique<Foundation::Resource::MeshGeometry>();
 	const auto hash = Foundation::Resource::MeshGeometry::Hash(geo.get());
 
-	const UINT vbByteSize = static_cast<UINT>(vertices.size() * sizeof(Vertex));
+	const UINT vbByteSize = static_cast<UINT>(vertices.size() * sizeof(Common::Foundation::Mesh::Vertex));
 	const UINT ibByteSize = static_cast<UINT>(indices.size() * sizeof(std::uint16_t));
 
 	mCommandObject->ResetDirectCommandList();
@@ -132,7 +133,7 @@ BOOL DxRenderer::BuildMeshGeometry(
 	CheckReturn(mpLogFile, mCommandObject->ExecuteDirectCommandList());
 	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
 	
-	geo->VertexByteStride = static_cast<UINT>(sizeof(Vertex));
+	geo->VertexByteStride = static_cast<UINT>(sizeof(Common::Foundation::Mesh::Vertex));
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;	
@@ -172,13 +173,15 @@ BOOL DxRenderer::BuildFrameResources() {
 BOOL DxRenderer::CompileShaders() {
 	CheckReturn(mpLogFile, mEnvironmentMap->CompileShaders());
 	
-	CheckReturn(mpLogFile, mShaderManager->CompileShaders());
+	CheckReturn(mpLogFile, mShaderManager->CompileShaders(L".\\..\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
 
 	return TRUE;
 }
 
 BOOL DxRenderer::BuildRootSignatures() {
-	CheckReturn(mpLogFile, mEnvironmentMap->BuildRootSignatures());
+	const auto& staticSamplers = Shading::Util::SamplerUtil::GetStaticSamplers();
+
+	CheckReturn(mpLogFile, mEnvironmentMap->BuildRootSignatures(staticSamplers));
 
 	return TRUE;
 }
@@ -210,7 +213,7 @@ BOOL DxRenderer::BuildSkySphere() {
 
 	sphereSubmesh.IndexCount = indexCount;
 
-	std::vector<Vertex> vertices(vertexCount);
+	std::vector<Common::Foundation::Mesh::Vertex> vertices(vertexCount);
 	for (UINT i = 0, end = static_cast<UINT>(sphere.Vertices.size()); i < end; ++i) {
 		const auto index = i + sphereSubmesh.BaseVertexLocation;
 		vertices[index].Position = sphere.Vertices[i].Position;

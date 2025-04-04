@@ -11,7 +11,7 @@ BOOL ShadingObject::Initialize(Common::Debug::LogFile* const pLogFile, void* con
 
 BOOL ShadingObject::CompileShaders() { return TRUE; }
 
-BOOL ShadingObject::BuildRootSignatures() { return TRUE; }
+BOOL ShadingObject::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) { return TRUE; }
 
 BOOL ShadingObject::BuildPipelineStates() { return TRUE; }
 

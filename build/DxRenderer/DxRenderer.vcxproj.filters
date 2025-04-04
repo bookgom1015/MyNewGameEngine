@@ -79,8 +79,14 @@
     <Filter Include="Source Files\Foundation\Resource">
       <UniqueIdentifier>{3d9cafab-43d2-47e3-a4cd-fe4d2ba78e26}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader Files\Environment">
+    <Filter Include="Shader Files\EnvironmentMap">
       <UniqueIdentifier>{9598fff4-ed53-4205-bf52-c04850fb9d40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Mesh">
+      <UniqueIdentifier>{bb139337-df8e-43d1-97b2-37fdd5c8b9ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\MipmapGenerator">
+      <UniqueIdentifier>{78be0455-04f9-4a16-9c27-d618fe3e0e21}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +180,15 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp">
       <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -248,6 +263,15 @@
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
       <Filter>Common Files\Foundation\Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\SamplerUtil.cpp">
+      <Filter>Source Files\Shading Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp">
+      <Filter>Source Files\Shading Files\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -276,10 +300,16 @@
       <Filter>Header Files\Foundation\Resource</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\DrawSkySphere.hlsl">
-      <Filter>Shader Files\Environment</Filter>
+      <Filter>Shader Files\EnvironmentMap</Filter>
     </None>
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl">
       <Filter>Common Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GenerateMipmap.hlsl">
+      <Filter>Shader Files\MipmapGenerator</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli">
+      <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
 </Project>

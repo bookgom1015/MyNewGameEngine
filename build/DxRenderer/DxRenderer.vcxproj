@@ -16,6 +16,7 @@
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\HashUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\TaskQueue.hpp" />
@@ -41,6 +42,8 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\d3dx12.h" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +51,7 @@
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\TaskQueue.cpp" />
@@ -67,10 +71,13 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\SamplerUtil.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
@@ -83,6 +90,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\DrawSkySphere.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\GenerateMipmap.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

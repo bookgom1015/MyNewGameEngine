@@ -42,13 +42,16 @@ namespace Render::DX::Shading::Util {
 		virtual ~ShaderManager() = default;
 
 	public:
+		__forceinline IDxcBlob* GetShader(Common::Foundation::Hash hash);
+
+	public:
 		BOOL Initialize(Common::Debug::LogFile* const pLogFile, UINT numThreads);
 
 		void AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash);
-		BOOL CompileShaders();
+		BOOL CompileShaders(LPCWSTR baseDir);
 
 	private:
-		BOOL CompileShader(Common::Foundation::Hash hash);
+		BOOL CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir);
 		BOOL BuildPdb(IDxcResult* const result, LPCWSTR fileName);
 
 	private:
@@ -78,3 +81,5 @@ namespace std {
 		}
 	};
 }
+
+#include "Render/DX/Shading/Util/ShaderManager.inl"
