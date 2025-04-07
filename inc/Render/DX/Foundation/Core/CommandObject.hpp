@@ -33,7 +33,13 @@ namespace Render::DX::Foundation {
 			BOOL FlushCommandQueue();
 
 			BOOL ExecuteDirectCommandList();
-			BOOL ResetDirectCommandList();
+			BOOL ResetDirectCommandList(ID3D12PipelineState* const pPipelineState = nullptr);
+
+			BOOL ExecuteCommandList(UINT index);
+			BOOL ResetCommandList(ID3D12CommandAllocator* const pAlloc, UINT index, ID3D12PipelineState* const pPipelineState = nullptr);
+
+			BOOL ExecuteCommandLists();
+			BOOL ResetCommandLists(ID3D12CommandAllocator* const allocs[], ID3D12PipelineState* const pPipelineState = nullptr);
 
 		private:
 #ifdef _DEBUG
@@ -46,11 +52,13 @@ namespace Render::DX::Foundation {
 
 		public:
 			__forceinline ID3D12GraphicsCommandList4* DirectCommandList() const;
+			__forceinline ID3D12GraphicsCommandList4* CommandList(UINT index) const;
 
 		private:
 			Common::Debug::LogFile* mpLogFile = nullptr;
+			Device* mpDevice = nullptr;
 
-			Device* mDevice = nullptr;
+			UINT mThreadCount = 0;
 
 #ifdef _DEBUG
 			// Debugging

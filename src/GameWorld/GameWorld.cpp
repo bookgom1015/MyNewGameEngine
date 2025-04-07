@@ -195,9 +195,6 @@ void GameWorld::OnResize(UINT width, UINT height) {
 		WLogln(mpLogFile, L"Resizing failed");
 		mWindowsManager->DestroyWindow();
 	}
-#ifdef _DEBUG
-	std::cout << "Resized (Width: " << width << " Height: " << height << ")" << std::endl;
-#endif
 }
 
 BOOL GameWorld::ProcessInput() {

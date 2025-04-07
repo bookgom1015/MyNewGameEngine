@@ -5,4 +5,8 @@ ID3D12GraphicsCommandList4* Render::DX::Foundation::Core::CommandObject::DirectC
 	return mDirectCommandList.Get();
 }
 
+ID3D12GraphicsCommandList4* Render::DX::Foundation::Core::CommandObject::CommandList(UINT index) const {
+	return mMultiCommandLists[index].Get();
+}
+
 #endif // __COMMANDOBJECT_INL__

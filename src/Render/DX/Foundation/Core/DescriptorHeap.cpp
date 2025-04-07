@@ -44,6 +44,14 @@ BOOL DescriptorHeap::BuildDescriptors() {
 	return TRUE;
 }
 
+BOOL DescriptorHeap::SetDescriptorHeap(ID3D12GraphicsCommandList4* const pCmdList) {
+	const auto pDescHeap = mCbvSrvUavHeap.Get();
+	ID3D12DescriptorHeap* const descriptorHeaps[] = { pDescHeap };
+	pCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	return TRUE;
+}
+
 BOOL DescriptorHeap::BuildDescriptorSizes() {
 	mRtvDescriptorSize = mDevice->DescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	mDsvDescriptorSize = mDevice->DescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);

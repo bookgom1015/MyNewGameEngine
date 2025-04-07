@@ -2,6 +2,9 @@
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Mesh/Vertex.h"
 #include "Render/DX/Foundation/Core/Device.hpp"
+#include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Resource/Texture.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
@@ -9,20 +12,30 @@
 using namespace Render::DX::Shading;
 
 namespace {
-	const WCHAR* const DrawSkySphere = L"DrawSkySphere.hlsl";
+	const WCHAR* const HLSL_DrawSkySphere = L"DrawSkySphere.hlsl";
 }
 
 EnvironmentMap::InitDataPtr EnvironmentMap::MakeInitData() {
 	return std::unique_ptr<EnvironmentMapClass::InitData>(new EnvironmentMapClass::InitData());
 }
 
-UINT EnvironmentMap::EnvironmentMapClass::CbvSrvUavDescCount() const { return 0; }
+UINT EnvironmentMap::EnvironmentMapClass::CbvSrvUavDescCount() const { 
+	return 0 
+		+ 1 // TemporaryEquirectangularMapSrv
+		+ 1 // EquirectangularMapSrv
+		; 
+}
 
-UINT EnvironmentMap::EnvironmentMapClass::RtvDescCount() const { return 0; }
+UINT EnvironmentMap::EnvironmentMapClass::RtvDescCount() const { 
+	return 0
+		+ ShadingConvention::MipmapGenerator::MaxMipLevel // EquirectangularMapRtvs
+		; 
+}
 
 UINT EnvironmentMap::EnvironmentMapClass::DsvDescCount() const { return 0; }
 
 EnvironmentMap::EnvironmentMapClass::EnvironmentMapClass() {
+	mTemporaryEquirectangularMap = std::make_unique<Foundation::Resource::GpuResource>();
 	mEquirectangularMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
@@ -38,8 +51,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::Initialize(Common::Debug::LogFile* con
 BOOL EnvironmentMap::EnvironmentMapClass::CompileShaders() {
 	// DrawSkySphere
 	{
-		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(DrawSkySphere, L"VS", L"vs_6_3");
-		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(DrawSkySphere, L"PS", L"ps_6_3");
+		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"VS", L"vs_6_3");
+		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"PS", L"ps_6_3");
 		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::E_VS_DrawSkySphere]);
 		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::E_PS_DrawSkySphere]);
 	}
@@ -86,7 +99,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_DrawSkySphere].Get();
 		{
 			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_VS_DrawSkySphere]);
+			if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
 			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_PS_DrawSkySphere]);
+			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
 			psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
 		}
@@ -108,8 +123,13 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 }
 
 BOOL EnvironmentMap::EnvironmentMapClass::BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) {
+	mhTemporaryEquirectangularMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhTemporaryEquirectangularMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+
 	mhEquirectangularMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
 	mhEquirectangularMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+	for (UINT i = 0; i < ShadingConvention::MipmapGenerator::MaxMipLevel; ++i) 
+		mhEquirectangularMapCpuRtvs[i] = pDescHeap->RtvCpuOffset(1);
 
 	CheckReturn(mpLogFile, BuildDescriptors());
 
@@ -123,12 +143,10 @@ BOOL EnvironmentMap::EnvironmentMapClass::SetEnvironmentMap(LPCWSTR filePath) {
 		mInitData.Device,
 		mInitData.CommandObject,
 		tex.get(),
-		filePath,
-		TRUE,
-		5));
+		filePath));
 
-	mEquirectangularMap->Swap(tex->Resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	CheckHRESULT(mpLogFile, mEquirectangularMap->Resource()->SetName(L"EnvironmentMap_EquirectangularMap"));
+	mTemporaryEquirectangularMap->Swap(tex->Resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	CheckHRESULT(mpLogFile, mTemporaryEquirectangularMap->Resource()->SetName(L"EnvironmentMap_TemporaryEquirectangularMap"));
 
 	return TRUE;
 }

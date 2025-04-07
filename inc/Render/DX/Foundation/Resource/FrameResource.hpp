@@ -27,6 +27,10 @@ namespace Render::DX::Foundation {
 			virtual ~FrameResource() = default;
 
 		public:
+			__forceinline ID3D12CommandAllocator* CommandAllocator(UINT index) const;
+			__forceinline void CommandAllocators(std::vector<ID3D12CommandAllocator*>& allocs) const;
+
+		public:
 			BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
 				Core::Device* const pDevice,
@@ -42,6 +46,8 @@ namespace Render::DX::Foundation {
 			Common::Debug::LogFile* mpLogFile = nullptr;
 			Core::Device* mpDevice = nullptr;
 
+			UINT mThreadCount = 0;
+
 			std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> mCmdAllocators;
 
 			UploadBuffer<ConstantBuffers::PassCB> mPassCB;
@@ -52,3 +58,5 @@ namespace Render::DX::Foundation {
 		};
 	}
 }
+
+#include "Render/DX/Foundation/Resource/FrameResource.inl"

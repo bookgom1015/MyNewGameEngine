@@ -35,6 +35,10 @@ void VkRenderer::CleanUp() {
 BOOL VkRenderer::OnResize(UINT width, UINT height) {
 	CheckReturn(mpLogFile, VkLowRenderer::OnResize(width, height));
 
+#ifdef _DEBUG
+	std::cout << "VkRenderer resized (Width: " << width << " Height: " << height << ")" << std::endl;
+#endif
+
 	return TRUE;
 }
 

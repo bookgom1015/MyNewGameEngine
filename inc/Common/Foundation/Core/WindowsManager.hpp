@@ -66,6 +66,7 @@ namespace Common {
 
 		private:
 			BOOL InitMainWnd(UINT wndWidth, UINT wndHeight);
+			void OnResize(UINT width, UINT height);
 
 		public:
 			static WindowsManager* sWindowsManager;
@@ -91,6 +92,9 @@ namespace Common {
 
 			OnResizeFunc mOnResizeFunc;
 			BOOL mbRegisteredOnResizeFunc = FALSE;
+
+			UINT mMainWndWidth = 0;
+			UINT mMainWndHeight = 0;
 		};
 	}
 }

@@ -41,6 +41,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\d3dx12.h" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\ShadingObjectManager.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp" />
@@ -70,20 +71,24 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\Texture.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\ShadingObjectManager.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\SamplerUtil.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli" />
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\Device.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\Factory.inl" />
+    <None Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl" />
     <None Include="packages.config" />

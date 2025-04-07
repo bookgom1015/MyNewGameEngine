@@ -148,21 +148,21 @@ LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 			mbAppPaused = FALSE;
 			mbMinimized = FALSE;
 			mbMaximized = TRUE;
-			if (mbRegisteredOnResizeFunc) mOnResizeFunc(width, height);
+			OnResize(width, height);
 		}
 		else if (wParam == SIZE_RESTORED) {
 			// Restoring from minimized state?
 			if (mbMinimized) {
 				mbAppPaused = FALSE;
 				mbMinimized = FALSE;
-				if (mbRegisteredOnResizeFunc) mOnResizeFunc(width, height);
+				OnResize(width, height);
 			}
 
 			// Restoring from maximized state?
 			else if (mbMaximized) {
 				mbAppPaused = FALSE;
 				mbMaximized = FALSE;
-				if (mbRegisteredOnResizeFunc) mOnResizeFunc(width, height);
+				OnResize(width, height);
 			}
 			// If user is dragging the resize bars, we do not resize 
 			// the buffers here because as the user continuously 
@@ -177,7 +177,7 @@ LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 			}
 			// API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 			else {
-				if (mbRegisteredOnResizeFunc) mOnResizeFunc(width, height);
+				OnResize(width, height);
 			}
 		}
 		return 0;
@@ -200,7 +200,7 @@ LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 		UINT width = static_cast<UINT>(clientRect.right - clientRect.left);
 		UINT height = static_cast<UINT>(clientRect.bottom - clientRect.top);
 
-		if (mbRegisteredOnResizeFunc) mOnResizeFunc(width, height);
+		OnResize(width, height);
 		return 0;
 	}
 						// WM_DESTROY is sent when the window is being destroyed.
@@ -295,6 +295,9 @@ BOOL WindowsManager::SelectDialog(SelectDialogInitData* const pInitData) {
 }
 
 BOOL WindowsManager::InitMainWnd(UINT wndWidth, UINT wndHeight) {
+	mMainWndWidth = wndWidth;
+	mMainWndHeight = wndHeight;
+
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = MainWndProc;
@@ -333,4 +336,13 @@ BOOL WindowsManager::InitMainWnd(UINT wndWidth, UINT wndHeight) {
 	if (!UpdateWindow(mhMainWnd)) ReturnFalse(mpLogFile, L"Failed to update window");
 
 	return TRUE;
+}
+
+void WindowsManager::OnResize(UINT width, UINT height) {
+	if (mMainWndWidth != width || mMainWndHeight != height) {
+		mMainWndWidth = width;
+		mMainWndHeight = height;
+
+		if (mbRegisteredOnResizeFunc) mOnResizeFunc(width, height);
+	}
 }

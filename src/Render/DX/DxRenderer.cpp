@@ -3,10 +3,13 @@
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
-#include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
+#include "Render/DX/Foundation/Util/D3D12Util.hpp"
+#include "Render/DX/Foundation/Util/ShadingObjectManager.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/MipmapGenerator.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "FrankLuna/GeometryGenerator.h"
@@ -24,8 +27,10 @@ extern "C" RendererAPI void Render::DestroyRenderer(Common::Render::Renderer* co
 
 DxRenderer::DxRenderer() {
 	// Shading objets
+	mShadingObjectManager = std::make_unique<Foundation::Util::ShadingObjectManager>();
 	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
 
+	mMipmapGenerator = std::make_unique<Shading::Util::MipmapGenerator::MipmapGeneratorClass>();
 	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap::EnvironmentMapClass>();
 }
 
@@ -42,14 +47,16 @@ BOOL DxRenderer::Initialize(
 	CheckReturn(mpLogFile, InitShadingObjects());
 	CheckReturn(mpLogFile, BuildFrameResources());
 
-	CheckReturn(mpLogFile, CompileShaders());
-	CheckReturn(mpLogFile, BuildRootSignatures());
-	CheckReturn(mpLogFile, BuildPipelineStates());
-	CheckReturn(mpLogFile, BuildDescriptors());
+	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
 
 	CheckReturn(mpLogFile, BuildSkySphere());
 
 	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
+
+	CheckReturn(mpLogFile, FinishUpInitializing());
 
 	return TRUE;
 }
@@ -58,8 +65,14 @@ void DxRenderer::CleanUp() {
 	DxLowRenderer::CleanUp();
 }
 
-BOOL DxRenderer::OnResize(UINT width, UINT height) {	
+BOOL DxRenderer::OnResize(UINT width, UINT height) {
 	CheckReturn(mpLogFile, DxLowRenderer::OnResize(width, height));
+
+	CheckReturn(mpLogFile, mShadingObjectManager->OnResize(width, height));
+
+#ifdef _DEBUG
+	std::cout << "DxRenderer resized (Width: " << width << " Height: " << height << ")" << std::endl;
+#endif
 
 	return TRUE;
 }
@@ -85,7 +98,11 @@ BOOL DxRenderer::RemoveMesh() {
 }
 
 BOOL DxRenderer::CreateDescriptorHeaps() {
-	CheckReturn(mpLogFile, mDescriptorHeap->CreateDescriptorHeaps(0, 0, 0));
+	UINT cbvSrvUavCount = mShadingObjectManager->CbvSrvUavDescCount();
+	UINT rtvCount = mShadingObjectManager->RtvDescCount();
+	UINT dsvCount = mShadingObjectManager->DsvDescCount();
+
+	CheckReturn(mpLogFile, mDescriptorHeap->CreateDescriptorHeaps(cbvSrvUavCount, rtvCount, dsvCount));
 
 	return TRUE;
 }
@@ -145,8 +162,19 @@ BOOL DxRenderer::BuildMeshGeometry(
 }
 
 BOOL DxRenderer::InitShadingObjects() {
+	CheckReturn(mpLogFile, mShadingObjectManager->Initialize(mpLogFile));
 	CheckReturn(mpLogFile, mShaderManager->Initialize(mpLogFile, static_cast<UINT>(mProcessor->Logical)));
 
+	// MipmapGenerator
+	{
+		auto initData = Shading::Util::MipmapGenerator::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		CheckReturn(mpLogFile, mMipmapGenerator->Initialize(mpLogFile, initData.get()));
+		mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
+	}
 	// Environment map
 	{
 		auto initData = Shading::EnvironmentMap::MakeInitData();
@@ -154,7 +182,7 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->CommandObject = mCommandObject.get();
 		initData->ShaderManager = mShaderManager.get();
 		CheckReturn(mpLogFile, mEnvironmentMap->Initialize(mpLogFile, initData.get()));
-		CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(L"./../../../../assets/textures/forest_hdr.dds"));
+		mShadingObjectManager->AddShadingObject(mEnvironmentMap.get());
 	}
 
 	return TRUE;
@@ -166,36 +194,6 @@ BOOL DxRenderer::BuildFrameResources() {
 
 		CheckReturn(mpLogFile, mFrameResources.back()->Initialize(mpLogFile, mDevice.get(), static_cast<UINT>(mProcessor->Logical), 2, 32));
 	}
-
-	return TRUE;
-}
-
-BOOL DxRenderer::CompileShaders() {
-	CheckReturn(mpLogFile, mEnvironmentMap->CompileShaders());
-	
-	CheckReturn(mpLogFile, mShaderManager->CompileShaders(L".\\..\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
-
-	return TRUE;
-}
-
-BOOL DxRenderer::BuildRootSignatures() {
-	const auto& staticSamplers = Shading::Util::SamplerUtil::GetStaticSamplers();
-
-	CheckReturn(mpLogFile, mEnvironmentMap->BuildRootSignatures(staticSamplers));
-
-	return TRUE;
-}
-
-BOOL DxRenderer::BuildPipelineStates() {
-	CheckReturn(mpLogFile, mEnvironmentMap->BuildPipelineStates());
-
-	return TRUE;
-}
-
-BOOL DxRenderer::BuildDescriptors() {
-	const auto descHeap = mDescriptorHeap.get();
-
-	CheckReturn(mpLogFile, mEnvironmentMap->BuildDescriptors(descHeap));
 
 	return TRUE;
 }
@@ -228,6 +226,12 @@ BOOL DxRenderer::BuildSkySphere() {
 	}
 
 	CheckReturn(mpLogFile, BuildMeshGeometry(&sphereSubmesh, vertices, indices, "SkySphere"));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::FinishUpInitializing() {
+	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(L"./../../../../assets/textures/forest_hdr.dds"));
 
 	return TRUE;
 }

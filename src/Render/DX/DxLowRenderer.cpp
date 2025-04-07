@@ -8,6 +8,7 @@
 #include "Render/DX/Foundation/Core/SwapChain.hpp"
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 #include <algorithm>

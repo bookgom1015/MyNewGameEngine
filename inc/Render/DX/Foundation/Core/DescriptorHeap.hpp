@@ -19,18 +19,22 @@ namespace Render::DX::Foundation::Core {
 		virtual ~DescriptorHeap() = default;
 
 	public:
+		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE CbvSrvUavCpuOffset(UINT offset);
+		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE CbvSrvUavGpuOffset(UINT offset);
+		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuOffset(UINT offset);
+		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuOffset(UINT offset);
+
+	public:
 		BOOL Initialize(
 			Common::Debug::LogFile* const pLogFile, 
 			Device* const pDevice,
 			SwapChain* const pSwapChain, 
 			DepthStencilBuffer* const pDepthStencilBuffer);
+
 		BOOL CreateDescriptorHeaps(UINT numCbvSrvUav, UINT numRtv, UINT numDsv);
 		BOOL BuildDescriptors();
-		
-		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE CbvSrvUavCpuOffset(UINT offset);
-		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE CbvSrvUavGpuOffset(UINT offset);
-		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuOffset(UINT offset);
-		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuOffset(UINT offset);
+
+		BOOL SetDescriptorHeap(ID3D12GraphicsCommandList4* const pCmdList);
 
 	private:
 		BOOL BuildDescriptorSizes();

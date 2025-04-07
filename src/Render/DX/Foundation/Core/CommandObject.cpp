@@ -44,16 +44,17 @@ namespace {
 
 BOOL CommandObject::Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads) {
 	mpLogFile = pLogFile;
-	mDevice = pDevice;
+	mpDevice = pDevice;
+	mThreadCount = numThreads;
 
-	mMultiCommandLists.resize(numThreads);
+	mMultiCommandLists.resize(mThreadCount);
 
 #ifdef _DEBUG
 	CheckReturn(mpLogFile, CreateDebugObjects());
 #endif
 	CheckReturn(mpLogFile, CreateCommandQueue());
 	CheckReturn(mpLogFile, CreateDirectCommandObjects());
-	CheckReturn(mpLogFile, CreateMultiCommandObjects(numThreads));
+	CheckReturn(mpLogFile, CreateMultiCommandObjects(mThreadCount));
 	CheckReturn(mpLogFile, CreateFence());
 
 	return TRUE;
@@ -92,15 +93,51 @@ BOOL CommandObject::ExecuteDirectCommandList() {
 	return TRUE;
 }
 
-BOOL CommandObject::ResetDirectCommandList() {
-	CheckHRESULT(mpLogFile, mDirectCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+BOOL CommandObject::ResetDirectCommandList(ID3D12PipelineState* const pPipelineState) {
+	CheckHRESULT(mpLogFile, mDirectCommandList->Reset(mDirectCmdListAlloc.Get(), pPipelineState));
+
+	return TRUE;
+}
+
+BOOL CommandObject::ExecuteCommandList(UINT index) {
+	const auto cmdList = mMultiCommandLists[index].Get();
+	CheckHRESULT(mpLogFile, cmdList->Close());
+	mCommandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&cmdList));
+
+	return TRUE;
+}
+
+BOOL CommandObject::ResetCommandList(ID3D12CommandAllocator* const pAlloc, UINT index, ID3D12PipelineState* const pPipelineState) {
+	CheckHRESULT(mpLogFile, mMultiCommandLists[index]->Reset(pAlloc, pPipelineState));
+
+	return TRUE;
+}
+
+BOOL CommandObject::ExecuteCommandLists() {
+	std::vector<ID3D12CommandList*> cmdLists(mThreadCount);
+
+	for (UINT i = 0; i < mThreadCount; ++i) {
+		const auto cmdList = mMultiCommandLists[i].Get();
+		CheckHRESULT(mpLogFile, cmdList->Close());
+
+		cmdLists.push_back(cmdList);
+	}
+	
+	mCommandQueue->ExecuteCommandLists(mThreadCount, cmdLists.data());
+
+	return TRUE;
+}
+
+BOOL CommandObject::ResetCommandLists(ID3D12CommandAllocator* const allocs[], ID3D12PipelineState* const pPipelineState) {
+	for (UINT i = 0; i < mThreadCount; ++i) 
+		CheckHRESULT(mpLogFile, mMultiCommandLists[i]->Reset(allocs[i], pPipelineState));
 
 	return TRUE;
 }
 
 #ifdef _DEBUG
 BOOL CommandObject::CreateDebugObjects() {
-	CheckReturn(mpLogFile, mDevice->QueryInterface(mInfoQueue));
+	CheckReturn(mpLogFile, mpDevice->QueryInterface(mInfoQueue));
 	CheckHRESULT(mpLogFile, mInfoQueue->RegisterMessageCallback(D3D12MessageCallback, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, mpLogFile, &mCallbakCookie));
 
 	return TRUE;
@@ -108,27 +145,27 @@ BOOL CommandObject::CreateDebugObjects() {
 #endif
 
 BOOL CommandObject::CreateCommandQueue() {
-	CheckReturn(mpLogFile, mDevice->CreateCommandQueue(mCommandQueue));
+	CheckReturn(mpLogFile, mpDevice->CreateCommandQueue(mCommandQueue));
 
 	return TRUE;
 }
 
 BOOL CommandObject::CreateDirectCommandObjects() {
-	CheckReturn(mpLogFile, mDevice->CreateCommandAllocator(mDirectCmdListAlloc));
-	CheckReturn(mpLogFile, mDevice->CreateCommandList(mDirectCmdListAlloc.Get(), mDirectCommandList));
+	CheckReturn(mpLogFile, mpDevice->CreateCommandAllocator(mDirectCmdListAlloc));
+	CheckReturn(mpLogFile, mpDevice->CreateCommandList(mDirectCmdListAlloc.Get(), mDirectCommandList));
 
 	return TRUE;
 }
 
 BOOL CommandObject::CreateMultiCommandObjects(UINT numThreads) {
 	for (UINT i = 0; i < numThreads; ++i) 
-		CheckReturn(mpLogFile, mDevice->CreateCommandList(mDirectCmdListAlloc.Get(), mMultiCommandLists[i]));
+		CheckReturn(mpLogFile, mpDevice->CreateCommandList(mDirectCmdListAlloc.Get(), mMultiCommandLists[i]));
 
 	return TRUE;
 }
 
 BOOL CommandObject::CreateFence() {
-	CheckReturn(mpLogFile, mDevice->CreateFence(mFence));
+	CheckReturn(mpLogFile, mpDevice->CreateFence(mFence));
 
 	return TRUE;
 }

@@ -15,7 +15,9 @@ BOOL FrameResource::Initialize(
 	mPassCount = numPasses;
 	mObjectCount = numObjects;
 
-	mCmdAllocators.resize(numThreads);
+	mThreadCount = numThreads;
+
+	mCmdAllocators.resize(mThreadCount);
 
 	CheckReturn(mpLogFile, CreateCommandListAllocators());
 	CheckReturn(mpLogFile, BuildConstantBuffres());

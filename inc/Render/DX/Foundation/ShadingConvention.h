@@ -37,6 +37,8 @@ namespace ShadingConvention{
 	}
 
 	namespace MipmapGenerator {
+		static const UINT MaxMipLevel = 5;
+
 #ifndef MipmapGenerator_Default_RCSTRUCT
 #define MipmapGenerator_Default_RCSTRUCT {		\
 		DirectX::XMFLOAT2 gInvTexSize;			\

@@ -1,5 +1,7 @@
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
+#include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
+#include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 

@@ -9,16 +9,24 @@ namespace Render {
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace DX {
-		namespace Foundation::Resource {
-			struct MeshGeometry;
-			struct SubmeshGeometry;
+		namespace Foundation {
+			namespace Resource {
+				struct MeshGeometry;
+				struct SubmeshGeometry;
 
-			class FrameResource;
+				class FrameResource;
+			}
+
+			namespace Util {
+				class ShadingObjectManager;
+			}
 		}
 
 		namespace Shading {
 			namespace Util {
 				class ShaderManager;
+
+				namespace MipmapGenerator { class MipmapGeneratorClass; }
 			}
 
 			namespace EnvironmentMap { class EnvironmentMapClass; }
@@ -60,12 +68,9 @@ namespace Render {
 		private: // Functions that is called only once in Initialize
 			BOOL InitShadingObjects();
 			BOOL BuildFrameResources();
-			BOOL CompileShaders();
-			BOOL BuildRootSignatures();
-			BOOL BuildPipelineStates();
-			BOOL BuildDescriptors();
 
 			BOOL BuildSkySphere();
+			BOOL FinishUpInitializing();
 
 		private:
 			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries;
@@ -74,8 +79,10 @@ namespace Render {
 			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources;
 
 			// Shading objects
+			std::unique_ptr<Foundation::Util::ShadingObjectManager> mShadingObjectManager;
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
 
+			std::unique_ptr<Shading::Util::MipmapGenerator::MipmapGeneratorClass> mMipmapGenerator;
 			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
 		};
 	}

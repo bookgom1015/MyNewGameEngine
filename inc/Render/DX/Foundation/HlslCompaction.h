@@ -3,6 +3,8 @@
 
 #ifdef _HLSL
 	#include "./../../../../assets/Shaders/HLSL/HlslCompaction.hlsli"
+	#include "./../../../../assets/Shaders/HLSL/HardCodedCoordinates.hlsli"
+	#include "./../../../../assets/Shaders/HLSL/ShaderUtil.hlsli"
 	#include "./../../../../inc/Common/Foundation/Mesh/Vertex.h"
 	#include "./../../../../inc/Common/Foundation/Mesh/Material.h"
 	#include "./../../../../inc/Render/DX/Foundation/ShadingConvention.h"

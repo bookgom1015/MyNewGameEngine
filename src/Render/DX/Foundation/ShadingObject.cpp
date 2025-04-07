@@ -1,4 +1,5 @@
 #include "Render/DX/Foundation/ShadingObject.hpp"
+#include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
 
 using namespace Render::DX::Foundation;
 
