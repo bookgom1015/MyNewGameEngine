@@ -4,12 +4,22 @@
 #include "Common/Foundation/Util/HashUtil.hpp"
 #include "Render/DX/DxLowRenderer.hpp"
 
+namespace Common::Foundation::Camera {
+	class GameCamera;
+}
+
+namespace ConstantBuffers {
+	struct PassCB;
+}
+
 namespace Render {
 	extern "C" RendererAPI Common::Render::Renderer* CreateRenderer();
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace DX {
 		namespace Foundation {
+			struct RenderItem;
+
 			namespace Resource {
 				struct MeshGeometry;
 				struct SubmeshGeometry;
@@ -27,6 +37,7 @@ namespace Render {
 				class ShaderManager;
 
 				namespace MipmapGenerator { class MipmapGeneratorClass; }
+				namespace EquirectangularConverter { class EquirectangularConverterClass; }
 			}
 
 			namespace EnvironmentMap { class EnvironmentMapClass; }
@@ -59,11 +70,18 @@ namespace Render {
 			virtual BOOL CreateDescriptorHeaps() override;
 
 		private:
+			BOOL UpdateConstantBuffers();
+			BOOL UpdateMainPassCB();
+			BOOL UpdateObjectCB();
+			BOOL UpdateEquirectangularConverterCB();
+
+		private:
 			BOOL BuildMeshGeometry(
 				Foundation::Resource::SubmeshGeometry* const submesh,
 				const std::vector<Common::Foundation::Mesh::Vertex>& vertices, 
 				const std::vector<std::uint16_t>& indices,
-				const std::string& name);
+				const std::string& name,
+				Common::Foundation::Hash& hash);
 
 		private: // Functions that is called only once in Initialize
 			BOOL InitShadingObjects();
@@ -72,18 +90,33 @@ namespace Render {
 			BOOL BuildSkySphere();
 			BOOL FinishUpInitializing();
 
+			BOOL PresentAndSignal();
+
 		private:
 			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries;
 
 			// Frame resource
 			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources;
+			Foundation::Resource::FrameResource* mCurrentFrameResource = nullptr;
+			UINT mCurrentFrameResourceIndex = 0;
+
+			// Constant buffers
+			std::unique_ptr<ConstantBuffers::PassCB> mMainPassCB;
 
 			// Shading objects
 			std::unique_ptr<Foundation::Util::ShadingObjectManager> mShadingObjectManager;
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
 
 			std::unique_ptr<Shading::Util::MipmapGenerator::MipmapGeneratorClass> mMipmapGenerator;
+			std::unique_ptr<Shading::Util::EquirectangularConverter::EquirectangularConverterClass> mEquirectangularConverter;
+
 			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
+
+			// Render items
+			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
+
+			// Camera
+			Common::Foundation::Camera::GameCamera* mpCamera = nullptr;
 		};
 	}
 }

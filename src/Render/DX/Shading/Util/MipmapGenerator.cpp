@@ -53,26 +53,28 @@ BOOL MipmapGenerator::MipmapGeneratorClass::CompileShaders() {
 }
 
 BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
-	CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+	// Default
+	{
+		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
-	index = 0;
+		index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
-	slotRootParameter[RootSignature::Default::EC_Consts].InitAsConstants(ShadingConvention::MipmapGenerator::RootConstant::Default::Count, 0);
-	slotRootParameter[RootSignature::Default::ESI_InputMap].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
+		slotRootParameter[RootSignature::Default::EC_Consts].InitAsConstants(ShadingConvention::MipmapGenerator::RootConstant::Default::Count, 0);
+		slotRootParameter[RootSignature::Default::ESI_InputMap].InitAsDescriptorTable(1, &texTables[index++]);
 
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
-		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
-	);
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
+			_countof(slotRootParameter), slotRootParameter,
+			static_cast<UINT>(samplers.size()), samplers.data(),
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
-		mInitData.Device, 
-		rootSigDesc, 
-		IID_PPV_ARGS(&mRootSignature), 
-		L"MipmapGenerator_RS_Default"));
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
+			mInitData.Device,
+			rootSigDesc,
+			IID_PPV_ARGS(&mRootSignature),
+			L"MipmapGenerator_RS_Default"));
+	}
 
 	return TRUE;
 }
@@ -120,22 +122,21 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 	return TRUE;
 }
 
-BOOL MipmapGenerator::MipmapGeneratorClass::Run(
-		Foundation::Resource::FrameResource* const pFrameResource,
+BOOL MipmapGenerator::MipmapGeneratorClass::GenerateMipmap(
 		Foundation::Resource::GpuResource* const pOutput,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_outputs[],
+		Foundation::Resource::GpuResource* const pInput,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		UINT maxMipLevel, UINT width, UINT height) {
-	mInitData.CommandObject->ResetCommandList(
-		pFrameResource->CommandAllocator(0),
-		0,
-		mPipelineStates[PipelineState::EG_CopyMap].Get());
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::EG_CopyMap].Get()));
 
-	const auto cmdList = mInitData.CommandObject->CommandList(0);
+	const auto cmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
 
-	CheckReturn(mpLogFile, CopyMap(cmdList, pOutput, si_input, ro_outputs[0], width, height));
-	CheckReturn(mpLogFile, GenerateMipmap(cmdList, pOutput, si_input, ro_outputs, maxMipLevel, width, height));
+	CheckReturn(mpLogFile, CopyMap(cmdList, pOutput, ro_outputs[0], pInput, si_input, width, height));
+	CheckReturn(mpLogFile, GenerateMipmap(cmdList, pOutput, ro_outputs, si_input, maxMipLevel, width, height));
+
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
 
 	return TRUE;
 }
@@ -143,8 +144,9 @@ BOOL MipmapGenerator::MipmapGeneratorClass::Run(
 BOOL MipmapGenerator::MipmapGeneratorClass::CopyMap(
 		ID3D12GraphicsCommandList4* const pCmdList,
 		Foundation::Resource::GpuResource* const pOutput,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_output,
+	Foundation::Resource::GpuResource* const pInput,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		UINT width, UINT height) {
 	pCmdList->SetGraphicsRootSignature(mRootSignature.Get());
 
@@ -157,6 +159,7 @@ BOOL MipmapGenerator::MipmapGeneratorClass::CopyMap(
 	}
 
 	pOutput->Transite(pCmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	pInput->Transite(pCmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	pCmdList->OMSetRenderTargets(1, &ro_output, TRUE, nullptr);
 
@@ -193,8 +196,8 @@ BOOL MipmapGenerator::MipmapGeneratorClass::CopyMap(
 BOOL MipmapGenerator::MipmapGeneratorClass::GenerateMipmap(
 		ID3D12GraphicsCommandList4* const pCmdList,
 		Foundation::Resource::GpuResource* const pOutput,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_outputs[],
+		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		UINT maxMipLevel, UINT width, UINT height) {
 	pCmdList->SetPipelineState(mPipelineStates[PipelineState::EG_GenerateMipmap].Get());
 

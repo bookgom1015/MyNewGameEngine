@@ -57,25 +57,26 @@ namespace Render::DX::Shading::Util {
 			virtual BOOL BuildPipelineStates() override;
 
 		public:
-			BOOL Run(
-				Foundation::Resource::FrameResource* const pFrameResource,
+			BOOL GenerateMipmap(
 				Foundation::Resource::GpuResource* const pOutput,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_outputs[],
+				Foundation::Resource::GpuResource* const pInput,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 				UINT maxMipLevel, UINT width, UINT height);
 
 		private:
 			BOOL CopyMap(
 				ID3D12GraphicsCommandList4* const pCmdList,
 				Foundation::Resource::GpuResource* const pOutput,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_output,
+				Foundation::Resource::GpuResource* const pInput,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 				UINT width, UINT height);
 			BOOL GenerateMipmap(
 				ID3D12GraphicsCommandList4* const pCmdList,
 				Foundation::Resource::GpuResource* const pOutput,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_outputs[],
+				D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 				UINT maxMipLevel, UINT width, UINT height);
 
 		private:
@@ -84,7 +85,7 @@ namespace Render::DX::Shading::Util {
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes = {};
 
 			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates = {};
 		};
 
 		using InitDataPtr = std::unique_ptr<MipmapGeneratorClass::InitData>;

@@ -17,4 +17,8 @@ constexpr HINSTANCE Common::Foundation::Core::WindowsManager::InstanceHandle() c
 
 constexpr HWND Common::Foundation::Core::WindowsManager::MainWindowHandle() const { return mhMainWnd; }
 
+FLOAT Common::Foundation::Core::WindowsManager::AspectRatio() const {
+	return static_cast<FLOAT>(mMainWndWidth) / static_cast<FLOAT>(mMainWndHeight);
+}
+
 #endif // __WINDOWSMANAGER_INL__

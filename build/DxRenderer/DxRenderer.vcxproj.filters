@@ -88,6 +88,12 @@
     <Filter Include="Shader Files\MipmapGenerator">
       <UniqueIdentifier>{78be0455-04f9-4a16-9c27-d618fe3e0e21}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\EquirectangularConverter">
+      <UniqueIdentifier>{92139576-3be5-49a3-abd2-4c2bf1b165b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Camera">
+      <UniqueIdentifier>{be8b577c-4fb8-46e7-97bf-149a60952972}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -192,6 +198,18 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\ShadingObjectManager.hpp">
       <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\RenderItem.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\MathUtil.hpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp">
+      <Filter>Common Files\Foundation\Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -278,6 +296,18 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\ShadingObjectManager.cpp">
       <Filter>Source Files\Foundation\Util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp">
+      <Filter>Source Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Util\MathUtil.cpp">
+      <Filter>Common Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\EquirectangaularConverter.cpp">
+      <Filter>Source Files\Shading Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp">
+      <Filter>Common Files\Foundation\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -325,6 +355,21 @@
     </None>
     <None Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.inl">
       <Filter>Header Files\Foundation\Resource</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli">
+      <Filter>Shader Files\EquirectangularConverter</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ConvertCubeToEquirectangularMap.hlsl">
+      <Filter>Shader Files\EquirectangularConverter</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ConvertEquirectangularToCubeMap.hlsl">
+      <Filter>Shader Files\EquirectangularConverter</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl">
+      <Filter>Common Files\Foundation\Camera</Filter>
     </None>
   </ItemGroup>
 </Project>

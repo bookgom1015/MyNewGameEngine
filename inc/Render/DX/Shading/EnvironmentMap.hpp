@@ -3,6 +3,16 @@
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
 namespace Render::DX::Shading {
+	namespace Util {
+		namespace MipmapGenerator {
+			class MipmapGeneratorClass;
+		}
+
+		namespace EquirectangularConverter {
+			class EquirectangularConverterClass;
+		}
+	}
+
 	namespace EnvironmentMap {
 		namespace Shader {
 			enum Type {
@@ -40,6 +50,7 @@ namespace Render::DX::Shading {
 			struct InitData {
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
+				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
 				Util::ShaderManager* ShaderManager = nullptr;
 			};
 
@@ -61,20 +72,43 @@ namespace Render::DX::Shading {
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 
 		public:
-			BOOL SetEnvironmentMap(LPCWSTR filePath);
+			BOOL SetEnvironmentMap(
+				Util::MipmapGenerator::MipmapGeneratorClass* const pMipmapGenerator, 
+				Util::EquirectangularConverter::EquirectangularConverterClass* const pEquirectangularConverter,
+				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
+				LPCWSTR filePath);
 
-			BOOL GenerateMipmap();
+			BOOL DrawSkySphere(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				D3D12_VIEWPORT viewport,
+				D3D12_RECT scissorRect,
+				Foundation::Resource::GpuResource* const backBuffer,
+				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+				D3D12_CPU_DESCRIPTOR_HANDLE dio_depthStencil,
+				D3D12_GPU_VIRTUAL_ADDRESS cbPass,
+				D3D12_GPU_VIRTUAL_ADDRESS cbObject,
+				UINT objCBByteSize,
+				Foundation::RenderItem* const sphere);
 
 		private:
+			BOOL BuildResources();
 			BOOL BuildDescriptors();
+
+			BOOL CreateTemporaryEquirectangularMap(LPCWSTR filePath);
+			BOOL CreateEquirectangularMap();
+			BOOL BuildEquirectangularMapDescriptors();
+			BOOL GenerateMipmap(Util::MipmapGenerator::MipmapGeneratorClass* const pMipmapGenerator);
+			BOOL ConvertEquirectangularMapToCubeMap(
+				Util::EquirectangularConverter::EquirectangularConverterClass* const pEquirectangularConverter,
+				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv);
 
 		private:
 			InitData mInitData;
 
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes = {};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures = {};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates = {};
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mTemporaryEquirectangularMap;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhTemporaryEquirectangularMapCpuSrv;
@@ -84,6 +118,11 @@ namespace Render::DX::Shading {
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEquirectangularMapCpuSrv;
 			CD3DX12_GPU_DESCRIPTOR_HANDLE mhEquirectangularMapGpuSrv;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEquirectangularMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mEnvironmentCubeMap;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuSrv;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapGpuSrv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
 		};
 
 		using InitDataPtr = std::unique_ptr<EnvironmentMapClass::InitData>;

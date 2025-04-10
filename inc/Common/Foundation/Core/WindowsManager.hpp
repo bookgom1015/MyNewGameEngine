@@ -46,6 +46,8 @@ namespace Common {
 			__forceinline constexpr HINSTANCE InstanceHandle() const;
 			__forceinline constexpr HWND MainWindowHandle() const;
 
+			__forceinline FLOAT AspectRatio() const;
+
 		public:
 			static INT ToDLUsWidth(INT width);
 			static INT ToDLUsHeight(INT height);

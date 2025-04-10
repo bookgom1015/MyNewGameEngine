@@ -14,10 +14,12 @@
   <ItemGroup>
     <ClInclude Include="..\..\externs\FrankLuna\GeometryGenerator.h" />
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\HashUtil.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Util\MathUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Util\TaskQueue.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
@@ -32,6 +34,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\RenderItem.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp" />
@@ -43,6 +46,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\d3dx12.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\ShadingObjectManager.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.hpp" />
@@ -50,10 +54,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp" />
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Util\MathUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Util\TaskQueue.cpp" />
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
@@ -65,6 +71,7 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Factory.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\SwapChain.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\GpuResource.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\MeshGeometry.cpp" />
@@ -73,21 +80,25 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\ShadingObjectManager.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\EquirectangaularConverter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\SamplerUtil.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli" />
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
+    <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\Device.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\Factory.inl" />
+    <None Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl" />
@@ -100,6 +111,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\GenerateMipmap.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\ConvertCubeToEquirectangularMap.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ConvertEquirectangularToCubeMap.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

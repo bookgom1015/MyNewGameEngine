@@ -41,6 +41,7 @@ public:
 	virtual ~GameWorld();
 
 public:
+	__forceinline Common::Foundation::Core::WindowsManager* WindowsManager() const;
 	__forceinline Common::Input::InputProcessor* InputProcessor() const;
 
 public:
@@ -91,6 +92,4 @@ private:
 	std::unique_ptr<Common::Input::InputProcessor> mInputProcessor;
 };
 
-Common::Input::InputProcessor* GameWorld::InputProcessor() const {
-	return mInputProcessor.get();
-}
+#include "GameWorld.inl"

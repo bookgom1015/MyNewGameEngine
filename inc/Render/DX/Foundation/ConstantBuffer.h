@@ -30,4 +30,9 @@ namespace ConstantBuffers {
 		DirectX::XMFLOAT4	Center;
 		DirectX::XMFLOAT4	Extents;
 	};
+
+	struct EquirectangularConverterCB {
+		DirectX::XMFLOAT4X4 Proj;
+		DirectX::XMFLOAT4X4 View[6];
+	};
 }

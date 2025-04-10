@@ -9,4 +9,8 @@ ID3D12GraphicsCommandList4* Render::DX::Foundation::Core::CommandObject::Command
 	return mMultiCommandLists[index].Get();
 }
 
+constexpr UINT64 Render::DX::Foundation::Core::CommandObject::CurrentFence() const {
+	return mCurrentFence;
+}
+
 #endif // __COMMANDOBJECT_INL__

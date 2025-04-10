@@ -26,6 +26,10 @@ namespace Render::DX::Foundation::Core {
 		static InitDataPtr MakeInitData();
 
 	public:
+		__forceinline Resource::GpuResource* GetDepthStencilBuffer() const;
+		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilBufferDsv() const;
+
+	public:
 		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 		virtual BOOL BuildDescriptors(DescriptorHeap* const pDescHeap) override;
@@ -41,4 +45,12 @@ namespace Render::DX::Foundation::Core {
 		std::unique_ptr<Resource::GpuResource> mDepthStencilBuffer;
 		D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuDsv;
 	};
+}
+
+Render::DX::Foundation::Resource::GpuResource* Render::DX::Foundation::Core::DepthStencilBuffer::GetDepthStencilBuffer() const {
+	return mDepthStencilBuffer.get();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE Render::DX::Foundation::Core::DepthStencilBuffer::DepthStencilBufferDsv() const {
+	return mhDepthStencilBufferCpuDsv;
 }

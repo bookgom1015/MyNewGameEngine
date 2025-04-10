@@ -3,11 +3,19 @@
 
 #ifdef _HLSL
 	#ifndef HDR_FORMAT
-		#define HDR_FORMAT float4
+	#define HDR_FORMAT float4
+	#endif
+
+	#ifndef SDR_FORMAT
+	#define SDR_FORMAT float4
 	#endif
 #else
 	#ifndef HDR_FORMAT
-		#define HDR_FORMAT DXGI_FORMAT_R16G16B16A16_FLOAT
+	#define HDR_FORMAT DXGI_FORMAT_R16G16B16A16_FLOAT
+	#endif
+
+	#ifndef SDR_FORMAT
+	#define SDR_FORMAT DXGI_FORMAT_R8G8B8A8_UNORM
 	#endif
 #endif
 
@@ -30,9 +38,11 @@ namespace ShadingConvention{
 
 	namespace EnvironmentMap {
 #ifdef _HLSL
-		typedef HDR_FORMAT EnvironmentCubeMap;
+		typedef HDR_FORMAT EquirectangularMapFormat;
+		typedef HDR_FORMAT EnvironmentCubeMapFormat;
 #else
-		const DXGI_FORMAT EnvironmentCubeMap = HDR_FORMAT;
+		const DXGI_FORMAT EquirectangularMapFormat = HDR_FORMAT;
+		const DXGI_FORMAT EnvironmentCubeMapFormat = HDR_FORMAT;
 #endif
 	}
 
@@ -59,6 +69,29 @@ namespace ShadingConvention{
 					E_InvTexSizeH,
 					E_InvMipmapTexSizeW,
 					E_InvMipmapTexSizeH,
+					Count
+				};
+			}
+		}
+#endif
+	}
+
+	namespace EquirectangularConverter {
+#ifndef EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT
+#define EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT {	\
+		UINT gMipLevel;											\
+	};
+#endif
+	#ifndef EquirectangularConverter_ConvCubeToEquirect_RootConstants
+	#define EquirectangularConverter_ConvCubeToEquirect_RootConstants(reg) cbuffer cbRootConstants : register(reg) EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT
+	#endif
+#ifdef _HLSL
+#else
+		namespace RootConstant {
+			namespace ConvCubeToEquirect {
+				struct Struct EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT
+					enum {
+					E_MipLevel = 0,
 					Count
 				};
 			}

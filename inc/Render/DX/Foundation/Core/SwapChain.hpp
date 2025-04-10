@@ -35,10 +35,22 @@ namespace Render::DX::Foundation::Core {
 		static InitDataPtr MakeInitData();
 
 	public:
+		__forceinline Resource::GpuResource* BackBuffer() const;
+		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE BackBufferRtv() const;
+
+		__forceinline constexpr D3D12_VIEWPORT ScreenViewport() const;
+		__forceinline constexpr D3D12_RECT ScissorRect() const;
+
+	public:
 		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 		virtual BOOL BuildDescriptors(DescriptorHeap* const pDescHeap) override;
 		virtual BOOL OnResize(UINT width, UINT height) override;
+
+	public:
+		BOOL ReadyToPresent(Resource::FrameResource* const pFrameResource);
+		BOOL Present(BOOL bAllowTearing);
+		void NextBackBuffer();
 
 	private:
 		BOOL CreateSwapChain();
@@ -55,5 +67,10 @@ namespace Render::DX::Foundation::Core {
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuRtvs;
 
 		UINT mCurrBackBuffer = 0;
+
+		D3D12_VIEWPORT mScreenViewport = {};
+		D3D12_RECT mScissorRect = {};
 	};
 }
+
+#include "Render/DX/Foundation/Core/SwapChain.inl"

@@ -135,6 +135,34 @@ BOOL CommandObject::ResetCommandLists(ID3D12CommandAllocator* const allocs[], ID
 	return TRUE;
 }
 
+BOOL CommandObject::WaitCompletion(UINT64 fence) {
+	// Has the GPU finished processing the commands of the current frame resource?
+	// If not, wait until the GPU has completed commands up to this fence point.
+	if (fence != 0 && mFence->GetCompletedValue() < fence) {
+		const HANDLE eventHandle = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (eventHandle == NULL) return FALSE;
+
+		CheckHRESULT(mpLogFile, mFence->SetEventOnCompletion(fence, eventHandle));
+
+		const auto status = WaitForSingleObject(eventHandle, INFINITE);
+		if (status == WAIT_FAILED) ReturnFalse(mpLogFile, L"Calling \'WaitForSingleObject\' failed");
+
+		if (!CloseHandle(eventHandle)) ReturnFalse(mpLogFile, L"Failed to close handle");
+	}
+
+	return TRUE;
+}
+
+UINT64 CommandObject::IncreaseFence() {
+	return ++mCurrentFence;
+}
+
+BOOL CommandObject::Signal() {
+	CheckHRESULT(mpLogFile, mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+
+	return TRUE;
+}
+
 #ifdef _DEBUG
 BOOL CommandObject::CreateDebugObjects() {
 	CheckReturn(mpLogFile, mpDevice->QueryInterface(mInfoQueue));

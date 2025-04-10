@@ -218,7 +218,9 @@ BOOL GameWorld::Update() {
 		mUpdateCV.wait(lock, [&] { return (mStage == ProcessingStage::E_UpdateReady) || mWindowsManager->Destroyed(); });
 		if (mWindowsManager->Destroyed()) break;
 
-		//
+		const auto dt = mGameTimer->DeltaTime();
+
+		CheckReturn(mpLogFile, mRenderer->Update(dt));
 
 		++UpdateFrameCount;
 		mStage = ProcessingStage::E_UpdateFinished;
@@ -233,7 +235,7 @@ BOOL GameWorld::Draw() {
 		mDrawCV.wait(lock, [&] { return (mStage == ProcessingStage::E_DrawReady) || mWindowsManager->Destroyed(); });
 		if (mWindowsManager->Destroyed()) break;
 
-		// 
+		CheckReturn(mpLogFile, mRenderer->Draw());
 
 		++DrawFrameCount;
 		mStage = ProcessingStage::E_DrawFinished;

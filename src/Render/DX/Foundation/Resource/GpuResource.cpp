@@ -44,8 +44,18 @@ BOOL GpuResource::OnResize(IDXGISwapChain* const pSwapChain, UINT index) {
 	return TRUE;
 }
 
-void GpuResource::Swap(Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource, D3D12_RESOURCE_STATES initialState) {
+void GpuResource::Swap(Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource) {
 	srcResource.Swap(mResource);
+
+	mCurrState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+}
+
+void GpuResource::Swap(ID3D12GraphicsCommandList* const pCmdList, Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource, D3D12_RESOURCE_STATES initialState) {
+	srcResource.Swap(mResource);
+
+	if (initialState == D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE) return;
+
+	pCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, initialState));
 
 	mCurrState = initialState;
 }

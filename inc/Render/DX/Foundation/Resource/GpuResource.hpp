@@ -35,7 +35,8 @@ namespace Render::DX::Foundation {
 
 			BOOL OnResize(IDXGISwapChain* const pSwapChain, UINT index);
 
-			void Swap(Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource, D3D12_RESOURCE_STATES initialState);
+			void Swap(Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource);
+			void Swap(ID3D12GraphicsCommandList* const pCmdList, Microsoft::WRL::ComPtr<ID3D12Resource>& srcResource, D3D12_RESOURCE_STATES initialState);
 			void Transite(ID3D12GraphicsCommandList* const pCmdList, D3D12_RESOURCE_STATES state);
 
 			__forceinline void Reset();

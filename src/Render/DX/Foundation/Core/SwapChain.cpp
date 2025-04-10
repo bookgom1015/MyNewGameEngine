@@ -4,6 +4,7 @@
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
+#include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 
 using namespace Render::DX::Foundation::Core;
@@ -33,6 +34,9 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
+	mScreenViewport = { 0, 0, static_cast<FLOAT>(mInitData.Width), static_cast<FLOAT>(mInitData.Height), 0.f, 1.f };
+	mScissorRect = { 0,0,static_cast<LONG>(mInitData.Width), static_cast<LONG>(mInitData.Height) };
+
 	CheckReturn(mpLogFile, CreateSwapChain());
 	CheckReturn(mpLogFile, BuildSwapChainBuffers());
 
@@ -50,6 +54,29 @@ BOOL SwapChain::BuildDescriptors(DescriptorHeap* const pDescHeap) {
 	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
+}
+
+BOOL SwapChain::ReadyToPresent(Resource::FrameResource* const pFrameResource) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0));
+	const auto cmdList = mInitData.CommandObject->CommandList(0);
+
+	mSwapChainBuffers[mCurrBackBuffer]->Transite(cmdList, D3D12_RESOURCE_STATE_PRESENT);
+
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL SwapChain::Present(BOOL bAllowTearing) {
+	CheckHRESULT(mpLogFile, mSwapChain->Present(0, bAllowTearing ? DXGI_PRESENT_ALLOW_TEARING : 0));
+
+	return TRUE;
+}
+
+void SwapChain::NextBackBuffer() {
+	mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
 }
 
 BOOL SwapChain::CreateSwapChain() {
@@ -123,6 +150,9 @@ BOOL SwapChain::BuildDescriptors() {
 BOOL SwapChain::OnResize(UINT width, UINT height) {
 	mInitData.Width = width;
 	mInitData.Height = height;
+
+	mScreenViewport = { 0, 0, static_cast<FLOAT>(mInitData.Width), static_cast<FLOAT>(mInitData.Height), 0.f, 1.f };
+	mScissorRect = { 0,0,static_cast<LONG>(mInitData.Width), static_cast<LONG>(mInitData.Height) };
 
 	CheckReturn(mpLogFile, BuildSwapChainBuffers());
 	CheckReturn(mpLogFile, BuildDescriptors());

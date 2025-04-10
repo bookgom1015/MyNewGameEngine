@@ -20,6 +20,8 @@ namespace Render::DX {
 	}
 
 	namespace Foundation {
+		struct RenderItem;
+
 		namespace Core {
 			class Factory;
 			class Device;

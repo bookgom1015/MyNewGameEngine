@@ -41,6 +41,11 @@ namespace Render::DX::Foundation {
 			BOOL ExecuteCommandLists();
 			BOOL ResetCommandLists(ID3D12CommandAllocator* const allocs[], ID3D12PipelineState* const pPipelineState = nullptr);
 
+			BOOL WaitCompletion(UINT64 fence);
+			UINT64 IncreaseFence();
+
+			BOOL Signal();
+
 		private:
 #ifdef _DEBUG
 			BOOL CreateDebugObjects();
@@ -53,6 +58,8 @@ namespace Render::DX::Foundation {
 		public:
 			__forceinline ID3D12GraphicsCommandList4* DirectCommandList() const;
 			__forceinline ID3D12GraphicsCommandList4* CommandList(UINT index) const;
+
+			__forceinline constexpr UINT64 CurrentFence() const;
 
 		private:
 			Common::Debug::LogFile* mpLogFile = nullptr;

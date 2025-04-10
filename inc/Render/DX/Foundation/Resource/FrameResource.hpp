@@ -30,6 +30,15 @@ namespace Render::DX::Foundation {
 			__forceinline ID3D12CommandAllocator* CommandAllocator(UINT index) const;
 			__forceinline void CommandAllocators(std::vector<ID3D12CommandAllocator*>& allocs) const;
 
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS MainPassCBAddress() const;
+			UINT MainPassCBByteSize() const;
+			
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ObjectCBAddress() const;
+			UINT ObjectCBByteSize() const;
+
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS EquirectConvCBAddress() const;
+			UINT EquirectConvCBByteSize() const;
+
 		public:
 			BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
@@ -38,23 +47,31 @@ namespace Render::DX::Foundation {
 				UINT numPasses, 
 				UINT numObjects);
 
+		public:
+			__forceinline void CopyMainPassCB(INT elementIndex, const ConstantBuffers::PassCB& data);
+			__forceinline void CopyObjecCB(INT elementIndex, const ConstantBuffers::ObjectCB& data);
+			__forceinline void CopyEquirectConvCB(INT elementIndex, const ConstantBuffers::EquirectangularConverterCB& data);
+
 		private:
 			BOOL CreateCommandListAllocators();
-			BOOL BuildConstantBuffres();
+			BOOL BuildConstantBuffres(
+				UINT numPasses,
+				UINT numObjects);
+
+		public:
+			UINT64 mFence = 0;
 
 		private:
 			Common::Debug::LogFile* mpLogFile = nullptr;
 			Core::Device* mpDevice = nullptr;
 
-			UINT mThreadCount = 0;
-
 			std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> mCmdAllocators;
 
-			UploadBuffer<ConstantBuffers::PassCB> mPassCB;
-			UINT mPassCount = 0;
+			UINT mThreadCount = 0;
 
+			UploadBuffer<ConstantBuffers::PassCB> mMainPassCB;
 			UploadBuffer<ConstantBuffers::ObjectCB> mObjectCB;
-			UINT mObjectCount = 0;
+			UploadBuffer<ConstantBuffers::EquirectangularConverterCB> mEquirectConvCB;
 		};
 	}
 }
