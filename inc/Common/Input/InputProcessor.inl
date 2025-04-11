@@ -9,4 +9,6 @@ FLOAT Common::Input::MouseState::ScrollWheel() const { return mScrollWheel; }
 BOOL Common::Input::MouseState::IsInputIgnored() const { return mbIsIgnored; }
 BOOL Common::Input::MouseState::IsRelativeMouseMode() const { return mMouseMode == MouseModes::E_Relative; }
 
+Common::Input::InputState Common::Input::InputProcessor::GetInputState() const { return mInputState; }
+
 #endif // __INPUTPROCESSOR_INL__

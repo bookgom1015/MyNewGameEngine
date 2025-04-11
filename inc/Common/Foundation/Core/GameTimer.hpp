@@ -9,6 +9,7 @@ namespace Common::Foundation::Core {
 			E_Unlimited,
 			E_30f,
 			E_60f,
+			E_90f,
 			E_120f,
 			E_144f,
 			E_244f

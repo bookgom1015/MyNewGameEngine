@@ -128,81 +128,64 @@ BOOL MipmapGenerator::MipmapGeneratorClass::GenerateMipmap(
 		Foundation::Resource::GpuResource* const pInput,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		UINT maxMipLevel, UINT width, UINT height) {
+	CheckReturn(mpLogFile, CopyMap(pOutput, ro_outputs[0], pInput, si_input, width, height));
+	//CheckReturn(mpLogFile, GenerateMipmap(pOutput, ro_outputs, si_input, maxMipLevel, width, height));
+
+	return TRUE;
+}
+
+BOOL MipmapGenerator::MipmapGeneratorClass::CopyMap(
+		Foundation::Resource::GpuResource* const pOutput,
+		D3D12_CPU_DESCRIPTOR_HANDLE ro_output,
+	Foundation::Resource::GpuResource* const pInput,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
+		UINT width, UINT height) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::EG_CopyMap].Get()));
 
 	const auto cmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
 
-	CheckReturn(mpLogFile, CopyMap(cmdList, pOutput, ro_outputs[0], pInput, si_input, width, height));
-	CheckReturn(mpLogFile, GenerateMipmap(cmdList, pOutput, ro_outputs, si_input, maxMipLevel, width, height));
+	cmdList->SetGraphicsRootSignature(mRootSignature.Get());
+
+	{
+		const D3D12_VIEWPORT viewport = { 0.f, 0.f, static_cast<FLOAT>(width), static_cast<FLOAT>(height), 0.f, 1.f };
+		const D3D12_RECT scissorRect = { 0, 0, static_cast<INT>(width), static_cast<INT>(height) };
+
+		cmdList->RSSetViewports(1, &viewport);
+		cmdList->RSSetScissorRects(1, &scissorRect);
+	}
+
+	pOutput->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	pInput->Transite(cmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+	cmdList->OMSetRenderTargets(1, &ro_output, TRUE, nullptr);
+
+	cmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::ESI_InputMap, si_input);
+
+	cmdList->IASetVertexBuffers(0, 0, nullptr);
+	cmdList->IASetIndexBuffer(nullptr);
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->DrawInstanced(6, 1, 0, 0);
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
 
 	return TRUE;
 }
 
-BOOL MipmapGenerator::MipmapGeneratorClass::CopyMap(
-		ID3D12GraphicsCommandList4* const pCmdList,
-		Foundation::Resource::GpuResource* const pOutput,
-		D3D12_CPU_DESCRIPTOR_HANDLE ro_output,
-	Foundation::Resource::GpuResource* const pInput,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
-		UINT width, UINT height) {
-	pCmdList->SetGraphicsRootSignature(mRootSignature.Get());
-
-	{
-		const D3D12_VIEWPORT viewport = { 0.f, 0.f, static_cast<FLOAT>(width), static_cast<FLOAT>(height), 0.f, 1.f };
-		const D3D12_RECT scissorRect = { 0, 0, static_cast<INT>(width), static_cast<INT>(height) };
-
-		pCmdList->RSSetViewports(1, &viewport);
-		pCmdList->RSSetScissorRects(1, &scissorRect);
-	}
-
-	pOutput->Transite(pCmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	pInput->Transite(pCmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	pCmdList->OMSetRenderTargets(1, &ro_output, TRUE, nullptr);
-
-	pCmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::ESI_InputMap, si_input);
-
-	{
-		FLOAT invW = 1.f / width;
-		FLOAT invH = 1.f / height;
-
-		ShadingConvention::MipmapGenerator::RootConstant::Default::Struct rc;
-		rc.gInvTexSize.x = invW;
-		rc.gInvTexSize.y = invH;
-		rc.gInvMipmapTexSize.x = 0.f;
-		rc.gInvMipmapTexSize.y = 0.f;
-
-		std::array<std::uint32_t, ShadingConvention::MipmapGenerator::RootConstant::Default::Count> consts;
-		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::MipmapGenerator::RootConstant::Default::Struct));
-
-		pCmdList->SetGraphicsRoot32BitConstants(
-			RootSignature::Default::EC_Consts,
-			ShadingConvention::MipmapGenerator::RootConstant::Default::Count,
-			consts.data(),
-			0);
-	}
-
-	pCmdList->IASetVertexBuffers(0, 0, nullptr);
-	pCmdList->IASetIndexBuffer(nullptr);
-	pCmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	pCmdList->DrawInstanced(6, 1, 0, 0);
-
-	return TRUE;
-}
-
 BOOL MipmapGenerator::MipmapGeneratorClass::GenerateMipmap(
-		ID3D12GraphicsCommandList4* const pCmdList,
 		Foundation::Resource::GpuResource* const pOutput,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_outputs[],
 		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		UINT maxMipLevel, UINT width, UINT height) {
-	pCmdList->SetPipelineState(mPipelineStates[PipelineState::EG_GenerateMipmap].Get());
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::EG_GenerateMipmap].Get()));
+
+	const auto cmdList = mInitData.CommandObject->DirectCommandList();
+	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
+
+	cmdList->SetGraphicsRootSignature(mRootSignature.Get());
 
 	for (UINT mipLevel = 1; mipLevel < maxMipLevel; ++mipLevel) {
-		pCmdList->OMSetRenderTargets(1, &ro_outputs[mipLevel], TRUE, nullptr);
+		cmdList->OMSetRenderTargets(1, &ro_outputs[mipLevel], TRUE, nullptr);
 
 		const UINT mw = static_cast<UINT>(width / std::pow(2, mipLevel));
 		const UINT mh = static_cast<UINT>(height / std::pow(2, mipLevel));
@@ -210,8 +193,10 @@ BOOL MipmapGenerator::MipmapGeneratorClass::GenerateMipmap(
 		const D3D12_VIEWPORT viewport = { 0.f, 0.f, static_cast<FLOAT>(mw), static_cast<FLOAT>(mh), 0.f, 1.f };
 		const D3D12_RECT scissorRect = { 0, 0, static_cast<INT>(mw), static_cast<INT>(mh) };
 
-		pCmdList->RSSetViewports(1, &viewport);
-		pCmdList->RSSetScissorRects(1, &scissorRect);
+		cmdList->RSSetViewports(1, &viewport);
+		cmdList->RSSetScissorRects(1, &scissorRect);
+
+		cmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::ESI_InputMap, si_input);
 
 		const FLOAT invW = 1.f / width;
 		const FLOAT invH = 1.f / height;
@@ -227,19 +212,19 @@ BOOL MipmapGenerator::MipmapGeneratorClass::GenerateMipmap(
 		std::array<std::uint32_t, ShadingConvention::MipmapGenerator::RootConstant::Default::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::MipmapGenerator::RootConstant::Default::Struct));
 
-		pCmdList->SetGraphicsRoot32BitConstants(
+		cmdList->SetGraphicsRoot32BitConstants(
 			RootSignature::Default::EC_Consts, 
 			ShadingConvention::MipmapGenerator::RootConstant::Default::Count, 
 			consts.data(), 
 			0);
 
-		pCmdList->IASetVertexBuffers(0, 0, nullptr);
-		pCmdList->IASetIndexBuffer(nullptr);
-		pCmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		pCmdList->DrawInstanced(6, 1, 0, 0);
+		cmdList->IASetVertexBuffers(0, 0, nullptr);
+		cmdList->IASetIndexBuffer(nullptr);
+		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		cmdList->DrawInstanced(6, 1, 0, 0);
 	}
 
-	pOutput->Transite(pCmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
 
 	return TRUE;
 }

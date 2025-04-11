@@ -91,8 +91,8 @@
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
-    <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
+    <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\CommandObject.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Device.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Instance.hpp" />
@@ -106,8 +106,8 @@
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\CommandObject.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Instance.cpp" />

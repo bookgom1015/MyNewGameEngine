@@ -120,8 +120,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = SDR_FORMAT;
 		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
-		psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		psoDesc.DepthStencilState.DepthEnable = FALSE;
 		psoDesc.DepthStencilState.StencilEnable = FALSE;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
@@ -143,7 +142,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildDescriptors(Foundation::Core::Des
 	for (UINT i = 0; i < ShadingConvention::MipmapGenerator::MaxMipLevel; ++i) 
 		mhEquirectangularMapCpuRtvs[i] = pDescHeap->RtvCpuOffset(1);
 
-	mhEnvironmentCubeMapCpuSrv= pDescHeap->CbvSrvUavCpuOffset(1);
+	mhEnvironmentCubeMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
 	mhEnvironmentCubeMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
 	for (UINT i = 0; i < ShadingConvention::MipmapGenerator::MaxMipLevel; ++i)
 		mhEnvironmentCubeMapCpuRtvs[i] = pDescHeap->RtvCpuOffset(1);
@@ -196,7 +195,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 	cmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &dio_depthStencil);
 
 	cmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::ECB_Pass, cbPass);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::ESI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
+	cmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::ESI_EnvCubeMap, mhEquirectangularMapGpuSrv);
 
 	cmdList->IASetVertexBuffers(0, 1, &sphere->Geometry->VertexBufferView());
 	cmdList->IASetIndexBuffer(&sphere->Geometry->IndexBufferView());
@@ -352,7 +351,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildEquirectangularMapDescriptors() {
 			}
 		}
 	}
-	// EnvironmentMap
+	// EnvironmentCubeMap
 	{
 		// Srv
 		{

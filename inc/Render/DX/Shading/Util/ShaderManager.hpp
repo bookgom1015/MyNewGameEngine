@@ -14,7 +14,7 @@
 #include <d3d12shader.h>
 #include <dxcapi.h>
 
-#include "Common/Foundation/Util/HashUtil.hpp"
+#include "Common/Util/HashUtil.hpp"
 
 namespace Common::Debug {
 	struct LogFile;
@@ -72,11 +72,11 @@ namespace std {
 	struct hash<Render::DX::Shading::Util::ShaderManager::D3D12ShaderInfo> {
 		Common::Foundation::Hash operator()(const Render::DX::Shading::Util::ShaderManager::D3D12ShaderInfo& info) const {
 			Common::Foundation::Hash hash = 0;
-			hash = Common::Foundation::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.FileName));
-			hash = Common::Foundation::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.EntryPoint));
-			hash = Common::Foundation::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.TargetProfile));
-			hash = Common::Foundation::Util::HashUtil::HashCombine(hash, static_cast<UINT>(info.ArgCount));
-			hash = Common::Foundation::Util::HashUtil::HashCombine(hash, static_cast<UINT>(info.DefineCount));
+			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.FileName));
+			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.EntryPoint));
+			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.TargetProfile));
+			hash = Common::Util::HashUtil::HashCombine(hash, static_cast<UINT>(info.ArgCount));
+			hash = Common::Util::HashUtil::HashCombine(hash, static_cast<UINT>(info.DefineCount));
 			return hash;
 		}
 	};

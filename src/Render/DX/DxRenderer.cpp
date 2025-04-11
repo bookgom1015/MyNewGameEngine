@@ -52,6 +52,7 @@ DxRenderer::DxRenderer() {
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
+	mEquirectConvCB = std::make_unique<ConstantBuffers::EquirectangularConverterCB>();
 }
 
 DxRenderer::~DxRenderer() {
@@ -100,8 +101,9 @@ BOOL DxRenderer::OnResize(UINT width, UINT height) {
 BOOL DxRenderer::Update(FLOAT deltaTime) {
 	mCurrentFrameResourceIndex = (mCurrentFrameResourceIndex + 1) % Foundation::Resource::FrameResource::Count;
 	mCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
-
 	CheckReturn(mpLogFile, mCommandObject->WaitCompletion(mCurrentFrameResource->mFence));
+
+	CheckReturn(mpLogFile, UpdateConstantBuffers());
 
 	return TRUE;
 }
@@ -153,6 +155,8 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 }
 
 BOOL DxRenderer::UpdateMainPassCB() {
+	if (mpCamera == nullptr) return TRUE;
+
 	// Transform NDC space [-1 , +1]^2 to texture space [0, 1]^2
 	const XMMATRIX T(
 		0.5f, 0.f,  0.f, 0.f,
@@ -161,39 +165,119 @@ BOOL DxRenderer::UpdateMainPassCB() {
 		0.5f, 0.5f, 0.f, 1.f
 	);
 
-	//const XMMATRIX view = XMLoadFloat4x4(&mCamera->View());
-	//const XMMATRIX proj = XMLoadFloat4x4(&mCamera->Proj());
-	//const XMMATRIX viewProj = XMMatrixMultiply(view, proj);
-	//
-	//const XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-	//const XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
-	//const XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
-	//
-	//const XMMATRIX viewProjTex = XMMatrixMultiply(viewProj, T);
-	//
+	const XMMATRIX view = XMLoadFloat4x4(&mpCamera->View());
+	const XMMATRIX proj = XMLoadFloat4x4(&mpCamera->Proj());
+	const XMMATRIX viewProj = XMMatrixMultiply(view, proj);
+	
+	const XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	const XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+	const XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+	
+	const XMMATRIX viewProjTex = XMMatrixMultiply(viewProj, T);
+	
+	mMainPassCB->PrevViewProj = mMainPassCB->ViewProj;
+	XMStoreFloat4x4(&mMainPassCB->View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&mMainPassCB->InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&mMainPassCB->Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&mMainPassCB->InvProj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&mMainPassCB->ViewProj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&mMainPassCB->InvViewProj, XMMatrixTranspose(invViewProj));
+	XMStoreFloat4x4(&mMainPassCB->ViewProjTex, XMMatrixTranspose(viewProjTex));
+	XMStoreFloat3(&mMainPassCB->EyePosW, mpCamera->Position());
+
 	//const size_t offsetIndex = static_cast<size_t>(mCommandObject->CurrentFence()) % mFittedToBakcBufferHaltonSequence.size();
-	//
-	//mMainPassCB->PrevViewProj = mMainPassCB->ViewProj;
-	//XMStoreFloat4x4(&mMainPassCB->View, XMMatrixTranspose(view));
-	//XMStoreFloat4x4(&mMainPassCB->InvView, XMMatrixTranspose(invView));
-	//XMStoreFloat4x4(&mMainPassCB->Proj, XMMatrixTranspose(proj));
-	//XMStoreFloat4x4(&mMainPassCB->InvProj, XMMatrixTranspose(invProj));
-	//XMStoreFloat4x4(&mMainPassCB->ViewProj, XMMatrixTranspose(viewProj));
-	//XMStoreFloat4x4(&mMainPassCB->InvViewProj, XMMatrixTranspose(invViewProj));
-	//XMStoreFloat4x4(&mMainPassCB->ViewProjTex, XMMatrixTranspose(viewProjTex));
-	//XMStoreFloat3(&mMainPassCB.EyePosW, mCamera->Position());
 	//mMainPassCB->JitteredOffset = bTaaEnabled ? mFittedToBakcBufferHaltonSequence[offsetIndex] : XMFLOAT2(0.f, 0.f);
-	//
-	//mCurrentFrameResource->CopyMainPassCB(0, *mMainPassCB.get());
+	
+	mCurrentFrameResource->CopyMainPassCB(0, *mMainPassCB.get());
 
 	return TRUE;
 }
 
 BOOL DxRenderer::UpdateObjectCB() {
+	for (auto& ritem : mRenderItems) {
+		// Only update the cbuffer data if the constants have changed.  
+		// This needs to be tracked per frame resource.
+		if (ritem->NumFramesDirty > 0) {
+			const XMMATRIX world = XMLoadFloat4x4(&ritem->World);
+			const XMMATRIX texTransform = XMLoadFloat4x4(&ritem->TexTransform);
+
+			ConstantBuffers::ObjectCB objCB;
+			objCB.PrevWorld = ritem->PrevWolrd;
+			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(world));
+			XMStoreFloat4x4(&objCB.TexTransform, XMMatrixTranspose(texTransform));
+
+			ritem->PrevWolrd = objCB.World;
+
+			mCurrentFrameResource->CopyObjecCB(ritem->ObjCBIndex, objCB);
+
+			// Next FrameResource need to be updated too.
+			ritem->NumFramesDirty--;
+		}
+	}
+
 	return TRUE;
 }
 
 BOOL DxRenderer::UpdateEquirectangularConverterCB() {
+	XMStoreFloat4x4(&mEquirectConvCB->Proj, XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 10.f)));
+
+	// Positive +X
+	XMStoreFloat4x4(
+		&mEquirectConvCB->View[0],
+		XMMatrixTranspose(XMMatrixLookAtLH(
+			XMVectorSet(0.f, 0.f, 0.f, 1.f),
+			XMVectorSet(1.f, 0.f, 0.f, 1.f),
+			XMVectorSet(0.f, 1.f, 0.f, 0.f)
+		))
+	);
+	// Positive -X
+	XMStoreFloat4x4(
+		&mEquirectConvCB->View[1],
+		XMMatrixTranspose(XMMatrixLookAtLH(
+			XMVectorSet(0.f, 0.f, 0.f, 1.f),
+			XMVectorSet(-1.f, 0.f, 0.f, 1.f),
+			XMVectorSet(0.f, 1.f, 0.f, 0.f)
+		))
+	);
+	// Positive +Y
+	XMStoreFloat4x4(
+		&mEquirectConvCB->View[2],
+		XMMatrixTranspose(XMMatrixLookAtLH(
+			XMVectorSet(0.f, 0.f, 0.f, 1.f),
+			XMVectorSet(0.f, 1.f, 0.f, 1.f),
+			XMVectorSet(0.f, 0.f, -1.f, 0.f)
+		))
+	);
+	// Positive -Y
+	XMStoreFloat4x4(
+		&mEquirectConvCB->View[3],
+		XMMatrixTranspose(XMMatrixLookAtLH(
+			XMVectorSet(0.f, 0.f, 0.f, 1.f),
+			XMVectorSet(0.f, -1.f, 0.f, 1.f),
+			XMVectorSet(0.f, 0.f, 1.f, 0.f)
+		))
+	);
+	// Positive +Z
+	XMStoreFloat4x4(
+		&mEquirectConvCB->View[4],
+		XMMatrixTranspose(XMMatrixLookAtLH(
+			XMVectorSet(0.f, 0.f, 0.f, 1.f),
+			XMVectorSet(0.f, 0.f, 1.f, 1.f),
+			XMVectorSet(0.f, 1.f, 0.f, 0.f)
+		))
+	);
+	// Positive -Z
+	XMStoreFloat4x4(
+		&mEquirectConvCB->View[5],
+		XMMatrixTranspose(XMMatrixLookAtLH(
+			XMVectorSet(0.f, 0.f, 0.f, 1.f),
+			XMVectorSet(0.f, 0.f, -1.f, 1.f),
+			XMVectorSet(0.f, 1.f, 0.f, 0.f)
+		))
+	);
+
+	mCurrentFrameResource->CopyEquirectConvCB(0, *mEquirectConvCB.get());
+
 	return TRUE;
 }
 
@@ -344,6 +428,9 @@ BOOL DxRenderer::BuildSkySphere() {
 }
 
 BOOL DxRenderer::FinishUpInitializing() {
+	// Some of shading objects require particular constant buffers
+	CheckReturn(mpLogFile, UpdateConstantBuffers());
+
 	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(
 		mMipmapGenerator.get(), 
 		mEquirectangularConverter.get(), 

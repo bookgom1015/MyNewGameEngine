@@ -66,14 +66,12 @@ namespace Render::DX::Shading::Util {
 
 		private:
 			BOOL CopyMap(
-				ID3D12GraphicsCommandList4* const pCmdList,
 				Foundation::Resource::GpuResource* const pOutput,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_output,
 				Foundation::Resource::GpuResource* const pInput,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 				UINT width, UINT height);
 			BOOL GenerateMipmap(
-				ID3D12GraphicsCommandList4* const pCmdList,
 				Foundation::Resource::GpuResource* const pOutput,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_outputs[],
 				D3D12_GPU_DESCRIPTOR_HANDLE si_input,

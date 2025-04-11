@@ -8,7 +8,7 @@
 	#include <d3d12.h>
 	#include <DirectXMath.h>
 	
-	#include "Common/Foundation/Util/HashUtil.hpp"
+	#include "Common/Util/HashUtil.hpp"
 #endif
 
 namespace Common {
@@ -43,18 +43,18 @@ namespace Common {
 		template<> 
 		struct hash<Common::Foundation::Mesh::Vertex> {
 			Common::Foundation::Hash operator()(const Common::Foundation::Mesh::Vertex& vert) const {
-				Common::Foundation::Hash pos = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.Position.x));
-				pos = Common::Foundation::Util::HashUtil::HashCombine(pos, static_cast<Common::Foundation::Hash>(vert.Position.y));
-				pos = Common::Foundation::Util::HashUtil::HashCombine(pos, static_cast<Common::Foundation::Hash>(vert.Position.z));
+				Common::Foundation::Hash pos = Common::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.Position.x));
+				pos = Common::Util::HashUtil::HashCombine(pos, static_cast<Common::Foundation::Hash>(vert.Position.y));
+				pos = Common::Util::HashUtil::HashCombine(pos, static_cast<Common::Foundation::Hash>(vert.Position.z));
 	
-				Common::Foundation::Hash normal = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.Normal.x));
-				normal = Common::Foundation::Util::HashUtil::HashCombine(normal, static_cast<Common::Foundation::Hash>(vert.Normal.y));
-				normal = Common::Foundation::Util::HashUtil::HashCombine(normal, static_cast<Common::Foundation::Hash>(vert.Normal.z));
+				Common::Foundation::Hash normal = Common::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.Normal.x));
+				normal = Common::Util::HashUtil::HashCombine(normal, static_cast<Common::Foundation::Hash>(vert.Normal.y));
+				normal = Common::Util::HashUtil::HashCombine(normal, static_cast<Common::Foundation::Hash>(vert.Normal.z));
 	
-				Common::Foundation::Hash texc = Common::Foundation::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.TexCoord.x));
-				texc = Common::Foundation::Util::HashUtil::HashCombine(texc, static_cast<Common::Foundation::Hash>(vert.TexCoord.y));
+				Common::Foundation::Hash texc = Common::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(vert.TexCoord.x));
+				texc = Common::Util::HashUtil::HashCombine(texc, static_cast<Common::Foundation::Hash>(vert.TexCoord.y));
 	
-				return Common::Foundation::Util::HashUtil::HashCombine(Common::Foundation::Util::HashUtil::HashCombine(pos, normal), texc);
+				return Common::Util::HashUtil::HashCombine(Common::Util::HashUtil::HashCombine(pos, normal), texc);
 			}
 		};
 	}

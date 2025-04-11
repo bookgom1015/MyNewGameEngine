@@ -1,10 +1,10 @@
-#include "Common/Foundation/Util/TaskQueue.hpp"
+#include "Common/Util/TaskQueue.hpp"
 #include "Common/Debug/Logger.hpp"
 
 #include <future>
 #include <vector>
 
-using namespace Common::Foundation::Util;
+using namespace Common::Util;
 
 void TaskQueue::AddTask(const std::function<BOOL()>& task) {
 	mTaskQueue.push(task);

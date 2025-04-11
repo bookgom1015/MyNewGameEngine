@@ -4,7 +4,7 @@
 
 #include <d3d12.h>
 
-#include "Common/Foundation/Util/MathUtil.hpp"
+#include "Common/Util/MathUtil.hpp"
 
 namespace Render::DX::Foundation {
 	namespace Resource {
@@ -20,9 +20,9 @@ namespace Render::DX::Foundation {
 		// World matrix of the shape that describes the object's local space
 		// relative to the world space, which defines the position, orientation,
 		// and scale of the object in thw world.
-		DirectX::XMFLOAT4X4 World = Common::Foundation::Util::MathUtil::Identity4x4();
-		DirectX::XMFLOAT4X4 PrevWolrd = Common::Foundation::Util::MathUtil::Identity4x4();
-		DirectX::XMFLOAT4X4 TexTransform = Common::Foundation::Util::MathUtil::Identity4x4();
+		DirectX::XMFLOAT4X4 World = Common::Util::MathUtil::Identity4x4();
+		DirectX::XMFLOAT4X4 PrevWolrd = Common::Util::MathUtil::Identity4x4();
+		DirectX::XMFLOAT4X4 TexTransform = Common::Util::MathUtil::Identity4x4();
 
 		// Dirty flag indicating the object data has changed and we need to update the constant buffer.
 		// Because we have an object cbuffer for each FrameResource, we have to apply the

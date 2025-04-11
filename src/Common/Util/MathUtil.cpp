@@ -1,6 +1,6 @@
-#include "Common/Foundation/Util/MathUtil.hpp"
+#include "Common/Util/MathUtil.hpp"
 
-using namespace Common::Foundation::Util;
+using namespace Common::Util;
 using namespace DirectX;
 
 #include <sstream>

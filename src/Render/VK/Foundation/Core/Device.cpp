@@ -1,6 +1,6 @@
 #include "Render/VK/Foundation/Core/Device.hpp"
 #include "Common/Debug/Logger.hpp"
-#include "Common/Foundation/Util/StringUtil.hpp"
+#include "Common/Util/StringUtil.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 
 #include <algorithm>
@@ -56,7 +56,7 @@ BOOL Device::GetPhysicalDevices(std::vector<std::wstring>& physicalDevices) {
 		VkPhysicalDeviceProperties deviceProperties;
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
-		physicalDevices.push_back(Common::Foundation::Util::StringUtil::StringToWString(deviceProperties.deviceName));
+		physicalDevices.push_back(Common::Util::StringUtil::StringToWString(deviceProperties.deviceName));
 	}
 
 	return TRUE;

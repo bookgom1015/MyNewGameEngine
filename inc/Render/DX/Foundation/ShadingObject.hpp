@@ -9,7 +9,7 @@
 #include <dxgi1_6.h>
 
 #include "Common/Debug/Logger.hpp"
-#include "Common/Foundation/Util/HashUtil.hpp"
+#include "Common/Util/HashUtil.hpp"
 #include "Render/DX/Foundation/Util/d3dx12.h"
 #include "Render/DX/Foundation/HlslCompaction.h"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"

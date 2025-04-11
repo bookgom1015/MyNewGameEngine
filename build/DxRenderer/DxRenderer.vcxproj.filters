@@ -40,9 +40,6 @@
     <Filter Include="Common Files\Foundation\Core">
       <UniqueIdentifier>{86de3285-e2af-4bef-8a43-c12bf77d5404}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common Files\Foundation\Util">
-      <UniqueIdentifier>{dfd8c91e-7643-4c72-b03a-a3eae2d5e3ef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Foundation\Core">
       <UniqueIdentifier>{5a0fc8f2-8b28-4950-a2ff-fc13978bb61a}</UniqueIdentifier>
     </Filter>
@@ -94,6 +91,9 @@
     <Filter Include="Common Files\Foundation\Camera">
       <UniqueIdentifier>{be8b577c-4fb8-46e7-97bf-149a60952972}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files\Util">
+      <UniqueIdentifier>{dfd8c91e-7643-4c72-b03a-a3eae2d5e3ef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -110,9 +110,6 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp">
       <Filter>Common Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp">
-      <Filter>Common Files\Foundation\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h">
       <Filter>Header Files\Foundation</Filter>
@@ -150,17 +147,11 @@
     <ClInclude Include="..\..\externs\FrankLuna\GeometryGenerator.h">
       <Filter>External Files\FrankLuna</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Util\HashUtil.hpp">
-      <Filter>Common Files\Foundation\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Util\TaskQueue.hpp">
-      <Filter>Common Files\Foundation\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp">
       <Filter>Header Files\Foundation\Resource</Filter>
@@ -201,14 +192,23 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\RenderItem.hpp">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Util\MathUtil.hpp">
-      <Filter>Common Files\Foundation\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp">
       <Filter>Common Files\Foundation\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Util\HashUtil.hpp">
+      <Filter>Common Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Util\MathUtil.hpp">
+      <Filter>Common Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp">
+      <Filter>Common Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Util\TaskQueue.hpp">
+      <Filter>Common Files\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -226,9 +226,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp">
       <Filter>Common Files\Foundation\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp">
-      <Filter>Common Files\Foundation\Util</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\CommandObject.cpp">
       <Filter>Source Files\Foundation\Core</Filter>
@@ -257,17 +254,11 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp">
       <Filter>Source Files\Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Util\HashUtil.cpp">
-      <Filter>Common Files\Foundation\Util</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp">
       <Filter>Source Files\Shading Files\Util</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Util\TaskQueue.cpp">
-      <Filter>Common Files\Foundation\Util</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\GpuResource.cpp">
       <Filter>Source Files\Foundation\Resource</Filter>
@@ -299,14 +290,23 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp">
       <Filter>Source Files\Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Util\MathUtil.cpp">
-      <Filter>Common Files\Foundation\Util</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\EquirectangaularConverter.cpp">
       <Filter>Source Files\Shading Files\Util</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp">
       <Filter>Common Files\Foundation\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp">
+      <Filter>Common Files\Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -370,6 +370,9 @@
     </None>
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl">
       <Filter>Common Files\Foundation\Camera</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Util\MathUtil.inl">
+      <Filter>Common Files\Util</Filter>
     </None>
   </ItemGroup>
 </Project>

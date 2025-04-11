@@ -1,5 +1,7 @@
 #include "Common/Render/Renderer.hpp"
 
-void Common::Render::Renderer::EnableShadow(BOOL state) {
+using namespace Common::Render;
+
+void Renderer::EnableShadow(BOOL state) {
 	mbShadowEnabled = state;
 }

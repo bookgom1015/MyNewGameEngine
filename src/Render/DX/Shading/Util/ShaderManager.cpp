@@ -1,7 +1,7 @@
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Common/Debug/Logger.hpp"
-#include "Common/Foundation/Util/StringUtil.hpp"
-#include "Common/Foundation/Util/TaskQueue.hpp"
+#include "Common/Util/StringUtil.hpp"
+#include "Common/Util/TaskQueue.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -48,7 +48,7 @@ void ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundat
 }
 
 BOOL ShaderManager::CompileShaders(LPCWSTR baseDir) {
-	Common::Foundation::Util::TaskQueue taskQueue;
+	Common::Util::TaskQueue taskQueue;
 
 	for (const auto& shaderInfo : mShaderInfos) 
 		taskQueue.AddTask([&]() -> BOOL { return CompileShader(shaderInfo.first, baseDir); });
@@ -179,7 +179,7 @@ BOOL ShaderManager::BuildPdb(IDxcResult* const result, LPCWSTR fileName) {
 
 	fileNameWithExtW.insert(delimIdx, L"\\PDB");
 
-	const auto& fileNameA = Common::Foundation::Util::StringUtil::WStringToString(fileNameWithExtW);
+	const auto& fileNameA = Common::Util::StringUtil::WStringToString(fileNameWithExtW);
 
 	std::ofstream fout;
 	fout.open(fileNameA, std::ios::beg | std::ios::binary | std::ios::trunc);

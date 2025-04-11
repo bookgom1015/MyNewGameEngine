@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/Foundation/Util/MathUtil.hpp"
+#include "Common/Util/MathUtil.hpp"
 
 namespace Common::Foundation {
 	namespace Core {
@@ -10,7 +10,11 @@ namespace Common::Foundation {
 	namespace Camera {
 		class GameCamera {
 		public:
-			GameCamera(Core::WindowsManager* const pWndManager, FLOAT nearZ, FLOAT farZ, FLOAT fovY);
+			GameCamera(
+				Core::WindowsManager* const pWndManager, 
+				FLOAT nearZ = 0.1f, 
+				FLOAT farZ = 100.f, 
+				FLOAT fovY = 90.f);
 			virtual ~GameCamera() = default;
 
 		public:

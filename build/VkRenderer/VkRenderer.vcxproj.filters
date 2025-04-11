@@ -34,9 +34,6 @@
     <Filter Include="Common Files\Foundation\Core">
       <UniqueIdentifier>{cab9d503-6855-464c-9b61-fffa4a8bc0ca}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common Files\Foundation\Util">
-      <UniqueIdentifier>{6715a582-e592-4f65-a7c7-cb1110bcd053}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Foundation\Core">
       <UniqueIdentifier>{333eb6f8-d8b0-4c00-a497-b1a00d898980}</UniqueIdentifier>
     </Filter>
@@ -48,6 +45,9 @@
     </Filter>
     <Filter Include="Header Files\Foundation\Util">
       <UniqueIdentifier>{6441142f-8e61-497f-aba8-fa31b5553261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Util">
+      <UniqueIdentifier>{6715a582-e592-4f65-a7c7-cb1110bcd053}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -62,9 +62,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\VK\VkRenderer.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp">
-      <Filter>Common Files\Foundation\Util</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp">
       <Filter>Common Files\Foundation\Core</Filter>
@@ -93,6 +90,9 @@
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
       <Filter>Common Files\Foundation\Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
@@ -109,9 +109,6 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp">
       <Filter>Common Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp">
-      <Filter>Common Files\Foundation\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\CommandObject.hpp">
       <Filter>Header Files\Foundation\Core</Filter>
@@ -133,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp">
       <Filter>Common Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp">
+      <Filter>Common Files\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

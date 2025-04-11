@@ -10,7 +10,7 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
-namespace Common::Foundation::Util {
+namespace Common::Util {
 	class TaskQueue {
 	public:
 		TaskQueue() = default;

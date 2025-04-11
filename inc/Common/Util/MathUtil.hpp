@@ -22,7 +22,7 @@ const FLOAT Epsilon	 = 0.0000000001f;
 const FLOAT RadToDeg = 180.f / 3.1415926535f;
 const FLOAT DegToRad = 3.1415926535f / 180.f;
 
-namespace Common::Foundation::Util {
+namespace Common::Util {
 	namespace MathUtil {
 		__forceinline FLOAT Sin(FLOAT t);
 		__forceinline FLOAT ASin(FLOAT t);

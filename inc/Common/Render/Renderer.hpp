@@ -17,8 +17,14 @@ namespace Common {
 		struct LogFile;
 	}
 
-	namespace Foundation::Core {
-		class WindowsManager;
+	namespace Foundation {
+		namespace Core {
+			class WindowsManager;
+		}
+
+		namespace Camera {
+			class GameCamera;
+		}
 	}
 
 	namespace Render {
@@ -41,6 +47,9 @@ namespace Common {
 			RendererAPI virtual BOOL AddMesh() = 0;
 			RendererAPI virtual BOOL RemoveMesh() = 0;
 
+		public:
+			__forceinline void SetCamera(Common::Foundation::Camera::GameCamera* const pCamera);
+
 		public: // Shading control functions
 			void EnableShadow(BOOL state);
 			__forceinline constexpr BOOL IsShadowEnabled() const;
@@ -48,6 +57,7 @@ namespace Common {
 		protected:
 			Common::Debug::LogFile* mpLogFile = nullptr;
 			Common::Foundation::Core::WindowsManager* mpWindowsManager = nullptr;
+			Common::Foundation::Camera::GameCamera* mpCamera = nullptr;
 
 			BOOL mbRaytracingSupported = FALSE;
 			BOOL mbShadowEnabled = TRUE;

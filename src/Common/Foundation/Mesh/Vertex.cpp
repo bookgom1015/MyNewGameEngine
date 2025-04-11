@@ -1,5 +1,5 @@
 #include "Common/Foundation/Mesh/Vertex.h"
-#include "Common/Foundation/Util/MathUtil.hpp"
+#include "Common/Util/MathUtil.hpp"
 
 #include <vector>
 
@@ -16,9 +16,9 @@ namespace {
 }
 
 BOOL Vertex::operator==(const Vertex& other) const {
-	return Common::Foundation::Util::MathUtil::IsEqual(Position, other.Position) &&
-		Common::Foundation::Util::MathUtil::IsEqual(Normal, other.Normal) &&
-		Common::Foundation::Util::MathUtil::IsEqual(TexCoord, other.TexCoord);
+	return Common::Util::MathUtil::IsEqual(Position, other.Position) &&
+		Common::Util::MathUtil::IsEqual(Normal, other.Normal) &&
+		Common::Util::MathUtil::IsEqual(TexCoord, other.TexCoord);
 }
 
 D3D12_INPUT_LAYOUT_DESC Vertex::InputLayoutDesc() {

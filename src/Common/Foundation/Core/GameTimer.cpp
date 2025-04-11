@@ -5,6 +5,7 @@ using namespace Common::Foundation::Core;
 namespace{
 	const FLOAT FrameTime30f = 1.f / 30.f;
 	const FLOAT FrameTime60f = 1.f / 60.f;
+	const FLOAT FrameTime90f = 1.f / 90.f;
 	const FLOAT FrameTime120f = 1.f / 120.f;
 	const FLOAT FrameTime144f = 1.f / 144.f;
 	const FLOAT FrameTime244f = 1.f / 244.f;
@@ -111,6 +112,7 @@ constexpr FLOAT GameTimer::FrameTimeLimit() const {
 	switch (mFrameTimeLimit) {
 	case FrameTimeLimits::E_30f: return FrameTime30f;
 	case FrameTimeLimits::E_60f: return FrameTime60f;
+	case FrameTimeLimits::E_90f: return FrameTime90f;
 	case FrameTimeLimits::E_120f: return FrameTime120f;
 	case FrameTimeLimits::E_144f: return FrameTime144f;
 	case FrameTimeLimits::E_244f: return FrameTime244f;

@@ -266,14 +266,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
-    <ClInclude Include="..\..\inc\Common\Foundation\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Input\InputProcessor.hpp" />
+    <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp" />
+    <ClInclude Include="..\..\inc\Input\KeyCodes.hpp" />
     <ClInclude Include="..\..\inc\Input\SimpleInputProcessor.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Input\InputProcessor.cpp" />
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Input\SimpleInputProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -30,7 +30,7 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	if (!Common::Debug::Logger::Initialize(logFile, L"./log.txt")) return -1;
 
 	try {
-		GameWorld gw;
+		GameWorld::GameWorldClass gw;
 		
 		CheckReturn(logFile, gw.Initialize(logFile, hInstance));
 		CheckReturn(logFile, gw.RunLoop());

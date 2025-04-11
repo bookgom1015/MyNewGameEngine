@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common/Foundation/Mesh/Mesh.hpp"
-#include "Common/Foundation/Util/HashUtil.hpp"
+#include "Common/Util/HashUtil.hpp"
 #include "Render/DX/DxLowRenderer.hpp"
 
 namespace Common::Foundation::Camera {
@@ -10,6 +10,7 @@ namespace Common::Foundation::Camera {
 
 namespace ConstantBuffers {
 	struct PassCB;
+	struct EquirectangularConverterCB;
 }
 
 namespace Render {
@@ -102,6 +103,7 @@ namespace Render {
 
 			// Constant buffers
 			std::unique_ptr<ConstantBuffers::PassCB> mMainPassCB;
+			std::unique_ptr<ConstantBuffers::EquirectangularConverterCB> mEquirectConvCB;
 
 			// Shading objects
 			std::unique_ptr<Foundation::Util::ShadingObjectManager> mShadingObjectManager;
@@ -114,9 +116,6 @@ namespace Render {
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
-
-			// Camera
-			Common::Foundation::Camera::GameCamera* mpCamera = nullptr;
 		};
 	}
 }

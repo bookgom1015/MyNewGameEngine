@@ -4,7 +4,7 @@
 
 #include <Windows.h>
 
-namespace Common::Foundation::Util {
+namespace Common::Util {
 	class StringUtil {
 	public:
 		static std::string WStringToString(const std::wstring& wstr);

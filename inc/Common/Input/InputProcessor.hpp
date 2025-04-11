@@ -5,6 +5,7 @@
 #include <DirectXMath.h>
 
 #include "Common/Debug/Logger.hpp"
+#include "Input/KeyCodes.hpp"
 
 #ifdef _DLLEXPORT
 	#ifndef InputProcessorAPI
@@ -33,8 +34,8 @@ namespace Common::Input {
 		virtual ~KeyboardState() = default;
 
 	public:
-		BOOL KeyValue(INT key) const;
-		ButtonStates KeyState(INT key) const;
+		InputProcessorAPI virtual BOOL KeyValue(INT key) const;
+		InputProcessorAPI virtual ButtonStates KeyState(INT key) const;
 	};
 
 	class MouseState {
@@ -59,11 +60,11 @@ namespace Common::Input {
 		__forceinline BOOL IsRelativeMouseMode() const;
 
 	public:
-		void WheelUp();
-		void WheelDown();
+		InputProcessorAPI virtual void WheelUp();
+		InputProcessorAPI virtual void WheelDown();
 
-		BOOL ButtonValue(INT button) const;
-		ButtonStates ButtonState(INT button) const;
+		InputProcessorAPI virtual BOOL ButtonValue(INT button) const;
+		InputProcessorAPI virtual ButtonStates ButtonState(INT button) const;
 
 	private:
 		DirectX::XMFLOAT2 mMousePos = { 0.f, 0.0f };
@@ -104,6 +105,9 @@ namespace Common::Input {
 
 		InputProcessorAPI virtual void OnKeyboardInput(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 		InputProcessorAPI virtual void OnMouseInput(HWND hWnd) = 0;
+
+	public:
+		__forceinline InputState GetInputState() const;
 
 	protected:
 		void SetMousePosition(FLOAT x, FLOAT y);
