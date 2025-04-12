@@ -1,8 +1,15 @@
 #pragma once
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
 #include <wrl.h>
+#include <Windows.h>
 
-#include <d3d12.h>
+#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
 
 namespace Common::Debug {
 	struct LogFile;
@@ -40,13 +47,15 @@ namespace Render::DX::Foundation {
 			BOOL CreateCommandAllocator(Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& pCommandAllocator);
 			BOOL CreateCommandList(
 				ID3D12CommandAllocator* const pCommandAllocator,
-				Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>& pCommandList);
+				Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6>& pCommandList);
 			BOOL CreateFence(Microsoft::WRL::ComPtr<ID3D12Fence>& pFence);
 
 			BOOL CreateRtvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
 			BOOL CreateDsvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
 			BOOL CreateCbvUavSrvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
 			UINT DescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType) const;
+
+			BOOL CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const;
 
 		private:
 			Common::Debug::LogFile* mpLogFile = nullptr;

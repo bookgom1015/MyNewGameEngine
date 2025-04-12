@@ -3,9 +3,14 @@
 #ifndef _HLSL
 	#include <type_traits>
 	
+	#ifndef WIN32_LEAN_AND_MEAN
+	#define WIN32_LEAN_AND_MEAN
+	#endif // WIN32_LEAN_AND_MEAN
+	#ifndef NOMINMAX
+	#define NOMINMAX
+	#endif // NOMINMAX
 	#include <Windows.h>
 
-	#include <d3d12.h>
 	#include <DirectXMath.h>
 	
 	#include "Common/Util/HashUtil.hpp"
@@ -21,8 +26,6 @@ namespace Common {
 
 #ifndef _HLSL
 				BOOL operator==(const Vertex& other) const;
-
-				static D3D12_INPUT_LAYOUT_DESC InputLayoutDesc();
 #endif
 			};
 		}

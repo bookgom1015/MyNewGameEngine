@@ -35,6 +35,13 @@ BOOL FrameResource::Initialize(
 	return TRUE;
 }
 
+BOOL FrameResource::ResetCommandListAllocators() {
+	for (UINT i = 0; i < mThreadCount; ++i)
+		CheckHRESULT(mpLogFile, mCmdAllocators[i]->Reset());
+
+	return TRUE;
+}
+
 BOOL FrameResource::CreateCommandListAllocators() {
 	for (UINT i = 0, end = static_cast<UINT>(mCmdAllocators.size()); i < end; ++i) 
 		CheckReturn(mpLogFile, mpDevice->CreateCommandAllocator(mCmdAllocators[i]));

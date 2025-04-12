@@ -57,9 +57,7 @@ BOOL SwapChain::BuildDescriptors(DescriptorHeap* const pDescHeap) {
 }
 
 BOOL SwapChain::ReadyToPresent(Resource::FrameResource* const pFrameResource) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
-		pFrameResource->CommandAllocator(0),
-		0));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(pFrameResource->CommandAllocator(0), 0));
 	const auto cmdList = mInitData.CommandObject->CommandList(0);
 
 	mSwapChainBuffers[mCurrBackBuffer]->Transite(cmdList, D3D12_RESOURCE_STATE_PRESENT);

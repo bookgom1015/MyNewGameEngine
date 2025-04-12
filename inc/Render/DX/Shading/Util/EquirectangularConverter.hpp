@@ -6,34 +6,34 @@ namespace Render::DX::Shading::Util {
 	namespace EquirectangularConverter {
 		namespace Shader {
 			enum Type {
-				E_VS_ConvCubeToEquirect = 0,
-				E_PS_ConvCubeToEquirect,
-				E_VS_ConvEquirectToCube,
-				E_GS_ConvEquirectToCube,
-				E_PS_ConvEquirectToCube,
+				VS_ConvCubeToEquirect = 0,
+				PS_ConvCubeToEquirect,
+				VS_ConvEquirectToCube,
+				GS_ConvEquirectToCube,
+				PS_ConvEquirectToCube,
 				Count
 			};
 		}
 
 		namespace RootSignature {
 			enum Type {
-				E_ConvEquirectToCube = 0,
-				E_ConvCubeToEquirect,
+				GR_ConvEquirectToCube = 0,
+				GR_ConvCubeToEquirect,
 				Count
 			};
 
 			namespace ConvEquirectToCube {
 				enum {
-					ECB_EquirectConverter = 0,
-					ESI_EquirectangularMap,
+					CB_EquirectConverter = 0,
+					SI_EquirectangularMap,
 					Count
 				};
 			}
 
 			namespace ConvCubeToEquirect {
 				enum {
-					EC_Consts = 0,
-					ESI_CubeMap,
+					RC_Consts = 0,
+					SI_CubeMap,
 					Count
 				};
 			}
@@ -41,8 +41,8 @@ namespace Render::DX::Shading::Util {
 
 		namespace PipelineState {
 			enum Type {
-				EG_ConvEquirectToCube = 0,
-				EG_ConvCubeToEquirect,
+				GP_ConvEquirectToCube = 0,
+				GP_ConvCubeToEquirect,
 				Count
 			};
 		}

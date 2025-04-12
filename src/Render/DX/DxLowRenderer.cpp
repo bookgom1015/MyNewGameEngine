@@ -109,6 +109,8 @@ BOOL DxLowRenderer::CreateDevice() {
 	CheckReturn(mpLogFile, mpWindowsManager->SelectDialog(InitDataPtr.get()));
 
 	CheckReturn(mpLogFile, mFactory->SelectAdapter(mDevice.get(), InitDataPtr->SelectedItemIndex, mbRaytracingSupported));
+	CheckReturn(mpLogFile, mDevice->Initialize(mpLogFile));
+	CheckReturn(mpLogFile, mDevice->CheckMeshShaderSupported(mbMeshShaderSupported));
 
 	return TRUE;
 }

@@ -1,9 +1,15 @@
 #pragma once
 
-#include "wrl.h"
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+#include <wrl.h>
+#include <Windows.h>
 
-#include "Render/DX/Foundation/Util/d3dx12.h"
-
+#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
 #include <dxgi.h>
 
 namespace Common::Debug {
@@ -26,6 +32,9 @@ namespace Render::DX::Foundation {
 		class D3D12Util {
 		public:
 			static BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+
+		public:
+			__forceinline static UINT CeilDivide(UINT value, UINT divisor);
 
 		public:
 			static BOOL CreateSwapChain(
@@ -92,6 +101,8 @@ namespace Render::DX::Foundation {
 			static D3D12_GRAPHICS_PIPELINE_STATE_DESC DefaultPsoDesc(D3D12_INPUT_LAYOUT_DESC inputLayout, DXGI_FORMAT dsvFormat);
 			static D3D12_GRAPHICS_PIPELINE_STATE_DESC FitToScreenPsoDesc();
 
+			static D3DX12_MESH_SHADER_PIPELINE_STATE_DESC DefaultMeshPsoDesc(DXGI_FORMAT dsvFormat);
+
 			static BOOL CreateComputePipelineState(
 				Core::Device* const pDevice,
 				const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc,
@@ -104,9 +115,19 @@ namespace Render::DX::Foundation {
 				const IID& riid,
 				void** const ppPipelineState,
 				LPCWSTR name);
+			static BOOL CreatePipelineState(
+				Core::Device* const pDevice,
+				const D3DX12_MESH_SHADER_PIPELINE_STATE_DESC& desc,
+				const IID& riid,
+				void** const ppPipelineState,
+				LPCWSTR name);
+
+			static D3D12_INPUT_LAYOUT_DESC InputLayoutDesc();
 
 		private:
 			static Common::Debug::LogFile* mpLogFile;
 		};
 	}
 }
+
+#include "D3D12Util.inl"

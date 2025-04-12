@@ -3,14 +3,20 @@
 #include <array>
 #include <memory>
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
 #include <wrl.h>
 #include <Windows.h>
 
+#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
 #include <dxgi1_6.h>
 
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/HashUtil.hpp"
-#include "Render/DX/Foundation/Util/d3dx12.h"
 #include "Render/DX/Foundation/HlslCompaction.h"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 

@@ -40,16 +40,16 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::CompileShaders() {
 		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"VS", L"vs_6_3");
 		const auto gsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"GS", L"gs_6_3");
 		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"PS", L"ps_6_3");
-		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::E_VS_ConvEquirectToCube]);
-		mInitData.ShaderManager->AddShader(gsInfo, mShaderHashes[Shader::E_GS_ConvEquirectToCube]);
-		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::E_PS_ConvEquirectToCube]);
+		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvEquirectToCube]);
+		mInitData.ShaderManager->AddShader(gsInfo, mShaderHashes[Shader::GS_ConvEquirectToCube]);
+		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvEquirectToCube]);
 	}
 	// ConvertCubeMapToEquirectangular
 	{
 		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"VS", L"vs_6_3");
 		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"PS", L"ps_6_3");
-		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::E_VS_ConvCubeToEquirect]);
-		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::E_PS_ConvCubeToEquirect]);
+		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvCubeToEquirect]);
+		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvCubeToEquirect]);
 	}
 
 	return TRUE;
@@ -64,8 +64,8 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvEquirectToCube::Count] = {};
-		slotRootParameter[RootSignature::ConvEquirectToCube::ECB_EquirectConverter].InitAsConstantBufferView(0);
-		slotRootParameter[RootSignature::ConvEquirectToCube::ESI_EquirectangularMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ConvEquirectToCube::CB_EquirectConverter].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::ConvEquirectToCube::SI_EquirectangularMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
@@ -75,7 +75,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
 			mInitData.Device,
 			rootSigDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_ConvEquirectToCube]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ConvEquirectToCube]),
 			L"EquirectangularConverter_RS_ConvEquirectToCube"));
 	}
 	// ConvCubeToEquirect
@@ -86,8 +86,8 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvCubeToEquirect::Count] = {};
-		slotRootParameter[RootSignature::ConvCubeToEquirect::EC_Consts].InitAsConstants(ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count, 0);
-		slotRootParameter[RootSignature::ConvCubeToEquirect::ESI_CubeMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ConvCubeToEquirect::RC_Consts].InitAsConstants(ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count, 0);
+		slotRootParameter[RootSignature::ConvCubeToEquirect::SI_CubeMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
@@ -97,7 +97,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
 			mInitData.Device,
 			rootSigDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_ConvCubeToEquirect]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ConvCubeToEquirect]),
 			L"EquirectangularConverter_RS_ConvCubeToEquirect"));
 	}
 
@@ -108,13 +108,13 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 	// ConvEquirectToCube
 	{
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc({ nullptr, 0 }, DXGI_FORMAT_UNKNOWN);
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_ConvEquirectToCube].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get();
 		{
-			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_VS_ConvEquirectToCube]);
+			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvEquirectToCube]);
 			if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			const auto gs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_GS_ConvEquirectToCube]);
+			const auto gs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::GS_ConvEquirectToCube]);
 			if (gs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_PS_ConvEquirectToCube]);
+			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvEquirectToCube]);
 			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
 			psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
 			psoDesc.GS = { reinterpret_cast<BYTE*>(gs->GetBufferPointer()), gs->GetBufferSize() };
@@ -128,17 +128,17 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::EG_ConvEquirectToCube]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ConvEquirectToCube]),
 			L"EquirectangularConverter_GPS_ConvEquirectToCube"));
 	}
 	// ConvCubeToEquirect
 	{
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_ConvCubeToEquirect].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ConvCubeToEquirect].Get();
 		{
-			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_VS_ConvCubeToEquirect]);
+			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvCubeToEquirect]);
 			if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_PS_ConvCubeToEquirect]);
+			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvCubeToEquirect]);
 			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
 			psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
@@ -149,7 +149,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::EG_ConvCubeToEquirect]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ConvCubeToEquirect]),
 			L"EquirectangularConverter_GPS_ConvCubeToEquirect"));
 	}
 
@@ -164,18 +164,18 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 		D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
 		UINT width, UINT height,
 		UINT maxMipLevel) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::EG_ConvEquirectToCube].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvEquirectToCube].Get()));
 
 	const auto cmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::E_ConvEquirectToCube].Get());
+	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get());
 
 	pCube->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	pEquirect->Transite(cmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::ECB_EquirectConverter, cbEquirectConv);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::ESI_EquirectangularMap, si_equirect);
+	cmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
+	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
 	
 	for (UINT mipLevel = 0; mipLevel < maxMipLevel; ++mipLevel) {
 		const UINT mw = static_cast<UINT>(width / std::pow(2, mipLevel));
@@ -209,12 +209,12 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 		D3D12_VIEWPORT viewport,
 		D3D12_RECT scissorRect,
 		UINT maxMipLevel) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::EG_ConvEquirectToCube].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvEquirectToCube].Get()));
 
 	const auto cmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::E_ConvEquirectToCube].Get());
+	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get());
 
 	cmdList->RSSetViewports(1, &viewport);
 	cmdList->RSSetScissorRects(1, &scissorRect);
@@ -222,8 +222,8 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 	pCube->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	pEquirect->Transite(cmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::ECB_EquirectConverter, cbEquirectConv);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::ESI_EquirectangularMap, si_equirect);
+	cmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
+	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
 
 	cmdList->OMSetRenderTargets(1, &ro_cube, TRUE, nullptr);
 
@@ -245,12 +245,12 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertCubeToEquir
 		D3D12_VIEWPORT viewport,
 		D3D12_RECT scissorRect,
 		UINT mipLevel) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::EG_ConvCubeToEquirect].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvCubeToEquirect].Get()));
 
 	const auto cmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::E_ConvCubeToEquirect].Get());
+	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvCubeToEquirect].Get());
 
 	cmdList->RSSetViewports(1, &viewport);
 	cmdList->RSSetScissorRects(1, &scissorRect);
@@ -266,8 +266,8 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertCubeToEquir
 	std::array<std::uint32_t, ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count> consts;
 	std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Struct));
 
-	cmdList->SetComputeRoot32BitConstants(RootSignature::ConvCubeToEquirect::EC_Consts, ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count, consts.data(), 0);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvCubeToEquirect::ESI_CubeMap, si_cube);
+	cmdList->SetComputeRoot32BitConstants(RootSignature::ConvCubeToEquirect::RC_Consts, ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count, consts.data(), 0);
+	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvCubeToEquirect::SI_CubeMap, si_cube);
 
 	cmdList->IASetVertexBuffers(0, 0, nullptr);
 	cmdList->IASetIndexBuffer(nullptr);

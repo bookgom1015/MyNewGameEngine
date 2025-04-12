@@ -6,9 +6,9 @@ namespace Render::DX::Shading::Util {
 	namespace MipmapGenerator {
 		namespace Shader {
 			enum Type {
-				E_VS_GenerateMipmap = 0,
-				E_PS_GenerateMipmap,
-				E_PS_CopyMap,
+				VS_GenerateMipmap = 0,
+				PS_GenerateMipmap,
+				PS_CopyMap,
 				Count
 			};
 		}
@@ -16,8 +16,8 @@ namespace Render::DX::Shading::Util {
 		namespace RootSignature {
 			namespace Default {
 				enum {
-					EC_Consts = 0,
-					ESI_InputMap,
+					RC_Consts = 0,
+					SI_InputMap,
 					Count
 				};
 			}
@@ -25,8 +25,8 @@ namespace Render::DX::Shading::Util {
 
 		namespace PipelineState {
 			enum Type {
-				EG_GenerateMipmap = 0,
-				EG_CopyMap,
+				GP_GenerateMipmap = 0,
+				GP_CopyMap,
 				Count
 			};
 		}

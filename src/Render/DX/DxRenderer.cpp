@@ -74,10 +74,9 @@ BOOL DxRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
 	
 	CheckReturn(mpLogFile, BuildSkySphere());
-	
-	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
-
 	CheckReturn(mpLogFile, FinishUpInitializing());
+
+	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
 
 	return TRUE;
 }
@@ -102,13 +101,15 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 	mCurrentFrameResourceIndex = (mCurrentFrameResourceIndex + 1) % Foundation::Resource::FrameResource::Count;
 	mCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
 	CheckReturn(mpLogFile, mCommandObject->WaitCompletion(mCurrentFrameResource->mFence));
-
+	
 	CheckReturn(mpLogFile, UpdateConstantBuffers());
 
 	return TRUE;
 }
 
 BOOL DxRenderer::Draw() {
+	CheckReturn(mpLogFile, mCurrentFrameResource->ResetCommandListAllocators());
+
 	CheckReturn(mpLogFile, mEnvironmentMap->DrawSkySphere(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
@@ -120,7 +121,7 @@ BOOL DxRenderer::Draw() {
 		mCurrentFrameResource->ObjectCBAddress(),
 		mCurrentFrameResource->ObjectCBByteSize(),
 		gSkySphereRitem));
-
+	
 	CheckReturn(mpLogFile, PresentAndSignal());
 
 	return TRUE;
@@ -361,6 +362,7 @@ BOOL DxRenderer::InitShadingObjects() {
 	// EnvironmentMap
 	{
 		auto initData = Shading::EnvironmentMap::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
@@ -444,7 +446,7 @@ BOOL DxRenderer::PresentAndSignal() {
 	CheckReturn(mpLogFile, mSwapChain->ReadyToPresent(mCurrentFrameResource));
 	CheckReturn(mpLogFile, mSwapChain->Present(mFactory->AllowTearing()));
 	mSwapChain->NextBackBuffer();
-
+	
 	mCurrentFrameResource->mFence = mCommandObject->IncreaseFence();
 
 	CheckReturn(mpLogFile, mCommandObject->Signal());

@@ -35,7 +35,7 @@ BOOL Device::CreateCommandAllocator(Microsoft::WRL::ComPtr<ID3D12CommandAllocato
 
 BOOL Device::CreateCommandList(
 		ID3D12CommandAllocator* const pCommandAllocator,
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>& pCommandList) {
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6>& pCommandList) {
 	CheckHRESULT(mpLogFile, md3dDevice->CreateCommandList(
 		0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -92,4 +92,25 @@ BOOL Device::CreateCbvUavSrvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Descript
 
 UINT Device::DescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType) const {
 	return md3dDevice->GetDescriptorHandleIncrementSize(descriptorHeapType);
+}
+
+BOOL Device::CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const {
+	D3D12_FEATURE_DATA_D3D12_OPTIONS7 options7 = {};
+	const auto featureSupport = md3dDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options7, sizeof(options7));
+	if (FAILED(featureSupport)) {
+		std::wstringstream wsstream;
+		wsstream << L"CheckFeatureSupport failed: " << std::hex << featureSupport;
+		ReturnFalse(mpLogFile, wsstream.str().c_str());
+	}
+	
+	if (options7.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED) {
+		WLogln(mpLogFile, L"Selected device supports mesh shader");
+		bMeshShaderSupported = TRUE;
+	}
+	else {
+		WLogln(mpLogFile, L"Selected device does not support mesh shader");
+		bMeshShaderSupported = FALSE;
+	}
+
+	return TRUE;
 }

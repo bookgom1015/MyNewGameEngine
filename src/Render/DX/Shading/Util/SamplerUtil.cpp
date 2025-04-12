@@ -1,5 +1,6 @@
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
-#include "Render/DX/Foundation/Util/d3dx12.h"
+
+#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
 
 using namespace Render::DX::Shading::Util;
 

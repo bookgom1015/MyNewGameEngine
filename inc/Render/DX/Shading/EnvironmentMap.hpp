@@ -16,23 +16,27 @@ namespace Render::DX::Shading {
 	namespace EnvironmentMap {
 		namespace Shader {
 			enum Type {
-				E_VS_DrawSkySphere = 0,
-				E_PS_DrawSkySphere,
+				VS_DrawSkySphere = 0,
+				MS_DrawSkySphere,
+				PS_DrawSkySphere,
 				Count
 			};
 		}
 
 		namespace RootSignature {
 			enum Type {
-				E_DrawSkySphere = 0,
+				GR_DrawSkySphere = 0,
 				Count
 			};
 
 			namespace DrawSkySphere {
 				enum {
-					ECB_Pass = 0,
-					ECB_Object,
-					ESI_EnvCubeMap,
+					CB_Pass = 0,
+					CB_Object,
+					RC_Consts,
+					SB_VertexBuffer,
+					SB_IndexBuffer,
+					SI_EnvCubeMap,
 					Count
 				};
 			}
@@ -40,7 +44,8 @@ namespace Render::DX::Shading {
 
 		namespace PipelineState {
 			enum Type {
-				EG_DrawSkySphere = 0,
+				GP_DrawSkySphere = 0,
+				MP_DrawSkySphere,
 				Count
 			};
 		}
@@ -48,6 +53,7 @@ namespace Render::DX::Shading {
 		class EnvironmentMapClass : public Render::DX::Foundation::ShadingObject {
 		public:
 			struct InitData {
+				BOOL MeshShaderSupported = FALSE;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;

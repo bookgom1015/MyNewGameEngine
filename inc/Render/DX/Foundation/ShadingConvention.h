@@ -37,12 +37,43 @@ namespace ShadingConvention{
 	}
 
 	namespace EnvironmentMap {
+#ifndef EnvironmentMap_DrawSkySphere_RCSTRUCT
+#define EnvironmentMap_DrawSkySphere_RCSTRUCT {	\
+		UINT gVertexCount;						\
+		UINT gIndexCount;						\
+	};
+#endif
+
+		namespace ThreadGroup {
+			namespace MeshShader {
+				enum {
+					Width = 8,
+					Size = Width
+				};
+			}
+		}
+
 #ifdef _HLSL
 		typedef HDR_FORMAT EquirectangularMapFormat;
 		typedef HDR_FORMAT EnvironmentCubeMapFormat;
+
+	#ifndef EnvironmentMap_DrawSkySphere_RootConstants
+	#define EnvironmentMap_DrawSkySphere_RootConstants(reg) cbuffer cbRootConstants : register(reg) EnvironmentMap_DrawSkySphere_RCSTRUCT
+	#endif
 #else
 		const DXGI_FORMAT EquirectangularMapFormat = HDR_FORMAT;
 		const DXGI_FORMAT EnvironmentCubeMapFormat = HDR_FORMAT;
+
+		namespace RootConstant {
+			namespace DrawSkySphere {
+				struct Struct EnvironmentMap_DrawSkySphere_RCSTRUCT
+					enum {
+					E_VertexCount = 0,
+					E_IndexCount,
+					Count
+				};
+			}
+		}
 #endif
 	}
 

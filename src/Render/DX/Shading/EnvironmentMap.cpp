@@ -64,9 +64,11 @@ BOOL EnvironmentMap::EnvironmentMapClass::CompileShaders() {
 	// DrawSkySphere
 	{
 		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"VS", L"vs_6_3");
-		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"PS", L"ps_6_3");
-		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::E_VS_DrawSkySphere]);
-		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::E_PS_DrawSkySphere]);
+		const auto msInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"MS", L"ms_6_5");
+		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"PS", L"ps_6_5");
+		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_DrawSkySphere]);
+		mInitData.ShaderManager->AddShader(msInfo, mShaderHashes[Shader::MS_DrawSkySphere]);
+		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_DrawSkySphere]);
 	}
 
 	return TRUE;
@@ -76,14 +78,17 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 	// DrawSkySphere 
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
-		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 1);
 
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawSkySphere::Count] = {};
-		slotRootParameter[RootSignature::DrawSkySphere::ECB_Pass].InitAsConstantBufferView(0);
-		slotRootParameter[RootSignature::DrawSkySphere::ECB_Object].InitAsConstantBufferView(1);
-		slotRootParameter[RootSignature::DrawSkySphere::ESI_EnvCubeMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DrawSkySphere::CB_Pass].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::DrawSkySphere::CB_Object].InitAsConstantBufferView(1);
+		slotRootParameter[RootSignature::DrawSkySphere::RC_Consts].InitAsConstants(ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count, 2);
+		slotRootParameter[RootSignature::DrawSkySphere::SB_VertexBuffer].InitAsShaderResourceView(0);
+		slotRootParameter[RootSignature::DrawSkySphere::SB_IndexBuffer].InitAsShaderResourceView(1);
+		slotRootParameter[RootSignature::DrawSkySphere::SI_EnvCubeMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
@@ -93,7 +98,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
 			mInitData.Device,
 			rootSigDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_DrawSkySphere]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_DrawSkySphere]),
 			L"EnvironmentMap_RS_DrawSkySphere"
 		));
 	}
@@ -104,30 +109,57 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 	// DrawSkySphere
 	{
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc(
-			Common::Foundation::Mesh::Vertex::InputLayoutDesc(), 
-			ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
-
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_DrawSkySphere].Get();
+		// GraphicsPipeline
 		{
-			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_VS_DrawSkySphere]);
-			if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::E_PS_DrawSkySphere]);
-			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
-		}
-		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = SDR_FORMAT;
-		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
-		psoDesc.DepthStencilState.DepthEnable = FALSE;
-		psoDesc.DepthStencilState.StencilEnable = FALSE;
+			const auto inputLayout = Foundation::Util::D3D12Util::InputLayoutDesc();
+			auto psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc(inputLayout, ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
 
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device,
-			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::EG_DrawSkySphere]),
-			L"EnvironmentMap_GPS_DrawSkySphere"));
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
+			{
+				const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_DrawSkySphere]);
+				if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
+				if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+			}
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = SDR_FORMAT;
+			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+			psoDesc.DepthStencilState.DepthEnable = FALSE;
+			psoDesc.DepthStencilState.StencilEnable = FALSE;
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_DrawSkySphere]),
+				L"EnvironmentMap_GP_DrawSkySphere"));
+		}
+		// MeshShaderPiepeline
+		if (mInitData.MeshShaderSupported) {
+			auto psoDesc = Foundation::Util::D3D12Util::DefaultMeshPsoDesc(ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
+
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
+			{
+				const auto ms = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_DrawSkySphere]);
+				if (ms == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
+				if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.MS = { reinterpret_cast<BYTE*>(ms->GetBufferPointer()), ms->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+			}
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = SDR_FORMAT;
+			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+			psoDesc.DepthStencilState.DepthEnable = FALSE;
+			psoDesc.DepthStencilState.StencilEnable = FALSE;
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_DrawSkySphere]),
+				L"EnvironmentMap_MP_DrawSkySphere"));
+		}
 	}
 
 	return TRUE;
@@ -180,12 +212,12 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[PipelineState::EG_DrawSkySphere].Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_DrawSkySphere : PipelineState::GP_DrawSkySphere].Get()));
 
 	const auto cmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::E_DrawSkySphere].Get());
+	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_DrawSkySphere].Get());
 
 	cmdList->RSSetViewports(1, &viewport);
 	cmdList->RSSetScissorRects(1, &scissorRect);
@@ -194,17 +226,40 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 
 	cmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &dio_depthStencil);
 
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::ECB_Pass, cbPass);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::ESI_EnvCubeMap, mhEquirectangularMapGpuSrv);
-
-	cmdList->IASetVertexBuffers(0, 1, &sphere->Geometry->VertexBufferView());
-	cmdList->IASetIndexBuffer(&sphere->Geometry->IndexBufferView());
-	cmdList->IASetPrimitiveTopology(sphere->PrimitiveType);
-
+	cmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, cbPass);
 	D3D12_GPU_VIRTUAL_ADDRESS currRitemObjCBAddress = cbObject + static_cast<UINT64>(sphere->ObjCBIndex) * static_cast<UINT64>(objCBByteSize);
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::ECB_Object, currRitemObjCBAddress);
+	cmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, currRitemObjCBAddress);
+	cmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
 
-	cmdList->DrawIndexedInstanced(sphere->IndexCount, 1, sphere->StartIndexLocation, sphere->BaseVertexLocation, 0);
+	if (mInitData.MeshShaderSupported) {
+		cmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
+
+		ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct rc;	
+		rc.gVertexCount = sphere->Geometry->VertexBufferByteSize / sphere->Geometry->VertexByteStride;
+		rc.gIndexCount = sphere->Geometry->IndexBufferByteSize / sizeof(std::uint16_t);
+
+		std::array<std::uint32_t, ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count> consts;
+		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct));
+
+		cmdList->SetGraphicsRoot32BitConstants(
+			RootSignature::DrawSkySphere::RC_Consts,
+			ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count,
+			consts.data(),
+			0);
+
+		cmdList->DispatchMesh(
+			Foundation::Util::D3D12Util::CeilDivide(rc.gIndexCount, ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::Width), 
+			1, 
+			1);
+	}
+	else {
+		cmdList->IASetVertexBuffers(0, 1, &sphere->Geometry->VertexBufferView());
+		cmdList->IASetIndexBuffer(&sphere->Geometry->IndexBufferView());
+		cmdList->IASetPrimitiveTopology(sphere->PrimitiveType);
+
+		cmdList->DrawIndexedInstanced(sphere->IndexCount, 1, sphere->StartIndexLocation, sphere->BaseVertexLocation, 0);
+	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
 

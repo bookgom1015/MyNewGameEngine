@@ -2,6 +2,12 @@
 
 #include <vector>
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
 #include <wrl.h>
 #include <Windows.h>
 
@@ -46,6 +52,9 @@ namespace Render::DX::Foundation {
 				UINT numThreads,
 				UINT numPasses, 
 				UINT numObjects);
+
+		public:
+			BOOL ResetCommandListAllocators();
 
 		public:
 			__forceinline void CopyMainPassCB(INT elementIndex, const ConstantBuffers::PassCB& data);

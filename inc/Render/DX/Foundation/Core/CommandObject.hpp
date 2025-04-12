@@ -2,9 +2,16 @@
 
 #include <vector>
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
 #include <wrl.h>
+#include <Windows.h>
 
-#include <d3d12.h>
+#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
 
 namespace Common::Debug {
 	struct LogFile;
@@ -32,6 +39,8 @@ namespace Render::DX::Foundation {
 		public: // Functions that is called whenever a renderer calls
 			BOOL FlushCommandQueue();
 
+			BOOL ResetCommandListAllocator();
+
 			BOOL ExecuteDirectCommandList();
 			BOOL ResetDirectCommandList(ID3D12PipelineState* const pPipelineState = nullptr);
 
@@ -56,8 +65,8 @@ namespace Render::DX::Foundation {
 			BOOL CreateFence();
 
 		public:
-			__forceinline ID3D12GraphicsCommandList4* DirectCommandList() const;
-			__forceinline ID3D12GraphicsCommandList4* CommandList(UINT index) const;
+			__forceinline ID3D12GraphicsCommandList6* DirectCommandList() const;
+			__forceinline ID3D12GraphicsCommandList6* CommandList(UINT index) const;
 
 			__forceinline constexpr UINT64 CurrentFence() const;
 
@@ -72,12 +81,12 @@ namespace Render::DX::Foundation {
 			Microsoft::WRL::ComPtr<ID3D12InfoQueue1> mInfoQueue;
 			DWORD mCallbakCookie = 0x01010101;
 #endif
-
+			
 			// Command objects
 			Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
 			Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
-			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> mDirectCommandList;
-			std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>> mMultiCommandLists;
+			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> mDirectCommandList;
+			std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6>> mMultiCommandLists;
 
 			Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
 			UINT64 mCurrentFence = 0;

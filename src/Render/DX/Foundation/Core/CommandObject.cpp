@@ -85,6 +85,12 @@ BOOL CommandObject::FlushCommandQueue() {
 	return TRUE;
 }
 
+BOOL CommandObject::ResetCommandListAllocator() {
+	CheckHRESULT(mpLogFile, mDirectCmdListAlloc->Reset());
+
+	return TRUE;
+}
+
 BOOL CommandObject::ExecuteDirectCommandList() {
 	const auto cmdList = mDirectCommandList.Get();
 	CheckHRESULT(mpLogFile, cmdList->Close());
@@ -129,8 +135,10 @@ BOOL CommandObject::ExecuteCommandLists() {
 }
 
 BOOL CommandObject::ResetCommandLists(ID3D12CommandAllocator* const allocs[], ID3D12PipelineState* const pPipelineState) {
-	for (UINT i = 0; i < mThreadCount; ++i) 
-		CheckHRESULT(mpLogFile, mMultiCommandLists[i]->Reset(allocs[i], pPipelineState));
+	for (UINT i = 0; i < mThreadCount; ++i) {
+		const auto alloc = allocs[i];
+		CheckHRESULT(mpLogFile, mMultiCommandLists[i]->Reset(alloc, pPipelineState));
+	}
 
 	return TRUE;
 }

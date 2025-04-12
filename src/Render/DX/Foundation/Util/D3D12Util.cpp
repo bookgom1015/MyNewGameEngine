@@ -11,6 +11,16 @@
 #include <DDSTextureLoader.h>
 #include <ResourceUploadBatch.h>
 
+namespace {
+	const std::vector<D3D12_INPUT_ELEMENT_DESC> gInputLayout = {
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,			0, 0,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,			0, 12,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,			0, 24,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	const D3D12_INPUT_LAYOUT_DESC gInputLayoutDesc = { gInputLayout.data(), static_cast<UINT>(gInputLayout.size()) };
+}
+
 using namespace Render::DX::Foundation::Util;
 using namespace Microsoft::WRL;
 using namespace DirectX;
@@ -287,6 +297,20 @@ D3D12_GRAPHICS_PIPELINE_STATE_DESC D3D12Util::FitToScreenPsoDesc() {
 	return psoDesc;
 }
 
+D3DX12_MESH_SHADER_PIPELINE_STATE_DESC D3D12Util::DefaultMeshPsoDesc(DXGI_FORMAT dsvFormat) {
+	D3DX12_MESH_SHADER_PIPELINE_STATE_DESC psoDesc = {};
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.SampleDesc.Quality = 0;
+	psoDesc.DSVFormat = dsvFormat;
+
+	return psoDesc;
+}
+
 BOOL D3D12Util::CreateComputePipelineState(
 		Core::Device* const pDevice,
 		const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc,
@@ -294,10 +318,12 @@ BOOL D3D12Util::CreateComputePipelineState(
 		void** const ppPipelineState,
 		LPCWSTR name) {
 	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateComputePipelineState(&desc, riid, ppPipelineState));
+
 	if (name != nullptr) {
 		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
 		pso->SetName(name);
 	}
+
 	return TRUE;
 }
 
@@ -308,9 +334,37 @@ BOOL D3D12Util::CreateGraphicsPipelineState(
 		void** const ppPipelineState,
 		LPCWSTR name) {
 	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateGraphicsPipelineState(&desc, riid, ppPipelineState));
+
 	if (name != nullptr) {
 		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
 		pso->SetName(name);
 	}
+
 	return TRUE;
+}
+
+BOOL D3D12Util::CreatePipelineState(
+		Core::Device* const pDevice,
+		const D3DX12_MESH_SHADER_PIPELINE_STATE_DESC& desc,
+		const IID& riid,
+		void** const ppPipelineState,
+		LPCWSTR name) {
+	auto meshStreamDesc = CD3DX12_PIPELINE_MESH_STATE_STREAM(desc);
+
+	D3D12_PIPELINE_STATE_STREAM_DESC streamDesc = {};
+	streamDesc.SizeInBytes = sizeof(meshStreamDesc);
+	streamDesc.pPipelineStateSubobjectStream = &meshStreamDesc;
+
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreatePipelineState(&streamDesc, riid, ppPipelineState));
+
+	if (name != nullptr) {
+		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
+		pso->SetName(name);
+	}
+
+	return TRUE;
+}
+
+D3D12_INPUT_LAYOUT_DESC D3D12Util::InputLayoutDesc() {
+	return gInputLayoutDesc;
 }
