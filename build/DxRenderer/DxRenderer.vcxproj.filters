@@ -43,9 +43,6 @@
     <Filter Include="Header Files\Foundation\Core">
       <UniqueIdentifier>{5a0fc8f2-8b28-4950-a2ff-fc13978bb61a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Foundation\Util">
-      <UniqueIdentifier>{d13cbd55-3c8c-4fe9-a66c-ecc2e0c0a796}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Foundation\Core">
       <UniqueIdentifier>{b2dcdf4f-fda4-474c-bd90-1d9fd0ca2070}</UniqueIdentifier>
     </Filter>
@@ -94,6 +91,9 @@
     <Filter Include="Common Files\Util">
       <UniqueIdentifier>{dfd8c91e-7643-4c72-b03a-a3eae2d5e3ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Foundation\Util">
+      <UniqueIdentifier>{9041f723-78f9-41e8-abb9-abd4eac440a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -119,9 +119,6 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp">
       <Filter>Header Files\Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp">
-      <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.hpp">
       <Filter>Header Files\Foundation\Core</Filter>
@@ -183,9 +180,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\ShadingObjectManager.hpp">
-      <Filter>Header Files\Foundation\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\RenderItem.hpp">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
@@ -206,6 +200,12 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Util\TaskQueue.hpp">
       <Filter>Common Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShadingObjectManager.hpp">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp">
+      <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -281,9 +281,6 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp">
       <Filter>Source Files\Shading Files\Util</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\ShadingObjectManager.cpp">
-      <Filter>Source Files\Foundation\Util</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp">
       <Filter>Source Files\Foundation</Filter>
     </ClCompile>
@@ -304,6 +301,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp">
       <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShadingObjectManager.cpp">
+      <Filter>Source Files\Shading Files\Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -370,6 +370,9 @@
     </None>
     <None Include="..\..\inc\Common\Util\MathUtil.inl">
       <Filter>Common Files\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ShadingHelper.hlsli">
+      <Filter>Shader Files\Foundation</Filter>
     </None>
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl">
       <Filter>Header Files\Foundation\Util</Filter>

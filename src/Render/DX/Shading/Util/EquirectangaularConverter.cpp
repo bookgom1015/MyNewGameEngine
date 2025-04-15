@@ -40,16 +40,16 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::CompileShaders() {
 		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"VS", L"vs_6_3");
 		const auto gsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"GS", L"gs_6_3");
 		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"PS", L"ps_6_3");
-		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvEquirectToCube]);
-		mInitData.ShaderManager->AddShader(gsInfo, mShaderHashes[Shader::GS_ConvEquirectToCube]);
-		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvEquirectToCube]);
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvEquirectToCube]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(gsInfo, mShaderHashes[Shader::GS_ConvEquirectToCube]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvEquirectToCube]));
 	}
 	// ConvertCubeMapToEquirectangular
 	{
 		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"VS", L"vs_6_3");
 		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"PS", L"ps_6_3");
-		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvCubeToEquirect]);
-		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvCubeToEquirect]);
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvCubeToEquirect]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvCubeToEquirect]));
 	}
 
 	return TRUE;

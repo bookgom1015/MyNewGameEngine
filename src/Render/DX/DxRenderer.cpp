@@ -13,7 +13,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
-#include "Render/DX/Foundation/Util/ShadingObjectManager.hpp"
+#include "Render/DX/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/MipmapGenerator.hpp"
 #include "Render/DX/Shading/Util/EquirectangularConverter.hpp"
@@ -38,7 +38,7 @@ extern "C" RendererAPI void Render::DestroyRenderer(Common::Render::Renderer* co
 
 DxRenderer::DxRenderer() {
 	// Shading objets
-	mShadingObjectManager = std::make_unique<Foundation::Util::ShadingObjectManager>();
+	mShadingObjectManager = std::make_unique<Shading::Util::ShadingObjectManager>();
 	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
 
 	mMipmapGenerator = std::make_unique<Shading::Util::MipmapGenerator::MipmapGeneratorClass>();

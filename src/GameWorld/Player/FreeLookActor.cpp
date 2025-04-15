@@ -51,8 +51,24 @@ BOOL FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 	if (pInput->Keyboard.KeyValue(VK_A)) mStrapeSpeed += -speed;
 	if (pInput->Keyboard.KeyValue(VK_D)) mStrapeSpeed += speed;
 
-	mLookUpSpeed = pInput->Mouse.MouseDelta().y;
-	mTurnSpeed = pInput->Mouse.MouseDelta().x;
+	mLookUpSpeed = 0.f;
+	mTurnSpeed = 0.f;
+
+	if (pInput->Mouse.ButtonState(VK_LBUTTON) == Common::Input::ButtonStates::E_Pressed) {
+		const auto CurrMousePos = pInput->Mouse.MousePosition();
+		const auto CurrMousePosV = XMLoadFloat2(&CurrMousePos);
+		const auto PrevMousePosV = XMLoadFloat2(&mPrevMousePos);
+
+		const auto Displacement = CurrMousePosV - PrevMousePosV;
+
+		mLookUpSpeed = Displacement.m128_f32[1];
+		mTurnSpeed = Displacement.m128_f32[0];
+
+		XMStoreFloat2(&mPrevMousePos, CurrMousePosV);
+	}
+	else {
+		mPrevMousePos = pInput->Mouse.MousePosition();
+	}
 
 	return TRUE;
 }

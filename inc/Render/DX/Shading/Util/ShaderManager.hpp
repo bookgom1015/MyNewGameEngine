@@ -52,7 +52,7 @@ namespace Render::DX::Shading::Util {
 	public:
 		BOOL Initialize(Common::Debug::LogFile* const pLogFile, UINT numThreads);
 
-		void AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash);
+		BOOL AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash);
 		BOOL CompileShaders(LPCWSTR baseDir);
 
 	private:

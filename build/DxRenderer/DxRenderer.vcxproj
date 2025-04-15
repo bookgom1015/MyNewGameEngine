@@ -44,12 +44,12 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingConvention.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp" />
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\ShadingObjectManager.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShadingObjectManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp" />
@@ -78,12 +78,12 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\Texture.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\ShadingObjectManager.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\EquirectangaularConverter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\SamplerUtil.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShadingObjectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli" />
@@ -91,6 +91,7 @@
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\ShadingHelper.hlsli" />
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />

@@ -1,10 +1,10 @@
-#include "Render/DX/Foundation/Util/ShadingObjectManager.hpp"
+#include "Render/DX/Shading/Util/ShadingObjectManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
-using namespace Render::DX::Foundation::Util;
+using namespace Render::DX::Shading::Util;
 
 BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
@@ -12,7 +12,7 @@ BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	return TRUE;
 }
 
-void ShadingObjectManager::AddShadingObject(ShadingObject* const pShadingObject) {
+void ShadingObjectManager::AddShadingObject(Foundation::ShadingObject* const pShadingObject) {
 	mShadingObjects.push_back(pShadingObject);
 }
 
@@ -65,7 +65,7 @@ BOOL ShadingObjectManager::BuildPipelineStates() {
 	return TRUE;
 }
 
-BOOL ShadingObjectManager::BuildDescriptors(Core::DescriptorHeap* const pDescHeap) {
+BOOL ShadingObjectManager::BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) {
 	for (const auto object : mShadingObjects)
 		CheckReturn(mpLogFile, object->BuildDescriptors(pDescHeap));
 

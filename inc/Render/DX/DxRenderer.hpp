@@ -27,14 +27,11 @@ namespace Render {
 
 				class FrameResource;
 			}
-
-			namespace Util {
-				class ShadingObjectManager;
-			}
 		}
 
 		namespace Shading {
 			namespace Util {
+				class ShadingObjectManager;
 				class ShaderManager;
 
 				namespace MipmapGenerator { class MipmapGeneratorClass; }
@@ -106,7 +103,7 @@ namespace Render {
 			std::unique_ptr<ConstantBuffers::EquirectangularConverterCB> mEquirectConvCB;
 
 			// Shading objects
-			std::unique_ptr<Foundation::Util::ShadingObjectManager> mShadingObjectManager;
+			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager;
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
 
 			std::unique_ptr<Shading::Util::MipmapGenerator::MipmapGeneratorClass> mMipmapGenerator;

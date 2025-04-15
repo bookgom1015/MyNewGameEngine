@@ -43,6 +43,8 @@ namespace GameWorld {
 
 			FLOAT mLookSensitivity = 0.02f;
 			FLOAT mTurnSensitivity = 0.02f;
+
+			DirectX::XMFLOAT2 mPrevMousePos;
 		};
 	}
 }

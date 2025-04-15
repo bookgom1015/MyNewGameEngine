@@ -26,7 +26,9 @@ namespace Render::DX {
 		namespace Core {
 			class DescriptorHeap;
 		}
+	}
 
+	namespace Shading {
 		namespace Util {
 			class ShadingObjectManager {
 			public:
@@ -36,7 +38,7 @@ namespace Render::DX {
 			public:
 				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
 
-				void AddShadingObject(ShadingObject* const pShadingObject);
+				void AddShadingObject(Foundation::ShadingObject* const pShadingObject);
 
 			public:
 				UINT CbvSrvUavDescCount() const;
@@ -47,13 +49,13 @@ namespace Render::DX {
 				BOOL CompileShaders(Shading::Util::ShaderManager* const pShaderManager, LPCWSTR baseDir);
 				BOOL BuildRootSignatures();
 				BOOL BuildPipelineStates();
-				BOOL BuildDescriptors(Core::DescriptorHeap* const pDescHeap);
+				BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap);
 				BOOL OnResize(UINT width, UINT height);
 
 			private:
 				Common::Debug::LogFile* mpLogFile = nullptr;
 
-				std::vector<ShadingObject*> mShadingObjects;
+				std::vector<Foundation::ShadingObject*> mShadingObjects;
 			};
 		}
 	}

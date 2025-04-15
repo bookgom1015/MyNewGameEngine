@@ -19,6 +19,14 @@
 	#endif
 #endif
 
+#ifndef MESH_SHADER_MAX_VERTICES
+#define MESH_SHADER_MAX_VERTICES 192
+#endif
+
+#ifndef MESH_SHADER_MAX_PRIMITIVES
+#define MESH_SHADER_MAX_PRIMITIVES 64
+#endif
+
 namespace ShadingConvention{
 	namespace SwapChain {
 #ifdef _HLSL
@@ -47,8 +55,7 @@ namespace ShadingConvention{
 		namespace ThreadGroup {
 			namespace MeshShader {
 				enum {
-					Width = 8,
-					Size = Width
+					ThreadsPerGroup = MESH_SHADER_MAX_PRIMITIVES
 				};
 			}
 		}

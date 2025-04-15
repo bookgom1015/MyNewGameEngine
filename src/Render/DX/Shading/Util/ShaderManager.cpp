@@ -40,11 +40,16 @@ BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, UINT numT
 	return TRUE;
 }
 
-void ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash) {
+BOOL ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash) {
 	std::hash<D3D12ShaderInfo> hasher;
 	hash = hasher(shaderInfo);
 
+	if (mShaders.find(hash) != mShaders.end())
+		ReturnFalse(mpLogFile, L"The shader is already existed or hash collision occured");
+
 	mShaderInfos[hash] = shaderInfo;
+
+	return TRUE;
 }
 
 BOOL ShaderManager::CompileShaders(LPCWSTR baseDir) {
@@ -73,13 +78,15 @@ BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir
 	}
 	
 	size_t fileSize = static_cast<size_t>(fin.tellg());
+	if (fileSize == 0) ReturnFalse(mpLogFile, "Shader file is empty");
+
 	std::vector<CHAR> data(fileSize);
 	
 	fin.seekg(0);
 	fin.read(data.data(), fileSize);
 	fin.close();
 
-	IDxcResult* result;
+	ComPtr<IDxcResult> result;
 	{
 		std::unique_lock<std::mutex> compileLock;
 		UINT tid = 0;
@@ -87,6 +94,7 @@ BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir
 			compileLock = std::unique_lock<std::mutex>(*mCompileMutexes[tid], std::defer_lock);
 			if (compileLock.try_lock()) break;
 		}
+		if (tid == mThreadCount) ReturnFalse(mpLogFile, L"Failed to acquire shader compile mutex");
 
 		const auto& utils = mUtils[tid];
 		const auto& compiler = mCompilers[tid];
@@ -150,7 +158,7 @@ BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir
 	}
 
 #ifdef _DEBUG
-	CheckReturn(mpLogFile, BuildPdb(result, filePath.c_str()));
+	CheckReturn(mpLogFile, BuildPdb(result.Get(), filePath.c_str()));
 #endif
 
 	CheckHRESULT(mpLogFile, result->GetResult(&mShaders[hash]));

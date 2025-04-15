@@ -66,9 +66,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::CompileShaders() {
 		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"VS", L"vs_6_3");
 		const auto msInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"MS", L"ms_6_5");
 		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"PS", L"ps_6_5");
-		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_DrawSkySphere]);
-		mInitData.ShaderManager->AddShader(msInfo, mShaderHashes[Shader::MS_DrawSkySphere]);
-		mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_DrawSkySphere]);
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_DrawSkySphere]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(msInfo, mShaderHashes[Shader::MS_DrawSkySphere]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_DrawSkySphere]));
 	}
 
 	return TRUE;
@@ -248,8 +248,10 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 			consts.data(),
 			0);
 
+		const UINT PrimCount = rc.gIndexCount / 3;
+
 		cmdList->DispatchMesh(
-			Foundation::Util::D3D12Util::CeilDivide(rc.gIndexCount, ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::Width), 
+			Foundation::Util::D3D12Util::CeilDivide(PrimCount, ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::ThreadsPerGroup),
 			1, 
 			1);
 	}

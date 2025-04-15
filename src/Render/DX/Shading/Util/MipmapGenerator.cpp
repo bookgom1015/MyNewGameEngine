@@ -37,15 +37,15 @@ BOOL MipmapGenerator::MipmapGeneratorClass::CompileShaders() {
 	// GenerateMipmap
 	{
 		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"VS", L"vs_6_3");
-		mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_GenerateMipmap]);
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_GenerateMipmap]));
 
 		{
 			const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"PS_GenerateMipmap", L"ps_6_3");
-			mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_GenerateMipmap]);
+			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_GenerateMipmap]));
 		}
 		{
 			const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"PS_CopyMap", L"ps_6_3");
-			mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_CopyMap]);
+			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_CopyMap]));
 		}
 	}
 
