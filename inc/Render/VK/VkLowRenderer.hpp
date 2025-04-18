@@ -30,6 +30,7 @@ namespace Render::VK {
 		RendererAPI virtual BOOL Initialize(
 			Common::Debug::LogFile* const pLogFile,
 			Common::Foundation::Core::WindowsManager* const pWndManager,
+			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 			UINT width, UINT height) override;
 		RendererAPI virtual void CleanUp() override;
 
@@ -39,10 +40,6 @@ namespace Render::VK {
 	public: // Functions that is called in every frame
 		RendererAPI virtual BOOL Update(FLOAT deltaTime) override;
 		RendererAPI virtual BOOL Draw() override;
-
-	public:
-		RendererAPI virtual BOOL AddMesh() override;
-		RendererAPI virtual BOOL RemoveMesh() override;
 
 	private:
 		BOOL CreateInstance();

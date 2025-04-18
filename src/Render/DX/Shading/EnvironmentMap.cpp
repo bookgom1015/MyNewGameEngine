@@ -63,12 +63,12 @@ BOOL EnvironmentMap::EnvironmentMapClass::Initialize(Common::Debug::LogFile* con
 BOOL EnvironmentMap::EnvironmentMapClass::CompileShaders() {
 	// DrawSkySphere
 	{
-		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"VS", L"vs_6_3");
-		const auto msInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"MS", L"ms_6_5");
-		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"PS", L"ps_6_5");
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_DrawSkySphere]));
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(msInfo, mShaderHashes[Shader::MS_DrawSkySphere]));
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_DrawSkySphere]));
+		const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"VS", L"vs_6_5");
+		const auto MS = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"MS", L"ms_6_5");
+		const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_DrawSkySphere, L"PS", L"ps_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(VS, mShaderHashes[Shader::VS_DrawSkySphere]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(MS, mShaderHashes[Shader::MS_DrawSkySphere]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_DrawSkySphere]));
 	}
 
 	return TRUE;
@@ -99,7 +99,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_DrawSkySphere]),
-			L"EnvironmentMap_RS_DrawSkySphere"
+			L"EnvironmentMap_GR_DrawSkySphere"
 		));
 	}
 
@@ -116,12 +116,12 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
 			{
-				const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_DrawSkySphere]);
-				if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-				const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
-				if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-				psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_DrawSkySphere]);
+				if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
+				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = SDR_FORMAT;
@@ -141,12 +141,12 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
 			{
-				const auto ms = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_DrawSkySphere]);
-				if (ms == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-				const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
-				if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-				psoDesc.MS = { reinterpret_cast<BYTE*>(ms->GetBufferPointer()), ms->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_DrawSkySphere]);
+				if (MS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
+				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = SDR_FORMAT;
@@ -214,26 +214,26 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 		0,
 		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_DrawSkySphere : PipelineState::GP_DrawSkySphere].Get()));
 
-	const auto cmdList = mInitData.CommandObject->CommandList(0);
-	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_DrawSkySphere].Get());
+	CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_DrawSkySphere].Get());
 
-	cmdList->RSSetViewports(1, &viewport);
-	cmdList->RSSetScissorRects(1, &scissorRect);
+	CmdList->RSSetViewports(1, &viewport);
+	CmdList->RSSetScissorRects(1, &scissorRect);
 
-	backBuffer->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	backBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	cmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &dio_depthStencil);
+	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &dio_depthStencil);
 
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, cbPass);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, cbPass);
 	D3D12_GPU_VIRTUAL_ADDRESS currRitemObjCBAddress = cbObject + static_cast<UINT64>(sphere->ObjCBIndex) * static_cast<UINT64>(objCBByteSize);
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, currRitemObjCBAddress);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, currRitemObjCBAddress);
+	CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
 
 	if (mInitData.MeshShaderSupported) {
-		cmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
-		cmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
+		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
+		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
 
 		ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct rc;	
 		rc.gVertexCount = sphere->Geometry->VertexBufferByteSize / sphere->Geometry->VertexByteStride;
@@ -242,7 +242,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 		std::array<std::uint32_t, ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct));
 
-		cmdList->SetGraphicsRoot32BitConstants(
+		CmdList->SetGraphicsRoot32BitConstants(
 			RootSignature::DrawSkySphere::RC_Consts,
 			ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count,
 			consts.data(),
@@ -250,17 +250,17 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 
 		const UINT PrimCount = rc.gIndexCount / 3;
 
-		cmdList->DispatchMesh(
+		CmdList->DispatchMesh(
 			Foundation::Util::D3D12Util::CeilDivide(PrimCount, ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::ThreadsPerGroup),
 			1, 
 			1);
 	}
 	else {
-		cmdList->IASetVertexBuffers(0, 1, &sphere->Geometry->VertexBufferView());
-		cmdList->IASetIndexBuffer(&sphere->Geometry->IndexBufferView());
-		cmdList->IASetPrimitiveTopology(sphere->PrimitiveType);
+		CmdList->IASetVertexBuffers(0, 1, &sphere->Geometry->VertexBufferView());
+		CmdList->IASetIndexBuffer(&sphere->Geometry->IndexBufferView());
+		CmdList->IASetPrimitiveTopology(sphere->PrimitiveType);
 
-		cmdList->DrawIndexedInstanced(sphere->IndexCount, 1, sphere->StartIndexLocation, sphere->BaseVertexLocation, 0);
+		CmdList->DrawIndexedInstanced(sphere->IndexCount, 1, sphere->StartIndexLocation, sphere->BaseVertexLocation, 0);
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

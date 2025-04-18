@@ -32,9 +32,11 @@ VkLowRenderer::~VkLowRenderer() {}
 BOOL VkLowRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile,
 		Common::Foundation::Core::WindowsManager* const pWndManager,
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
 	mpLogFile = pLogFile;
 	mpWindowsManager = pWndManager;
+	mpArgumentSet = pArgSet;
 
 	mClientWidth = width;
 	mClientHeight = height;
@@ -61,10 +63,6 @@ BOOL VkLowRenderer::OnResize(UINT width, UINT height) { return TRUE; }
 BOOL VkLowRenderer::Update(FLOAT deltaTime) { return TRUE; }
 
 BOOL VkLowRenderer::Draw() { return TRUE; }
-
-BOOL VkLowRenderer::AddMesh() { return TRUE; }
-
-BOOL VkLowRenderer::RemoveMesh() { return TRUE; }
 
 BOOL VkLowRenderer::CreateInstance() {
 	CheckReturn(mpLogFile, mInstance->Initalize(mpLogFile));

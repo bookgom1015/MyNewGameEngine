@@ -4,6 +4,7 @@
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Core/GameTimer.hpp"
 #include "Common/Render/Renderer.hpp"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Common/Input/InputProcessor.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "GameWorld/Player/FreeLookActor.hpp"
@@ -32,8 +33,8 @@ GameWorldClass::GameWorldClass() {
 
 	mWindowsManager = std::make_unique<Common::Foundation::Core::WindowsManager>();
 	mActorManager = std::make_unique<GameWorld::Foundation::Core::ActorManager>();
+	mArgumentSet = std::make_unique<Common::Render::ShadingArgument::ShadingArgumentSet>();
 	mGameTimer = std::make_unique<Common::Foundation::Core::GameTimer>();
-
 }
 
 GameWorldClass::~GameWorldClass() {
@@ -129,7 +130,9 @@ BOOL GameWorldClass::RunLoop() {
 	return TRUE;
 }
 
-void GameWorldClass::CleanUp() {}
+void GameWorldClass::CleanUp() {
+	mActorManager->CleanUp();
+}
 
 BOOL GameWorldClass::BuildHWInfo() {
 	Common::Foundation::Core::Processor processor;
@@ -184,7 +187,7 @@ BOOL GameWorldClass::CreateRenderer() {
 	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
 
 	mRenderer = std::unique_ptr<Common::Render::Renderer>(createFunc());
-	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager.get(), InitClientWidth, InitClientHeight));
+	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager.get(), mArgumentSet.get(), InitClientWidth, InitClientHeight));
 
 	return TRUE;
 }

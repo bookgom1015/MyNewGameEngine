@@ -134,6 +134,9 @@
     <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp">
       <Filter>Common Files\Util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
+      <Filter>Common Files\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">

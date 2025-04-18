@@ -7,6 +7,7 @@ namespace Render::DX::Shading::Util {
 		namespace Shader {
 			enum Type {
 				VS_GenerateMipmap = 0,
+				MS_GenerateMipmap,
 				PS_GenerateMipmap,
 				PS_CopyMap,
 				Count
@@ -26,7 +27,9 @@ namespace Render::DX::Shading::Util {
 		namespace PipelineState {
 			enum Type {
 				GP_GenerateMipmap = 0,
+				MP_GenerateMipmap,
 				GP_CopyMap,
+				MP_CopyMap,
 				Count
 			};
 		}
@@ -34,6 +37,7 @@ namespace Render::DX::Shading::Util {
 		class MipmapGeneratorClass : public Render::DX::Foundation::ShadingObject {
 		public:
 			struct InitData {
+				BOOL MeshShaderSupported = FALSE;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;

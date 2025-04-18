@@ -94,6 +94,9 @@
     <Filter Include="Header Files\Foundation\Util">
       <UniqueIdentifier>{9041f723-78f9-41e8-abb9-abd4eac440a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\GammaCorrection">
+      <UniqueIdentifier>{dc1bec29-6577-4e21-8ace-d310f51dcd77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -207,6 +210,12 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp">
       <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
+      <Filter>Common Files\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -305,6 +314,9 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShadingObjectManager.cpp">
       <Filter>Source Files\Shading Files\Util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -371,11 +383,11 @@
     <None Include="..\..\inc\Common\Util\MathUtil.inl">
       <Filter>Common Files\Util</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\ShadingHelper.hlsli">
-      <Filter>Shader Files\Foundation</Filter>
-    </None>
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl">
       <Filter>Header Files\Foundation\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GammaCorrection.hlsl">
+      <Filter>Shader Files\GammaCorrection</Filter>
     </None>
   </ItemGroup>
 </Project>

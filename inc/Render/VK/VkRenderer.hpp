@@ -16,6 +16,7 @@ namespace Render {
 			RendererAPI virtual BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile,
 				Common::Foundation::Core::WindowsManager* const pWndManager,
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 				UINT width, UINT height) override;
 			RendererAPI virtual void CleanUp() override;
 
@@ -27,8 +28,8 @@ namespace Render {
 			RendererAPI virtual BOOL Draw() override;
 
 		public:
-			RendererAPI virtual BOOL AddMesh() override;
-			RendererAPI virtual BOOL RemoveMesh() override;
+			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh) override;
+			RendererAPI virtual void RemoveMesh() override;
 		};
 	}
 }

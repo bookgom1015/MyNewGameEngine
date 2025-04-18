@@ -1,4 +1,5 @@
 #include "GameWorld/Foundation/Camera/CameraComponent.hpp"
+#include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
 #include "Common/Render/Renderer.hpp"
 #include "GameWorld/GameWorld.hpp"
@@ -6,8 +7,8 @@
 using namespace GameWorld::Foundation::Camera;
 using namespace DirectX;
 
-CameraComponent::CameraComponent(Core::Actor* const pOwner)
-	: Component(pOwner) {
+CameraComponent::CameraComponent(Common::Debug::LogFile* const pLogFile, Core::Actor* const pOwner)
+	: Component(pLogFile, pOwner) {
 	mCamera = std::make_unique<Common::Foundation::Camera::GameCamera>(GameWorld::GameWorldClass::spGameWorld->WindowsManager());
 }
 
@@ -16,6 +17,8 @@ BOOL CameraComponent::OnInitialzing() {
 	
 	return TRUE;
 }
+
+void CameraComponent::OnCleaningUp() {}
 
 BOOL CameraComponent::ProcessInput(Common::Input::InputState* const pInput) { return TRUE; }
 

@@ -32,9 +32,7 @@ namespace Render::DX::Shading::Util {
 			LPCWSTR		FileName	  = nullptr;
 			LPCWSTR		EntryPoint	  = nullptr;
 			LPCWSTR		TargetProfile = nullptr;
-			LPCWSTR*	Arguments	  = nullptr;
 			DxcDefine*	Defines		  = nullptr;
-			UINT32		ArgCount	  = 0;
 			UINT32		DefineCount	  = 0;
 
 			D3D12ShaderInfo() = default;
@@ -57,6 +55,7 @@ namespace Render::DX::Shading::Util {
 
 	private:
 		BOOL CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir);
+		BOOL CommitShaders();
 		BOOL BuildPdb(IDxcResult* const result, LPCWSTR fileName);
 
 	private:
@@ -69,6 +68,7 @@ namespace Render::DX::Shading::Util {
 
 		std::unordered_map<Common::Foundation::Hash, D3D12ShaderInfo> mShaderInfos;
 		std::unordered_map<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>> mShaders;
+		std::vector<std::vector<std::pair<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>>>> mStagingShaders;
 	};
 }
 
@@ -80,7 +80,6 @@ namespace std {
 			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.FileName));
 			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.EntryPoint));
 			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.TargetProfile));
-			hash = Common::Util::HashUtil::HashCombine(hash, static_cast<UINT>(info.ArgCount));
 			hash = Common::Util::HashUtil::HashCombine(hash, static_cast<UINT>(info.DefineCount));
 			return hash;
 		}

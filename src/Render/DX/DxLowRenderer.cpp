@@ -35,9 +35,11 @@ DxLowRenderer::~DxLowRenderer() {}
 BOOL DxLowRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile,
 		Common::Foundation::Core::WindowsManager* const pWndManager, 
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
 	mpLogFile = pLogFile;
 	mpWindowsManager = pWndManager;
+	mpArgumentSet = pArgSet;
 
 	mClientWidth = width;
 	mClientHeight = height;
@@ -75,10 +77,6 @@ BOOL DxLowRenderer::OnResize(UINT width, UINT height) {
 BOOL DxLowRenderer::Update(FLOAT deltaTime) { return TRUE; }
 
 BOOL DxLowRenderer::Draw() { return TRUE; }
-
-BOOL DxLowRenderer::AddMesh() { return TRUE; }
-
-BOOL DxLowRenderer::RemoveMesh() { return TRUE; }
 
 BOOL DxLowRenderer::CreateDescriptorHeaps() {
 	CheckReturn(mpLogFile, mDescriptorHeap->CreateDescriptorHeaps(0, 0, 0));

@@ -8,15 +8,18 @@ using namespace GameWorld::Foundation::Core;
 
 ActorManager::ActorManager() {}
 
-ActorManager::~ActorManager() {
-	mDeadActors.clear();
-	mActorRefs.clear();
-}
-
 BOOL ActorManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
 
-	return TRUE;;
+	return TRUE;
+}
+
+void ActorManager::CleanUp() {
+	for (auto& actor : mPendingActors)
+		actor->CleanUp();
+
+	for (auto& actor : mActors)
+		actor->CleanUp();
 }
 
 BOOL ActorManager::ProcessInput(Common::Input::InputState* const pInputState) {	
@@ -29,7 +32,6 @@ BOOL ActorManager::ProcessInput(Common::Input::InputState* const pInputState) {
 BOOL ActorManager::Update(FLOAT delta) {
 	for (auto& actor : mPendingActors)
 		mActors.push_back(std::move(actor));
-
 	mPendingActors.clear();
 
 	mbUpdating = TRUE;

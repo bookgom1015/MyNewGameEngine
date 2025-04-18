@@ -36,7 +36,10 @@ namespace GameWorld::Foundation::Core {
 			DirectX::XMFLOAT3 pos = { 0.f, 0.f, 0.f },
 			DirectX::XMFLOAT4 rot = { 0.f, 0.f, 0.f, 1.f },
 			DirectX::XMFLOAT3 scale = { 1.f, 1.f, 1.f });
-		Actor(const std::string& name, const Transform& trans);
+		Actor(
+			Common::Debug::LogFile* const pLogFile, 
+			const std::string& name, 
+			const Transform& trans);
 		virtual ~Actor() = default;
 
 	public:
@@ -57,6 +60,8 @@ namespace GameWorld::Foundation::Core {
 
 	public:
 		BOOL Initialize();
+		void CleanUp();
+
 		BOOL ProcessInput(Common::Input::InputState* const pInputState);
 		BOOL Update(FLOAT delta);
 

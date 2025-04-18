@@ -31,14 +31,23 @@ namespace Common {
 		namespace Camera {
 			class GameCamera;
 		}
+
+		namespace Mesh {
+			class Mesh;
+		}
 	}
 
 	namespace Render {
+		namespace ShadingArgument {
+			struct ShadingArgumentSet;
+		}
+
 		class Renderer {
 		public: // Functions that is called only once
 			RendererAPI virtual BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile,
 				Common::Foundation::Core::WindowsManager* const pWndManager,
+				ShadingArgument::ShadingArgumentSet* const pArgSet,
 				UINT width, UINT height) = 0;
 			RendererAPI virtual void CleanUp() = 0;
 
@@ -50,8 +59,8 @@ namespace Common {
 			RendererAPI virtual BOOL Draw() = 0;
 
 		public:
-			RendererAPI virtual BOOL AddMesh() = 0;
-			RendererAPI virtual BOOL RemoveMesh() = 0;
+			RendererAPI virtual BOOL AddMesh(Foundation::Mesh::Mesh* const pMesh) = 0;
+			RendererAPI virtual void RemoveMesh() = 0;
 
 		public:
 			__forceinline void SetCamera(Common::Foundation::Camera::GameCamera* const pCamera);
@@ -63,6 +72,8 @@ namespace Common {
 		protected:
 			Common::Debug::LogFile* mpLogFile = nullptr;
 			Common::Foundation::Core::WindowsManager* mpWindowsManager = nullptr;
+			ShadingArgument::ShadingArgumentSet* mpArgumentSet;
+
 			Common::Foundation::Camera::GameCamera* mpCamera = nullptr;
 
 			BOOL mbRaytracingSupported = FALSE;

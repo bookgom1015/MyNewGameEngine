@@ -102,6 +102,7 @@ namespace Render::DX::Foundation {
 			static D3D12_GRAPHICS_PIPELINE_STATE_DESC FitToScreenPsoDesc();
 
 			static D3DX12_MESH_SHADER_PIPELINE_STATE_DESC DefaultMeshPsoDesc(DXGI_FORMAT dsvFormat);
+			static D3DX12_MESH_SHADER_PIPELINE_STATE_DESC FitToScreenMeshPsoDesc();
 
 			static BOOL CreateComputePipelineState(
 				Core::Device* const pDevice,

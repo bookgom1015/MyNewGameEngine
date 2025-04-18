@@ -27,11 +27,12 @@ BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, UINT numT
 	mpLogFile = pLogFile;
 	mThreadCount = numThreads;
 
-	mUtils.resize(mThreadCount);
-	mCompilers.resize(mThreadCount);
-	mCompileMutexes.resize(mThreadCount);
+	mUtils.resize(numThreads);
+	mCompilers.resize(numThreads);
+	mCompileMutexes.resize(numThreads);
+	mStagingShaders.resize(numThreads);
 
-	for (UINT i = 0; i < mThreadCount; ++i) {
+	for (UINT i = 0; i < numThreads; ++i) {
 		CheckHRESULT(mpLogFile, DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&mUtils[i])));
 		CheckHRESULT(mpLogFile, DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&mCompilers[i])));
 		mCompileMutexes[i] = std::make_unique<std::mutex>();
@@ -59,6 +60,8 @@ BOOL ShaderManager::CompileShaders(LPCWSTR baseDir) {
 		taskQueue.AddTask([&]() -> BOOL { return CompileShader(shaderInfo.first, baseDir); });
 
 	CheckReturn(mpLogFile, taskQueue.ExecuteTasks(mpLogFile, mThreadCount));
+
+	CheckReturn(mpLogFile, CommitShaders());
 
 	return TRUE;
 }
@@ -88,8 +91,8 @@ BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir
 
 	ComPtr<IDxcResult> result;
 	{
-		std::unique_lock<std::mutex> compileLock;
 		UINT tid = 0;
+		std::unique_lock<std::mutex> compileLock;
 		for (; tid < mThreadCount; ++tid) {
 			compileLock = std::unique_lock<std::mutex>(*mCompileMutexes[tid], std::defer_lock);
 			if (compileLock.try_lock()) break;
@@ -155,13 +158,27 @@ BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir
 
 			ReturnFalse(mpLogFile, errorMsgW);
 		}
-	}
 
 #ifdef _DEBUG
-	CheckReturn(mpLogFile, BuildPdb(result.Get(), filePath.c_str()));
+		CheckReturn(mpLogFile, BuildPdb(result.Get(), filePath.c_str()));
 #endif
 
-	CheckHRESULT(mpLogFile, result->GetResult(&mShaders[hash]));
+		ComPtr<IDxcBlob> newShader;
+		CheckHRESULT(mpLogFile, result->GetResult(&newShader));
+
+		mStagingShaders[tid].emplace_back(hash, std::move(newShader));
+	}
+
+	return TRUE;
+}
+
+BOOL ShaderManager::CommitShaders() {
+	for (UINT i = 0; i < mThreadCount; ++i) {
+		auto& shaders = mStagingShaders[i];
+
+		for (auto& shader : shaders) 
+			mShaders[shader.first] = shader.second;
+	}
 
 	return TRUE;
 }

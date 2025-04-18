@@ -20,6 +20,7 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\HashUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\MathUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp" />
@@ -45,6 +46,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp" />
@@ -79,6 +81,7 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\EquirectangaularConverter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\SamplerUtil.cpp" />
@@ -91,7 +94,6 @@
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
-    <None Include="..\..\assets\Shaders\HLSL\ShadingHelper.hlsli" />
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
@@ -122,6 +124,11 @@
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\ConvertEquirectangularToCubeMap.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\GammaCorrection.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

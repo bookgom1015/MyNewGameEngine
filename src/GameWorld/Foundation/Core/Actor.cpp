@@ -24,8 +24,11 @@ Actor::Actor(
 	GameWorld::GameWorldClass::spGameWorld->ActorManager()->AddActor(this);
 }
 
-Actor::Actor(const std::string& name, const Transform& trans) 
-	: mName(name), mTransform(trans) {
+Actor::Actor(
+		Common::Debug::LogFile* const pLogFile, 
+		const std::string& name, 
+		const Transform& trans)
+	: mpLogFile(pLogFile), mName(name), mTransform(trans) {
 	GameWorld::GameWorldClass::spGameWorld->ActorManager()->AddActor(this);
 }
 
@@ -36,8 +39,8 @@ BOOL Actor::ProcessActorInput(Common::Input::InputState* const pInputState) { re
 BOOL Actor::UpdateActor(FLOAT delta) { return TRUE; }
 
 BOOL Actor::UpdateComponents(FLOAT delta) {
-	for (size_t i = 0, end = mComponents.size(); i < end; ++i)
-		CheckReturn(mpLogFile, mComponents[i]->Update(delta));
+	for (auto& comp : mComponents) 
+		CheckReturn(mpLogFile, comp->Update(delta));
 
 	return TRUE;
 }
@@ -62,6 +65,11 @@ BOOL Actor::Initialize() {
 	mbInitialized = TRUE;
 
 	return TRUE;
+}
+
+void Actor::CleanUp() {
+	for (auto& comp : mComponents)
+		comp->OnCleaningUp();
 }
 
 BOOL Actor::ProcessInput(Common::Input::InputState* const pInputState) { 

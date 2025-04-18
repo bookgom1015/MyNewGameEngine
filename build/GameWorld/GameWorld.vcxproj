@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\externs\tinyobjloader\tiny_obj_loader.h" />
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\GameTimer.hpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h" />
     <ClInclude Include="..\..\inc\Common\Input\InputProcessor.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\HashUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\MathUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp" />
@@ -186,8 +188,10 @@
     <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\Actor.hpp" />
     <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\ActorManager.hpp" />
     <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\Component.hpp" />
+    <ClInclude Include="..\..\inc\GameWorld\Foundation\Mesh\MeshComponent.hpp" />
     <ClInclude Include="..\..\inc\GameWorld\GameWorld.hpp" />
     <ClInclude Include="..\..\inc\GameWorld\Player\FreeLookActor.hpp" />
+    <ClInclude Include="..\..\inc\GameWorld\Prefab\Ground.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
@@ -207,9 +211,11 @@
     <ClCompile Include="..\..\src\GameWorld\Foundation\Core\Actor.cpp" />
     <ClCompile Include="..\..\src\GameWorld\Foundation\Core\ActorManager.cpp" />
     <ClCompile Include="..\..\src\GameWorld\Foundation\Core\Component.cpp" />
+    <ClCompile Include="..\..\src\GameWorld\Foundation\Mesh\MeshComponent.cpp" />
     <ClCompile Include="..\..\src\GameWorld\GameWorld.cpp" />
     <ClCompile Include="..\..\src\GameWorld\Main.cpp" />
     <ClCompile Include="..\..\src\GameWorld\Player\FreeLookActor.cpp" />
+    <ClCompile Include="..\..\src\GameWorld\Prefab\Ground.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />

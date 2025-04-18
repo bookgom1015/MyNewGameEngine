@@ -12,23 +12,15 @@ FreeLookActor::FreeLookActor(
 		const XMFLOAT4& rot, 
 		const XMFLOAT3& scale) 
 	: Actor(pLogFile, name, pos, rot, scale) {
-	mpCameraComp = new GameWorld::Foundation::Camera::CameraComponent(this);
+	mpCameraComp = new GameWorld::Foundation::Camera::CameraComponent(pLogFile, this);
 }
 
-FreeLookActor::FreeLookActor(const std::string& name, const Transform& trans) 
-	: Actor(name, trans) {
-	mpCameraComp = new GameWorld::Foundation::Camera::CameraComponent(this);
-
-	mForwardSpeed = 0.f;
-	mStrapeSpeed = 0.f;
-
-	mWalkSpeed = 2.f;
-
-	mLookUpSpeed = 0.f;
-	mTurnSpeed = 0.f;
-
-	mLookSensitivity = 0.02f;
-	mTurnSensitivity = 0.02f;
+FreeLookActor::FreeLookActor(
+		Common::Debug::LogFile* const pLogFile, 
+		const std::string& name, 
+		const Transform& trans)
+	: Actor(pLogFile, name, trans) {
+	mpCameraComp = new GameWorld::Foundation::Camera::CameraComponent(pLogFile, this);
 }
 
 const XMVECTOR& FreeLookActor::CameraForwardVector() const { return mpCameraComp->ForwardVector(); }

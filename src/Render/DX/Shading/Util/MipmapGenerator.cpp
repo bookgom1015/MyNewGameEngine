@@ -36,16 +36,19 @@ BOOL MipmapGenerator::MipmapGeneratorClass::Initialize(Common::Debug::LogFile* c
 BOOL MipmapGenerator::MipmapGeneratorClass::CompileShaders() {
 	// GenerateMipmap
 	{
-		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"VS", L"vs_6_3");
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_GenerateMipmap]));
+		const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"VS", L"vs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(VS, mShaderHashes[Shader::VS_GenerateMipmap]));
+
+		const auto MS = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"MS", L"ms_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(MS, mShaderHashes[Shader::MS_GenerateMipmap]));
 
 		{
-			const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"PS_GenerateMipmap", L"ps_6_3");
-			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_GenerateMipmap]));
+			const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"PS_GenerateMipmap", L"ps_6_5");
+			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_GenerateMipmap]));
 		}
 		{
-			const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"PS_CopyMap", L"ps_6_3");
-			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_CopyMap]));
+			const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_GenerateMipmap, L"PS_CopyMap", L"ps_6_5");
+			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_CopyMap]));
 		}
 	}
 
@@ -73,50 +76,106 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures(const Render::DX
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignature),
-			L"MipmapGenerator_RS_Default"));
+			L"MipmapGenerator_GR_Default"));
 	}
 
 	return TRUE;
 }
 
 BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-	psoDesc.pRootSignature = mRootSignature.Get();
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = HDR_FORMAT;
-
 	// GenerateMipmap
 	{
+		// GraphicsPipeline
 		{
-			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
-			if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+			psoDesc.pRootSignature = mRootSignature.Get();
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			{
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
+				if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GenerateMipmap]);
+				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GenerateMipmap]),
+				L"MipmapGenerator_GP_GenerateMipmap"));
 		}
-		{
-			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GenerateMipmap]);
-			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+		// MeshShaderPipeline
+		if (mInitData.MeshShaderSupported) {
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
+			psoDesc.pRootSignature = mRootSignature.Get();
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			{
+				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_GenerateMipmap]);
+				if (MS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GenerateMipmap]);
+				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_GenerateMipmap]),
+				L"MipmapGenerator_MP_GenerateMipmap"));
 		}
-		
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device, 
-			psoDesc, 
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GenerateMipmap]), 
-			L"MipmapGenerator_GPS_GenerateMipmap"));
 	}
 	// CopyMap
 	{
+		// GraphicsPipeline
 		{
-			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_CopyMap]);
-			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+			psoDesc.pRootSignature = mRootSignature.Get();
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			{
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
+				if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_CopyMap]);
+				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_CopyMap]),
+				L"MipmapGenerator_GP_CopyMap"));
 		}
-		
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device,
-			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_CopyMap]),
-			L"MipmapGenerator_GPS_CopyMap"));
+		// MeshShaderPipeline
+		if (mInitData.MeshShaderSupported) {
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
+			psoDesc.pRootSignature = mRootSignature.Get();
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			{
+				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_GenerateMipmap]);
+				if (MS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_CopyMap]);
+				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_CopyMap]),
+				L"MipmapGenerator_MP_CopyMap"));
+		}
 	}
 
 	return TRUE;
@@ -140,32 +199,36 @@ BOOL MipmapGenerator::MipmapGeneratorClass::CopyMap(
 	Foundation::Resource::GpuResource* const pInput,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		UINT width, UINT height) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_CopyMap].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[
+		mInitData.MeshShaderSupported ? PipelineState::MP_CopyMap : PipelineState::GP_CopyMap].Get()));
 
-	const auto cmdList = mInitData.CommandObject->DirectCommandList();
-	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
+	const auto CmdList = mInitData.CommandObject->DirectCommandList();
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignature.Get());
+	CmdList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	{
-		const D3D12_VIEWPORT viewport = { 0.f, 0.f, static_cast<FLOAT>(width), static_cast<FLOAT>(height), 0.f, 1.f };
-		const D3D12_RECT scissorRect = { 0, 0, static_cast<INT>(width), static_cast<INT>(height) };
+	const D3D12_VIEWPORT Viewport = { 0.f, 0.f, static_cast<FLOAT>(width), static_cast<FLOAT>(height), 0.f, 1.f };
+	const D3D12_RECT ScissorRect = { 0, 0, static_cast<INT>(width), static_cast<INT>(height) };
 
-		cmdList->RSSetViewports(1, &viewport);
-		cmdList->RSSetScissorRects(1, &scissorRect);
+	CmdList->RSSetViewports(1, &Viewport);
+	CmdList->RSSetScissorRects(1, &ScissorRect);
+
+	pOutput->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	pInput->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+	CmdList->OMSetRenderTargets(1, &ro_output, TRUE, nullptr);
+
+	CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_InputMap, si_input);
+
+	if (mInitData.MeshShaderSupported) {
+		CmdList->DispatchMesh(1, 1, 1);
 	}
-
-	pOutput->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	pInput->Transite(cmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	cmdList->OMSetRenderTargets(1, &ro_output, TRUE, nullptr);
-
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_InputMap, si_input);
-
-	cmdList->IASetVertexBuffers(0, 0, nullptr);
-	cmdList->IASetIndexBuffer(nullptr);
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	cmdList->DrawInstanced(6, 1, 0, 0);
+	else {
+		CmdList->IASetVertexBuffers(0, 0, nullptr);
+		CmdList->IASetIndexBuffer(nullptr);
+		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CmdList->DrawInstanced(6, 1, 0, 0);
+	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
 
@@ -177,51 +240,57 @@ BOOL MipmapGenerator::MipmapGeneratorClass::GenerateMipmap(
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_outputs[],
 		D3D12_GPU_DESCRIPTOR_HANDLE si_input,
 		UINT maxMipLevel, UINT width, UINT height) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_GenerateMipmap].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[
+			mInitData.MeshShaderSupported ? PipelineState::MP_GenerateMipmap : PipelineState::GP_GenerateMipmap].Get()));
 
-	const auto cmdList = mInitData.CommandObject->DirectCommandList();
-	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
+	const auto CmdList = mInitData.CommandObject->DirectCommandList();
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignature.Get());
+	CmdList->SetGraphicsRootSignature(mRootSignature.Get());
 
 	for (UINT mipLevel = 1; mipLevel < maxMipLevel; ++mipLevel) {
-		cmdList->OMSetRenderTargets(1, &ro_outputs[mipLevel], TRUE, nullptr);
+		CmdList->OMSetRenderTargets(1, &ro_outputs[mipLevel], TRUE, nullptr);
 
-		const UINT mw = static_cast<UINT>(width / std::pow(2, mipLevel));
-		const UINT mh = static_cast<UINT>(height / std::pow(2, mipLevel));
+		const UINT MW = static_cast<UINT>(width / std::pow(2, mipLevel));
+		const UINT MH = static_cast<UINT>(height / std::pow(2, mipLevel));
 
-		const D3D12_VIEWPORT viewport = { 0.f, 0.f, static_cast<FLOAT>(mw), static_cast<FLOAT>(mh), 0.f, 1.f };
-		const D3D12_RECT scissorRect = { 0, 0, static_cast<INT>(mw), static_cast<INT>(mh) };
+		const D3D12_VIEWPORT Viewport = { 0.f, 0.f, static_cast<FLOAT>(MW), static_cast<FLOAT>(MH), 0.f, 1.f };
+		const D3D12_RECT ScissorRect = { 0, 0, static_cast<INT>(MW), static_cast<INT>(MH) };
 
-		cmdList->RSSetViewports(1, &viewport);
-		cmdList->RSSetScissorRects(1, &scissorRect);
+		CmdList->RSSetViewports(1, &Viewport);
+		CmdList->RSSetScissorRects(1, &ScissorRect);
 
-		cmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_InputMap, si_input);
+		CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_InputMap, si_input);
 
-		const FLOAT invW = 1.f / width;
-		const FLOAT invH = 1.f / height;
-		const FLOAT invMW = 1.f / mw;
-		const FLOAT invMH = 1.f / mh;
+		const FLOAT InvW = 1.f / width;
+		const FLOAT InvH = 1.f / height;
+		const FLOAT InvMW = 1.f / MW;
+		const FLOAT InvMH = 1.f / MH;
 
 		ShadingConvention::MipmapGenerator::RootConstant::Default::Struct rc;
-		rc.gInvTexSize.x = invW;
-		rc.gInvTexSize.y = invH;
-		rc.gInvMipmapTexSize.x = invMW;
-		rc.gInvMipmapTexSize.y = invMH;
+		rc.gInvTexSize.x = InvW;
+		rc.gInvTexSize.y = InvH;
+		rc.gInvMipmapTexSize.x = InvMW;
+		rc.gInvMipmapTexSize.y = InvMH;
 
 		std::array<std::uint32_t, ShadingConvention::MipmapGenerator::RootConstant::Default::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::MipmapGenerator::RootConstant::Default::Struct));
 
-		cmdList->SetGraphicsRoot32BitConstants(
+		CmdList->SetGraphicsRoot32BitConstants(
 			RootSignature::Default::RC_Consts, 
 			ShadingConvention::MipmapGenerator::RootConstant::Default::Count, 
 			consts.data(), 
 			0);
 
-		cmdList->IASetVertexBuffers(0, 0, nullptr);
-		cmdList->IASetIndexBuffer(nullptr);
-		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmdList->DrawInstanced(6, 1, 0, 0);
+		if (mInitData.MeshShaderSupported) {
+			CmdList->DispatchMesh(1, 1, 1);
+		}
+		else {
+			CmdList->IASetVertexBuffers(0, 0, nullptr);
+			CmdList->IASetIndexBuffer(nullptr);
+			CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			CmdList->DrawInstanced(6, 1, 0, 0);
+		}
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());

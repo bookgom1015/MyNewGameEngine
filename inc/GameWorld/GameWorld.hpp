@@ -25,6 +25,10 @@ namespace Common {
 
 	namespace Render {
 		class Renderer;
+
+		namespace ShadingArgument {
+			struct ShadingArgumentSet;
+		}
 	}
 
 	namespace Input {
@@ -103,6 +107,7 @@ namespace GameWorld {
 
 		// Renderer
 		std::unique_ptr<Common::Render::Renderer> mRenderer;
+		std::unique_ptr<Common::Render::ShadingArgument::ShadingArgumentSet> mArgumentSet;
 
 		// Timer
 		std::unique_ptr<Common::Foundation::Core::GameTimer> mGameTimer;

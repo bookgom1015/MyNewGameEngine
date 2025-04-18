@@ -8,13 +8,13 @@
 using namespace Common::Foundation::Mesh;
 using namespace DirectX;
 
-BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, const std::string& filePath, const std::string& baseDir) {
+BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName,	LPCSTR baseDir) {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filePath.c_str(), baseDir.c_str())) {
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, fileName, baseDir)) {
 		std::wstringstream wsstream;
 		wsstream << err.c_str();
 		ReturnFalse(pLogFile, wsstream.str());
@@ -100,7 +100,7 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, const std
 	return TRUE;
 }
 
-BOOL Mesh::LoadFbx(Common::Debug::LogFile* const pLogFile, Mesh& mesh, const std::string& filePath, const std::string& baseDir) {
+BOOL Mesh::LoadFbx(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName,	LPCSTR baseDir) {
 	return TRUE;
 }
 

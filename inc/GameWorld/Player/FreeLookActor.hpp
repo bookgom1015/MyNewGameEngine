@@ -16,7 +16,10 @@ namespace GameWorld {
 				const DirectX::XMFLOAT3& pos = { 0.f, 0.f, 0.f },
 				const DirectX::XMFLOAT4& rot = { 0.f, 0.f, 0.f, 1.f },
 				const DirectX::XMFLOAT3& scale = { 1.f, 1.f, 1.f });
-			FreeLookActor(const std::string& name, const Transform& trans);
+			FreeLookActor(
+				Common::Debug::LogFile* const pLogFile, 
+				const std::string& name, 
+				const Transform& trans);
 			virtual ~FreeLookActor() = default;
 
 		public:
@@ -44,7 +47,7 @@ namespace GameWorld {
 			FLOAT mLookSensitivity = 0.02f;
 			FLOAT mTurnSensitivity = 0.02f;
 
-			DirectX::XMFLOAT2 mPrevMousePos;
+			DirectX::XMFLOAT2 mPrevMousePos = { 0.f, 0.f };
 		};
 	}
 }

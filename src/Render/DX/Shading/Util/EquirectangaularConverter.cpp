@@ -37,19 +37,19 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::Initialize(Common:
 BOOL EquirectangularConverter::EquirectangularConverterClass::CompileShaders() {
 	// ConvertEquirectangularToCubeMap
 	{
-		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"VS", L"vs_6_3");
-		const auto gsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"GS", L"gs_6_3");
-		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"PS", L"ps_6_3");
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvEquirectToCube]));
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(gsInfo, mShaderHashes[Shader::GS_ConvEquirectToCube]));
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvEquirectToCube]));
+		const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"VS", L"vs_6_5");
+		const auto GS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"GS", L"gs_6_5");
+		const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertEquirectangularToCubeMap, L"PS", L"ps_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(VS, mShaderHashes[Shader::VS_ConvEquirectToCube]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(GS, mShaderHashes[Shader::GS_ConvEquirectToCube]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_ConvEquirectToCube]));
 	}
 	// ConvertCubeMapToEquirectangular
 	{
-		const auto vsInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"VS", L"vs_6_3");
-		const auto psInfo = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"PS", L"ps_6_3");
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(vsInfo, mShaderHashes[Shader::VS_ConvCubeToEquirect]));
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(psInfo, mShaderHashes[Shader::PS_ConvCubeToEquirect]));
+		const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"VS", L"vs_6_5");
+		const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ConvertCubeMapToEquirectangular, L"PS", L"ps_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(VS, mShaderHashes[Shader::VS_ConvCubeToEquirect]));
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_ConvCubeToEquirect]));
 	}
 
 	return TRUE;
@@ -76,7 +76,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ConvEquirectToCube]),
-			L"EquirectangularConverter_RS_ConvEquirectToCube"));
+			L"EquirectangularConverter_GR_ConvEquirectToCube"));
 	}
 	// ConvCubeToEquirect
 	{
@@ -98,7 +98,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ConvCubeToEquirect]),
-			L"EquirectangularConverter_RS_ConvCubeToEquirect"));
+			L"EquirectangularConverter_GR_ConvCubeToEquirect"));
 	}
 
 	return TRUE;
@@ -110,15 +110,15 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc({ nullptr, 0 }, DXGI_FORMAT_UNKNOWN);
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get();
 		{
-			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvEquirectToCube]);
-			if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			const auto gs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::GS_ConvEquirectToCube]);
-			if (gs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvEquirectToCube]);
-			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
-			psoDesc.GS = { reinterpret_cast<BYTE*>(gs->GetBufferPointer()), gs->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvEquirectToCube]);
+			if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			const auto GS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::GS_ConvEquirectToCube]);
+			if (GS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvEquirectToCube]);
+			if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+			psoDesc.GS = { reinterpret_cast<BYTE*>(GS->GetBufferPointer()), GS->GetBufferSize() };
+			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
@@ -129,19 +129,19 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 			mInitData.Device,
 			psoDesc,
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ConvEquirectToCube]),
-			L"EquirectangularConverter_GPS_ConvEquirectToCube"));
+			L"EquirectangularConverter_GP_ConvEquirectToCube"));
 	}
 	// ConvCubeToEquirect
 	{
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ConvCubeToEquirect].Get();
 		{
-			const auto vs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvCubeToEquirect]);
-			if (vs == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			const auto ps = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvCubeToEquirect]);
-			if (ps == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
-			psoDesc.VS = { reinterpret_cast<BYTE*>(vs->GetBufferPointer()), vs->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(ps->GetBufferPointer()), ps->GetBufferSize() };
+			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvCubeToEquirect]);
+			if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvCubeToEquirect]);
+			if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = HDR_FORMAT;
@@ -150,7 +150,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 			mInitData.Device,
 			psoDesc,
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ConvCubeToEquirect]),
-			L"EquirectangularConverter_GPS_ConvCubeToEquirect"));
+			L"EquirectangularConverter_GP_ConvCubeToEquirect"));
 	}
 
 	return TRUE;
@@ -166,33 +166,33 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 		UINT maxMipLevel) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvEquirectToCube].Get()));
 
-	const auto cmdList = mInitData.CommandObject->DirectCommandList();
-	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
+	const auto CmdList = mInitData.CommandObject->DirectCommandList();
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get());
+	CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get());
 
-	pCube->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	pEquirect->Transite(cmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	pCube->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	pEquirect->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
+	CmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
 	
 	for (UINT mipLevel = 0; mipLevel < maxMipLevel; ++mipLevel) {
-		const UINT mw = static_cast<UINT>(width / std::pow(2, mipLevel));
-		const UINT mh = static_cast<UINT>(height / std::pow(2, mipLevel));
+		const UINT MW = static_cast<UINT>(width / std::pow(2, mipLevel));
+		const UINT MH = static_cast<UINT>(height / std::pow(2, mipLevel));
 	
-		const D3D12_VIEWPORT viewport = { 0.f, 0.f, static_cast<FLOAT>(mw), static_cast<FLOAT>(mh), 0.f, 1.f };
-		const D3D12_RECT scissorRect = { 0, 0, static_cast<INT>(mw), static_cast<INT>(mh) };
+		const D3D12_VIEWPORT Viewport = { 0.f, 0.f, static_cast<FLOAT>(MW), static_cast<FLOAT>(MH), 0.f, 1.f };
+		const D3D12_RECT ScissorRect = { 0, 0, static_cast<INT>(MW), static_cast<INT>(MH) };
 	
-		cmdList->RSSetViewports(1, &viewport);
-		cmdList->RSSetScissorRects(1, &scissorRect);
+		CmdList->RSSetViewports(1, &Viewport);
+		CmdList->RSSetScissorRects(1, &ScissorRect);
 	
-		cmdList->OMSetRenderTargets(1, &ro_cubes[mipLevel], TRUE, nullptr);
+		CmdList->OMSetRenderTargets(1, &ro_cubes[mipLevel], TRUE, nullptr);
 	
-		cmdList->IASetVertexBuffers(0, 0, nullptr);
-		cmdList->IASetIndexBuffer(nullptr);
-		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmdList->DrawInstanced(36, 1, 0, 0);
+		CmdList->IASetVertexBuffers(0, 0, nullptr);
+		CmdList->IASetIndexBuffer(nullptr);
+		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CmdList->DrawInstanced(36, 1, 0, 0);
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
@@ -211,26 +211,26 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 		UINT maxMipLevel) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvEquirectToCube].Get()));
 
-	const auto cmdList = mInitData.CommandObject->DirectCommandList();
-	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
+	const auto CmdList = mInitData.CommandObject->DirectCommandList();
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get());
+	CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get());
 
-	cmdList->RSSetViewports(1, &viewport);
-	cmdList->RSSetScissorRects(1, &scissorRect);
+	CmdList->RSSetViewports(1, &viewport);
+	CmdList->RSSetScissorRects(1, &scissorRect);
 
-	pCube->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	pEquirect->Transite(cmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	pCube->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	pEquirect->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
+	CmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
 
-	cmdList->OMSetRenderTargets(1, &ro_cube, TRUE, nullptr);
+	CmdList->OMSetRenderTargets(1, &ro_cube, TRUE, nullptr);
 
-	cmdList->IASetVertexBuffers(0, 0, nullptr);
-	cmdList->IASetIndexBuffer(nullptr);
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	cmdList->DrawInstanced(36, 1, 0, 0);
+	CmdList->IASetVertexBuffers(0, 0, nullptr);
+	CmdList->IASetIndexBuffer(nullptr);
+	CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	CmdList->DrawInstanced(36, 1, 0, 0);
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
 
@@ -247,18 +247,18 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertCubeToEquir
 		UINT mipLevel) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvCubeToEquirect].Get()));
 
-	const auto cmdList = mInitData.CommandObject->DirectCommandList();
-	mInitData.DescriptorHeap->SetDescriptorHeap(cmdList);
+	const auto CmdList = mInitData.CommandObject->DirectCommandList();
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	cmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvCubeToEquirect].Get());
+	CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_ConvCubeToEquirect].Get());
 
-	cmdList->RSSetViewports(1, &viewport);
-	cmdList->RSSetScissorRects(1, &scissorRect);
+	CmdList->RSSetViewports(1, &viewport);
+	CmdList->RSSetScissorRects(1, &scissorRect);
 
-	pEquirect->Transite(cmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	pCube->Transite(cmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	pEquirect->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	pCube->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->OMSetRenderTargets(1, &ro_equirect, TRUE, nullptr);
+	CmdList->OMSetRenderTargets(1, &ro_equirect, TRUE, nullptr);
 
 	ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Struct rc;
 	rc.gMipLevel = mipLevel;
@@ -266,13 +266,13 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertCubeToEquir
 	std::array<std::uint32_t, ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count> consts;
 	std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Struct));
 
-	cmdList->SetComputeRoot32BitConstants(RootSignature::ConvCubeToEquirect::RC_Consts, ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count, consts.data(), 0);
-	cmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvCubeToEquirect::SI_CubeMap, si_cube);
+	CmdList->SetComputeRoot32BitConstants(RootSignature::ConvCubeToEquirect::RC_Consts, ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count, consts.data(), 0);
+	CmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvCubeToEquirect::SI_CubeMap, si_cube);
 
-	cmdList->IASetVertexBuffers(0, 0, nullptr);
-	cmdList->IASetIndexBuffer(nullptr);
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	cmdList->DrawInstanced(6, 1, 0, 0);
+	CmdList->IASetVertexBuffers(0, 0, nullptr);
+	CmdList->IASetIndexBuffer(nullptr);
+	CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	CmdList->DrawInstanced(6, 1, 0, 0);
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
 

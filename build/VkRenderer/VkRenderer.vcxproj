@@ -92,6 +92,7 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\CommandObject.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Device.hpp" />

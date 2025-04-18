@@ -39,6 +39,7 @@ namespace Render {
 			}
 
 			namespace EnvironmentMap { class EnvironmentMapClass; }
+			namespace GammaCorrection { class GammaCorrectionClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -50,6 +51,7 @@ namespace Render {
 			RendererAPI virtual BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
 				Common::Foundation::Core::WindowsManager* const pWndManager, 
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 				UINT width, UINT height) override;
 			RendererAPI virtual void CleanUp() override;
 
@@ -61,8 +63,8 @@ namespace Render {
 			RendererAPI virtual BOOL Draw() override;
 
 		public:
-			RendererAPI virtual BOOL AddMesh() override;
-			RendererAPI virtual BOOL RemoveMesh() override;
+			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh) override;
+			RendererAPI virtual void RemoveMesh() override;
 
 		protected:
 			virtual BOOL CreateDescriptorHeaps() override;
@@ -110,6 +112,7 @@ namespace Render {
 			std::unique_ptr<Shading::Util::EquirectangularConverter::EquirectangularConverterClass> mEquirectangularConverter;
 
 			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
+			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

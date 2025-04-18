@@ -3,11 +3,11 @@
 
 using namespace GameWorld::Foundation::Core;
 
-Component::Component(Actor* const pOwner) {
-	mOwner = pOwner;
-	pOwner->AddComponent(this);
+Component::Component(Common::Debug::LogFile* const pLogFile, Actor* const pOwner) {
+	mpLogFile = pLogFile;
+	mpOwner = pOwner;
+
+	mpOwner->AddComponent(this);
 }
 
-BOOL Component::OnInitialzing() { return TRUE; }
-
-const Transform& Component::ActorTransform() { return mOwner->GetTransform(); }
+const Transform& Component::ActorTransform() { return mpOwner->GetTransform(); }

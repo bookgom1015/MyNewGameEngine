@@ -2,6 +2,7 @@
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX/Foundation/ConstantBuffer.h"
 #include "Render/DX/Foundation/RenderItem.hpp"
 #include "Render/DX/Foundation/Core/Factory.hpp"
@@ -19,6 +20,7 @@
 #include "Render/DX/Shading/Util/EquirectangularConverter.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
+#include "Render/DX/Shading/GammaCorrection.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 using namespace Render::DX;
 using namespace DirectX;
@@ -45,10 +47,12 @@ DxRenderer::DxRenderer() {
 	mEquirectangularConverter = std::make_unique<Shading::Util::EquirectangularConverter::EquirectangularConverterClass>();
 
 	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap::EnvironmentMapClass>();
+	mGammaCorrection = std::make_unique<Shading::GammaCorrection::GammaCorrectionClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
 	mShadingObjectManager->AddShadingObject(mEnvironmentMap.get());
+	mShadingObjectManager->AddShadingObject(mGammaCorrection.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -62,8 +66,9 @@ DxRenderer::~DxRenderer() {
 BOOL DxRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
 		Common::Foundation::Core::WindowsManager* const pWndManager, 
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
-	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, width, height));
+	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, pArgSet, width, height));
 
 	CheckReturn(mpLogFile, InitShadingObjects());
 	CheckReturn(mpLogFile, BuildFrameResources());
@@ -121,20 +126,27 @@ BOOL DxRenderer::Draw() {
 		mCurrentFrameResource->ObjectCBAddress(),
 		mCurrentFrameResource->ObjectCBByteSize(),
 		gSkySphereRitem));
+
+	CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
+		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mSwapChain->BackBuffer(),
+		mSwapChain->BackBufferRtv(),
+		mpArgumentSet->GammaCorrection.Gamma));
 	
 	CheckReturn(mpLogFile, PresentAndSignal());
 
 	return TRUE;
 }
 
-BOOL DxRenderer::AddMesh() {
+BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh) {
 
 	return TRUE;
 }
 
-BOOL DxRenderer::RemoveMesh() {
+void DxRenderer::RemoveMesh() {
 
-	return TRUE;
 }
 
 BOOL DxRenderer::CreateDescriptorHeaps() {
@@ -344,6 +356,7 @@ BOOL DxRenderer::InitShadingObjects() {
 	// MipmapGenerator
 	{
 		auto initData = Shading::Util::MipmapGenerator::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
@@ -368,6 +381,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->DescriptorHeap = mDescriptorHeap.get();
 		initData->ShaderManager = mShaderManager.get();
 		CheckReturn(mpLogFile, mEnvironmentMap->Initialize(mpLogFile, initData.get()));
+	}
+	// GammaCorrection
+	{
+		auto initData = Shading::GammaCorrection::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mGammaCorrection->Initialize(mpLogFile, initData.get()));
 	}
 
 	return TRUE;

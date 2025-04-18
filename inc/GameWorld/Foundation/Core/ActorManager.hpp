@@ -30,15 +30,15 @@ namespace GameWorld::Foundation::Core {
 	class ActorManager {
 	public:
 		ActorManager();
-		virtual ~ActorManager();
+		virtual ~ActorManager() = default;
 
 	public:
 		__forceinline Actor* GetActor(const std::string& name);
 
 	public:
 		BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+		void CleanUp();
 
-	public:
 		BOOL ProcessInput(Common::Input::InputState* const pInputState);
 		BOOL Update(FLOAT delta);
 
@@ -52,6 +52,7 @@ namespace GameWorld::Foundation::Core {
 
 		std::vector<std::unique_ptr<Actor>> mActors;
 		std::vector<std::unique_ptr<Actor>> mPendingActors;
+
 		std::vector<Actor*> mDeadActors;
 
 		std::unordered_map<std::string, Actor*> mActorRefs;

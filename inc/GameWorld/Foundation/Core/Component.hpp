@@ -6,12 +6,19 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif // NOMINMAX
+#include <wrl.h>
 #include <Windows.h>
 
 #include "Common/Foundation/Mesh/Transform.hpp"
 
-namespace Common::Input {
-	struct InputState;
+namespace Common {
+	namespace Debug {
+		struct LogFile;
+	}
+
+	namespace Input {
+		struct InputState;
+	}
 }
 
 namespace GameWorld::Foundation::Core {
@@ -19,11 +26,13 @@ namespace GameWorld::Foundation::Core {
 
 	class Component {
 	public:
-		Component(Actor* const pOwner);
+		Component(Common::Debug::LogFile* const pLogFile, Actor* const pOwner);
 		virtual ~Component() = default;
 
 	public:
-		virtual BOOL OnInitialzing();
+		virtual BOOL OnInitialzing() = 0;
+		virtual void OnCleaningUp() = 0;
+
 		virtual BOOL ProcessInput(Common::Input::InputState* const pInput) = 0;
 		virtual BOOL Update(FLOAT delta) = 0;
 		virtual BOOL OnUpdateWorldTransform() = 0;
@@ -31,7 +40,8 @@ namespace GameWorld::Foundation::Core {
 	protected:
 		const Transform& ActorTransform();
 
-	private:
-		Actor* mOwner;
+	protected:
+		Common::Debug::LogFile* mpLogFile = nullptr;
+		Actor* mpOwner = nullptr;
 	};
 }

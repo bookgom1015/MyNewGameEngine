@@ -39,19 +39,18 @@ namespace Common {
 			static BOOL LoadObj(
 				Common::Debug::LogFile* const pLogFile, 
 				Mesh& mesh, 
-				const std::string& filePath, 
-				const std::string& baseDir);
+				LPCSTR fileName, 
+				LPCSTR baseDir);
 			static BOOL LoadFbx(
 				Common::Debug::LogFile* const pLogFile, 
 				Mesh& mesh, 
-				const std::string& filePath, 
-				const std::string& baseDir);
+				LPCSTR fileName,
+				LPCSTR baseDir);
 
 		private:
 #ifdef _DEBUG
 			static void DebugInfo(const Mesh& mesh);
 #endif
-
 
 		private:
 			std::string mFilePath;

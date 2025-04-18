@@ -18,11 +18,13 @@ namespace GameWorld::Foundation {
 	namespace Camera {
 		class CameraComponent : public Core::Component {
 		public:
-			CameraComponent(Core::Actor* const pOwner);
+			CameraComponent(Common::Debug::LogFile* const pLogFile, Core::Actor* const pOwner);
 			virtual ~CameraComponent() = default;
 
 		public:
 			virtual BOOL OnInitialzing() override;
+			virtual void OnCleaningUp() override;
+
 			virtual BOOL ProcessInput(Common::Input::InputState* const pInput) override;
 			virtual BOOL Update(FLOAT delta) override;
 			virtual BOOL OnUpdateWorldTransform() override;

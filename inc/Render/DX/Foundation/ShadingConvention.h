@@ -45,13 +45,6 @@ namespace ShadingConvention{
 	}
 
 	namespace EnvironmentMap {
-#ifndef EnvironmentMap_DrawSkySphere_RCSTRUCT
-#define EnvironmentMap_DrawSkySphere_RCSTRUCT {	\
-		UINT gVertexCount;						\
-		UINT gIndexCount;						\
-	};
-#endif
-
 		namespace ThreadGroup {
 			namespace MeshShader {
 				enum {
@@ -59,6 +52,13 @@ namespace ShadingConvention{
 				};
 			}
 		}
+
+#ifndef EnvironmentMap_DrawSkySphere_RCSTRUCT
+#define EnvironmentMap_DrawSkySphere_RCSTRUCT {	\
+		UINT gVertexCount;						\
+		UINT gIndexCount;						\
+	};
+#endif
 
 #ifdef _HLSL
 		typedef HDR_FORMAT EquirectangularMapFormat;
@@ -86,6 +86,14 @@ namespace ShadingConvention{
 
 	namespace MipmapGenerator {
 		static const UINT MaxMipLevel = 5;
+
+		namespace ThreadGroup {
+			namespace MeshShader {
+				enum {
+					ThreadsPerGroup = 2
+				};
+			}
+		}
 
 #ifndef MipmapGenerator_Default_RCSTRUCT
 #define MipmapGenerator_Default_RCSTRUCT {		\
@@ -115,6 +123,14 @@ namespace ShadingConvention{
 	}
 
 	namespace EquirectangularConverter {
+		namespace ThreadGroup {
+			namespace MeshShader {
+				enum {
+					ThreadsPerGroup = 12
+				};
+			}
+		}
+
 #ifndef EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT
 #define EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT {	\
 		UINT gMipLevel;											\
@@ -130,6 +146,37 @@ namespace ShadingConvention{
 				struct Struct EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT
 					enum {
 					E_MipLevel = 0,
+					Count
+				};
+			}
+		}
+#endif
+	}
+
+	namespace GammaCorrection {
+		namespace ThreadGroup {
+			namespace MeshShader {
+				enum {
+					ThreadsPerGroup = 2
+				};
+			}
+		}
+
+#ifndef GammaCorrection_Default_RCSTRUCT
+#define GammaCorrection_Default_RCSTRUCT {	\
+		FLOAT gGamma;						\
+	};
+#endif
+	#ifndef GammaCorrection_Default_RootConstants
+	#define GammaCorrection_Default_RootConstants(reg) cbuffer gRootConstants : register(reg) GammaCorrection_Default_RCSTRUCT
+	#endif
+#ifdef _HLSL
+#else
+		namespace RootConstant {
+			namespace Default {
+				struct Struct GammaCorrection_Default_RCSTRUCT
+					enum {
+					E_Gamma = 0,
 					Count
 				};
 			}

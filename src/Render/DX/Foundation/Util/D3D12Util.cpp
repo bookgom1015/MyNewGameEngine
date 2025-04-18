@@ -311,6 +311,22 @@ D3DX12_MESH_SHADER_PIPELINE_STATE_DESC D3D12Util::DefaultMeshPsoDesc(DXGI_FORMAT
 	return psoDesc;
 }
 
+D3DX12_MESH_SHADER_PIPELINE_STATE_DESC D3D12Util::FitToScreenMeshPsoDesc() {
+	D3DX12_MESH_SHADER_PIPELINE_STATE_DESC psoDesc = {};
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.SampleDesc.Quality = 0;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.DepthStencilState.DepthEnable = FALSE;
+	psoDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
+
+	return psoDesc;
+}
+
 BOOL D3D12Util::CreateComputePipelineState(
 		Core::Device* const pDevice,
 		const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc,
