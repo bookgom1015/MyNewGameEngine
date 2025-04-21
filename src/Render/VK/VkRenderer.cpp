@@ -51,10 +51,10 @@ BOOL VkRenderer::Draw() {
 	return TRUE;
 }
 
-BOOL VkRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh) {
+BOOL VkRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) {
 	return TRUE;
 }
 
-void VkRenderer::RemoveMesh() {
+void VkRenderer::RemoveMesh(Common::Foundation::Hash hash) {
 
 }

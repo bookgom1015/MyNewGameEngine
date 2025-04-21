@@ -2,6 +2,10 @@
 
 #include "GameWorld/Foundation/Core/Actor.hpp"
 
+namespace GameWorld::Foundation::Mesh {
+	class MeshComponent;
+}
+
 namespace GameWorld::Prefab {
 	class Ground : public Foundation::Core::Actor {
 	public:
@@ -21,5 +25,8 @@ namespace GameWorld::Prefab {
 		virtual BOOL OnInitialzing() override;
 		virtual BOOL ProcessActorInput(Common::Input::InputState* const pInputState) override;
 		virtual BOOL UpdateActor(FLOAT delta) override;
+
+	private:
+		GameWorld::Foundation::Mesh::MeshComponent* mpMeshComp;
 	};
 }

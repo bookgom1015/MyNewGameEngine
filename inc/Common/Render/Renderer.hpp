@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common/Util/HashUtil.hpp"
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif // WIN32_LEAN_AND_MEAN
@@ -59,8 +61,8 @@ namespace Common {
 			RendererAPI virtual BOOL Draw() = 0;
 
 		public:
-			RendererAPI virtual BOOL AddMesh(Foundation::Mesh::Mesh* const pMesh) = 0;
-			RendererAPI virtual void RemoveMesh() = 0;
+			RendererAPI virtual BOOL AddMesh(Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) = 0;
+			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) = 0;
 
 		public:
 			__forceinline void SetCamera(Common::Foundation::Camera::GameCamera* const pCamera);

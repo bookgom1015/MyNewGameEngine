@@ -14,7 +14,8 @@ BOOL MeshComponent::OnInitialzing() {
 }
 
 void MeshComponent::OnCleaningUp() {
-	GameWorld::GameWorldClass::spGameWorld->Renderer()->RemoveMesh();
+	if (mbAddedMesh)
+		GameWorld::GameWorldClass::spGameWorld->Renderer()->RemoveMesh(mMeshHash);
 }
 
 BOOL MeshComponent::ProcessInput(Common::Input::InputState* const pInput) {
@@ -29,11 +30,13 @@ BOOL MeshComponent::OnUpdateWorldTransform() {
 	return TRUE;
 }
 
-BOOL MeshComponent::LoadMesh(LPCSTR fileName, LPCSTR baseDir) {
+BOOL MeshComponent::LoadMesh(LPCSTR fileName, LPCSTR baseDir, LPCSTR extension) {
 	Common::Foundation::Mesh::Mesh mesh;
-	CheckReturn(mpLogFile, Common::Foundation::Mesh::Mesh::LoadObj(mpLogFile, mesh, fileName, baseDir));
 
-	CheckReturn(mpLogFile, GameWorld::GameWorldClass::spGameWorld->Renderer()->AddMesh(&mesh));
+	CheckReturn(mpLogFile, Common::Foundation::Mesh::Mesh::Load(mpLogFile, mesh, fileName, baseDir, extension));
+	CheckReturn(mpLogFile, GameWorld::GameWorldClass::spGameWorld->Renderer()->AddMesh(&mesh, mMeshHash));
+
+	mbAddedMesh = TRUE;
 
 	return TRUE;
 }

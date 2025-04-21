@@ -76,7 +76,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildRootSignatures(const Render::DX
 }
 
 BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
-	// GraphicsPipeline
+	// GraphicsPipelineState
 	{
 		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 		psoDesc.pRootSignature = mRootSignature.Get();
@@ -88,7 +88,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
-		psoDesc.RTVFormats[0] = SDR_FORMAT;
+		psoDesc.RTVFormats[0] = HDR_FORMAT;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
@@ -96,7 +96,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GammaCorrect]),
 			L"GammaCorrection_GP_Default"));
 	}
-	// MeshShaderPipeline
+	// MeshShaderPipelineState
 	if (mInitData.MeshShaderSupported) {
 		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 		psoDesc.pRootSignature = mRootSignature.Get();
@@ -108,7 +108,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 			psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
-		psoDesc.RTVFormats[0] = SDR_FORMAT;
+		psoDesc.RTVFormats[0] = HDR_FORMAT;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
 			mInitData.Device,
@@ -199,7 +199,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildResources() {
 	rscDesc.Alignment = 0;
 	rscDesc.Width = mInitData.ClientWidth;
 	rscDesc.Height = mInitData.ClientHeight;
-	rscDesc.Format = SDR_FORMAT;
+	rscDesc.Format = HDR_FORMAT;
 	rscDesc.DepthOrArraySize = 1;
 	rscDesc.MipLevels = 1;
 	rscDesc.SampleDesc.Count = 1;
@@ -212,7 +212,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildResources() {
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&rscDesc,
-		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_STATE_COMMON,
 		nullptr,
 		L"GammaCorrection_CopiedBackBuffer"));
 
@@ -226,7 +226,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildDescriptors() {
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.f;
 	srvDesc.Texture2D.MipLevels = 1;
-	srvDesc.Format = SDR_FORMAT;
+	srvDesc.Format = HDR_FORMAT;
 
 	Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mCopiedBackBuffer->Resource(), &srvDesc, mhCopiedBackBufferCpuSrv);
 

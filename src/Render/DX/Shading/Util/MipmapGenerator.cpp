@@ -85,7 +85,7 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures(const Render::DX
 BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 	// GenerateMipmap
 	{
-		// GraphicsPipeline
+		// GraphicsPipelineState
 		{
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 			psoDesc.pRootSignature = mRootSignature.Get();
@@ -107,7 +107,7 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GenerateMipmap]),
 				L"MipmapGenerator_GP_GenerateMipmap"));
 		}
-		// MeshShaderPipeline
+		// MeshShaderPipelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignature.Get();
@@ -132,7 +132,7 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 	}
 	// CopyMap
 	{
-		// GraphicsPipeline
+		// GraphicsPipelineState
 		{
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 			psoDesc.pRootSignature = mRootSignature.Get();
@@ -154,7 +154,7 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_CopyMap]),
 				L"MipmapGenerator_GP_CopyMap"));
 		}
-		// MeshShaderPipeline
+		// MeshShaderPipelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignature.Get();

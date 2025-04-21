@@ -26,6 +26,6 @@ void MeshGeometry::DisposeUploaders() {
 }
 
 Common::Foundation::Hash Render::DX::Foundation::Resource::MeshGeometry::Hash(MeshGeometry* ptr) {
-	std::hash<Render::DX::Foundation::Resource::MeshGeometry*> hasher;
-	return hasher(ptr);
+	uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+	return Common::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(addr));
 }

@@ -11,6 +11,7 @@
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
 
 #include "Common/Util/MathUtil.hpp"
+#include "Common/Util/HashUtil.hpp"
 
 namespace Render::DX::Foundation {
 	namespace Resource {
@@ -47,6 +48,6 @@ namespace Render::DX::Foundation {
 		UINT StartIndexLocation = 0;
 		UINT BaseVertexLocation = 0;
 
-		BOOL Pickable = TRUE;
+		static Common::Foundation::Hash Hash(const RenderItem* ptr);
 	};
 }

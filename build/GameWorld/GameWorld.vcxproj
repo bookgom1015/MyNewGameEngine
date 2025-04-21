@@ -220,6 +220,7 @@
   <ItemGroup>
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
+    <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl" />
     <None Include="..\..\inc\Common\Input\InputProcessor.inl" />
     <None Include="..\..\inc\Common\Util\MathUtil.inl" />
     <None Include="..\..\inc\GameWorld\Foundation\Core\Actor.inl" />

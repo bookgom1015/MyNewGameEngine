@@ -22,7 +22,12 @@ namespace GameWorld::Foundation {
 			virtual BOOL OnUpdateWorldTransform() override;
 
 		public:
-			BOOL LoadMesh(LPCSTR fileName, LPCSTR baseDir);
+			BOOL LoadMesh(LPCSTR fileName, LPCSTR baseDir, LPCSTR extension);
+
+		private:
+			BOOL mbAddedMesh = FALSE;
+
+			Common::Foundation::Hash mMeshHash;
 		};
 	}
 }

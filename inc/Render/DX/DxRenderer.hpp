@@ -40,6 +40,7 @@ namespace Render {
 
 			namespace EnvironmentMap { class EnvironmentMapClass; }
 			namespace GammaCorrection { class GammaCorrectionClass; }
+			namespace ToneMapping { class ToneMappingClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -63,8 +64,8 @@ namespace Render {
 			RendererAPI virtual BOOL Draw() override;
 
 		public:
-			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh) override;
-			RendererAPI virtual void RemoveMesh() override;
+			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) override;
+			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) override;
 
 		protected:
 			virtual BOOL CreateDescriptorHeaps() override;
@@ -77,11 +78,16 @@ namespace Render {
 
 		private:
 			BOOL BuildMeshGeometry(
-				Foundation::Resource::SubmeshGeometry* const submesh,
+				ID3D12GraphicsCommandList6* const pCmdList,
+				Foundation::Resource::SubmeshGeometry* const pSubMesh,
 				const std::vector<Common::Foundation::Mesh::Vertex>& vertices, 
 				const std::vector<std::uint16_t>& indices,
 				const std::string& name,
-				Common::Foundation::Hash& hash);
+				Foundation::Resource::MeshGeometry*& pMeshGeo);
+			BOOL BuildMeshGeometry(
+				ID3D12GraphicsCommandList6* const pCmdList,
+				Common::Foundation::Mesh::Mesh* const pMesh,
+				Foundation::Resource::MeshGeometry*& pMeshGeo);
 
 		private: // Functions that is called only once in Initialize
 			BOOL InitShadingObjects();
@@ -113,6 +119,7 @@ namespace Render {
 
 			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
 			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection;
+			std::unique_ptr<Shading::ToneMapping::ToneMappingClass> mToneMapping;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

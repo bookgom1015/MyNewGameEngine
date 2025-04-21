@@ -109,7 +109,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 	// DrawSkySphere
 	{
-		// GraphicsPipeline
+		// GraphicsPipelineState
 		{
 			const auto inputLayout = Foundation::Util::D3D12Util::InputLayoutDesc();
 			auto psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc(inputLayout, ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
@@ -124,7 +124,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
 			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = SDR_FORMAT;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
 			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 			psoDesc.DepthStencilState.DepthEnable = FALSE;
 			psoDesc.DepthStencilState.StencilEnable = FALSE;
@@ -135,7 +135,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_DrawSkySphere]),
 				L"EnvironmentMap_GP_DrawSkySphere"));
 		}
-		// MeshShaderPiepeline
+		// MeshShaderPiepelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::DefaultMeshPsoDesc(ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
 
@@ -149,7 +149,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
 			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = SDR_FORMAT;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
 			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 			psoDesc.DepthStencilState.DepthEnable = FALSE;
 			psoDesc.DepthStencilState.StencilEnable = FALSE;

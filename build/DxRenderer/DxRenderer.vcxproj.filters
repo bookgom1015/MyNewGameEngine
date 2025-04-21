@@ -97,6 +97,9 @@
     <Filter Include="Shader Files\GammaCorrection">
       <UniqueIdentifier>{dc1bec29-6577-4e21-8ace-d310f51dcd77}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\ToneMapping">
+      <UniqueIdentifier>{df4acaad-346c-41e9-83bd-ea7e1d727223}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -216,6 +219,9 @@
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\ToneMapping.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -317,6 +323,9 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\ToneMapping.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -388,6 +397,12 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\GammaCorrection.hlsl">
       <Filter>Shader Files\GammaCorrection</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ToneMapping.hlsl">
+      <Filter>Shader Files\ToneMapping</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\ToneMapping.inl">
+      <Filter>Header Files\Shading Files</Filter>
     </None>
   </ItemGroup>
 </Project>

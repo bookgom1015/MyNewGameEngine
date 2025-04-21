@@ -8,13 +8,30 @@
 using namespace Common::Foundation::Mesh;
 using namespace DirectX;
 
-BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName,	LPCSTR baseDir) {
+BOOL Mesh::Load(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName, LPCSTR baseDir, LPCSTR extension) {
+	if (strcmp(extension, "obj") == 0) {
+		CheckReturn(pLogFile, LoadObj(pLogFile, mesh, fileName, baseDir, extension));
+	}
+	else if (strcmp(extension, "fbx") == 0) {
+		CheckReturn(pLogFile, LoadFbx(pLogFile, mesh, fileName, baseDir, extension));
+	}
+	else {
+		ReturnFalse(pLogFile, L"Unsupported file extension");
+	}
+
+	return TRUE;
+}
+
+BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName,	LPCSTR baseDir, LPCSTR extension) {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, fileName, baseDir)) {
+	std::stringstream filePathStream;
+	filePathStream << baseDir << fileName << '.' << extension;
+
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filePathStream.str().c_str(), baseDir)) {
 		std::wstringstream wsstream;
 		wsstream << err.c_str();
 		ReturnFalse(pLogFile, wsstream.str());
@@ -68,7 +85,6 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 			}
 		}
 	}
-
 	
 	for (const auto& material : materials) {
 		Material mat;
@@ -93,6 +109,10 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 		mesh.mMaterials.push_back(mat);
 	}
 
+	std::stringstream sstream;
+	sstream << baseDir << fileName;
+	mesh.mFilePath = sstream.str();
+
 #ifdef _DEBUG
 	DebugInfo(mesh);
 #endif
@@ -100,8 +120,12 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 	return TRUE;
 }
 
-BOOL Mesh::LoadFbx(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName,	LPCSTR baseDir) {
+BOOL Mesh::LoadFbx(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName,	LPCSTR baseDir, LPCSTR extension) {
 	return TRUE;
+}
+
+Common::Foundation::Hash Mesh::Hash(const Mesh& mesh) {
+	return std::hash<std::string>()(mesh.mFilePath);
 }
 
 #ifdef _DEBUG

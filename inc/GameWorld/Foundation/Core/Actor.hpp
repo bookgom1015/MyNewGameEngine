@@ -87,12 +87,14 @@ namespace GameWorld::Foundation::Core {
 		void SetScale(const DirectX::XMFLOAT3& scale);
 		void SetScale(const DirectX::XMVECTOR& scale);
 
+	protected:
+		Common::Debug::LogFile* mpLogFile = nullptr;
+
 	private:
+
 		BOOL mbInitialized = FALSE;
 		BOOL mbIsDead = FALSE;
 		BOOL mbNeedToUpdate = TRUE;
-
-		Common::Debug::LogFile* mpLogFile = nullptr;
 
 		std::string mName;
 

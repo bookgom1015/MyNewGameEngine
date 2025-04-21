@@ -253,5 +253,8 @@
     <None Include="..\..\inc\Common\Input\InputProcessor.inl">
       <Filter>Common Files\Input</Filter>
     </None>
+    <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -36,16 +36,37 @@ namespace Common {
 			virtual ~Mesh() = default;
 
 		public:
+			__forceinline UINT VertexCount() const;
+			__forceinline UINT VerticesByteSize() const;
+			__forceinline const Vertex* Vertices() const;
+
+			__forceinline UINT IndexCount() const;
+			__forceinline UINT IndicesByteSize() const;
+			__forceinline const UINT* Indices() const;
+
+		public:
+			static BOOL Load(
+				Common::Debug::LogFile* const pLogFile,
+				Mesh& mesh,
+				LPCSTR fileName,
+				LPCSTR baseDir,
+				LPCSTR extension);
+
+			static Common::Foundation::Hash Hash(const Mesh& mesh);
+
+		private:
 			static BOOL LoadObj(
 				Common::Debug::LogFile* const pLogFile, 
 				Mesh& mesh, 
 				LPCSTR fileName, 
-				LPCSTR baseDir);
+				LPCSTR baseDir,
+				LPCSTR extension);
 			static BOOL LoadFbx(
 				Common::Debug::LogFile* const pLogFile, 
 				Mesh& mesh, 
 				LPCSTR fileName,
-				LPCSTR baseDir);
+				LPCSTR baseDir,
+				LPCSTR extension);
 
 		private:
 #ifdef _DEBUG
@@ -65,3 +86,5 @@ namespace Common {
 		};
 	}
 }
+
+#include "Mesh.inl"

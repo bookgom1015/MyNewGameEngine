@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Common/Foundation/Mesh/Transform.hpp"
+#include "Common/Util/HashUtil.hpp"
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif // WIN32_LEAN_AND_MEAN
@@ -8,8 +11,6 @@
 #endif // NOMINMAX
 #include <wrl.h>
 #include <Windows.h>
-
-#include "Common/Foundation/Mesh/Transform.hpp"
 
 namespace Common {
 	namespace Debug {

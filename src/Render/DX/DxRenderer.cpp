@@ -21,12 +21,12 @@
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "Render/DX/Shading/GammaCorrection.hpp"
+#include "Render/DX/Shading/ToneMapping.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 using namespace Render::DX;
 using namespace DirectX;
 
 namespace {
-	Common::Foundation::Hash gSkySphereGeoHash;
 	Foundation::RenderItem* gSkySphereRitem;
 }
 
@@ -48,11 +48,13 @@ DxRenderer::DxRenderer() {
 
 	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap::EnvironmentMapClass>();
 	mGammaCorrection = std::make_unique<Shading::GammaCorrection::GammaCorrectionClass>();
+	mToneMapping = std::make_unique<Shading::ToneMapping::ToneMappingClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
 	mShadingObjectManager->AddShadingObject(mEnvironmentMap.get());
 	mShadingObjectManager->AddShadingObject(mGammaCorrection.get());
+	mShadingObjectManager->AddShadingObject(mToneMapping.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -77,7 +79,7 @@ BOOL DxRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
-	
+
 	CheckReturn(mpLogFile, BuildSkySphere());
 	CheckReturn(mpLogFile, FinishUpInitializing());
 
@@ -119,8 +121,8 @@ BOOL DxRenderer::Draw() {
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mSwapChain->BackBuffer(),
-		mSwapChain->BackBufferRtv(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		mCurrentFrameResource->MainPassCBAddress(),
 		mCurrentFrameResource->ObjectCBAddress(),
@@ -131,21 +133,50 @@ BOOL DxRenderer::Draw() {
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mpArgumentSet->GammaCorrection.Gamma));
+
+	CheckReturn(mpLogFile, mToneMapping->Resolve(
+		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
 		mSwapChain->BackBuffer(),
 		mSwapChain->BackBufferRtv(),
-		mpArgumentSet->GammaCorrection.Gamma));
+		mpArgumentSet->ToneMapping.Exposure));
 	
 	CheckReturn(mpLogFile, PresentAndSignal());
 
 	return TRUE;
 }
 
-BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh) {
+BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) {
+	auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
+	hash = Foundation::RenderItem::Hash(ritem.get());
+
+	{
+		CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
+			mCurrentFrameResource->CommandAllocator(0),
+			0));
+		const auto CmdList = mCommandObject->CommandList(0);
+
+		CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, pMesh, ritem->Geometry));
+
+		CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
+	}
+
+	ritem->ObjCBIndex = static_cast<INT>(mRenderItems.size());
+	ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	ritem->IndexCount = ritem->Geometry->Subsets["SkySphere"].IndexCount;
+	ritem->StartIndexLocation = ritem->Geometry->Subsets["SkySphere"].StartIndexLocation;
+	ritem->BaseVertexLocation = ritem->Geometry->Subsets["SkySphere"].BaseVertexLocation;
+
+	mRenderItems.push_back(std::move(ritem));
 
 	return TRUE;
 }
 
-void DxRenderer::RemoveMesh() {
+void DxRenderer::RemoveMesh(Common::Foundation::Hash hash) {
 
 }
 
@@ -295,56 +326,110 @@ BOOL DxRenderer::UpdateEquirectangularConverterCB() {
 }
 
 BOOL DxRenderer::BuildMeshGeometry(
-		Foundation::Resource::SubmeshGeometry* const submesh,
+		ID3D12GraphicsCommandList6* const pCmdList,
+		Foundation::Resource::SubmeshGeometry* const pSubmesh,
 		const std::vector<Common::Foundation::Mesh::Vertex>& vertices,
 		const std::vector<std::uint16_t>& indices,
 		const std::string& name,
-		Common::Foundation::Hash& hash) {
+		Foundation::Resource::MeshGeometry*& pMeshGeo) {
 	auto geo = std::make_unique<Foundation::Resource::MeshGeometry>();
-	hash = Foundation::Resource::MeshGeometry::Hash(geo.get());
+	const auto Hash = Foundation::Resource::MeshGeometry::Hash(geo.get());
 
-	const UINT vbByteSize = static_cast<UINT>(vertices.size() * sizeof(Common::Foundation::Mesh::Vertex));
-	const UINT ibByteSize = static_cast<UINT>(indices.size() * sizeof(std::uint16_t));
+	const UINT VerticesByteSize = static_cast<UINT>(vertices.size() * sizeof(Common::Foundation::Mesh::Vertex));
+	const UINT IndicesByteSize = static_cast<UINT>(indices.size() * sizeof(std::uint16_t));
 
-	mCommandObject->ResetDirectCommandList();
+	CheckHRESULT(mpLogFile, D3DCreateBlob(VerticesByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), VerticesByteSize);
 
-	CheckHRESULT(mpLogFile, D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
-	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
-
-	CheckHRESULT(mpLogFile, D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
-	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+	CheckHRESULT(mpLogFile, D3DCreateBlob(IndicesByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), IndicesByteSize);
 
 	const auto device = mDevice.get();
-	const auto cmdList = mCommandObject->DirectCommandList();
 
 	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateDefaultBuffer(
 		device,
-		cmdList,
+		pCmdList,
 		vertices.data(),
-		vbByteSize,
+		VerticesByteSize,
 		geo->VertexBufferUploader,
 		geo->VertexBufferGPU)
 	);
 
 	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateDefaultBuffer(
 		device,
-		cmdList,
+		pCmdList,
 		indices.data(),
-		ibByteSize,
+		IndicesByteSize,
+		geo->IndexBufferUploader,
+		geo->IndexBufferGPU)
+	);
+	
+	geo->VertexByteStride = static_cast<UINT>(sizeof(Common::Foundation::Mesh::Vertex));
+	geo->VertexBufferByteSize = VerticesByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = IndicesByteSize;
+	geo->Subsets[name] = *pSubmesh;
+	
+	pMeshGeo = geo.get();
+	mMeshGeometries[Hash] = std::move(geo);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::BuildMeshGeometry(
+		ID3D12GraphicsCommandList6* const pCmdList, 
+		Common::Foundation::Mesh::Mesh* const pMesh,
+		Foundation::Resource::MeshGeometry*& pMeshGeo) {
+	auto geo = std::make_unique<Foundation::Resource::MeshGeometry>();
+	const auto Hash = Foundation::Resource::MeshGeometry::Hash(geo.get());
+
+	const UINT VerticesByteSize = pMesh->VerticesByteSize();
+	const UINT IndicesByteSize = pMesh->IndicesByteSize();
+
+	const auto Vertices = pMesh->Vertices();
+	const auto Indices = pMesh->Indices();
+
+	CheckHRESULT(mpLogFile, D3DCreateBlob(VerticesByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), Vertices, VerticesByteSize);
+
+	CheckHRESULT(mpLogFile, D3DCreateBlob(IndicesByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), Indices, IndicesByteSize);
+
+	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateDefaultBuffer(
+		mDevice.get(),
+		pCmdList,
+		Vertices,
+		VerticesByteSize,
+		geo->VertexBufferUploader,
+		geo->VertexBufferGPU)
+	);
+	
+	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateDefaultBuffer(
+		mDevice.get(),
+		pCmdList,
+		Indices,
+		IndicesByteSize,
 		geo->IndexBufferUploader,
 		geo->IndexBufferGPU)
 	);
 
-	CheckReturn(mpLogFile, mCommandObject->ExecuteDirectCommandList());
-	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
-	
+	const auto Fence = mCommandObject->IncreaseFence();
+	mCurrentFrameResource->mFence = Fence;
+
+	Foundation::Resource::SubmeshGeometry submesh;
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+	submesh.IndexCount = pMesh->IndexCount();
+
 	geo->VertexByteStride = static_cast<UINT>(sizeof(Common::Foundation::Mesh::Vertex));
-	geo->VertexBufferByteSize = vbByteSize;
+	geo->VertexBufferByteSize = VerticesByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	geo->IndexBufferByteSize = ibByteSize;	
-	geo->Subsets[name] = *submesh;
-	
-	mMeshGeometries[hash] = std::move(geo);
+	geo->IndexBufferByteSize = IndicesByteSize;
+	geo->Subsets["geo"] = submesh;
+	geo->Fence = Fence;
+
+	pMeshGeo = geo.get();
+	mMeshGeometries[Hash] = std::move(geo);
 
 	return TRUE;
 }
@@ -394,6 +479,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mGammaCorrection->Initialize(mpLogFile, initData.get()));
 	}
+	// ToneMapping
+	{
+		auto initData = Shading::ToneMapping::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mToneMapping->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -438,16 +535,22 @@ BOOL DxRenderer::BuildSkySphere() {
 		indices[index] = sphere.GetIndices16()[i];
 	}
 
-	CheckReturn(mpLogFile, BuildMeshGeometry(&sphereSubmesh, vertices, indices, "SkySphere", gSkySphereGeoHash));
-
 	auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
+
+	CheckReturn(mpLogFile, mCommandObject->ResetDirectCommandList());
+
+	const auto CmdList = mCommandObject->DirectCommandList();
+	CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, &sphereSubmesh, vertices, indices, "SkySphere", ritem->Geometry));
+
+	CheckReturn(mpLogFile, mCommandObject->ExecuteDirectCommandList());
+
 	ritem->ObjCBIndex = static_cast<INT>(mRenderItems.size());
-	ritem->Geometry = mMeshGeometries[gSkySphereGeoHash].get();
 	ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	ritem->IndexCount = ritem->Geometry->Subsets["SkySphere"].IndexCount;
 	ritem->StartIndexLocation = ritem->Geometry->Subsets["SkySphere"].StartIndexLocation;
 	ritem->BaseVertexLocation = ritem->Geometry->Subsets["SkySphere"].BaseVertexLocation;
 	XMStoreFloat4x4(&ritem->World, XMMatrixScaling(1000.f, 1000.f, 1000.f));
+
 	gSkySphereRitem = ritem.get();
 	mRenderItems.push_back(std::move(ritem));
 

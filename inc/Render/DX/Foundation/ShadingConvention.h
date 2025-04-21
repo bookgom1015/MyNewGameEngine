@@ -183,6 +183,44 @@ namespace ShadingConvention{
 		}
 #endif
 	}
+
+	namespace ToneMapping {
+		namespace ThreadGroup {
+			namespace MeshShader {
+				enum {
+					ThreadsPerGroup = 2
+				};
+			}
+		}
+
+	#ifndef ToneMapping_Default_RCSTRUCT
+	#define ToneMapping_Default_RCSTRUCT {	\
+		FLOAT gExposure;					\
+	};
+#endif
+
+#ifdef _HLSL
+	typedef HDR_FORMAT IntermediateMapFormat;
+
+	#ifndef ToneMapping_Default_RootConstants
+		#define ToneMapping_Default_RootConstants(reg) cbuffer gRootConstants : register(reg) ToneMapping_Default_RCSTRUCT
+	#endif
+#else
+	const DXGI_FORMAT IntermediateMapFormat = HDR_FORMAT;
+
+	const FLOAT IntermediateMapClearValues[4] = { 0.f, 0.f, 0.f, 0.f };
+
+	namespace RootConstant {
+		namespace Default {
+			struct Struct ToneMapping_Default_RCSTRUCT
+			enum {
+				E_Exposure = 0,
+				Count
+			};
+		}
+	}
+#endif
+	}
 }
 
 #endif // __SHADINGCONVENTION_H__
