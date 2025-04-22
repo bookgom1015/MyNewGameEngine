@@ -94,9 +94,9 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 
 			{
 				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
-				if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, VS);
 				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GenerateMipmap]);
-				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, PS);
 				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
@@ -116,9 +116,9 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 
 			{
 				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_GenerateMipmap]);
-				if (MS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, MS);
 				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GenerateMipmap]);
-				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, PS);
 				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
@@ -141,9 +141,9 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 
 			{
 				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
-				if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, VS);
 				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_CopyMap]);
-				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, PS);
 				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
@@ -163,9 +163,9 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 
 			{
 				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_GenerateMipmap]);
-				if (MS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, MS);
 				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_CopyMap]);
-				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, PS);
 				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}

@@ -31,6 +31,8 @@ namespace Common {
 				INT MaterialIndex;
 			};
 
+			using SubsetPair = std::pair<std::string, Subset>;
+
 		public:
 			Mesh() = default;
 			virtual ~Mesh() = default;
@@ -43,6 +45,8 @@ namespace Common {
 			__forceinline UINT IndexCount() const;
 			__forceinline UINT IndicesByteSize() const;
 			__forceinline const UINT* Indices() const;
+
+			__forceinline void Subsets(std::vector<SubsetPair>& subsets);
 
 		public:
 			static BOOL Load(

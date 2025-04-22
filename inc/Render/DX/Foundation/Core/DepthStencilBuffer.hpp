@@ -27,6 +27,7 @@ namespace Render::DX::Foundation::Core {
 
 	public:
 		__forceinline Resource::GpuResource* GetDepthStencilBuffer() const;
+		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE DepthStencilBufferSrv() const;
 		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilBufferDsv() const;
 
 	public:
@@ -43,14 +44,10 @@ namespace Render::DX::Foundation::Core {
 		InitData mInitData;
 
 		std::unique_ptr<Resource::GpuResource> mDepthStencilBuffer;
+		D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuSrv;
+		D3D12_GPU_DESCRIPTOR_HANDLE mhDepthStencilBufferGpuSrv;
 		D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuDsv;
 	};
 }
 
-Render::DX::Foundation::Resource::GpuResource* Render::DX::Foundation::Core::DepthStencilBuffer::GetDepthStencilBuffer() const {
-	return mDepthStencilBuffer.get();
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE Render::DX::Foundation::Core::DepthStencilBuffer::DepthStencilBufferDsv() const {
-	return mhDepthStencilBufferCpuDsv;
-}
+#include "DepthStencilBuffer.inl"

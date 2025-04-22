@@ -37,10 +37,14 @@ namespace ShadingConvention{
 	}
 
 	namespace DepthStencilBuffer {
+		static const FLOAT InvalidDepthValue = 1.f;
+		static const UINT InvalidStencilValue = 0;
+
 #ifdef _HLSL
-		typedef float DepthStencilBufferFormat;
+		typedef float DepthBufferFormat;
 #else
 		const DXGI_FORMAT DepthStencilBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		const DXGI_FORMAT DepthBufferFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 #endif
 	}
 
@@ -87,14 +91,6 @@ namespace ShadingConvention{
 	namespace MipmapGenerator {
 		static const UINT MaxMipLevel = 5;
 
-		namespace ThreadGroup {
-			namespace MeshShader {
-				enum {
-					ThreadsPerGroup = 2
-				};
-			}
-		}
-
 #ifndef MipmapGenerator_Default_RCSTRUCT
 #define MipmapGenerator_Default_RCSTRUCT {		\
 		DirectX::XMFLOAT2 gInvTexSize;			\
@@ -123,14 +119,6 @@ namespace ShadingConvention{
 	}
 
 	namespace EquirectangularConverter {
-		namespace ThreadGroup {
-			namespace MeshShader {
-				enum {
-					ThreadsPerGroup = 12
-				};
-			}
-		}
-
 #ifndef EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT
 #define EquirectangularConverter_ConvCubeToEquirect_RCSTRUCT {	\
 		UINT gMipLevel;											\
@@ -154,14 +142,6 @@ namespace ShadingConvention{
 	}
 
 	namespace GammaCorrection {
-		namespace ThreadGroup {
-			namespace MeshShader {
-				enum {
-					ThreadsPerGroup = 2
-				};
-			}
-		}
-
 #ifndef GammaCorrection_Default_RCSTRUCT
 #define GammaCorrection_Default_RCSTRUCT {	\
 		FLOAT gGamma;						\
@@ -185,14 +165,6 @@ namespace ShadingConvention{
 	}
 
 	namespace ToneMapping {
-		namespace ThreadGroup {
-			namespace MeshShader {
-				enum {
-					ThreadsPerGroup = 2
-				};
-			}
-		}
-
 	#ifndef ToneMapping_Default_RCSTRUCT
 	#define ToneMapping_Default_RCSTRUCT {	\
 		FLOAT gExposure;					\
@@ -220,6 +192,61 @@ namespace ShadingConvention{
 		}
 	}
 #endif
+	}
+
+	namespace GBuffer {
+		static const UINT MaxNumTextures = 32;
+		static const FLOAT InvalidVelocityValue = 1000.f;
+
+		namespace ThreadGroup {
+			namespace MeshShader {
+				enum {
+					ThreadsPerGroup = MESH_SHADER_MAX_PRIMITIVES
+				};
+			}
+		}
+
+#ifndef GBuffer_Default_RCSTRUCT
+#define GBuffer_Default_RCSTRUCT {	\
+		UINT gVertexCount;			\
+		UINT gIndexCount;			\
+	};
+#endif
+
+#ifdef _HLSL
+		typedef float4								AlbedoMapFormat;
+		typedef float4								NormalMapFormat;
+		typedef float4								RMSMapFormat;
+		typedef float2								VelocityMapFormat;
+		typedef float4								PositionMapFormat;
+
+#ifndef GBuffer_Default_RootConstants
+#define GBuffer_Default_RootConstants(reg) cbuffer cbRootConstant : register(reg) GBuffer_Default_RCSTRUCT
+#endif
+#else 
+		static const DXGI_FORMAT AlbedoMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		static const DXGI_FORMAT RMSMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		static const DXGI_FORMAT VelocityMapFormat = DXGI_FORMAT_R16G16_FLOAT;
+		static const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+		const FLOAT AlbedoMapClearValues[4] = { 0.f,  0.f, 0.f,  0.f };
+		const FLOAT NormalMapClearValues[4] = { 0.f,  0.f, 0.f, -1.f };
+		const FLOAT RMSMapClearValues[4] = { 0.5f, 0.f, 0.5f, 0.f };
+		const FLOAT VelocityMapClearValues[2] = { InvalidVelocityValue, InvalidVelocityValue };
+		const FLOAT PositionMapClearValues[4] = { 0.f, 0.f, 0.f, -1.f };
+
+		namespace RootConstant {
+			namespace Default {
+				struct Struct GBuffer_Default_RCSTRUCT
+					enum {
+					EC_VertexCount = 0,
+					EC_IndexCount,
+					Count
+				};
+			}
+		}
+#endif 
 	}
 }
 

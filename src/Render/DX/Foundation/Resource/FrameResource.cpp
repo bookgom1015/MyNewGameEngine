@@ -21,7 +21,8 @@ BOOL FrameResource::Initialize(
 		Core::Device* const pDevice, 
 		UINT numThreads,
 		UINT numPasses, 
-		UINT numObjects) {
+		UINT numObjects,
+		UINT numMaterials) {
 	mpLogFile = pLogFile;
 	mpDevice = pDevice;
 
@@ -30,7 +31,7 @@ BOOL FrameResource::Initialize(
 	mCmdAllocators.resize(mThreadCount);
 
 	CheckReturn(mpLogFile, CreateCommandListAllocators());
-	CheckReturn(mpLogFile, BuildConstantBuffres(numPasses, numObjects));
+	CheckReturn(mpLogFile, BuildConstantBuffres(numPasses, numObjects, numMaterials));
 
 	return TRUE;
 }
@@ -51,9 +52,11 @@ BOOL FrameResource::CreateCommandListAllocators() {
 
 BOOL FrameResource::BuildConstantBuffres(
 		UINT numPasses,
-		UINT numObjects) {
+		UINT numObjects,
+		UINT numMaterials) {
 	CheckReturn(mpLogFile, mMainPassCB.Initialize(mpLogFile, mpDevice, numPasses, TRUE));
 	CheckReturn(mpLogFile, mObjectCB.Initialize(mpLogFile, mpDevice, numObjects, TRUE));
+	CheckReturn(mpLogFile, mMaterialCB.Initialize(mpLogFile, mpDevice, numMaterials, TRUE));
 	CheckReturn(mpLogFile, mEquirectConvCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
 
 	return TRUE;

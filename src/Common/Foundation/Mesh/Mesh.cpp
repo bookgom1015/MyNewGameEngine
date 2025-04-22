@@ -31,12 +31,17 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 	std::stringstream filePathStream;
 	filePathStream << baseDir << fileName << '.' << extension;
 
+	mesh.mFilePath = filePathStream.str();
+
 	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filePathStream.str().c_str(), baseDir)) {
 		std::wstringstream wsstream;
 		wsstream << err.c_str();
 		ReturnFalse(pLogFile, wsstream.str());
 	}
 
+	UINT lastStartIndexLocation = 0;
+	UINT lastIndexCount = 0;
+	INT lastPrevMatId = 0;
 	for (const auto& shape : shapes) {
 		UINT startIndexLocation = static_cast<UINT>(mesh.mIndices.size());
 		UINT indexCount = 0;		
@@ -78,13 +83,27 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 					subset.Size = indexCount;
 					subset.MaterialIndex = prevMatId;
 					mesh.mSubsets[materials[prevMatId].name] = subset;
+
+					startIndexLocation = static_cast<UINT>(mesh.mIndices.size());
+					indexCount = 0;
+					prevMatId = currMatId;
 				}
-				startIndexLocation = static_cast<UINT>(mesh.mIndices.size());
-				indexCount = 0;
-				prevMatId = currMatId;
+				else {
+					prevMatId = currMatId;
+				}
 			}
+
+			lastStartIndexLocation = startIndexLocation;
+			lastIndexCount = indexCount;
+			lastPrevMatId = prevMatId;
 		}
 	}
+	
+	Subset subset;
+	subset.StartIndexLocation = lastStartIndexLocation;
+	subset.Size = lastIndexCount;
+	subset.MaterialIndex = lastPrevMatId;
+	mesh.mSubsets[materials[lastPrevMatId].name] = subset;
 	
 	for (const auto& material : materials) {
 		Material mat;
@@ -108,11 +127,7 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 
 		mesh.mMaterials.push_back(mat);
 	}
-
-	std::stringstream sstream;
-	sstream << baseDir << fileName;
-	mesh.mFilePath = sstream.str();
-
+	
 #ifdef _DEBUG
 	DebugInfo(mesh);
 #endif
@@ -130,7 +145,7 @@ Common::Foundation::Hash Mesh::Hash(const Mesh& mesh) {
 
 #ifdef _DEBUG
 void Mesh::DebugInfo(const Mesh& mesh) {
-	std::cout << "Mesh Info:" << std::endl;
+	std::cout << "Mesh:" << mesh.mFilePath << std::endl;
 	std::cout << "    Vertex count: " << mesh.mVertices.size() << std::endl;
 	std::cout << "    Index count: " << mesh.mIndices.size() << std::endl;
 	std::cout << "    Subset count: " << mesh.mSubsets.size() << std::endl;

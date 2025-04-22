@@ -36,8 +36,8 @@ namespace Common {
 	#ifndef VERTEX_IN
 	#define VERTEX_IN
 		struct VertexIn {
-			float3 PosL		: POSITION;
-			float3 Normal	: NORMAL;
+			float3 PosL		: POSITION_L;
+			float3 NormalL	: NORMAL_L;
 			float2 TexC		: TEXCOORD;
 		};
 	#endif

@@ -22,6 +22,7 @@
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "Render/DX/Shading/GammaCorrection.hpp"
 #include "Render/DX/Shading/ToneMapping.hpp"
+#include "Render/DX/Shading/GBuffer.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 using namespace Render::DX;
 using namespace DirectX;
@@ -49,12 +50,14 @@ DxRenderer::DxRenderer() {
 	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap::EnvironmentMapClass>();
 	mGammaCorrection = std::make_unique<Shading::GammaCorrection::GammaCorrectionClass>();
 	mToneMapping = std::make_unique<Shading::ToneMapping::ToneMappingClass>();
+	mGBuffer = std::make_unique<Shading::GBuffer::GBufferClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
 	mShadingObjectManager->AddShadingObject(mEnvironmentMap.get());
 	mShadingObjectManager->AddShadingObject(mGammaCorrection.get());
 	mShadingObjectManager->AddShadingObject(mToneMapping.get());
+	mShadingObjectManager->AddShadingObject(mGBuffer.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -151,27 +154,31 @@ BOOL DxRenderer::Draw() {
 }
 
 BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) {
-	auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
-	hash = Foundation::RenderItem::Hash(ritem.get());
-
+	Foundation::Resource::MeshGeometry* meshGeo;
 	{
 		CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
 			mCurrentFrameResource->CommandAllocator(0),
 			0));
 		const auto CmdList = mCommandObject->CommandList(0);
 
-		CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, pMesh, ritem->Geometry));
+		CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, pMesh, meshGeo));
 
 		CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
 	}
 
-	ritem->ObjCBIndex = static_cast<INT>(mRenderItems.size());
-	ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	ritem->IndexCount = ritem->Geometry->Subsets["SkySphere"].IndexCount;
-	ritem->StartIndexLocation = ritem->Geometry->Subsets["SkySphere"].StartIndexLocation;
-	ritem->BaseVertexLocation = ritem->Geometry->Subsets["SkySphere"].BaseVertexLocation;
+	for (const auto& subset : meshGeo->Subsets) {
+		auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
+		hash = Foundation::RenderItem::Hash(ritem.get());
 
-	mRenderItems.push_back(std::move(ritem));
+		ritem->ObjCBIndex = static_cast<INT>(mRenderItems.size());
+		ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		ritem->Geometry = meshGeo;
+		ritem->IndexCount = meshGeo->Subsets[subset.first].IndexCount;
+		ritem->StartIndexLocation = meshGeo->Subsets[subset.first].StartIndexLocation;
+		ritem->BaseVertexLocation = meshGeo->Subsets[subset.first].BaseVertexLocation;
+
+		mRenderItems.push_back(std::move(ritem));
+	}
 
 	return TRUE;
 }
@@ -416,17 +423,22 @@ BOOL DxRenderer::BuildMeshGeometry(
 	const auto Fence = mCommandObject->IncreaseFence();
 	mCurrentFrameResource->mFence = Fence;
 
-	Foundation::Resource::SubmeshGeometry submesh;
-	submesh.StartIndexLocation = 0;
-	submesh.BaseVertexLocation = 0;
-	submesh.IndexCount = pMesh->IndexCount();
-
 	geo->VertexByteStride = static_cast<UINT>(sizeof(Common::Foundation::Mesh::Vertex));
 	geo->VertexBufferByteSize = VerticesByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = IndicesByteSize;
-	geo->Subsets["geo"] = submesh;
 	geo->Fence = Fence;
+
+	std::vector<Common::Foundation::Mesh::Mesh::SubsetPair> subsets;
+	pMesh->Subsets(subsets);
+
+	for (const auto& subset : subsets) {
+		Foundation::Resource::SubmeshGeometry submesh;
+		submesh.StartIndexLocation = subset.second.StartIndexLocation;
+		submesh.BaseVertexLocation = 0;
+		submesh.IndexCount = subset.second.Size;
+		geo->Subsets[subset.first] = submesh;
+	}
 
 	pMeshGeo = geo.get();
 	mMeshGeometries[Hash] = std::move(geo);
@@ -491,6 +503,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mToneMapping->Initialize(mpLogFile, initData.get()));
 	}
+	// GBuffer
+	{
+		auto initData = Shading::GBuffer::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mGBuffer->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -499,7 +523,7 @@ BOOL DxRenderer::BuildFrameResources() {
 	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; i++) {
 		mFrameResources.push_back(std::make_unique<Foundation::Resource::FrameResource>());
 
-		CheckReturn(mpLogFile, mFrameResources.back()->Initialize(mpLogFile, mDevice.get(), static_cast<UINT>(mProcessor->Logical), 2, 32));
+		CheckReturn(mpLogFile, mFrameResources.back()->Initialize(mpLogFile, mDevice.get(), static_cast<UINT>(mProcessor->Logical), 2, 32, 32));
 	}
 
 	mCurrentFrameResourceIndex = 0;

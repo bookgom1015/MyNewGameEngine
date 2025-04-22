@@ -15,8 +15,10 @@ DepthStencilBuffer::DepthStencilBuffer() {
 
 DepthStencilBuffer::~DepthStencilBuffer() {}
 
-UINT DepthStencilBuffer::CbvSrvUavDescCount() const { return 0; }
+UINT DepthStencilBuffer::CbvSrvUavDescCount() const { return 1; }
+
 UINT DepthStencilBuffer::RtvDescCount() const { return 0; }
+
 UINT DepthStencilBuffer::DsvDescCount() const { return 1; }
 
 DepthStencilBuffer::InitDataPtr DepthStencilBuffer::MakeInitData() {
@@ -35,6 +37,8 @@ BOOL DepthStencilBuffer::Initialize(Common::Debug::LogFile* const pLogFile, void
 }
 
 BOOL DepthStencilBuffer::BuildDescriptors(DescriptorHeap* const pDescHeap) {
+	mhDepthStencilBufferCpuSrv = pDescHeap->CbvSrvUavCpuOffset(0);
+	mhDepthStencilBufferGpuSrv = pDescHeap->CbvSrvUavGpuOffset(0);
 	mhDepthStencilBufferCpuDsv = pDescHeap->DsvCpuOffset(0);
 
 	CheckReturn(mpLogFile, BuildDescriptors());
@@ -69,8 +73,8 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 
 	D3D12_CLEAR_VALUE optClear;
 	optClear.Format = ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat;
-	optClear.DepthStencil.Depth = 1.f;
-	optClear.DepthStencil.Stencil = 0;
+	optClear.DepthStencil.Depth = ShadingConvention::DepthStencilBuffer::InvalidDepthValue;
+	optClear.DepthStencil.Stencil = ShadingConvention::DepthStencilBuffer::InvalidStencilValue;
 
 	CheckReturn(mpLogFile, mDepthStencilBuffer->Initialize(
 		mInitData.Device,
@@ -86,8 +90,23 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 }
 
 BOOL DepthStencilBuffer::BuildDescriptors() {
-	// Create descriptor to mip level 0 of entire resource using the format of the resource.
-	Util::D3D12Util::CreateDepthStencilView(mInitData.Device, mDepthStencilBuffer->Resource(), nullptr, mhDepthStencilBufferCpuDsv);
+	// Srv
+	{
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Format = ShadingConvention::DepthStencilBuffer::DepthBufferFormat;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.ResourceMinLODClamp = 0.f;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mDepthStencilBuffer->Resource(), &srvDesc, mhDepthStencilBufferCpuSrv);
+	}
+	// Dsv
+	{
+		// Create descriptor to mip level 0 of entire resource using the format of the resource.
+		Util::D3D12Util::CreateDepthStencilView(mInitData.Device, mDepthStencilBuffer->Resource(), nullptr, mhDepthStencilBufferCpuDsv);
+	}
 
 	return TRUE;
 }

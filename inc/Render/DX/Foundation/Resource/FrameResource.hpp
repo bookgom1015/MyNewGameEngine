@@ -51,7 +51,8 @@ namespace Render::DX::Foundation {
 				Core::Device* const pDevice,
 				UINT numThreads,
 				UINT numPasses, 
-				UINT numObjects);
+				UINT numObjects,
+				UINT numMaterials);
 
 		public:
 			BOOL ResetCommandListAllocators();
@@ -65,7 +66,8 @@ namespace Render::DX::Foundation {
 			BOOL CreateCommandListAllocators();
 			BOOL BuildConstantBuffres(
 				UINT numPasses,
-				UINT numObjects);
+				UINT numObjects,
+				UINT numMaterials);
 
 		public:
 			UINT64 mFence = 0;
@@ -80,6 +82,7 @@ namespace Render::DX::Foundation {
 
 			UploadBuffer<ConstantBuffers::PassCB> mMainPassCB;
 			UploadBuffer<ConstantBuffers::ObjectCB> mObjectCB;
+			UploadBuffer<ConstantBuffers::MaterialCB> mMaterialCB;
 			UploadBuffer<ConstantBuffers::EquirectangularConverterCB> mEquirectConvCB;
 		};
 	}

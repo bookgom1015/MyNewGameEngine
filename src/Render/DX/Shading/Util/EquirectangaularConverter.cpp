@@ -111,11 +111,11 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ConvEquirectToCube].Get();
 		{
 			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvEquirectToCube]);
-			if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, VS);
 			const auto GS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::GS_ConvEquirectToCube]);
-			if (GS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, GS);
 			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvEquirectToCube]);
-			if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, PS);
 			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 			psoDesc.GS = { reinterpret_cast<BYTE*>(GS->GetBufferPointer()), GS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
@@ -137,9 +137,9 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ConvCubeToEquirect].Get();
 		{
 			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ConvCubeToEquirect]);
-			if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, VS);
 			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ConvCubeToEquirect]);
-			if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, PS);
 			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}

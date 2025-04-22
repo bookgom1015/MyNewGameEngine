@@ -86,8 +86,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 		slotRootParameter[RootSignature::DrawSkySphere::CB_Pass].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DrawSkySphere::CB_Object].InitAsConstantBufferView(1);
 		slotRootParameter[RootSignature::DrawSkySphere::RC_Consts].InitAsConstants(ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count, 2);
-		slotRootParameter[RootSignature::DrawSkySphere::SB_VertexBuffer].InitAsShaderResourceView(0);
-		slotRootParameter[RootSignature::DrawSkySphere::SB_IndexBuffer].InitAsShaderResourceView(1);
+		slotRootParameter[RootSignature::DrawSkySphere::SI_VertexBuffer].InitAsShaderResourceView(0);
+		slotRootParameter[RootSignature::DrawSkySphere::SI_IndexBuffer].InitAsShaderResourceView(1);
 		slotRootParameter[RootSignature::DrawSkySphere::SI_EnvCubeMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
@@ -117,9 +117,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
 			{
 				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_DrawSkySphere]);
-				if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, VS);
 				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
-				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, PS);
 				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
@@ -142,9 +142,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
 			{
 				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_DrawSkySphere]);
-				if (MS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, MS);
 				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
-				if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+				NullCheck(mpLogFile, PS);
 				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
@@ -232,8 +232,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
 
 	if (mInitData.MeshShaderSupported) {
-		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
-		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SB_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
+		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
+		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
 
 		ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct rc;	
 		rc.gVertexCount = sphere->Geometry->VertexBufferByteSize / sphere->Geometry->VertexByteStride;

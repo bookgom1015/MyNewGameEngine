@@ -34,8 +34,8 @@ namespace Render::DX::Shading {
 					CB_Pass = 0,
 					CB_Object,
 					RC_Consts,
-					SB_VertexBuffer,
-					SB_IndexBuffer,
+					SI_VertexBuffer,
+					SI_IndexBuffer,
 					SI_EnvCubeMap,
 					Count
 				};

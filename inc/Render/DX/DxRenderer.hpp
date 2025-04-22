@@ -41,6 +41,7 @@ namespace Render {
 			namespace EnvironmentMap { class EnvironmentMapClass; }
 			namespace GammaCorrection { class GammaCorrectionClass; }
 			namespace ToneMapping { class ToneMappingClass; }
+			namespace GBuffer { class GBufferClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -120,6 +121,7 @@ namespace Render {
 			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
 			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection;
 			std::unique_ptr<Shading::ToneMapping::ToneMappingClass> mToneMapping;
+			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

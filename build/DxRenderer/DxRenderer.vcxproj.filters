@@ -100,6 +100,9 @@
     <Filter Include="Shader Files\ToneMapping">
       <UniqueIdentifier>{df4acaad-346c-41e9-83bd-ea7e1d727223}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\GBuffer">
+      <UniqueIdentifier>{cf148ebb-6943-4d9b-a8e8-3787980a1f49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -222,6 +225,9 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\ToneMapping.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -326,6 +332,9 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\ToneMapping.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -403,6 +412,12 @@
     </None>
     <None Include="..\..\inc\Render\DX\Shading\ToneMapping.inl">
       <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Core\DepthStencilBuffer.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GBuffer.hlsl">
+      <Filter>Shader Files\GBuffer</Filter>
     </None>
   </ItemGroup>
 </Project>

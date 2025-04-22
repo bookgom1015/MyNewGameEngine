@@ -82,9 +82,9 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 		psoDesc.pRootSignature = mRootSignature.Get();
 		{
 			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GammaCorrect]);
-			if (VS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, VS);
 			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GammaCorrect]);
-			if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, PS);
 			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
@@ -102,9 +102,9 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 		psoDesc.pRootSignature = mRootSignature.Get();
 		{
 			const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_GammaCorrect]);
-			if (MS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, MS);
 			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GammaCorrect]);
-			if (PS == nullptr) ReturnFalse(mpLogFile, L"Failed to get shader");
+			NullCheck(mpLogFile, PS);
 			psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
