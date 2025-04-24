@@ -13,8 +13,6 @@ DepthStencilBuffer::DepthStencilBuffer() {
 	mhDepthStencilBufferCpuDsv = {};
 }
 
-DepthStencilBuffer::~DepthStencilBuffer() {}
-
 UINT DepthStencilBuffer::CbvSrvUavDescCount() const { return 1; }
 
 UINT DepthStencilBuffer::RtvDescCount() const { return 0; }
@@ -37,8 +35,8 @@ BOOL DepthStencilBuffer::Initialize(Common::Debug::LogFile* const pLogFile, void
 }
 
 BOOL DepthStencilBuffer::BuildDescriptors(DescriptorHeap* const pDescHeap) {
-	mhDepthStencilBufferCpuSrv = pDescHeap->CbvSrvUavCpuOffset(0);
-	mhDepthStencilBufferGpuSrv = pDescHeap->CbvSrvUavGpuOffset(0);
+	mhDepthStencilBufferCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhDepthStencilBufferGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
 	mhDepthStencilBufferCpuDsv = pDescHeap->DsvCpuOffset(0);
 
 	CheckReturn(mpLogFile, BuildDescriptors());
@@ -47,8 +45,8 @@ BOOL DepthStencilBuffer::BuildDescriptors(DescriptorHeap* const pDescHeap) {
 }
 
 BOOL DepthStencilBuffer::OnResize(UINT width, UINT height) {
-	mInitData.Width = width;
-	mInitData.Height = height;
+	mInitData.ClientWidth = width;
+	mInitData.ClientHeight = height;
 
 	CheckReturn(mpLogFile, BuildDepthStencilBuffer());
 	CheckReturn(mpLogFile, BuildDescriptors());
@@ -61,8 +59,8 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 	D3D12_RESOURCE_DESC depthStencilDesc;
 	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = mInitData.Width;
-	depthStencilDesc.Height = mInitData.Height;
+	depthStencilDesc.Width = mInitData.ClientWidth;
+	depthStencilDesc.Height = mInitData.ClientHeight;
 	depthStencilDesc.DepthOrArraySize = 1;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.Format = ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat;

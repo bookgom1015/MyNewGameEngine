@@ -20,9 +20,14 @@ ToneMapping::InitDataPtr ToneMapping::MakeInitData() {
 
 ToneMapping::ToneMappingClass::ToneMappingClass() {
 	mIntermediateMap = std::make_unique<Foundation::Resource::GpuResource>();
+	mIntermediateCopyMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
-UINT ToneMapping::ToneMappingClass::CbvSrvUavDescCount() const { return 1; }
+UINT ToneMapping::ToneMappingClass::CbvSrvUavDescCount() const { return 0 +
+	+ 1 // IntermediateMapSrv
+	+ 1 // IntermediateCopyMapSrv
+	; 
+}
 
 UINT ToneMapping::ToneMappingClass::RtvDescCount() const { return 1; }
 
@@ -128,6 +133,9 @@ BOOL ToneMapping::ToneMappingClass::BuildDescriptors(Foundation::Core::Descripto
 	mhIntermediateMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
 	mhIntermediateMapCpuRtv = pDescHeap->RtvCpuOffset(1);
 
+	mhIntermediateCopyMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhIntermediateCopyMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+
 	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
@@ -204,19 +212,37 @@ BOOL ToneMapping::ToneMappingClass::BuildResources() {
 	rscDesc.SampleDesc.Count = 1;
 	rscDesc.SampleDesc.Quality = 0;
 	rscDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	rscDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-	const CD3DX12_CLEAR_VALUE optClear(ShadingConvention::ToneMapping::IntermediateMapFormat, ShadingConvention::ToneMapping::IntermediateMapClearValues);
+	// IntermediateMap
+	{
+		rscDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-	CheckReturn(mpLogFile, mIntermediateMap->Initialize(
-		mInitData.Device,
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&rscDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		&optClear,
-		L"ToneMapping_IntermediateMap"
-	));
+		const CD3DX12_CLEAR_VALUE optClear(ShadingConvention::ToneMapping::IntermediateMapFormat, ShadingConvention::ToneMapping::IntermediateMapClearValues);
+
+		CheckReturn(mpLogFile, mIntermediateMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&rscDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			&optClear,
+			L"ToneMapping_IntermediateMap"
+		));
+	}
+	// IntermediateCopyMap
+	{
+		rscDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		CheckReturn(mpLogFile, mIntermediateCopyMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&rscDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			L"ToneMapping_IntermediateCopyMap"
+		));
+	}
 
 	return TRUE;
 }
@@ -233,6 +259,7 @@ BOOL ToneMapping::ToneMappingClass::BuildDescriptors() {
 		srvDesc.Format = ShadingConvention::ToneMapping::IntermediateMapFormat;
 
 		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mIntermediateMap->Resource(), &srvDesc, mhIntermediateMapCpuSrv);
+		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mIntermediateCopyMap->Resource(), &srvDesc, mhIntermediateCopyMapCpuSrv);
 	}
 	// Rtv
 	{

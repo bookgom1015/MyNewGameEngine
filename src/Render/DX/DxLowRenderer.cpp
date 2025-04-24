@@ -119,8 +119,8 @@ BOOL DxLowRenderer::CreateSwapChain() {
 	initData->Device = mDevice.get();
 	initData->CommandObject = mCommandObject.get();
 	initData->MainWnd = mpWindowsManager->MainWindowHandle();
-	initData->Width = mClientWidth;
-	initData->Height = mClientHeight;
+	initData->ClientWidth = mClientWidth;
+	initData->ClientHeight = mClientHeight;
 	initData->AllowTearing = mFactory->AllowTearing();
 
 	CheckReturn(mpLogFile, mSwapChain->Initialize(mpLogFile, initData.get()));
@@ -130,8 +130,8 @@ BOOL DxLowRenderer::CreateSwapChain() {
 
 BOOL DxLowRenderer::CreateDepthStencilBuffer() {
 	auto initData = Foundation::Core::DepthStencilBuffer::MakeInitData();
-	initData->Width = mClientWidth;
-	initData->Height = mClientHeight;
+	initData->ClientWidth = mClientWidth;
+	initData->ClientHeight = mClientHeight;
 	initData->Device = mDevice.get();
 
 	CheckReturn(mpLogFile, mDepthStencilBuffer->Initialize(mpLogFile, initData.get()));

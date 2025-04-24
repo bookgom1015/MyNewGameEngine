@@ -59,9 +59,25 @@ namespace Render::DX::Shading {
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 			virtual BOOL OnResize(UINT width, UINT height) override;
 
+		public:
+			BOOL DrawGBuffer(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				D3D12_VIEWPORT viewport,
+				D3D12_RECT scissorRect,
+				Foundation::Resource::GpuResource* const backBuffer,
+				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+				Foundation::Resource::GpuResource* const depthBuffer,
+				D3D12_CPU_DESCRIPTOR_HANDLE do_depthBuffer,
+				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
+
 		private:
 			BOOL BuildResources();
 			BOOL BuildDescriptors();
+
+			BOOL DrawRenderItems(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				ID3D12GraphicsCommandList6* const pCmdList,
+				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
 
 		private:
 			InitData mInitData;

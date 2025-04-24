@@ -53,6 +53,9 @@ namespace Render::DX::Shading {
 			__forceinline constexpr CD3DX12_GPU_DESCRIPTOR_HANDLE InterMediateMapSrv() const;
 			__forceinline constexpr CD3DX12_CPU_DESCRIPTOR_HANDLE InterMediateMapRtv() const;
 
+			__forceinline Foundation::Resource::GpuResource* InterMediateCopyMapResource();
+			__forceinline constexpr CD3DX12_GPU_DESCRIPTOR_HANDLE InterMediateCopyMapSrv() const;
+
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
 			virtual UINT RtvDescCount() const override;
@@ -92,6 +95,10 @@ namespace Render::DX::Shading {
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuSrv;
 			CD3DX12_GPU_DESCRIPTOR_HANDLE mhIntermediateMapGpuSrv;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuRtv;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mIntermediateCopyMap;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapCpuSrv;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapGpuSrv;
 		};
 
 		using InitDataPtr = std::unique_ptr<ToneMappingClass::InitData>;

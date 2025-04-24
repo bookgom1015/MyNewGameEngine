@@ -7,15 +7,15 @@ namespace Render::DX::Foundation::Core {
 	public:
 		struct InitData {
 			Device* Device;
-			UINT	Width;
-			UINT	Height;
+			UINT	ClientWidth;
+			UINT	ClientHeight;
 		};
 
 		using InitDataPtr = std::unique_ptr<InitData>;
 
 	public:
 		DepthStencilBuffer();
-		virtual ~DepthStencilBuffer();
+		virtual ~DepthStencilBuffer() = default;
 
 	public:
 		virtual UINT CbvSrvUavDescCount() const override;

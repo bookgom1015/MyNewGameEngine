@@ -4,6 +4,8 @@
 #include "Common/Util/HashUtil.hpp"
 #include "Render/DX/DxLowRenderer.hpp"
 
+#include <array>
+
 namespace Common::Foundation::Camera {
 	class GameCamera;
 }
@@ -42,6 +44,7 @@ namespace Render {
 			namespace GammaCorrection { class GammaCorrectionClass; }
 			namespace ToneMapping { class ToneMappingClass; }
 			namespace GBuffer { class GBufferClass; }
+			namespace BRDF { class BRDFClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -122,9 +125,11 @@ namespace Render {
 			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection;
 			std::unique_ptr<Shading::ToneMapping::ToneMappingClass> mToneMapping;
 			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer;
+			std::unique_ptr<Shading::BRDF::BRDFClass> mBRDF;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
+			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemRefs;
 		};
 	}
 }

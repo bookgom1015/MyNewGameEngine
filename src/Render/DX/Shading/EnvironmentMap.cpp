@@ -126,8 +126,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = HDR_FORMAT;
 			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
-			psoDesc.DepthStencilState.DepthEnable = FALSE;
-			psoDesc.DepthStencilState.StencilEnable = FALSE;
+			psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
 			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 				mInitData.Device,
@@ -151,8 +151,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = HDR_FORMAT;
 			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
-			psoDesc.DepthStencilState.DepthEnable = FALSE;
-			psoDesc.DepthStencilState.StencilEnable = FALSE;
+			psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
 			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
 				mInitData.Device,
@@ -204,10 +204,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 		D3D12_RECT scissorRect,
 		Foundation::Resource::GpuResource* const backBuffer,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
-		D3D12_CPU_DESCRIPTOR_HANDLE dio_depthStencil,
-		D3D12_GPU_VIRTUAL_ADDRESS cbPass,
-		D3D12_GPU_VIRTUAL_ADDRESS cbObject,
-		UINT objCBByteSize,
+		Foundation::Resource::GpuResource* const depthBuffer,
+		D3D12_CPU_DESCRIPTOR_HANDLE di_depthStencil,
 		Foundation::RenderItem* const sphere) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
@@ -223,12 +221,14 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 	CmdList->RSSetScissorRects(1, &scissorRect);
 
 	backBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	depthBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
-	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &dio_depthStencil);
+	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &di_depthStencil);
 
-	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, cbPass);
-	D3D12_GPU_VIRTUAL_ADDRESS currRitemObjCBAddress = cbObject + static_cast<UINT64>(sphere->ObjCBIndex) * static_cast<UINT64>(objCBByteSize);
-	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, currRitemObjCBAddress);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, pFrameResource->MainPassCBAddress());
+	
+	D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(sphere->ObjCBIndex);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, ritemObjCBAddress);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
 
 	if (mInitData.MeshShaderSupported) {

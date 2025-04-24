@@ -59,8 +59,6 @@ namespace Render::DX::Shading {
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) override;
 			virtual BOOL BuildPipelineStates() override;
-			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
-			virtual BOOL OnResize(UINT width, UINT height) override;
 
 		public:
 			BOOL ApplyCorrection(
@@ -69,11 +67,9 @@ namespace Render::DX::Shading {
 				const D3D12_RECT& scissorRect,
 				Foundation::Resource::GpuResource* const pBackBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+				Foundation::Resource::GpuResource* const pBackBufferCopy,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy,
 				FLOAT gamma);
-
-		private:
-			BOOL BuildResources();
-			BOOL BuildDescriptors();
 
 		private:
 			InitData mInitData;
@@ -82,11 +78,6 @@ namespace Render::DX::Shading {
 
 			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mCopiedBackBuffer;
-
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCopiedBackBufferCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhCopiedBackBufferGpuSrv;
 		};
 
 		using InitDataPtr = std::unique_ptr<GammaCorrectionClass::InitData>;

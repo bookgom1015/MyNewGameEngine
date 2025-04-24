@@ -24,8 +24,25 @@ D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::Objec
 	return mObjectCB.Resource()->GetGPUVirtualAddress();
 }
 
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::ObjectCBAddress(UINT index) const {
+	return mObjectCB.Resource()->GetGPUVirtualAddress() + static_cast<UINT64>(index) * static_cast<UINT64>(ObjectCBByteSize());
+}
+
 void Render::DX::Foundation::Resource::FrameResource::CopyObjecCB(INT elementIndex, const ConstantBuffers::ObjectCB& data) {
 	mObjectCB.CopyData(elementIndex, data);
+}
+
+// MaterialCB
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::MaterialCBAddress() const {
+	return mMaterialCB.Resource()->GetGPUVirtualAddress();
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::MaterialCBAddress(UINT index) const {
+	return mMaterialCB.Resource()->GetGPUVirtualAddress() + static_cast<UINT64>(index) * static_cast<UINT64>(MaterialCBByteSize());
+}
+
+void Render::DX::Foundation::Resource::FrameResource::CopyMaterialCB(INT elementIndex, const ConstantBuffers::MaterialCB& data) {
+	mMaterialCB.CopyData(elementIndex, data);
 }
 
 // EquirectangularConverterCB

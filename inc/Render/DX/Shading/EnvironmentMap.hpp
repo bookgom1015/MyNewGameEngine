@@ -90,10 +90,8 @@ namespace Render::DX::Shading {
 				D3D12_RECT scissorRect,
 				Foundation::Resource::GpuResource* const backBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+				Foundation::Resource::GpuResource* const depthBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE dio_depthStencil,
-				D3D12_GPU_VIRTUAL_ADDRESS cbPass,
-				D3D12_GPU_VIRTUAL_ADDRESS cbObject,
-				UINT objCBByteSize,
 				Foundation::RenderItem* const sphere);
 
 		private:

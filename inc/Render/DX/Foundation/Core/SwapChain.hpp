@@ -15,8 +15,8 @@ namespace Render::DX::Foundation::Core {
 			Device* Device;
 			CommandObject* CommandObject;
 			HWND		   MainWnd;
-			UINT		   Width;
-			UINT		   Height;
+			UINT		   ClientWidth;
+			UINT		   ClientHeight;
 			BOOL		   AllowTearing;
 		};
 
@@ -38,6 +38,9 @@ namespace Render::DX::Foundation::Core {
 		__forceinline Resource::GpuResource* BackBuffer() const;
 		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE BackBufferRtv() const;
 
+		__forceinline Resource::GpuResource* BackBufferCopy() const;
+		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE BackBufferCopySrv() const;
+
 		__forceinline constexpr D3D12_VIEWPORT ScreenViewport() const;
 		__forceinline constexpr D3D12_RECT ScissorRect() const;
 
@@ -55,6 +58,7 @@ namespace Render::DX::Foundation::Core {
 	private:
 		BOOL CreateSwapChain();
 		BOOL BuildSwapChainBuffers();
+		BOOL BuildResources();
 		BOOL BuildDescriptors();
 
 	private:
@@ -65,6 +69,10 @@ namespace Render::DX::Foundation::Core {
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuSrvs;
 		std::array<D3D12_GPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferGpuSrvs;
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuRtvs;
+
+		std::unique_ptr<Resource::GpuResource> mBackBufferCopy;
+		D3D12_CPU_DESCRIPTOR_HANDLE mhBackBufferCopyCpuSrv;
+		D3D12_GPU_DESCRIPTOR_HANDLE mhBackBufferCopyGpuSrv;
 
 		UINT mCurrBackBuffer = 0;
 

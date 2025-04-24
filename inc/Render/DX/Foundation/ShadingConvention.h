@@ -196,7 +196,10 @@ namespace ShadingConvention{
 
 	namespace GBuffer {
 		static const UINT MaxNumTextures = 32;
+
+		static const FLOAT InvalidNormalWValue = -1.f;
 		static const FLOAT InvalidVelocityValue = 1000.f;
+		static const FLOAT InvalidPositionWValue = -1.f;
 
 		namespace ThreadGroup {
 			namespace MeshShader {
@@ -231,10 +234,10 @@ namespace ShadingConvention{
 		static const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		const FLOAT AlbedoMapClearValues[4] = { 0.f,  0.f, 0.f,  0.f };
-		const FLOAT NormalMapClearValues[4] = { 0.f,  0.f, 0.f, -1.f };
+		const FLOAT NormalMapClearValues[4] = { 0.f,  0.f, 0.f, InvalidNormalWValue };
 		const FLOAT RMSMapClearValues[4] = { 0.5f, 0.f, 0.5f, 0.f };
 		const FLOAT VelocityMapClearValues[2] = { InvalidVelocityValue, InvalidVelocityValue };
-		const FLOAT PositionMapClearValues[4] = { 0.f, 0.f, 0.f, -1.f };
+		const FLOAT PositionMapClearValues[4] = { 0.f, 0.f, 0.f, InvalidPositionWValue };
 
 		namespace RootConstant {
 			namespace Default {

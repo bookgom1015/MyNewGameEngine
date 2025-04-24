@@ -12,6 +12,10 @@ UINT FrameResource::ObjectCBByteSize() const {
 	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ObjectCB));
 }
 
+UINT FrameResource::MaterialCBByteSize() const {
+	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::MaterialCB));
+}
+
 UINT FrameResource::EquirectConvCBByteSize() const {
 	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::EquirectangularConverterCB));
 }

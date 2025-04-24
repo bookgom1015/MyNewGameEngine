@@ -49,7 +49,7 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 
 		for (const auto& index : shape.mesh.indices) {
 			Vertex vertex = {};
-			
+
 			vertex.Position = {
 				attrib.vertices[3 * index.vertex_index + 0],
 				attrib.vertices[3 * index.vertex_index + 1],
@@ -62,8 +62,8 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 				attrib.normals[3 * index.normal_index + 2]
 			};
 
-			vertex.TexCoord = { 
-				attrib.texcoords[2 * index.texcoord_index + 0], 
+			vertex.TexCoord = {
+				attrib.texcoords[2 * index.texcoord_index + 0],
 				attrib.texcoords[2 * index.texcoord_index + 1]
 			};
 
@@ -98,22 +98,22 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 			lastPrevMatId = prevMatId;
 		}
 	}
-	
+
 	Subset subset;
 	subset.StartIndexLocation = lastStartIndexLocation;
 	subset.Size = lastIndexCount;
 	subset.MaterialIndex = lastPrevMatId;
 	mesh.mSubsets[materials[lastPrevMatId].name] = subset;
-	
+
 	for (const auto& material : materials) {
 		Material mat;
 		mat.Name = material.name;
 		mat.Albedo = XMFLOAT4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.f);
-		
+
 		if (!material.diffuse_texname.empty()) mat.DiffuseMap = material.diffuse_texname;
 
 		if (!material.normal_texname.empty()) mat.NormalMap = material.normal_texname;
-		
+
 		if (material.alpha_texname.empty()) mat.Alpha = material.dissolve;
 		else mat.AlphaMap = material.alpha_texname;
 
@@ -127,7 +127,7 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 
 		mesh.mMaterials.push_back(mat);
 	}
-	
+
 #ifdef _DEBUG
 	DebugInfo(mesh);
 #endif
@@ -135,7 +135,7 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 	return TRUE;
 }
 
-BOOL Mesh::LoadFbx(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName,	LPCSTR baseDir, LPCSTR extension) {
+BOOL Mesh::LoadFbx(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fileName, LPCSTR baseDir, LPCSTR extension) {
 	return TRUE;
 }
 
@@ -145,6 +145,10 @@ Common::Foundation::Hash Mesh::Hash(const Mesh& mesh) {
 
 #ifdef _DEBUG
 void Mesh::DebugInfo(const Mesh& mesh) {
+	auto FilePathToString = [](const std::string& filePath) -> LPCSTR {
+		return filePath.empty() ? "None" : filePath.c_str();
+	};
+
 	std::cout << "Mesh:" << mesh.mFilePath << std::endl;
 	std::cout << "    Vertex count: " << mesh.mVertices.size() << std::endl;
 	std::cout << "    Index count: " << mesh.mIndices.size() << std::endl;
@@ -158,16 +162,16 @@ void Mesh::DebugInfo(const Mesh& mesh) {
 	std::cout << "    Material count: " << mesh.mMaterials.size() << std::endl;
 	for (const auto& material : mesh.mMaterials) {
 		std::cout << "        Material: " << material.Name << std::endl;
-		std::cout << "            Diffuse map: " << material.DiffuseMap << std::endl;
+		std::cout << "            Diffuse map: " << FilePathToString(material.DiffuseMap) << std::endl;
 		std::cout << "            Albedo: " << material.Albedo.x << ", " << material.Albedo.y << ", " << material.Albedo.z << ", " << material.Albedo.w << std::endl;
-		std::cout << "            Normal map: " << material.NormalMap << std::endl;
-		std::cout << "            Alpha map: " << material.AlphaMap << std::endl;
+		std::cout << "            Normal map: " << FilePathToString(material.NormalMap) << std::endl;
+		std::cout << "            Alpha map: " << FilePathToString(material.AlphaMap) << std::endl;
 		std::cout << "            Alpha: " << material.Alpha << std::endl;
-		std::cout << "            Roughness map: " << material.RoughnessMap << std::endl;
+		std::cout << "            Roughness map: " << FilePathToString(material.RoughnessMap) << std::endl;
 		std::cout << "            Roughness: " << material.Roughness << std::endl;
-		std::cout << "            Metalness map: " << material.MetalnessMap << std::endl;
+		std::cout << "            Metalness map: " << FilePathToString(material.MetalnessMap) << std::endl;
 		std::cout << "            Metalness: " << material.Metalness << std::endl;
-		std::cout << "            Specular map: " << material.SpecularMap << std::endl;
+		std::cout << "            Specular map: " << FilePathToString(material.SpecularMap) << std::endl;
 		std::cout << "            Specular: " << material.Specular.x << ", " << material.Specular.y << ", " << material.Specular.z << std::endl;
 	}
 

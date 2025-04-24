@@ -1,6 +1,8 @@
 #include "Render/DX/Shading/GBuffer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Render/DX/Foundation/RenderItem.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
+#include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
@@ -106,7 +108,6 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 		psoDesc.RTVFormats[2] = ShadingConvention::GBuffer::RMSMapFormat;
 		psoDesc.RTVFormats[3] = ShadingConvention::GBuffer::VelocityMapFormat;
 		psoDesc.RTVFormats[4] = ShadingConvention::GBuffer::PositionMapFormat;
-		psoDesc.DSVFormat = ShadingConvention::DepthStencilBuffer::DepthBufferFormat;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
@@ -150,6 +151,66 @@ BOOL GBuffer::GBufferClass::OnResize(UINT width, UINT height) {
 
 	CheckReturn(mpLogFile, BuildResources());
 	CheckReturn(mpLogFile, BuildDescriptors());
+
+	return TRUE;
+}
+
+BOOL GBuffer::GBufferClass::DrawGBuffer(
+		Foundation::Resource::FrameResource* const pFrameResource,
+		D3D12_VIEWPORT viewport,
+		D3D12_RECT scissorRect,
+		Foundation::Resource::GpuResource* const backBuffer,
+		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+		Foundation::Resource::GpuResource* const depthBuffer,
+		D3D12_CPU_DESCRIPTOR_HANDLE do_depthBuffer,
+		const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0,
+		mPipelineState.Get()));
+
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+
+	{
+		CmdList->SetGraphicsRootSignature(mRootSignature.Get());
+
+		CmdList->RSSetViewports(1, &viewport);
+		CmdList->RSSetScissorRects(1, &scissorRect);
+
+		mAlbedoMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mRMSMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mVelocityMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		depthBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+
+		CmdList->ClearRenderTargetView(mhAlbedoMapCpuRtv, ShadingConvention::GBuffer::AlbedoMapClearValues, 0, nullptr);
+		CmdList->ClearRenderTargetView(mhNormalMapCpuRtv, ShadingConvention::GBuffer::NormalMapClearValues, 0, nullptr);
+		CmdList->ClearRenderTargetView(mhRMSMapCpuRtv, ShadingConvention::GBuffer::RMSMapClearValues, 0, nullptr);
+		CmdList->ClearRenderTargetView(mhVelocityMapCpuRtv, ShadingConvention::GBuffer::VelocityMapClearValues, 0, nullptr);
+		CmdList->ClearRenderTargetView(mhPositionMapCpuRtv, ShadingConvention::GBuffer::PositionMapClearValues, 0, nullptr);
+		CmdList->ClearDepthStencilView(
+			do_depthBuffer, 
+			D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 
+			ShadingConvention::DepthStencilBuffer::InvalidDepthValue, 
+			ShadingConvention::DepthStencilBuffer::InvalidStencilValue,
+			0, nullptr);
+
+		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, NumRenderTargtes> renderTargets = {
+			mhAlbedoMapCpuRtv,
+			mhNormalMapCpuRtv,
+			mhRMSMapCpuRtv,
+			mhVelocityMapCpuRtv,
+			mhPositionMapCpuRtv
+		};
+
+		CmdList->OMSetRenderTargets(static_cast<UINT>(renderTargets.size()), renderTargets.data(), TRUE, &do_depthBuffer);
+
+		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems));
+	}
+
+	mInitData.CommandObject->ExecuteCommandList(0);
 
 	return TRUE;
 }
@@ -313,6 +374,43 @@ BOOL GBuffer::GBufferClass::BuildDescriptors() {
 		const auto VelocityMap = mVelocityMap->Resource();
 		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, VelocityMap, &srvDesc, mhVelocityMapCpuSrv);
 		Foundation::Util::D3D12Util::CreateRenderTargetView(mInitData.Device, VelocityMap, &rtvDesc, mhVelocityMapCpuRtv);
+	}
+
+	return TRUE;
+}
+
+BOOL GBuffer::GBufferClass::DrawRenderItems(
+		Foundation::Resource::FrameResource* const pFrameResource,
+		ID3D12GraphicsCommandList6* const pCmdList,
+		const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
+	pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Pass, pFrameResource->MainPassCBAddress());
+
+	for (size_t i = 0, end = ritems.size(); i < end; ++i) {
+		const auto ri = ritems[i];
+
+		const D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(ri->ObjCBIndex);
+		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Object, ritemObjCBAddress);
+
+		//if (ri->Material != nullptr) {
+		//	const D3D12_GPU_VIRTUAL_ADDRESS currRitemMatCBAddress = cb_mat + static_cast<UINT64>(ri->Material->MatCBIndex) * static_cast<UINT64>(matCBByteSize);
+		//	CmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::ECB_Mat, currRitemMatCBAddress);
+		//}
+
+		if (false) {
+			ShadingConvention::GBuffer::RootConstant::Default::Struct rc;
+
+			std::array<std::uint32_t, ShadingConvention::GBuffer::RootConstant::Default::Count> consts;
+			std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::GBuffer::RootConstant::Default::Struct));
+
+			pCmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::GBuffer::RootConstant::Default::Count, consts.data(), 0);
+		}
+		else {
+			pCmdList->IASetVertexBuffers(0, 1, &ri->Geometry->VertexBufferView());
+			pCmdList->IASetIndexBuffer(&ri->Geometry->IndexBufferView());
+			pCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+
+			pCmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
+		}
 	}
 
 	return TRUE;

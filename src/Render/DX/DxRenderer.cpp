@@ -23,13 +23,11 @@
 #include "Render/DX/Shading/GammaCorrection.hpp"
 #include "Render/DX/Shading/ToneMapping.hpp"
 #include "Render/DX/Shading/GBuffer.hpp"
+#include "Render/DX/Shading/BRDF.hpp"
 #include "FrankLuna/GeometryGenerator.h"
+
 using namespace Render::DX;
 using namespace DirectX;
-
-namespace {
-	Foundation::RenderItem* gSkySphereRitem;
-}
 
 extern "C" RendererAPI Common::Render::Renderer* Render::CreateRenderer() {
 	return new DxRenderer();
@@ -51,6 +49,7 @@ DxRenderer::DxRenderer() {
 	mGammaCorrection = std::make_unique<Shading::GammaCorrection::GammaCorrectionClass>();
 	mToneMapping = std::make_unique<Shading::ToneMapping::ToneMappingClass>();
 	mGBuffer = std::make_unique<Shading::GBuffer::GBufferClass>();
+	mBRDF = std::make_unique<Shading::BRDF::BRDFClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -58,6 +57,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mGammaCorrection.get());
 	mShadingObjectManager->AddShadingObject(mToneMapping.get());
 	mShadingObjectManager->AddShadingObject(mGBuffer.get());
+	mShadingObjectManager->AddShadingObject(mBRDF.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -120,25 +120,28 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 BOOL DxRenderer::Draw() {
 	CheckReturn(mpLogFile, mCurrentFrameResource->ResetCommandListAllocators());
 
+	const auto& opaques = mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque];
+	const auto skySphere = mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Sky].front();
+
+	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
+		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
+		mDepthStencilBuffer->DepthStencilBufferDsv(),
+		opaques));
+
 	CheckReturn(mpLogFile, mEnvironmentMap->DrawSkySphere(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mToneMapping->InterMediateMapResource(),
 		mToneMapping->InterMediateMapRtv(),
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
-		mCurrentFrameResource->MainPassCBAddress(),
-		mCurrentFrameResource->ObjectCBAddress(),
-		mCurrentFrameResource->ObjectCBByteSize(),
-		gSkySphereRitem));
-
-	CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
-		mCurrentFrameResource,
-		mSwapChain->ScreenViewport(),
-		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mpArgumentSet->GammaCorrection.Gamma));
+		skySphere));
 
 	CheckReturn(mpLogFile, mToneMapping->Resolve(
 		mCurrentFrameResource,
@@ -147,6 +150,16 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->BackBuffer(),
 		mSwapChain->BackBufferRtv(),
 		mpArgumentSet->ToneMapping.Exposure));
+
+	CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
+		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mSwapChain->BackBuffer(),
+		mSwapChain->BackBufferRtv(),
+		mSwapChain->BackBufferCopy(),
+		mSwapChain->BackBufferCopySrv(),
+		mpArgumentSet->GammaCorrection.Gamma));
 	
 	CheckReturn(mpLogFile, PresentAndSignal());
 
@@ -177,6 +190,7 @@ BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Fo
 		ritem->StartIndexLocation = meshGeo->Subsets[subset.first].StartIndexLocation;
 		ritem->BaseVertexLocation = meshGeo->Subsets[subset.first].BaseVertexLocation;
 
+		mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque].push_back(ritem.get());
 		mRenderItems.push_back(std::move(ritem));
 	}
 
@@ -425,7 +439,7 @@ BOOL DxRenderer::BuildMeshGeometry(
 
 	geo->VertexByteStride = static_cast<UINT>(sizeof(Common::Foundation::Mesh::Vertex));
 	geo->VertexBufferByteSize = VerticesByteSize;
-	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexFormat = DXGI_FORMAT_R32_UINT;
 	geo->IndexBufferByteSize = IndicesByteSize;
 	geo->Fence = Fence;
 
@@ -515,6 +529,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mGBuffer->Initialize(mpLogFile, initData.get()));
 	}
+	// BRDF
+	{
+		auto initData = Shading::BRDF::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mBRDF->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -575,7 +601,7 @@ BOOL DxRenderer::BuildSkySphere() {
 	ritem->BaseVertexLocation = ritem->Geometry->Subsets["SkySphere"].BaseVertexLocation;
 	XMStoreFloat4x4(&ritem->World, XMMatrixScaling(1000.f, 1000.f, 1000.f));
 
-	gSkySphereRitem = ritem.get();
+	mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Sky].push_back(ritem.get());
 	mRenderItems.push_back(std::move(ritem));
 
 	return TRUE;

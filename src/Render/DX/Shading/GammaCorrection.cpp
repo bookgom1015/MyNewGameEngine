@@ -18,11 +18,9 @@ GammaCorrection::InitDataPtr GammaCorrection::MakeInitData() {
 	return std::unique_ptr<GammaCorrectionClass::InitData>(new GammaCorrectionClass::InitData());
 }
 
-GammaCorrection::GammaCorrectionClass::GammaCorrectionClass() {
-	mCopiedBackBuffer = std::make_unique<Foundation::Resource::GpuResource>();
-}
+GammaCorrection::GammaCorrectionClass::GammaCorrectionClass() {}
 
-UINT GammaCorrection::GammaCorrectionClass::CbvSrvUavDescCount() const { return 1; }
+UINT GammaCorrection::GammaCorrectionClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT GammaCorrection::GammaCorrectionClass::RtvDescCount() const { return 0; }
 
@@ -33,8 +31,6 @@ BOOL GammaCorrection::GammaCorrectionClass::Initialize(Common::Debug::LogFile* c
 
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
-
-	CheckReturn(mpLogFile, BuildResources());
 
 	return TRUE;
 }
@@ -88,7 +84,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
-		psoDesc.RTVFormats[0] = HDR_FORMAT;
+		psoDesc.RTVFormats[0] = SDR_FORMAT;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
@@ -108,7 +104,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 			psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
-		psoDesc.RTVFormats[0] = HDR_FORMAT;
+		psoDesc.RTVFormats[0] = SDR_FORMAT;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
 			mInitData.Device,
@@ -120,31 +116,14 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 	return TRUE;
 }
 
-BOOL GammaCorrection::GammaCorrectionClass::BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) {
-	mhCopiedBackBufferCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
-	mhCopiedBackBufferGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
-
-	CheckReturn(mpLogFile, BuildDescriptors());
-
-	return TRUE;
-}
-
-BOOL GammaCorrection::GammaCorrectionClass::OnResize(UINT width, UINT height) {
-	mInitData.ClientWidth = width;
-	mInitData.ClientHeight = height;
-
-	CheckReturn(mpLogFile, BuildResources());
-	CheckReturn(mpLogFile, BuildDescriptors());
-
-	return TRUE;
-}
-
 BOOL GammaCorrection::GammaCorrectionClass::ApplyCorrection(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		const D3D12_VIEWPORT& viewport,
 		const D3D12_RECT& scissorRect,
 		Foundation::Resource::GpuResource* const pBackBuffer,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+		Foundation::Resource::GpuResource* const pBackBufferCopy,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy,
 		FLOAT gamma) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
@@ -160,12 +139,12 @@ BOOL GammaCorrection::GammaCorrectionClass::ApplyCorrection(
 	CmdList->RSSetScissorRects(1, &scissorRect);
 
 	pBackBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_COPY_SOURCE);
-	mCopiedBackBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_COPY_DEST);
+	pBackBufferCopy->Transite(CmdList, D3D12_RESOURCE_STATE_COPY_DEST);
 
-	CmdList->CopyResource(mCopiedBackBuffer->Resource(), pBackBuffer->Resource());
+	CmdList->CopyResource(pBackBufferCopy->Resource(), pBackBuffer->Resource());
 
 	pBackBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	mCopiedBackBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	pBackBufferCopy->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
 
@@ -176,7 +155,7 @@ BOOL GammaCorrection::GammaCorrectionClass::ApplyCorrection(
 	std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::GammaCorrection::RootConstant::Default::Struct));
 
 	CmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::GammaCorrection::RootConstant::Default::Count, consts.data(), 0);
-	CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_BackBuffer, mhCopiedBackBufferGpuSrv);
+	CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_BackBuffer, si_backBufferCopy);
 
 	if (mInitData.MeshShaderSupported) {
 		CmdList->DispatchMesh(1, 1, 1);
@@ -189,46 +168,6 @@ BOOL GammaCorrection::GammaCorrectionClass::ApplyCorrection(
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
-
-	return TRUE;
-}
-
-BOOL GammaCorrection::GammaCorrectionClass::BuildResources() {
-	D3D12_RESOURCE_DESC rscDesc = {};
-	rscDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	rscDesc.Alignment = 0;
-	rscDesc.Width = mInitData.ClientWidth;
-	rscDesc.Height = mInitData.ClientHeight;
-	rscDesc.Format = HDR_FORMAT;
-	rscDesc.DepthOrArraySize = 1;
-	rscDesc.MipLevels = 1;
-	rscDesc.SampleDesc.Count = 1;
-	rscDesc.SampleDesc.Quality = 0;
-	rscDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	rscDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-	CheckReturn(mpLogFile, mCopiedBackBuffer->Initialize(
-		mInitData.Device,
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&rscDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		nullptr,
-		L"GammaCorrection_CopiedBackBuffer"));
-
-	return TRUE;
-}
-
-BOOL GammaCorrection::GammaCorrectionClass::BuildDescriptors() {
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.ResourceMinLODClamp = 0.f;
-	srvDesc.Texture2D.MipLevels = 1;
-	srvDesc.Format = HDR_FORMAT;
-
-	Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mCopiedBackBuffer->Resource(), &srvDesc, mhCopiedBackBufferCpuSrv);
 
 	return TRUE;
 }

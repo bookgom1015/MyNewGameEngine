@@ -11,17 +11,19 @@ using namespace Render::DX::Foundation::Core;
 
 SwapChain::SwapChain() {
 	mInitData = {};
+
 	for (UINT i = 0; i < SwapChainBufferCount; ++i)
 		mSwapChainBuffers[i] = std::make_unique<Resource::GpuResource>();
-	mhBackBufferCpuSrvs = {};
-	mhBackBufferGpuSrvs = {};
-	mhBackBufferCpuRtvs = {};
+
+	mBackBufferCopy = std::make_unique<Resource::GpuResource>();
 }
 
 SwapChain::~SwapChain() {}
 
-UINT SwapChain::CbvSrvUavDescCount() const { return SwapChainBufferCount; }
+UINT SwapChain::CbvSrvUavDescCount() const { return SwapChainBufferCount + 1; }
+
 UINT SwapChain::RtvDescCount() const { return SwapChainBufferCount; }
+
 UINT SwapChain::DsvDescCount() const { return 0; }
 
 SwapChain::InitDataPtr SwapChain::MakeInitData() {
@@ -34,11 +36,12 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
-	mScreenViewport = { 0, 0, static_cast<FLOAT>(mInitData.Width), static_cast<FLOAT>(mInitData.Height), 0.f, 1.f };
-	mScissorRect = { 0,0,static_cast<LONG>(mInitData.Width), static_cast<LONG>(mInitData.Height) };
+	mScreenViewport = { 0, 0, static_cast<FLOAT>(mInitData.ClientWidth), static_cast<FLOAT>(mInitData.ClientHeight), 0.f, 1.f };
+	mScissorRect = { 0,0,static_cast<LONG>(mInitData.ClientWidth), static_cast<LONG>(mInitData.ClientHeight) };
 
 	CheckReturn(mpLogFile, CreateSwapChain());
 	CheckReturn(mpLogFile, BuildSwapChainBuffers());
+	CheckReturn(mpLogFile, BuildResources());
 
 	return TRUE;
 }
@@ -50,6 +53,9 @@ BOOL SwapChain::BuildDescriptors(DescriptorHeap* const pDescHeap) {
 		mhBackBufferGpuSrvs[i] = pDescHeap->CbvSrvUavGpuOffset(offset);
 		mhBackBufferCpuRtvs[i] = pDescHeap->RtvCpuOffset(offset);
 	}
+
+	mhBackBufferCopyCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhBackBufferCopyGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
 
 	CheckReturn(mpLogFile, BuildDescriptors());
 
@@ -82,8 +88,8 @@ BOOL SwapChain::CreateSwapChain() {
 	mSwapChain.Reset();
 
 	DXGI_SWAP_CHAIN_DESC sd;
-	sd.BufferDesc.Width = mInitData.Width;
-	sd.BufferDesc.Height = mInitData.Height;
+	sd.BufferDesc.Width = mInitData.ClientWidth;
+	sd.BufferDesc.Height = mInitData.ClientHeight;
 	sd.BufferDesc.RefreshRate.Numerator = 0;
 	sd.BufferDesc.RefreshRate.Denominator = 0;
 	sd.BufferDesc.Format = ShadingConvention::SwapChain::BackBufferFormat;
@@ -112,8 +118,8 @@ BOOL SwapChain::BuildSwapChainBuffers() {
 	// Resize the swap chain.
 	CheckHRESULT(mpLogFile, mSwapChain->ResizeBuffers(
 		SwapChainBufferCount,
-		mInitData.Width,
-		mInitData.Height,
+		mInitData.ClientWidth,
+		mInitData.ClientHeight,
 		ShadingConvention::SwapChain::BackBufferFormat,
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | (mInitData.AllowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0)));
 
@@ -123,6 +129,32 @@ BOOL SwapChain::BuildSwapChainBuffers() {
 	}
 
 	mCurrBackBuffer = 0;
+
+	return TRUE;
+}
+
+BOOL SwapChain::BuildResources() {
+	D3D12_RESOURCE_DESC rscDesc = {};
+	rscDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	rscDesc.Alignment = 0;
+	rscDesc.Width = mInitData.ClientWidth;
+	rscDesc.Height = mInitData.ClientHeight;
+	rscDesc.Format = SDR_FORMAT;
+	rscDesc.DepthOrArraySize = 1;
+	rscDesc.MipLevels = 1;
+	rscDesc.SampleDesc.Count = 1;
+	rscDesc.SampleDesc.Quality = 0;
+	rscDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	rscDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	CheckReturn(mpLogFile, mBackBufferCopy->Initialize(
+		mInitData.Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&rscDesc,
+		D3D12_RESOURCE_STATE_COMMON,
+		nullptr,
+		L"SwapChain_BackBufferCopy"));
 
 	return TRUE;
 }
@@ -142,17 +174,20 @@ BOOL SwapChain::BuildDescriptors() {
 		Util::D3D12Util::CreateRenderTargetView(mInitData.Device, backBuffer, nullptr, mhBackBufferCpuRtvs[i]);
 	}
 
+	Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mBackBufferCopy->Resource(), &srvDesc, mhBackBufferCopyCpuSrv);
+
 	return TRUE;
 }
 
 BOOL SwapChain::OnResize(UINT width, UINT height) {
-	mInitData.Width = width;
-	mInitData.Height = height;
+	mInitData.ClientWidth = width;
+	mInitData.ClientHeight = height;
 
-	mScreenViewport = { 0, 0, static_cast<FLOAT>(mInitData.Width), static_cast<FLOAT>(mInitData.Height), 0.f, 1.f };
-	mScissorRect = { 0,0,static_cast<LONG>(mInitData.Width), static_cast<LONG>(mInitData.Height) };
+	mScreenViewport = { 0, 0, static_cast<FLOAT>(mInitData.ClientWidth), static_cast<FLOAT>(mInitData.ClientHeight), 0.f, 1.f };
+	mScissorRect = { 0,0,static_cast<LONG>(mInitData.ClientWidth), static_cast<LONG>(mInitData.ClientHeight) };
 
 	CheckReturn(mpLogFile, BuildSwapChainBuffers());
+	CheckReturn(mpLogFile, BuildResources());
 	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
