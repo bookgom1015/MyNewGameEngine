@@ -19,6 +19,15 @@ namespace Render::DX::Shading {
 				VS_DrawSkySphere = 0,
 				MS_DrawSkySphere,
 				PS_DrawSkySphere,
+				VS_ConvoluteDiffuseIrradiance,
+				GS_ConvoluteDiffuseIrradiance,
+				PS_ConvoluteDiffuseIrradiance,
+				VS_ConvoluteSpecularIrradiance,
+				GS_ConvoluteSpecularIrradiance,
+				PS_ConvoluteSpecularIrradiance,
+				VS_IntegrateBrdf,
+				MS_IntegrateBrdf,
+				PS_IntegrateBrdf,
 				Count
 			};
 		}
@@ -26,6 +35,9 @@ namespace Render::DX::Shading {
 		namespace RootSignature {
 			enum Type {
 				GR_DrawSkySphere = 0,
+				GR_ConvoluteDiffuseIrradiance,
+				GR_ConvoluteSpecularIrradiance,
+				GR_IntegrateBrdf,
 				Count
 			};
 
@@ -40,12 +52,40 @@ namespace Render::DX::Shading {
 					Count
 				};
 			}
+
+			namespace ConvoluteDiffuseIrradiance {
+				enum {
+					CB_ProjectToCube = 0,
+					SI_CubeMap,
+					Count
+				};
+			}
+
+			namespace ConvoluteSpecularIrradiance {
+				enum {
+					CB_ProjectToCube = 0,
+					RC_Consts,
+					SI_EnvCubeMap,
+					Count
+				};
+			}
+
+			namespace IntegrateBrdf {
+				enum {
+					CB_Pass = 0,
+					Count
+				};
+			}
 		}
 
 		namespace PipelineState {
 			enum Type {
 				GP_DrawSkySphere = 0,
 				MP_DrawSkySphere,
+				GP_ConvoluteDiffuseIrradiance,
+				GP_ConvoluteSpecularIrradiance,
+				GP_IntegrateBrdf,
+				MP_IntegrateBrdf,
 				Count
 			};
 		}
@@ -60,9 +100,31 @@ namespace Render::DX::Shading {
 				Util::ShaderManager* ShaderManager = nullptr;
 			};
 
+			enum TaskType {
+				E_None = 0,
+				E_NeedToSaveEnvCubeMap				 = 1 << 0,
+				E_NeedToSaveDiffuseIrradianceCubeMap = 1 << 1,
+				E_NeedToSavePrefilteredEnvCubeMap	 = 1 << 2,
+				E_NeedToSaveBrdfLutMap				 = 1 << 3,
+				E_NeedToGenEnvCubeMap				 = 1 << 4,
+				E_NeedToGenDiffuseIrradianceCubeMap	 = 1 << 5,
+				E_NeedToGenPrefilteredEnvCubeMap	 = 1 << 6,
+				E_NeedToGenBrdfLutMap				 = 1 << 7
+			};
+
 		public:
 			EnvironmentMapClass();
 			virtual ~EnvironmentMapClass() = default;
+
+		public:
+			__forceinline Foundation::Resource::GpuResource* DiffuseIrradianceCubeMap() const;
+			__forceinline D3D12_GPU_DESCRIPTOR_HANDLE DiffuseIrradianceCubeMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* PrefilteredEnvironmentCubeMap() const;
+			__forceinline D3D12_GPU_DESCRIPTOR_HANDLE PrefilteredEnvironmentCubeMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* BrdfLutMap() const;
+			__forceinline D3D12_GPU_DESCRIPTOR_HANDLE BrdfLutMapSrv() const;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -79,10 +141,10 @@ namespace Render::DX::Shading {
 
 		public:
 			BOOL SetEnvironmentMap(
+				Foundation::Resource::FrameResource* const pFrameResource,
 				Util::MipmapGenerator::MipmapGeneratorClass* const pMipmapGenerator, 
 				Util::EquirectangularConverter::EquirectangularConverterClass* const pEquirectangularConverter,
-				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
-				LPCWSTR filePath);
+				LPCWSTR fileName, LPCWSTR baseDir);
 
 			BOOL DrawSkySphere(
 				Foundation::Resource::FrameResource* const pFrameResource,
@@ -95,19 +157,45 @@ namespace Render::DX::Shading {
 				Foundation::RenderItem* const sphere);
 
 		private:
-			BOOL BuildResources();
-			BOOL BuildDescriptors();
+			BOOL Load(LPCWSTR fileName, LPCWSTR baseDir);
+			BOOL Generate(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Util::MipmapGenerator::MipmapGeneratorClass* const pMipmapGenerator,
+				Util::EquirectangularConverter::EquirectangularConverterClass* const pEquirectangularConverter,
+				LPCWSTR fileName, LPCWSTR baseDir);
+			BOOL Save(LPCWSTR fileName, LPCWSTR baseDir);
 
-			BOOL CreateTemporaryEquirectangularMap(LPCWSTR filePath);
 			BOOL CreateEquirectangularMap();
 			BOOL BuildEquirectangularMapDescriptors();
+
+			BOOL CreateEnvironmentCubeMap();
+			BOOL BuildEnvironmentMapDescriptors(BOOL bNeedRtv);
+
+			BOOL CreateDiffuseIrradianceCubeMap();
+			BOOL BuildDiffuseIrradianceCubeMapDescriptors(BOOL bNeedRtv);
+
+			BOOL CreatePrefilteredEnvironmentCubeMap();
+			BOOL BuildPrefilteredEnvironmentCubeMapDescriptors(BOOL bNeedRtv);
+
+			BOOL CreateBrdfLutMap();
+			BOOL BuildBrdfLutMapDescriptors(BOOL bNeedRtv);
+
 			BOOL GenerateMipmap(Util::MipmapGenerator::MipmapGeneratorClass* const pMipmapGenerator);
 			BOOL ConvertEquirectangularMapToCubeMap(
 				Util::EquirectangularConverter::EquirectangularConverterClass* const pEquirectangularConverter,
-				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv);
+				D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube);
+
+			BOOL DrawDiffuseIrradianceCubeMap(D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube);
+			BOOL DrawPrefilteredEnvironmentCubeMap(D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube);
+			BOOL DrawBrdfLutMap(D3D12_GPU_VIRTUAL_ADDRESS cbPass);
 
 		private:
 			InitData mInitData;
+
+			TaskType mTasks;
+
+			D3D12_VIEWPORT mViewport;
+			D3D12_RECT mScissorRect;
 
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes = {};
 
@@ -127,6 +215,21 @@ namespace Render::DX::Shading {
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuSrv;
 			CD3DX12_GPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapGpuSrv;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mDiffuseIrradianceCubeMap;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapCpuSrv;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapGpuSrv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapCpuRtv;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mPrefilteredEnvironmentCubeMap;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapCpuSrv;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapGpuSrv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mBrdfLutMap;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhBrdfLutMapCpuSrv;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhBrdfLutMapGpuSrv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhBrdfLutMapCpuRtv;
 		};
 
 		using InitDataPtr = std::unique_ptr<EnvironmentMapClass::InitData>;
@@ -134,3 +237,5 @@ namespace Render::DX::Shading {
 		InitDataPtr MakeInitData();
 	}
 }
+
+#include "EnvironmentMap.inl"

@@ -64,7 +64,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvEquirectToCube::Count] = {};
-		slotRootParameter[RootSignature::ConvEquirectToCube::CB_EquirectConverter].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::ConvEquirectToCube::CB_ProjectToCube].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::ConvEquirectToCube::SI_EquirectangularMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
@@ -161,7 +161,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 		CD3DX12_CPU_DESCRIPTOR_HANDLE ro_cubes[],
 		Foundation::Resource::GpuResource* const pEquirect,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
-		D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
+		D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube,
 		UINT width, UINT height,
 		UINT maxMipLevel) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvEquirectToCube].Get()));
@@ -174,7 +174,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 	pCube->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	pEquirect->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	CmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_ProjectToCube, cbProjectToCube);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
 	
 	for (UINT mipLevel = 0; mipLevel < maxMipLevel; ++mipLevel) {
@@ -205,7 +205,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 		CD3DX12_CPU_DESCRIPTOR_HANDLE ro_cube,
 		Foundation::Resource::GpuResource* const pEquirect,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
-		D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
+		D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube,
 		D3D12_VIEWPORT viewport,
 		D3D12_RECT scissorRect,
 		UINT maxMipLevel) {
@@ -222,7 +222,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 	pCube->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	pEquirect->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	CmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_EquirectConverter, cbEquirectConv);
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::ConvEquirectToCube::CB_ProjectToCube, cbProjectToCube);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::ConvEquirectToCube::SI_EquirectangularMap, si_equirect);
 
 	CmdList->OMSetRenderTargets(1, &ro_cube, TRUE, nullptr);

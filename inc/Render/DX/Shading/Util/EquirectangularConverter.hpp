@@ -24,7 +24,7 @@ namespace Render::DX::Shading::Util {
 
 			namespace ConvEquirectToCube {
 				enum {
-					CB_EquirectConverter = 0,
+					CB_ProjectToCube = 0,
 					SI_EquirectangularMap,
 					Count
 				};

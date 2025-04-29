@@ -28,7 +28,7 @@ D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::Objec
 	return mObjectCB.Resource()->GetGPUVirtualAddress() + static_cast<UINT64>(index) * static_cast<UINT64>(ObjectCBByteSize());
 }
 
-void Render::DX::Foundation::Resource::FrameResource::CopyObjecCB(INT elementIndex, const ConstantBuffers::ObjectCB& data) {
+void Render::DX::Foundation::Resource::FrameResource::CopyObjectCB(INT elementIndex, const ConstantBuffers::ObjectCB& data) {
 	mObjectCB.CopyData(elementIndex, data);
 }
 
@@ -45,13 +45,13 @@ void Render::DX::Foundation::Resource::FrameResource::CopyMaterialCB(INT element
 	mMaterialCB.CopyData(elementIndex, data);
 }
 
-// EquirectangularConverterCB
-D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::EquirectConvCBAddress() const {
-	return mEquirectConvCB.Resource()->GetGPUVirtualAddress();
+// ProjectToCubeCB
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::ProjectToCubeCBAddress() const {
+	return mProjectToCubeCB.Resource()->GetGPUVirtualAddress();
 }
 
-void Render::DX::Foundation::Resource::FrameResource::CopyEquirectConvCB(INT elementIndex, const ConstantBuffers::EquirectangularConverterCB& data) {
-	mEquirectConvCB.CopyData(elementIndex, data);
+void Render::DX::Foundation::Resource::FrameResource::CopyProjectToCubeCB(INT elementIndex, const ConstantBuffers::ProjectToCubeCB& data) {
+	mProjectToCubeCB.CopyData(elementIndex, data);
 }
 
 #endif // __FRAMERESOURCE_INL__

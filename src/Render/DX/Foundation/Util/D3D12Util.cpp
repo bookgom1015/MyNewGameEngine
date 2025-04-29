@@ -213,8 +213,7 @@ BOOL D3D12Util::CreateTexture(
 		filePath,
 		pTexture->Resource.ReleaseAndGetAddressOf(),
 		bGenerateMipmapIfMissing,
-		maxSize
-	);
+		maxSize);
 	
 	auto finished = resourceUpload.End(pCmdObject->mCommandQueue.Get());
 	finished.wait();
@@ -381,6 +380,22 @@ BOOL D3D12Util::CreatePipelineState(
 	return TRUE;
 }
 
-D3D12_INPUT_LAYOUT_DESC D3D12Util::InputLayoutDesc() {
-	return gInputLayoutDesc;
+D3D12_INPUT_LAYOUT_DESC D3D12Util::InputLayoutDesc() { return gInputLayoutDesc; }
+
+BOOL D3D12Util::CaptureTexture(
+		Core::CommandObject* const pCmdObject,
+		ID3D12Resource* const pSource,
+		BOOL isCubeMap,
+		ScratchImage& result,
+		D3D12_RESOURCE_STATES beforeState,
+		D3D12_RESOURCE_STATES afterState) {
+	CheckHRESULT(mpLogFile, DirectX::CaptureTexture(
+		pCmdObject->mCommandQueue.Get(),
+		pSource,
+		isCubeMap,
+		result,
+		beforeState,
+		afterState));
+
+	return TRUE;
 }

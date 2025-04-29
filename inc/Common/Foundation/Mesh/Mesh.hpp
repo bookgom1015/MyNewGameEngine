@@ -53,7 +53,8 @@ namespace Common {
 			__forceinline UINT IndicesByteSize() const;
 			__forceinline const UINT* Indices() const;
 
-			__forceinline void Subsets(std::vector<SubsetPair>& subsets);
+			__forceinline void Subsets(std::vector<SubsetPair>& subsets) const;
+			__forceinline Material GetMaterial(UINT index) const;
 
 		public:
 			static BOOL Load(

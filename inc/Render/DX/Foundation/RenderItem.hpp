@@ -16,13 +16,14 @@
 namespace Render::DX::Foundation {
 	namespace Resource {
 		struct MeshGeometry;
+		struct MaterialData;
 	}
 
 	struct RenderItem {
 		RenderItem(INT numFrameResource);
 
 		// Index into GPU constant buffer corresponding to the ObjectCB for this render item.
-		INT ObjCBIndex = -1;
+		INT ObjectCBIndex = -1;
 
 		// World matrix of the shape that describes the object's local space
 		// relative to the world space, which defines the position, orientation,
@@ -47,6 +48,8 @@ namespace Render::DX::Foundation {
 		UINT IndexCount = 0;
 		UINT StartIndexLocation = 0;
 		UINT BaseVertexLocation = 0;
+
+		Resource::MaterialData* Material;
 
 		static Common::Foundation::Hash Hash(const RenderItem* ptr);
 	};

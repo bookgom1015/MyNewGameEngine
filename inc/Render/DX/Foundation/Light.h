@@ -1,6 +1,9 @@
-#pragma once
+#ifndef __LIGHT_H__
+#define __LIGHT_H__
 
-#ifndef _HLSL
+#ifdef _HLSL
+	#include "./../../../../inc/Common/Render/LightType.h"
+#else
 	#ifndef WIN32_LEAN_AND_MEAN
 	#define WIN32_LEAN_AND_MEAN
 	#endif // WIN32_LEAN_AND_MEAN
@@ -10,6 +13,8 @@
 	#include <Windows.h>
 
 	#include <DirectXMath.h>
+
+	#include "Common/Render/LightType.h"
 #endif
 
 #define MaxLights 8
@@ -17,16 +22,6 @@
 namespace Render {
 	namespace DX {
 		namespace Foundation {
-			enum LightTypes {
-				E_None = 0,
-				E_Directional,
-				E_Point,
-				E_Spot,
-				E_Tube,
-				E_Rect,
-				Count
-			};
-
 			struct Light {
 				DirectX::XMFLOAT4X4 Mat0;
 				DirectX::XMFLOAT4X4 Mat1;
@@ -69,3 +64,5 @@ namespace Render {
 		}
 	}
 }
+
+#endif // __LIGHT_H__

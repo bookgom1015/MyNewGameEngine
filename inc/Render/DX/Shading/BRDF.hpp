@@ -8,7 +8,8 @@ namespace Render::DX::Shading {
 			enum Type {
 				VS_IntegrateDiffuse = 0,
 				MS_IntegrateDiffuse,
-				PS_IntegrateDiffuse,
+				PS_IntegrateDiffuse_BlinnPhong,
+				PS_IntegrateDiffuse_CookTorrance,
 				VS_IntegrateSpecular,
 				MS_IntegrateSpecular,
 				PS_IntegrateSpecular,
@@ -29,7 +30,8 @@ namespace Render::DX::Shading {
 					SI_AlbedoMap,
 					SI_NormalMap,
 					SI_DepthMap,
-					SI_RMSMap,
+					SI_SpecularMap,
+					SI_RoughnessMetalicMap,
 					SI_PositionMap,
 					SI_ShadowMap,
 					SI_AOMap,
@@ -44,7 +46,8 @@ namespace Render::DX::Shading {
 					SI_AlbedoMap,
 					SI_NormalMap,
 					SI_DepthMap,
-					SI_RMSMap,
+					SI_SpecularMap,
+					SI_RoughnessMetalicMap,
 					SI_PositionMap,
 					SI_AOMap,
 					SI_ReflectionMap,
@@ -57,7 +60,8 @@ namespace Render::DX::Shading {
 
 		namespace PipelineState {
 			enum Type {
-				GP_IntegrateDiffuse = 0,
+				GP_IntegrateDiffuse_BlinnPhong = 0,
+				GP_IntegrateDiffuse_CookTorrance,
 				GP_IntegrateSpecular,
 				Count
 			};
@@ -91,6 +95,32 @@ namespace Render::DX::Shading {
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) override;
 			virtual BOOL BuildPipelineStates() override;
+
+		public:
+			BOOL IntegrateDiffuse(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				D3D12_VIEWPORT viewport, D3D12_RECT scissorRect,
+				Foundation::Resource::GpuResource* const pBackBuffer, D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+				Foundation::Resource::GpuResource* const pAlbedoMap, D3D12_GPU_DESCRIPTOR_HANDLE si_albedoMap,
+				Foundation::Resource::GpuResource* const pNormalMap, D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap, 
+				Foundation::Resource::GpuResource* const pDepthMap, D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap, 
+				Foundation::Resource::GpuResource* const pSpecularMap, D3D12_GPU_DESCRIPTOR_HANDLE si_specularMap, 
+				Foundation::Resource::GpuResource* const pRoughnessMetalnessMap, D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
+				Foundation::Resource::GpuResource* const pPositionMap, D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+				Foundation::Resource::GpuResource* const pDiffuseIrradianceMap, D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap);
+			BOOL IntegrateSpecular(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				D3D12_VIEWPORT viewport, D3D12_RECT scissorRect,
+				Foundation::Resource::GpuResource* const pBackBuffer, D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+				Foundation::Resource::GpuResource* const pBackBufferCopy, D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy,
+				Foundation::Resource::GpuResource* const pAlbedoMap, D3D12_GPU_DESCRIPTOR_HANDLE si_albedoMap,
+				Foundation::Resource::GpuResource* const pNormalMap, D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+				Foundation::Resource::GpuResource* const pDepthMap, D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+				Foundation::Resource::GpuResource* const pSpecularMap, D3D12_GPU_DESCRIPTOR_HANDLE si_specularMap,
+				Foundation::Resource::GpuResource* const pRoughnessMetalnessMap, D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
+				Foundation::Resource::GpuResource* const pPositionMap, D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+				Foundation::Resource::GpuResource* const pBrdfLutMap, D3D12_GPU_DESCRIPTOR_HANDLE si_brdfLutMap,
+				Foundation::Resource::GpuResource* const pPrefilteredEnvCubeMap, D3D12_GPU_DESCRIPTOR_HANDLE si_prefilteredEnvCubeMap);
 
 		private:
 			InitData mInitData;

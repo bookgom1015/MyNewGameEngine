@@ -64,16 +64,34 @@ namespace ShadingConvention{
 	};
 #endif
 
+#ifndef EnvironmentMap_ConvoluteSpecularIrradiance_RCSTRUCT
+#define EnvironmentMap_ConvoluteSpecularIrradiance_RCSTRUCT {	\
+		UINT	gMipLevel;										\
+		FLOAT	gRoughness;										\
+		FLOAT	gResolution;									\
+	};
+#endif
+
 #ifdef _HLSL
 		typedef HDR_FORMAT EquirectangularMapFormat;
 		typedef HDR_FORMAT EnvironmentCubeMapFormat;
+		typedef HDR_FORMAT DiffuseIrradianceCubeMapFormat;
+		typedef HDR_FORMAT PrefilteredEnvironmentCubeMapFormat;
+		typedef float2 BrdfLutMapFormat;
 
 	#ifndef EnvironmentMap_DrawSkySphere_RootConstants
 	#define EnvironmentMap_DrawSkySphere_RootConstants(reg) cbuffer cbRootConstants : register(reg) EnvironmentMap_DrawSkySphere_RCSTRUCT
 	#endif
+
+	#ifndef EnvironmentMap_ConvoluteSpecularIrradiance_RootConstants
+	#define EnvironmentMap_ConvoluteSpecularIrradiance_RootConstants(reg) cbuffer cbRootConstants : register(reg) EnvironmentMap_ConvoluteSpecularIrradiance_RCSTRUCT
+	#endif
 #else
 		const DXGI_FORMAT EquirectangularMapFormat = HDR_FORMAT;
 		const DXGI_FORMAT EnvironmentCubeMapFormat = HDR_FORMAT;
+		const DXGI_FORMAT DiffuseIrradianceCubeMapFormat = HDR_FORMAT;
+		const DXGI_FORMAT PrefilteredEnvironmentCubeMapFormat = HDR_FORMAT;
+		const DXGI_FORMAT BrdfLutMapFormat = DXGI_FORMAT_R16G16_FLOAT;
 
 		namespace RootConstant {
 			namespace DrawSkySphere {
@@ -81,6 +99,16 @@ namespace ShadingConvention{
 					enum {
 					E_VertexCount = 0,
 					E_IndexCount,
+					Count
+				};
+			}
+
+			namespace ConvoluteSpecularIrradiance {
+				struct Struct EnvironmentMap_ConvoluteSpecularIrradiance_RCSTRUCT
+				enum {
+					E_MipLevel = 0,
+					E_Roughness,
+					E_Resolution,
 					Count
 				};
 			}
@@ -219,9 +247,14 @@ namespace ShadingConvention{
 #ifdef _HLSL
 		typedef float4								AlbedoMapFormat;
 		typedef float4								NormalMapFormat;
-		typedef float4								RMSMapFormat;
+		typedef float4								SpecularMapFormat;
+		typedef float2								RoughnessMetalnessMapFormat;
 		typedef float2								VelocityMapFormat;
 		typedef float4								PositionMapFormat;
+
+		bool IsValidPosition(float4 position) {
+			return position.w != InvalidPositionWValue;
+		}
 
 #ifndef GBuffer_Default_RootConstants
 #define GBuffer_Default_RootConstants(reg) cbuffer cbRootConstant : register(reg) GBuffer_Default_RCSTRUCT
@@ -229,13 +262,15 @@ namespace ShadingConvention{
 #else 
 		static const DXGI_FORMAT AlbedoMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-		static const DXGI_FORMAT RMSMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		static const DXGI_FORMAT SpecularMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		static const DXGI_FORMAT RoughnessMetalnessMapFormat = DXGI_FORMAT_R16G16_UNORM;
 		static const DXGI_FORMAT VelocityMapFormat = DXGI_FORMAT_R16G16_FLOAT;
 		static const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		const FLOAT AlbedoMapClearValues[4] = { 0.f,  0.f, 0.f,  0.f };
 		const FLOAT NormalMapClearValues[4] = { 0.f,  0.f, 0.f, InvalidNormalWValue };
-		const FLOAT RMSMapClearValues[4] = { 0.5f, 0.f, 0.5f, 0.f };
+		const FLOAT SpecularMapClearValues[4] = { 0.08f, 0.08f, 0.08f, 0.f };
+		const FLOAT RoughnessMetalnessMapClearValues[2] = { 0.5f, 0.f };
 		const FLOAT VelocityMapClearValues[2] = { InvalidVelocityValue, InvalidVelocityValue };
 		const FLOAT PositionMapClearValues[4] = { 0.f, 0.f, 0.f, InvalidPositionWValue };
 

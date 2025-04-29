@@ -191,7 +191,7 @@
     <ClInclude Include="..\..\inc\GameWorld\Foundation\Mesh\MeshComponent.hpp" />
     <ClInclude Include="..\..\inc\GameWorld\GameWorld.hpp" />
     <ClInclude Include="..\..\inc\GameWorld\Player\FreeLookActor.hpp" />
-    <ClInclude Include="..\..\inc\GameWorld\Prefab\Ground.hpp" />
+    <ClInclude Include="..\..\inc\GameWorld\Prefab\LampShade.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
@@ -215,7 +215,7 @@
     <ClCompile Include="..\..\src\GameWorld\GameWorld.cpp" />
     <ClCompile Include="..\..\src\GameWorld\Main.cpp" />
     <ClCompile Include="..\..\src\GameWorld\Player\FreeLookActor.cpp" />
-    <ClCompile Include="..\..\src\GameWorld\Prefab\Ground.cpp" />
+    <ClCompile Include="..\..\src\GameWorld\Prefab\LampShade.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />

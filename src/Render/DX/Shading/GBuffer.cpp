@@ -3,6 +3,7 @@
 #include "Render/DX/Foundation/RenderItem.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
+#include "Render/DX/Foundation/Resource/MaterialData.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
@@ -13,7 +14,7 @@
 using namespace Render::DX::Shading;
 
 namespace {
-	const UINT NumRenderTargtes = 5;
+	const UINT NumRenderTargtes = 6;
 
 	const WCHAR* const HLSL_GBuffer = L"GBuffer.hlsl";
 }
@@ -25,9 +26,10 @@ GBuffer::InitDataPtr GBuffer::MakeInitData() {
 GBuffer::GBufferClass::GBufferClass() {
 	mAlbedoMap = std::make_unique<Foundation::Resource::GpuResource>();
 	mNormalMap = std::make_unique<Foundation::Resource::GpuResource>();
+	mSpecularMap = std::make_unique<Foundation::Resource::GpuResource>();
+	mRoughnessMetalnessMap = std::make_unique<Foundation::Resource::GpuResource>();
 	mVelocityMap = std::make_unique<Foundation::Resource::GpuResource>();
 	mPositionMap = std::make_unique<Foundation::Resource::GpuResource>();
-	mRMSMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
 UINT GBuffer::GBufferClass::CbvSrvUavDescCount() const { return NumRenderTargtes; }
@@ -105,9 +107,10 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 		psoDesc.NumRenderTargets = NumRenderTargtes;
 		psoDesc.RTVFormats[0] = ShadingConvention::GBuffer::AlbedoMapFormat;
 		psoDesc.RTVFormats[1] = ShadingConvention::GBuffer::NormalMapFormat;
-		psoDesc.RTVFormats[2] = ShadingConvention::GBuffer::RMSMapFormat;
-		psoDesc.RTVFormats[3] = ShadingConvention::GBuffer::VelocityMapFormat;
-		psoDesc.RTVFormats[4] = ShadingConvention::GBuffer::PositionMapFormat;
+		psoDesc.RTVFormats[2] = ShadingConvention::GBuffer::SpecularMapFormat;
+		psoDesc.RTVFormats[3] = ShadingConvention::GBuffer::RoughnessMetalnessMapFormat;
+		psoDesc.RTVFormats[4] = ShadingConvention::GBuffer::VelocityMapFormat;
+		psoDesc.RTVFormats[5] = ShadingConvention::GBuffer::PositionMapFormat;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
@@ -128,9 +131,13 @@ BOOL GBuffer::GBufferClass::BuildDescriptors(Foundation::Core::DescriptorHeap* c
 	mhNormalMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
 	mhNormalMapCpuRtv = pDescHeap->RtvCpuOffset(1);
 
-	mhRMSMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
-	mhRMSMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
-	mhRMSMapCpuRtv = pDescHeap->RtvCpuOffset(1);
+	mhSpecularMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhSpecularMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+	mhSpecularMapCpuRtv = pDescHeap->RtvCpuOffset(1);
+
+	mhRoughnessMetalnessMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhRoughnessMetalnessMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+	mhRoughnessMetalnessMapCpuRtv = pDescHeap->RtvCpuOffset(1);
 
 	mhVelocityMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
 	mhVelocityMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
@@ -157,11 +164,11 @@ BOOL GBuffer::GBufferClass::OnResize(UINT width, UINT height) {
 
 BOOL GBuffer::GBufferClass::DrawGBuffer(
 		Foundation::Resource::FrameResource* const pFrameResource,
-		D3D12_VIEWPORT viewport,
+		D3D12_VIEWPORT viewport, 
 		D3D12_RECT scissorRect,
-		Foundation::Resource::GpuResource* const backBuffer,
+		Foundation::Resource::GpuResource* const backBuffer, 
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
-		Foundation::Resource::GpuResource* const depthBuffer,
+		Foundation::Resource::GpuResource* const depthBuffer, 
 		D3D12_CPU_DESCRIPTOR_HANDLE do_depthBuffer,
 		const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
@@ -180,14 +187,16 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 
 		mAlbedoMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		mNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		mRMSMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mSpecularMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mRoughnessMetalnessMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		mVelocityMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		mPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		depthBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
 		CmdList->ClearRenderTargetView(mhAlbedoMapCpuRtv, ShadingConvention::GBuffer::AlbedoMapClearValues, 0, nullptr);
 		CmdList->ClearRenderTargetView(mhNormalMapCpuRtv, ShadingConvention::GBuffer::NormalMapClearValues, 0, nullptr);
-		CmdList->ClearRenderTargetView(mhRMSMapCpuRtv, ShadingConvention::GBuffer::RMSMapClearValues, 0, nullptr);
+		CmdList->ClearRenderTargetView(mhSpecularMapCpuRtv, ShadingConvention::GBuffer::SpecularMapClearValues, 0, nullptr);
+		CmdList->ClearRenderTargetView(mhRoughnessMetalnessMapCpuRtv, ShadingConvention::GBuffer::RoughnessMetalnessMapClearValues, 0, nullptr);
 		CmdList->ClearRenderTargetView(mhVelocityMapCpuRtv, ShadingConvention::GBuffer::VelocityMapClearValues, 0, nullptr);
 		CmdList->ClearRenderTargetView(mhPositionMapCpuRtv, ShadingConvention::GBuffer::PositionMapClearValues, 0, nullptr);
 		CmdList->ClearDepthStencilView(
@@ -200,7 +209,8 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, NumRenderTargtes> renderTargets = {
 			mhAlbedoMapCpuRtv,
 			mhNormalMapCpuRtv,
-			mhRMSMapCpuRtv,
+			mhSpecularMapCpuRtv,
+			mhRoughnessMetalnessMapCpuRtv,
 			mhVelocityMapCpuRtv,
 			mhPositionMapCpuRtv
 		};
@@ -210,7 +220,7 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems));
 	}
 
-	mInitData.CommandObject->ExecuteCommandList(0);
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
 
 	return TRUE;
 }
@@ -262,22 +272,39 @@ BOOL GBuffer::GBufferClass::BuildResources() {
 			&NormalMapOptClear,
 			L"GBuffer_NormalMap"));
 	}
-	// RMSMap
+	// SpecularMap
 	{
-		rscDesc.Format = ShadingConvention::GBuffer::RMSMapFormat;
+		rscDesc.Format = ShadingConvention::GBuffer::SpecularMapFormat;
 
 		const CD3DX12_CLEAR_VALUE RMSMapOptClear(
-			ShadingConvention::GBuffer::RMSMapFormat,
-			ShadingConvention::GBuffer::RMSMapClearValues);
+			ShadingConvention::GBuffer::SpecularMapFormat,
+			ShadingConvention::GBuffer::SpecularMapClearValues);
 
-		CheckReturn(mpLogFile, mRMSMap->Initialize(
+		CheckReturn(mpLogFile, mSpecularMap->Initialize(
 			mInitData.Device,
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&rscDesc,
 			D3D12_RESOURCE_STATE_COMMON,
 			&RMSMapOptClear,
-			L"GBuffer_RMSMap"));
+			L"GBuffer_SpecularMap"));
+	}
+	// RoughnessMetallicMap
+	{
+		rscDesc.Format = ShadingConvention::GBuffer::RoughnessMetalnessMapFormat;
+
+		const CD3DX12_CLEAR_VALUE RMSMapOptClear(
+			ShadingConvention::GBuffer::RoughnessMetalnessMapFormat,
+			ShadingConvention::GBuffer::RoughnessMetalnessMapClearValues);
+
+		CheckReturn(mpLogFile, mRoughnessMetalnessMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&rscDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			&RMSMapOptClear,
+			L"GBuffer_RoughnessMetallicMap"));
 	}
 	// VelocityMap
 	{
@@ -348,14 +375,23 @@ BOOL GBuffer::GBufferClass::BuildDescriptors() {
 		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, NormalMap, &srvDesc, mhNormalMapCpuSrv);
 		Foundation::Util::D3D12Util::CreateRenderTargetView(mInitData.Device, NormalMap, &rtvDesc, mhNormalMapCpuRtv);
 	}
-	// RMSMap
+	// SpecularMap
 	{
-		srvDesc.Format = ShadingConvention::GBuffer::RMSMapFormat;
-		rtvDesc.Format = ShadingConvention::GBuffer::RMSMapFormat;
+		srvDesc.Format = ShadingConvention::GBuffer::SpecularMapFormat;
+		rtvDesc.Format = ShadingConvention::GBuffer::SpecularMapFormat;
 
-		const auto RMSMap = mRMSMap->Resource();
-		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, RMSMap, &srvDesc, mhRMSMapCpuSrv);
-		Foundation::Util::D3D12Util::CreateRenderTargetView(mInitData.Device, RMSMap, &rtvDesc, mhRMSMapCpuRtv);
+		const auto RMSMap = mSpecularMap->Resource();
+		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, RMSMap, &srvDesc, mhSpecularMapCpuSrv);
+		Foundation::Util::D3D12Util::CreateRenderTargetView(mInitData.Device, RMSMap, &rtvDesc, mhSpecularMapCpuRtv);
+	}
+	// RoughnessMetallicMap
+	{
+		srvDesc.Format = ShadingConvention::GBuffer::RoughnessMetalnessMapFormat;
+		rtvDesc.Format = ShadingConvention::GBuffer::RoughnessMetalnessMapFormat;
+
+		const auto RMSMap = mRoughnessMetalnessMap->Resource();
+		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, RMSMap, &srvDesc, mhRoughnessMetalnessMapCpuSrv);
+		Foundation::Util::D3D12Util::CreateRenderTargetView(mInitData.Device, RMSMap, &rtvDesc, mhRoughnessMetalnessMapCpuRtv);
 	}
 	// PositionMap
 	{
@@ -388,13 +424,11 @@ BOOL GBuffer::GBufferClass::DrawRenderItems(
 	for (size_t i = 0, end = ritems.size(); i < end; ++i) {
 		const auto ri = ritems[i];
 
-		const D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(ri->ObjCBIndex);
+		const D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(ri->ObjectCBIndex);
 		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Object, ritemObjCBAddress);
-
-		//if (ri->Material != nullptr) {
-		//	const D3D12_GPU_VIRTUAL_ADDRESS currRitemMatCBAddress = cb_mat + static_cast<UINT64>(ri->Material->MatCBIndex) * static_cast<UINT64>(matCBByteSize);
-		//	CmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::ECB_Mat, currRitemMatCBAddress);
-		//}
+		
+		const D3D12_GPU_VIRTUAL_ADDRESS ritemMatCBAddress = pFrameResource->MaterialCBAddress(ri->Material->MaterialCBIndex);
+		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Material, ritemMatCBAddress);
 
 		if (false) {
 			ShadingConvention::GBuffer::RootConstant::Default::Struct rc;

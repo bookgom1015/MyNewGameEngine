@@ -13,6 +13,7 @@
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
+#include "Render/DX/Foundation/Resource/MaterialData.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
@@ -61,7 +62,7 @@ DxRenderer::DxRenderer() {
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
-	mEquirectConvCB = std::make_unique<ConstantBuffers::EquirectangularConverterCB>();
+	mProjectToCubeCB = std::make_unique<ConstantBuffers::ProjectToCubeCB>();
 }
 
 DxRenderer::~DxRenderer() {
@@ -120,18 +121,72 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 BOOL DxRenderer::Draw() {
 	CheckReturn(mpLogFile, mCurrentFrameResource->ResetCommandListAllocators());
 
-	const auto& opaques = mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque];
 	const auto skySphere = mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Sky].front();
+	const auto& opaques = mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque];
+
+	std::vector<Foundation::RenderItem*> opaquesReadyToDraw;
+	for (const auto opaque : opaques) {
+		if (mCurrentFrameResource->mFence < opaque->Geometry->Fence) continue;
+
+		opaquesReadyToDraw.push_back(opaque);
+	}
+	
 
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
+		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(), 
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(), 
+		mToneMapping->InterMediateMapRtv(),
+		mDepthStencilBuffer->GetDepthStencilBuffer(), 
+		mDepthStencilBuffer->DepthStencilBufferDsv(),
+		opaquesReadyToDraw));
+
+	CheckReturn(mpLogFile, mBRDF->IntegrateDiffuse(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mToneMapping->InterMediateMapResource(),
 		mToneMapping->InterMediateMapRtv(),
+		mGBuffer->AlbedoMap(),
+		mGBuffer->AlbedoMapSrv(),
+		mGBuffer->NormalMap(), 
+		mGBuffer->NormalMapSrv(),
+		mDepthStencilBuffer->GetDepthStencilBuffer(), 
+		mDepthStencilBuffer->DepthStencilBufferSrv(),
+		mGBuffer->SpecularMap(),
+		mGBuffer->SpecularMapSrv(),
+		mGBuffer->RoughnessMetalnessMap(),
+		mGBuffer->RoughnessMetalnessMapSrv(),
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv(),
+		mEnvironmentMap->DiffuseIrradianceCubeMap(), 
+		mEnvironmentMap->DiffuseIrradianceCubeMapSrv()));
+
+	CheckReturn(mpLogFile, mBRDF->IntegrateSpecular(
+		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(), 
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(), 
+		mToneMapping->InterMediateCopyMapSrv(),
+		mGBuffer->AlbedoMap(), 
+		mGBuffer->AlbedoMapSrv(),
+		mGBuffer->NormalMap(),
+		mGBuffer->NormalMapSrv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
-		mDepthStencilBuffer->DepthStencilBufferDsv(),
-		opaques));
+		mDepthStencilBuffer->DepthStencilBufferSrv(),
+		mGBuffer->SpecularMap(), 
+		mGBuffer->SpecularMapSrv(),
+		mGBuffer->RoughnessMetalnessMap(), 
+		mGBuffer->RoughnessMetalnessMapSrv(),
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv(),
+		mEnvironmentMap->BrdfLutMap(),
+		mEnvironmentMap->BrdfLutMapSrv(),
+		mEnvironmentMap->PrefilteredEnvironmentCubeMap(),
+		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv()));
 
 	CheckReturn(mpLogFile, mEnvironmentMap->DrawSkySphere(
 		mCurrentFrameResource,
@@ -139,7 +194,7 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->ScissorRect(),
 		mToneMapping->InterMediateMapResource(),
 		mToneMapping->InterMediateMapRtv(),
-		mDepthStencilBuffer->GetDepthStencilBuffer(),
+		mDepthStencilBuffer->GetDepthStencilBuffer(), 
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		skySphere));
 
@@ -167,32 +222,38 @@ BOOL DxRenderer::Draw() {
 }
 
 BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) {
-	Foundation::Resource::MeshGeometry* meshGeo;
-	{
-		CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
-			mCurrentFrameResource->CommandAllocator(0),
-			0));
-		const auto CmdList = mCommandObject->CommandList(0);
+	CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
+		mCurrentFrameResource->CommandAllocator(0),
+		0));
+	const auto CmdList = mCommandObject->CommandList(0);
 
+	{
+		Foundation::Resource::MeshGeometry* meshGeo;
 		CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, pMesh, meshGeo));
 
-		CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
+		UINT count = 0;
+
+		for (const auto& subset : meshGeo->Subsets) {
+			auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
+			hash = Foundation::RenderItem::Hash(ritem.get());
+
+			ritem->ObjectCBIndex = static_cast<INT>(mRenderItems.size());
+			ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			ritem->Geometry = meshGeo;
+			ritem->IndexCount = meshGeo->Subsets[subset.first].IndexCount;
+			ritem->StartIndexLocation = meshGeo->Subsets[subset.first].StartIndexLocation;
+			ritem->BaseVertexLocation = meshGeo->Subsets[subset.first].BaseVertexLocation;
+			
+			auto material = pMesh->GetMaterial(count++);
+
+			CheckReturn(mpLogFile, BuildMeshMaterial(CmdList, &material, ritem->Material));
+
+			mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque].push_back(ritem.get());
+			mRenderItems.push_back(std::move(ritem));
+		}
 	}
 
-	for (const auto& subset : meshGeo->Subsets) {
-		auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
-		hash = Foundation::RenderItem::Hash(ritem.get());
-
-		ritem->ObjCBIndex = static_cast<INT>(mRenderItems.size());
-		ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		ritem->Geometry = meshGeo;
-		ritem->IndexCount = meshGeo->Subsets[subset.first].IndexCount;
-		ritem->StartIndexLocation = meshGeo->Subsets[subset.first].StartIndexLocation;
-		ritem->BaseVertexLocation = meshGeo->Subsets[subset.first].BaseVertexLocation;
-
-		mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque].push_back(ritem.get());
-		mRenderItems.push_back(std::move(ritem));
-	}
+	CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
 
 	return TRUE;
 }
@@ -214,7 +275,8 @@ BOOL DxRenderer::CreateDescriptorHeaps() {
 BOOL DxRenderer::UpdateConstantBuffers() {
 	CheckReturn(mpLogFile, UpdateMainPassCB());
 	CheckReturn(mpLogFile, UpdateObjectCB());
-	CheckReturn(mpLogFile, UpdateEquirectangularConverterCB());
+	CheckReturn(mpLogFile, UpdateMaterialCB());
+	CheckReturn(mpLogFile, UpdateProjectToCubeCB());
 
 	return TRUE;
 }
@@ -267,28 +329,55 @@ BOOL DxRenderer::UpdateObjectCB() {
 			const XMMATRIX texTransform = XMLoadFloat4x4(&ritem->TexTransform);
 
 			ConstantBuffers::ObjectCB objCB;
+
 			objCB.PrevWorld = ritem->PrevWolrd;
 			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(world));
 			XMStoreFloat4x4(&objCB.TexTransform, XMMatrixTranspose(texTransform));
 
+			mCurrentFrameResource->CopyObjectCB(ritem->ObjectCBIndex, objCB);
+
 			ritem->PrevWolrd = objCB.World;
-
-			mCurrentFrameResource->CopyObjecCB(ritem->ObjCBIndex, objCB);
-
 			// Next FrameResource need to be updated too.
-			ritem->NumFramesDirty--;
+			--ritem->NumFramesDirty;
 		}
 	}
 
 	return TRUE;
 }
 
-BOOL DxRenderer::UpdateEquirectangularConverterCB() {
-	XMStoreFloat4x4(&mEquirectConvCB->Proj, XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 10.f)));
+BOOL DxRenderer::UpdateMaterialCB() {
+	for (auto& material : mMaterials) {
+		if (material->NumFramesDirty > 0) {
+			ConstantBuffers::MaterialCB matCB;
+
+			matCB.Albedo = material->Albedo;
+			matCB.Roughness = material->Roughness;
+			matCB.Metalness = material->Metalness;
+			matCB.Specular = material->Specular;
+			matCB.MatTransform = material->MatTransform;
+
+			matCB.AlbedoMapIndex = material->AlbedoMapIndex;
+			matCB.NormalMapIndex = material->NormalMapIndex;
+			matCB.AlphaMapIndex = material->AlphaMapIndex;
+			matCB.RoughnessMapIndex = material->RoughnessMapIndex;
+			matCB.MetalnessMapIndex = material->MetalnessMapIndex;
+			matCB.SpecularMapIndex = material->SpecularMapIndex;
+
+			mCurrentFrameResource->CopyMaterialCB(material->MaterialCBIndex, matCB);
+
+			--material->NumFramesDirty;
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateProjectToCubeCB() {
+	XMStoreFloat4x4(&mProjectToCubeCB->Proj, XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 10.f)));
 
 	// Positive +X
 	XMStoreFloat4x4(
-		&mEquirectConvCB->View[0],
+		&mProjectToCubeCB->View[0],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(1.f, 0.f, 0.f, 1.f),
@@ -297,7 +386,7 @@ BOOL DxRenderer::UpdateEquirectangularConverterCB() {
 	);
 	// Positive -X
 	XMStoreFloat4x4(
-		&mEquirectConvCB->View[1],
+		&mProjectToCubeCB->View[1],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(-1.f, 0.f, 0.f, 1.f),
@@ -306,7 +395,7 @@ BOOL DxRenderer::UpdateEquirectangularConverterCB() {
 	);
 	// Positive +Y
 	XMStoreFloat4x4(
-		&mEquirectConvCB->View[2],
+		&mProjectToCubeCB->View[2],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 1.f, 0.f, 1.f),
@@ -315,7 +404,7 @@ BOOL DxRenderer::UpdateEquirectangularConverterCB() {
 	);
 	// Positive -Y
 	XMStoreFloat4x4(
-		&mEquirectConvCB->View[3],
+		&mProjectToCubeCB->View[3],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, -1.f, 0.f, 1.f),
@@ -324,7 +413,7 @@ BOOL DxRenderer::UpdateEquirectangularConverterCB() {
 	);
 	// Positive +Z
 	XMStoreFloat4x4(
-		&mEquirectConvCB->View[4],
+		&mProjectToCubeCB->View[4],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 0.f, 1.f, 1.f),
@@ -333,7 +422,7 @@ BOOL DxRenderer::UpdateEquirectangularConverterCB() {
 	);
 	// Positive -Z
 	XMStoreFloat4x4(
-		&mEquirectConvCB->View[5],
+		&mProjectToCubeCB->View[5],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 0.f, -1.f, 1.f),
@@ -341,7 +430,7 @@ BOOL DxRenderer::UpdateEquirectangularConverterCB() {
 		))
 	);
 
-	mCurrentFrameResource->CopyEquirectConvCB(0, *mEquirectConvCB.get());
+	mCurrentFrameResource->CopyProjectToCubeCB(0, *mProjectToCubeCB.get());
 
 	return TRUE;
 }
@@ -384,7 +473,7 @@ BOOL DxRenderer::BuildMeshGeometry(
 		geo->IndexBufferUploader,
 		geo->IndexBufferGPU)
 	);
-	
+		
 	geo->VertexByteStride = static_cast<UINT>(sizeof(Common::Foundation::Mesh::Vertex));
 	geo->VertexBufferByteSize = VerticesByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
@@ -456,6 +545,55 @@ BOOL DxRenderer::BuildMeshGeometry(
 
 	pMeshGeo = geo.get();
 	mMeshGeometries[Hash] = std::move(geo);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::BuildMeshMaterial(
+		ID3D12GraphicsCommandList6* const pCmdList,
+		Common::Foundation::Mesh::Material* const pMaterial,
+		Foundation::Resource::MaterialData*& pMatData) {
+	auto matData = std::make_unique<Foundation::Resource::MaterialData>(Foundation::Resource::FrameResource::Count);
+
+	CheckReturn(mpLogFile, BuildMeshTextures(
+		pCmdList,
+		pMaterial,
+		matData.get()));
+
+	matData->MaterialCBIndex = static_cast<INT>(mMaterials.size());	
+	matData->Albedo = pMaterial->Albedo;
+	matData->Specular = pMaterial->Specular;
+	matData->Roughness = pMaterial->Roughness;
+
+	pMatData = matData.get();
+
+	mMaterials.push_back(std::move(matData));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::BuildMeshTextures(
+		ID3D12GraphicsCommandList6* const pCmdList,
+		Common::Foundation::Mesh::Material* const pMaterial,
+		Foundation::Resource::MaterialData* const pMatData) {
+	if (!pMaterial->AlbedoMap.empty()) {
+
+	}
+	if (!pMaterial->NormalMap.empty()) {
+
+	}
+	if (!pMaterial->AlphaMap.empty()) {
+
+	}
+	if (!pMaterial->RoughnessMap.empty()) {
+
+	}
+	if (!pMaterial->MetalnessMap.empty()) {
+
+	}
+	if (!pMaterial->SpecularMap.empty()) {
+
+	}
 
 	return TRUE;
 }
@@ -594,7 +732,7 @@ BOOL DxRenderer::BuildSkySphere() {
 
 	CheckReturn(mpLogFile, mCommandObject->ExecuteDirectCommandList());
 
-	ritem->ObjCBIndex = static_cast<INT>(mRenderItems.size());
+	ritem->ObjectCBIndex = static_cast<INT>(mRenderItems.size());
 	ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	ritem->IndexCount = ritem->Geometry->Subsets["SkySphere"].IndexCount;
 	ritem->StartIndexLocation = ritem->Geometry->Subsets["SkySphere"].StartIndexLocation;
@@ -612,10 +750,10 @@ BOOL DxRenderer::FinishUpInitializing() {
 	CheckReturn(mpLogFile, UpdateConstantBuffers());
 
 	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(
+		mCurrentFrameResource,
 		mMipmapGenerator.get(), 
 		mEquirectangularConverter.get(), 
-		mCurrentFrameResource->EquirectConvCBAddress(),
-		L"./../../../../assets/textures/forest_hdr.dds"));
+		L"forest_hdr", L"./../../../../assets/textures/"));
 
 	return TRUE;
 }

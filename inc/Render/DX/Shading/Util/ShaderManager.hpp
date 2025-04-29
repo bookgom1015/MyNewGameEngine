@@ -38,6 +38,10 @@ namespace Render::DX::Shading::Util {
 			D3D12ShaderInfo() = default;
 			D3D12ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile);
 			D3D12ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile, DxcDefine* defines, UINT32 defCount);
+			D3D12ShaderInfo(const D3D12ShaderInfo& ref);
+			~D3D12ShaderInfo();
+
+			D3D12ShaderInfo& operator=(const D3D12ShaderInfo& ref);
 		};
 
 	public:

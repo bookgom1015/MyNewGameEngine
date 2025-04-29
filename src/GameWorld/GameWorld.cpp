@@ -8,7 +8,7 @@
 #include "Common/Input/InputProcessor.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "GameWorld/Player/FreeLookActor.hpp"
-#include "GameWorld/Prefab/Ground.hpp"
+#include "GameWorld/Prefab/LampShade.hpp"
 
 using namespace GameWorld;
 
@@ -209,7 +209,7 @@ BOOL GameWorldClass::CreateInputProcessor() {
 
 BOOL GameWorldClass::BuildScene() {
 	new Player::FreeLookActor(mpLogFile, "free_look_actor");
-	new Prefab::Ground(mpLogFile, "ground");
+	new Prefab::LampShade(mpLogFile, "lamp_shade");
 
 	return TRUE;
 }

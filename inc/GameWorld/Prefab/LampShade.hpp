@@ -7,19 +7,19 @@ namespace GameWorld::Foundation::Mesh {
 }
 
 namespace GameWorld::Prefab {
-	class Ground : public Foundation::Core::Actor {
+	class LampShade : public Foundation::Core::Actor {
 	public:
-		Ground(
+		LampShade(
 			Common::Debug::LogFile* const pLogFile,
 			const std::string& name,
 			DirectX::XMFLOAT3 pos = { 0.f, 0.f, 0.f },
 			DirectX::XMFLOAT4 rot = { 0.f, 0.f, 0.f, 1.f },
 			DirectX::XMFLOAT3 scale = { 1.f, 1.f, 1.f });
-		Ground(
+		LampShade(
 			Common::Debug::LogFile* const pLogFile, 
 			const std::string& name, 
 			const Transform& trans);
-		virtual ~Ground() = default;
+		virtual ~LampShade() = default;
 
 	protected:
 		virtual BOOL OnInitialzing() override;

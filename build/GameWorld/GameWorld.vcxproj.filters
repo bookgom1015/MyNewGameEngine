@@ -147,7 +147,7 @@
     <ClInclude Include="..\..\inc\Common\Input\InputProcessor.hpp">
       <Filter>Common Files\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Prefab\Ground.hpp">
+    <ClInclude Include="..\..\inc\GameWorld\Prefab\LampShade.hpp">
       <Filter>Header Files\Prefab</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
@@ -221,7 +221,7 @@
     <ClCompile Include="..\..\src\Common\Input\InputProcessor.cpp">
       <Filter>Common Files\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\GameWorld\Prefab\Ground.cpp">
+    <ClCompile Include="..\..\src\GameWorld\Prefab\LampShade.cpp">
       <Filter>Source Files\Prefab</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\GameWorld\Foundation\Mesh\MeshComponent.cpp">

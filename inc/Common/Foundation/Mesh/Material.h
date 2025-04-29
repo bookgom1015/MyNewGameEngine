@@ -5,7 +5,7 @@
 		float4 Albedo;
 		float3 FresnelR0;
 		float  Shininess;
-		float  Metalic;
+		float  Metalness;
 	};
 #else
 	#include <string>
@@ -28,7 +28,7 @@ namespace Common {
 			struct Material {
 				std::string Name;
 
-				std::string DiffuseMap;
+				std::string AlbedoMap;
 				DirectX::XMFLOAT4 Albedo = { 1.f, 1.f, 1.f, 1.f };
 
 				std::string NormalMap;

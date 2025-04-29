@@ -35,19 +35,27 @@ namespace ConstantBuffers {
 		DirectX::XMFLOAT4	Albedo;
 
 		FLOAT				Roughness;
-		FLOAT				Metalic;
-		FLOAT				Specular;
-		FLOAT				ConstantPad0;
+		FLOAT				Metalness;
+		FLOAT				__ConstantPad0__;
+		FLOAT				__ConstantPad1__;
+
+		DirectX::XMFLOAT3	Specular;
+		FLOAT				__ConstantPad2__;
 
 		DirectX::XMFLOAT4X4	MatTransform;
 
-		INT					DiffuseSrvIndex;
-		INT					NormalSrvIndex;
-		INT					AlphaSrvIndex;
-		FLOAT				MatConstPad0;
+		INT					AlbedoMapIndex;
+		INT					NormalMapIndex;
+		INT					AlphaMapIndex;
+		INT					RoughnessMapIndex;
+
+		INT					MetalnessMapIndex;
+		INT					SpecularMapIndex;
+		FLOAT				__ConstantPad3__;
+		FLOAT				__ConstantPad4__;
 	};
 
-	struct EquirectangularConverterCB {
+	struct ProjectToCubeCB {
 		DirectX::XMFLOAT4X4 Proj;
 		DirectX::XMFLOAT4X4 View[6];
 	};

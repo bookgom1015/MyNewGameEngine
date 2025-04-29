@@ -110,7 +110,7 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 		mat.Name = material.name;
 		mat.Albedo = XMFLOAT4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.f);
 
-		if (!material.diffuse_texname.empty()) mat.DiffuseMap = material.diffuse_texname;
+		if (!material.diffuse_texname.empty()) mat.AlbedoMap = material.diffuse_texname;
 
 		if (!material.normal_texname.empty()) mat.NormalMap = material.normal_texname;
 
@@ -120,7 +120,8 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 		if (material.roughness_texname.empty()) mat.Roughness = material.roughness;
 		else mat.RoughnessMap = material.roughness_texname;
 
-		if (!material.metallic_texname.empty()) mat.MetalnessMap = material.metallic_texname;
+		if (material.metallic_texname.empty()) mat.Metalness = material.metallic;
+		else mat.MetalnessMap = material.metallic_texname;
 
 		if (material.specular_texname.empty()) mat.Specular = XMFLOAT3(material.specular[0], material.specular[1], material.specular[2]);
 		else mat.SpecularMap = material.specular_texname;
@@ -162,7 +163,7 @@ void Mesh::DebugInfo(const Mesh& mesh) {
 	std::cout << "    Material count: " << mesh.mMaterials.size() << std::endl;
 	for (const auto& material : mesh.mMaterials) {
 		std::cout << "        Material: " << material.Name << std::endl;
-		std::cout << "            Diffuse map: " << FilePathToString(material.DiffuseMap) << std::endl;
+		std::cout << "            Diffuse map: " << FilePathToString(material.AlbedoMap) << std::endl;
 		std::cout << "            Albedo: " << material.Albedo.x << ", " << material.Albedo.y << ", " << material.Albedo.z << ", " << material.Albedo.w << std::endl;
 		std::cout << "            Normal map: " << FilePathToString(material.NormalMap) << std::endl;
 		std::cout << "            Alpha map: " << FilePathToString(material.AlphaMap) << std::endl;

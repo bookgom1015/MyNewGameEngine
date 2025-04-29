@@ -19,8 +19,110 @@ ShaderManager::D3D12ShaderInfo::D3D12ShaderInfo(LPCWSTR fileName, LPCWSTR entryP
 	FileName = fileName;
 	EntryPoint = entryPoint;
 	TargetProfile = profile;
-	Defines = defines;
 	DefineCount = defCount;
+	
+	Defines = new DxcDefine[defCount];
+	for (UINT32 i = 0; i < defCount; ++i) {
+		{
+			const auto Name = defines[i].Name;
+			const auto NameLen = wcslen(Name) + 1;
+
+			auto newName = new WCHAR[NameLen];
+			wcscpy_s(newName, NameLen, Name);
+
+			Defines[i].Name = newName;
+		}
+
+		if (defines[i].Value != nullptr) {
+			const auto Value = defines[i].Value;
+			const auto ValueLen = wcslen(Value) + 1;
+
+			auto newValue = new WCHAR[ValueLen];
+			wcscpy_s(newValue, ValueLen, Value);
+
+			Defines[i].Value = newValue;
+		}
+	}
+}
+
+ShaderManager::D3D12ShaderInfo::D3D12ShaderInfo(const D3D12ShaderInfo& ref) {
+	FileName = ref.FileName;
+	EntryPoint = ref.EntryPoint;
+	TargetProfile = ref.TargetProfile;
+	DefineCount = ref.DefineCount;
+
+	if (ref.Defines != nullptr) {
+		Defines = new DxcDefine[ref.DefineCount];
+
+		for (UINT32 i = 0; i < ref.DefineCount; ++i) {
+			{
+				const auto Name = ref.Defines[i].Name;
+				const auto NameLen = wcslen(Name) + 1;
+
+				auto newName = new WCHAR[NameLen];
+				wcscpy_s(newName, NameLen, Name);
+
+				Defines[i].Name = newName;
+			}
+
+			if (ref.Defines[i].Value != nullptr) {
+				const auto Value = ref.Defines[i].Value;
+				const auto ValueLen = wcslen(Value) + 1;
+
+				auto newValue = new WCHAR[ValueLen];
+				wcscpy_s(newValue, ValueLen, Value);
+
+				Defines[i].Value = newValue;
+			}
+		}
+	}
+}
+
+ShaderManager::D3D12ShaderInfo::~D3D12ShaderInfo() {
+	if (Defines != nullptr) {
+		for (UINT32 i = 0; i < DefineCount; ++i) {
+	
+			delete[] Defines[i].Name;
+			if (Defines[i].Value != nullptr) delete[] Defines[i].Value;
+		}
+	
+		delete[] Defines;
+	}
+}
+
+Render::DX::Shading::Util::ShaderManager::D3D12ShaderInfo& ShaderManager::D3D12ShaderInfo::operator=(const D3D12ShaderInfo& ref) {
+	if (this != &ref) {
+		FileName = ref.FileName;
+		EntryPoint = ref.EntryPoint;
+		TargetProfile = ref.TargetProfile;
+		DefineCount = ref.DefineCount;
+
+		if (ref.Defines != nullptr) {
+			Defines = new DxcDefine[ref.DefineCount];
+			for (UINT32 i = 0; i < ref.DefineCount; ++i) {
+				{
+					const auto Name = ref.Defines[i].Name;
+					const auto NameLen = wcslen(Name) + 1;
+
+					auto newName = new WCHAR[NameLen];
+					wcscpy_s(newName, NameLen, Name);
+
+					Defines[i].Name = newName;
+				}
+				if (ref.Defines[i].Value != nullptr) {
+					const auto Value = ref.Defines[i].Value;
+					const auto ValueLen = wcslen(Value) + 1;
+
+					auto newValue = new WCHAR[ValueLen];
+					wcscpy_s(newValue, ValueLen, Value);
+
+					Defines[i].Value = newValue;
+				}
+			}
+		}
+	}
+
+	return *this;
 }
 
 BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, UINT numThreads) {

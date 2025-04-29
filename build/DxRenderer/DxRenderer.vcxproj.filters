@@ -234,6 +234,12 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\BRDF.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MaterialData.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\LightType.h">
+      <Filter>Common Files\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -344,6 +350,9 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\BRDF.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\MaterialData.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -433,6 +442,36 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\IntegrateDiffuse.hlsl">
       <Filter>Shader Files\BRDF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CookTorrance.hlsli">
+      <Filter>Shader Files\BRDF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\BlinnPhong.hlsli">
+      <Filter>Shader Files\BRDF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\BRDF.hlsli">
+      <Filter>Shader Files\BRDF</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ConvoluteDiffuseIrradiance.hlsl">
+      <Filter>Shader Files\EnvironmentMap</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\LightingUtil.hlsli">
+      <Filter>Shader Files\Foundation</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ShaderConstants.hlsli">
+      <Filter>Shader Files\Foundation</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ConvoluteSpecularIrradiance.hlsl">
+      <Filter>Shader Files\EnvironmentMap</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\IntegrateBrdf.hlsl">
+      <Filter>Shader Files\EnvironmentMap</Filter>
     </None>
   </ItemGroup>
 </Project>

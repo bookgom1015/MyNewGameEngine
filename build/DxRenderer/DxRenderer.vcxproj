@@ -19,6 +19,7 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h" />
+    <ClInclude Include="..\..\inc\Common\Render\LightType.h" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\HashUtil.hpp" />
@@ -39,6 +40,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\RenderItem.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MaterialData.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\Texture.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.hpp" />
@@ -79,6 +81,7 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\GpuResource.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\MaterialData.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\MeshGeometry.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\Texture.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
@@ -95,10 +98,15 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShadingObjectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\BlinnPhong.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\BRDF.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\CookTorrance.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli" />
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\LightingUtil.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\ShaderConstants.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
@@ -114,6 +122,8 @@
     <None Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Shading\ToneMapping.inl" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -155,6 +165,21 @@
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\IntegrateSpecular.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\ConvoluteDiffuseIrradiance.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\ConvoluteSpecularIrradiance.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\IntegrateBrdf.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -250,6 +275,7 @@
     <Import Project="..\..\packages\directxtk12_desktop_2019.2025.3.21.3\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\..\packages\directxtk12_desktop_2019.2025.3.21.3\build\native\directxtk12_desktop_2019.targets')" />
     <Import Project="..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets')" />
     <Import Project="..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.targets')" />
+    <Import Project="..\..\packages\directxtex_desktop_win10.2025.3.25.2\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\..\packages\directxtex_desktop_win10.2025.3.25.2\build\native\directxtex_desktop_win10.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -260,5 +286,6 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.targets'))" />
+    <Error Condition="!Exists('..\..\packages\directxtex_desktop_win10.2025.3.25.2\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\directxtex_desktop_win10.2025.3.25.2\build\native\directxtex_desktop_win10.targets'))" />
   </Target>
 </Project>

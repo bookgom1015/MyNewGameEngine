@@ -46,6 +46,25 @@ namespace Render::DX::Shading {
 			virtual ~GBufferClass() = default;
 
 		public:
+			__forceinline Foundation::Resource::GpuResource* AlbedoMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AlbedoMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* NormalMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE NormalMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* SpecularMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE SpecularMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* RoughnessMetalnessMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE RoughnessMetalnessMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* VelocityMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE VelocityMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* PositionMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE PositionMapSrv() const;
+
+		public:
 			virtual UINT CbvSrvUavDescCount() const override;
 			virtual UINT RtvDescCount() const override;
 			virtual UINT DsvDescCount() const override;
@@ -62,11 +81,11 @@ namespace Render::DX::Shading {
 		public:
 			BOOL DrawGBuffer(
 				Foundation::Resource::FrameResource* const pFrameResource,
-				D3D12_VIEWPORT viewport,
+				D3D12_VIEWPORT viewport, 
 				D3D12_RECT scissorRect,
-				Foundation::Resource::GpuResource* const backBuffer,
+				Foundation::Resource::GpuResource* const backBuffer, 
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
-				Foundation::Resource::GpuResource* const depthBuffer,
+				Foundation::Resource::GpuResource* const depthBuffer, 
 				D3D12_CPU_DESCRIPTOR_HANDLE do_depthBuffer,
 				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
 
@@ -97,6 +116,16 @@ namespace Render::DX::Shading {
 			CD3DX12_GPU_DESCRIPTOR_HANDLE mhNormalMapGpuSrv;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuRtv;
 
+			std::unique_ptr<Foundation::Resource::GpuResource> mSpecularMap;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuSrv;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhSpecularMapGpuSrv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuRtv;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mRoughnessMetalnessMap;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuSrv;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapGpuSrv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuRtv;
+
 			std::unique_ptr<Foundation::Resource::GpuResource> mVelocityMap;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhVelocityMapCpuSrv;
 			CD3DX12_GPU_DESCRIPTOR_HANDLE mhVelocityMapGpuSrv;
@@ -106,11 +135,6 @@ namespace Render::DX::Shading {
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuSrv;
 			CD3DX12_GPU_DESCRIPTOR_HANDLE mhPositionMapGpuSrv;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuRtv;
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mRMSMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhRMSMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhRMSMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhRMSMapCpuRtv;
 		};
 
 		using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;
@@ -118,3 +142,5 @@ namespace Render::DX::Shading {
 		InitDataPtr MakeInitData();
 	}
 }
+
+#include "GBuffer.inl"

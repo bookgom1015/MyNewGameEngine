@@ -1,4 +1,4 @@
-#include "GameWorld/Prefab/Ground.hpp"
+#include "GameWorld/Prefab/LampShade.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "GameWorld/Foundation/Core/Component.hpp"
@@ -7,7 +7,7 @@
 using namespace GameWorld::Prefab;
 using namespace DirectX;
 
-Ground::Ground(
+LampShade::LampShade(
 		Common::Debug::LogFile* const pLogFile,
 		const std::string& name,
 		XMFLOAT3 pos,
@@ -17,7 +17,7 @@ Ground::Ground(
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
 
-Ground::Ground(
+LampShade::LampShade(
 		Common::Debug::LogFile* const pLogFile, 
 		const std::string& name, 
 		const Transform& trans)
@@ -25,16 +25,16 @@ Ground::Ground(
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
 
-BOOL Ground::OnInitialzing() {
+BOOL LampShade::OnInitialzing() {
 	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("lampshade", "./../../../../assets/Models/", "obj"));
 
 	return TRUE;
 }
 
-BOOL Ground::ProcessActorInput(Common::Input::InputState* const pInputState) {
+BOOL LampShade::ProcessActorInput(Common::Input::InputState* const pInputState) {
 	return TRUE;
 }
 
-BOOL Ground::UpdateActor(FLOAT delta) {
+BOOL LampShade::UpdateActor(FLOAT delta) {
 	return TRUE;
 }

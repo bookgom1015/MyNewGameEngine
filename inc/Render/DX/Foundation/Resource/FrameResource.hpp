@@ -47,8 +47,8 @@ namespace Render::DX::Foundation {
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS MaterialCBAddress(UINT index) const;
 			UINT MaterialCBByteSize() const;
 
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS EquirectConvCBAddress() const;
-			UINT EquirectConvCBByteSize() const;
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ProjectToCubeCBAddress() const;
+			UINT ProjectToCubeCBByteSize() const;
 
 		public:
 			BOOL Initialize(
@@ -64,9 +64,9 @@ namespace Render::DX::Foundation {
 
 		public:
 			__forceinline void CopyMainPassCB(INT elementIndex, const ConstantBuffers::PassCB& data);
-			__forceinline void CopyObjecCB(INT elementIndex, const ConstantBuffers::ObjectCB& data);
+			__forceinline void CopyObjectCB(INT elementIndex, const ConstantBuffers::ObjectCB& data);
 			__forceinline void CopyMaterialCB(INT elementIndex, const ConstantBuffers::MaterialCB& data);
-			__forceinline void CopyEquirectConvCB(INT elementIndex, const ConstantBuffers::EquirectangularConverterCB& data);
+			__forceinline void CopyProjectToCubeCB(INT elementIndex, const ConstantBuffers::ProjectToCubeCB& data);
 
 		private:
 			BOOL CreateCommandListAllocators();
@@ -89,7 +89,7 @@ namespace Render::DX::Foundation {
 			UploadBuffer<ConstantBuffers::PassCB> mMainPassCB;
 			UploadBuffer<ConstantBuffers::ObjectCB> mObjectCB;
 			UploadBuffer<ConstantBuffers::MaterialCB> mMaterialCB;
-			UploadBuffer<ConstantBuffers::EquirectangularConverterCB> mEquirectConvCB;
+			UploadBuffer<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
 		};
 	}
 }

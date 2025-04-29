@@ -16,8 +16,8 @@ UINT FrameResource::MaterialCBByteSize() const {
 	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::MaterialCB));
 }
 
-UINT FrameResource::EquirectConvCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::EquirectangularConverterCB));
+UINT FrameResource::ProjectToCubeCBByteSize() const {
+	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ProjectToCubeCB));
 }
 
 BOOL FrameResource::Initialize(
@@ -61,7 +61,7 @@ BOOL FrameResource::BuildConstantBuffres(
 	CheckReturn(mpLogFile, mMainPassCB.Initialize(mpLogFile, mpDevice, numPasses, TRUE));
 	CheckReturn(mpLogFile, mObjectCB.Initialize(mpLogFile, mpDevice, numObjects, TRUE));
 	CheckReturn(mpLogFile, mMaterialCB.Initialize(mpLogFile, mpDevice, numMaterials, TRUE));
-	CheckReturn(mpLogFile, mEquirectConvCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
+	CheckReturn(mpLogFile, mProjectToCubeCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
 
 	return TRUE;
 }

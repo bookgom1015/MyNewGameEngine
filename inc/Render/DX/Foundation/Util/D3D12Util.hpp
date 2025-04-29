@@ -11,6 +11,7 @@
 
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
 #include <dxgi.h>
+#include <DirectXTex.h>
 
 namespace Common::Debug {
 	struct LogFile;
@@ -124,6 +125,14 @@ namespace Render::DX::Foundation {
 				LPCWSTR name);
 
 			static D3D12_INPUT_LAYOUT_DESC InputLayoutDesc();
+
+			static BOOL CaptureTexture(
+				Core::CommandObject* const pCmdObject,
+				ID3D12Resource* const pSource,
+				BOOL isCubeMap,
+				DirectX::ScratchImage& result,
+				D3D12_RESOURCE_STATES beforeState = D3D12_RESOURCE_STATE_RENDER_TARGET,
+				D3D12_RESOURCE_STATES afterState = D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		private:
 			static Common::Debug::LogFile* mpLogFile;

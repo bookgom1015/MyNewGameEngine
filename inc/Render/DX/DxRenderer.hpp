@@ -6,13 +6,19 @@
 
 #include <array>
 
-namespace Common::Foundation::Camera {
-	class GameCamera;
+namespace Common::Foundation {
+	namespace Camera {
+		class GameCamera;
+	}
+
+	namespace Mesh {
+		struct Material;
+	}
 }
 
 namespace ConstantBuffers {
 	struct PassCB;
-	struct EquirectangularConverterCB;
+	struct ProjectToCubeCB;
 }
 
 namespace Render {
@@ -26,6 +32,8 @@ namespace Render {
 			namespace Resource {
 				struct MeshGeometry;
 				struct SubmeshGeometry;
+
+				struct MaterialData;
 
 				class FrameResource;
 			}
@@ -78,7 +86,8 @@ namespace Render {
 			BOOL UpdateConstantBuffers();
 			BOOL UpdateMainPassCB();
 			BOOL UpdateObjectCB();
-			BOOL UpdateEquirectangularConverterCB();
+			BOOL UpdateMaterialCB();
+			BOOL UpdateProjectToCubeCB();
 
 		private:
 			BOOL BuildMeshGeometry(
@@ -92,6 +101,14 @@ namespace Render {
 				ID3D12GraphicsCommandList6* const pCmdList,
 				Common::Foundation::Mesh::Mesh* const pMesh,
 				Foundation::Resource::MeshGeometry*& pMeshGeo);
+			BOOL BuildMeshMaterial(
+				ID3D12GraphicsCommandList6* const pCmdList,
+				Common::Foundation::Mesh::Material* const pMaterial,
+				Foundation::Resource::MaterialData*& pMatData);
+			BOOL BuildMeshTextures(
+				ID3D12GraphicsCommandList6* const pCmdList,
+				Common::Foundation::Mesh::Material* const pMaterial,
+				Foundation::Resource::MaterialData* const pMatData);
 
 		private: // Functions that is called only once in Initialize
 			BOOL InitShadingObjects();
@@ -104,6 +121,7 @@ namespace Render {
 
 		private:
 			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries;
+			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials;
 
 			// Frame resource
 			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources;
@@ -112,7 +130,7 @@ namespace Render {
 
 			// Constant buffers
 			std::unique_ptr<ConstantBuffers::PassCB> mMainPassCB;
-			std::unique_ptr<ConstantBuffers::EquirectangularConverterCB> mEquirectConvCB;
+			std::unique_ptr<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
 
 			// Shading objects
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager;
