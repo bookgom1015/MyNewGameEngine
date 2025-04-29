@@ -4,7 +4,7 @@
 
 assets/Models/
 assets/Textures/
-assets/Shaders/PDB/
+assets/Shaders/HLSL/PDB/
 
 bin/
 obj/
