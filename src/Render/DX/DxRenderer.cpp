@@ -131,7 +131,6 @@ BOOL DxRenderer::Draw() {
 		opaquesReadyToDraw.push_back(opaque);
 	}
 	
-
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(), 
@@ -563,7 +562,7 @@ BOOL DxRenderer::BuildMeshMaterial(
 	matData->MaterialCBIndex = static_cast<INT>(mMaterials.size());	
 	matData->Albedo = pMaterial->Albedo;
 	matData->Specular = pMaterial->Specular;
-	matData->Roughness = 0.5f;
+	matData->Roughness = pMaterial->Roughness;
 	matData->Metalness = pMaterial->Metalness;
 
 	pMatData = matData.get();

@@ -45,7 +45,7 @@ float3 ConvoluteIrradiance(in float3 pos) {
     up = normalize(cross(N, Right));
 
     uint numSamples = 0;
-    const float SampleDelta = 0.05f;
+    const float SampleDelta = 0.025f;
     for (float phi = 0.f, phi_end = 2.f * PI; phi < phi_end; phi += SampleDelta) {
         for (float theta = 0.f, theta_end = 0.5f * PI; theta < theta_end; theta += SampleDelta) {
             const float CosTheta = cos(theta);

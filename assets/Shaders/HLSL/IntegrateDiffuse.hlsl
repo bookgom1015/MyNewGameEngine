@@ -77,16 +77,13 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float3 kS = FresnelSchlickRoughness(saturate(dot(NormalW, ViewW)), FresnelR0, Roughness);
     float3 kD = 1.f - kS;
     kD *= (1.f - mat.Metalness);
-
-    const float3 DiffuseIrradiance = gi_DiffuseIrradianceCubeEnv.SampleLevel(gsamLinearClamp, NormalW, 0).rgb;
-    const float3 Diffuse = DiffuseIrradiance * Albedo.rgb;
     
+    const float3 DiffuseIrradiance = gi_DiffuseIrradianceCubeEnv.SampleLevel(gsamLinearClamp, NormalW, 0).rgb;
     //const float AO = gi_AOMap.SampleLevel(gsamLinearClamp, pin.TexC, 0);
     const float AO = 1.f;
-
-    const float3 AmbientLight = (kD * Diffuse) * AO;
+    const float3 AmbientLight = (kD * Albedo.rgb * DiffuseIrradiance) * AO;    
     
-    return float4((float3) 0, 1.f);
+    return float4(DiffuseRadiance + AmbientLight, 1.f);
 }
 
 #endif // __INTEGRATEDIFFUSE_HLSL__

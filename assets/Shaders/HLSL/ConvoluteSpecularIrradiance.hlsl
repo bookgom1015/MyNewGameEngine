@@ -29,7 +29,7 @@ struct GeoOut {
     uint ArrayIndex : SV_RenderTargetArrayIndex;
 };
 
-static const int SAMPLE_COUNT = 1024;
+static const int SAMPLE_COUNT = 8192;
 
 FitToCubeVertexShader
 

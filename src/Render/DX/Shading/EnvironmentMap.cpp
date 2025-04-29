@@ -492,6 +492,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 
 	backBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	depthBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	mEnvironmentCubeMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &di_depthStencil);
 
@@ -710,7 +711,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::Save(LPCWSTR fileName, LPCWSTR baseDir
 			mInitData.CommandObject,
 			mEnvironmentCubeMap->Resource(),
 			TRUE,
-			image));
+			image,
+			mEnvironmentCubeMap->State(),
+			mEnvironmentCubeMap->State()));
 		
 		std::wstringstream filePath;
 		filePath << baseDir << fileName << EnvironmentCubeMapFileNameSuffix << L".dds";
@@ -732,7 +735,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::Save(LPCWSTR fileName, LPCWSTR baseDir
 			mInitData.CommandObject,
 			mDiffuseIrradianceCubeMap->Resource(),
 			TRUE,
-			image));
+			image,
+			mDiffuseIrradianceCubeMap->State(),
+			mDiffuseIrradianceCubeMap->State()));
 
 		std::wstringstream filePath;
 		filePath << baseDir << fileName << DiffuseIrradianceCubeMapFileNameSuffix << L".dds";
@@ -754,7 +759,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::Save(LPCWSTR fileName, LPCWSTR baseDir
 			mInitData.CommandObject,
 			mPrefilteredEnvironmentCubeMap->Resource(),
 			TRUE,
-			image));
+			image,
+			mPrefilteredEnvironmentCubeMap->State(),
+			mPrefilteredEnvironmentCubeMap->State()));
 	
 		std::wstringstream filePath;
 		filePath << baseDir << fileName << PrefilteredEnvironmentCubeMapFileNameSuffix << L".dds";
@@ -776,7 +783,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::Save(LPCWSTR fileName, LPCWSTR baseDir
 			mInitData.CommandObject,
 			mBrdfLutMap->Resource(),
 			FALSE,
-			image));
+			image,
+			mBrdfLutMap->State(),
+			mBrdfLutMap->State()));
 
 		std::wstringstream filePath;
 		filePath << baseDir << BrdfLutMapFileName << L".dds";

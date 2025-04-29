@@ -20,7 +20,7 @@ struct VertexOut {
     float2 TexC : TexCoord;
 };
 
-static const uint SAMPLE_COUNT = 1024;
+static const int SAMPLE_COUNT = 8192;
 
 FitToScreenVertexShader
 
