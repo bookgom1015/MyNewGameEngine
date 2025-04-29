@@ -563,7 +563,8 @@ BOOL DxRenderer::BuildMeshMaterial(
 	matData->MaterialCBIndex = static_cast<INT>(mMaterials.size());	
 	matData->Albedo = pMaterial->Albedo;
 	matData->Specular = pMaterial->Specular;
-	matData->Roughness = pMaterial->Roughness;
+	matData->Roughness = 0.5f;
+	matData->Metalness = pMaterial->Metalness;
 
 	pMatData = matData.get();
 

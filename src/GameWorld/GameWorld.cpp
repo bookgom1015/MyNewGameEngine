@@ -9,6 +9,7 @@
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "GameWorld/Player/FreeLookActor.hpp"
 #include "GameWorld/Prefab/LampShade.hpp"
+#include "GameWorld/Prefab/MetalSphere.hpp"
 
 using namespace GameWorld;
 
@@ -210,6 +211,7 @@ BOOL GameWorldClass::CreateInputProcessor() {
 BOOL GameWorldClass::BuildScene() {
 	new Player::FreeLookActor(mpLogFile, "free_look_actor");
 	new Prefab::LampShade(mpLogFile, "lamp_shade");
+	new Prefab::MetalSphere(mpLogFile, "metal_sphere");
 
 	return TRUE;
 }

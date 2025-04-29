@@ -159,6 +159,9 @@
     <ClInclude Include="..\..\externs\tinyobjloader\tiny_obj_loader.h">
       <Filter>External Files\tinyobjloader</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Prefab\MetalSphere.hpp">
+      <Filter>Header Files\Prefab</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -226,6 +229,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\GameWorld\Foundation\Mesh\MeshComponent.cpp">
       <Filter>Source Files\Foundation\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\GameWorld\Prefab\MetalSphere.cpp">
+      <Filter>Source Files\Prefab</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

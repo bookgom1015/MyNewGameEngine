@@ -2,7 +2,9 @@
 
 .vs/
 
-assets/
+assets/Models/
+assets/Textures/
+assets/Shaders/PDB/
 
 bin/
 obj/
@@ -11,4 +13,3 @@ lib/
 externs/
 
 packages/
-build/**/packages.config
