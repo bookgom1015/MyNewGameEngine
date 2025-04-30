@@ -209,9 +209,14 @@ BOOL GameWorldClass::CreateInputProcessor() {
 }
 
 BOOL GameWorldClass::BuildScene() {
-	new Player::FreeLookActor(mpLogFile, "free_look_actor");
+	new Player::FreeLookActor(mpLogFile, "free_look_actor", DirectX::XMFLOAT3(0.f, 2.f, -6.f));
 	new Prefab::LampShade(mpLogFile, "lamp_shade");
-	new Prefab::MetalSphere(mpLogFile, "metal_sphere");
+	new Prefab::MetalSphere(
+		mpLogFile, 
+		"metal_sphere", 
+		DirectX::XMFLOAT3(0.f, 2.f, 0.f), 
+		DirectX::XMFLOAT4(0.f, 0.f, 0.f, 1.f),
+		DirectX::XMFLOAT3(1.9f, 1.9f, 1.9f));
 
 	return TRUE;
 }

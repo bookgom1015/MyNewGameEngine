@@ -5,7 +5,7 @@ constexpr const std::string& GameWorld::Foundation::Core::Actor::Name() const {
 	return mName;
 }
 
-constexpr const Transform& GameWorld::Foundation::Core::Actor::GetTransform() const {
+constexpr const Common::Foundation::Mesh::Transform& GameWorld::Foundation::Core::Actor::GetTransform() const {
 	return mTransform;
 }
 

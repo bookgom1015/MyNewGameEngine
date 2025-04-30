@@ -286,6 +286,72 @@ namespace ShadingConvention{
 		}
 #endif 
 	}
+
+	namespace Shadow {
+		namespace ThreadGroup {
+			namespace DrawShadow {
+				enum {
+					Width = 8,
+					Height = 8,
+					Depth = 1,
+					Size = Width * Height * Depth
+				};
+			}
+		}
+
+#ifndef Shadow_DrawZDepth_RCSTRUCT
+#define Shadow_DrawZDepth_RCSTRUCT {	\
+		UINT gLightIndex;				\
+	};
+#endif
+
+#ifndef Shadow_DrawShadow_RCSTRUCT			
+#define Shadow_DrawShadow_RCSTRUCT {	\
+		UINT gLightIndex;				\
+	};
+#endif
+
+#ifdef _HLSL
+		typedef float	ZDepthMapFormat;
+		typedef uint	ShadowMapFormat;
+
+		static const uint InvalidFaceId = 255;
+
+		bool IsValidFaceId(uint faceId) {
+			return faceId != InvalidFaceId;
+		}
+
+#ifndef Shadow_DrawZDepth_RootConstants
+#define Shadow_DrawZDepth_RootConstants(reg) cbuffer cbRootConstants : register(reg) Shadow_DrawZDepth_RCSTRUCT
+#endif
+
+#ifndef Shadow_DrawShadow_RootConstants
+#define Shadow_DrawShadow_RootConstants(reg) cbuffer cbRootConstants : register(reg) Shadow_DrawShadow_RCSTRUCT
+#endif
+#else 
+		static const DXGI_FORMAT ZDepthMapFormat = DXGI_FORMAT_D32_FLOAT;
+		static const DXGI_FORMAT ShadowMapFormat = DXGI_FORMAT_R16_UINT;
+
+		const FLOAT FaceIdCubeMapClearValues[4] = { 255.f, 0.f, 0.f, 0.f };
+#endif 
+		namespace RootConstant {
+			namespace DrawZDepth {
+				struct Struct Shadow_DrawZDepth_RCSTRUCT
+					enum {
+					E_LightIndex = 0,
+					Count
+				};
+			}
+
+			namespace DrawShadow {
+				struct Struct Shadow_DrawShadow_RCSTRUCT
+					enum {
+					E_LightIndex = 0,
+					Count
+				};
+			}
+		}
+	}
 }
 
 #endif // __SHADINGCONVENTION_H__

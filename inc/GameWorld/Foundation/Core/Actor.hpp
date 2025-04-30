@@ -39,12 +39,12 @@ namespace GameWorld::Foundation::Core {
 		Actor(
 			Common::Debug::LogFile* const pLogFile, 
 			const std::string& name, 
-			const Transform& trans);
+			const Common::Foundation::Mesh::Transform& trans);
 		virtual ~Actor() = default;
 
 	public:
 		__forceinline constexpr const std::string& Name() const;
-		__forceinline constexpr const Transform& GetTransform() const;
+		__forceinline constexpr const Common::Foundation::Mesh::Transform& GetTransform() const;
 
 		__forceinline constexpr BOOL Initialized() const;
 		__forceinline constexpr BOOL IsDead() const;
@@ -98,7 +98,7 @@ namespace GameWorld::Foundation::Core {
 
 		std::string mName;
 
-		Transform mTransform;
+		Common::Foundation::Mesh::Transform mTransform;
 
 		std::vector<std::unique_ptr<Component>> mComponents;
 	};

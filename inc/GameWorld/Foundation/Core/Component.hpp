@@ -39,7 +39,7 @@ namespace GameWorld::Foundation::Core {
 		virtual BOOL OnUpdateWorldTransform() = 0;
 
 	protected:
-		const Transform& ActorTransform();
+		const Common::Foundation::Mesh::Transform& ActorTransform();
 
 	protected:
 		Common::Debug::LogFile* mpLogFile = nullptr;

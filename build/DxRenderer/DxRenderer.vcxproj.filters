@@ -106,6 +106,9 @@
     <Filter Include="Shader Files\BRDF">
       <UniqueIdentifier>{b5d69749-ed01-4829-9450-a2d924e784a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Shadow">
+      <UniqueIdentifier>{ce5cf224-50f8-4945-a301-558076fbbd9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -240,6 +243,9 @@
     <ClInclude Include="..\..\inc\Common\Render\LightType.h">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
@@ -352,6 +358,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\MaterialData.cpp">
       <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp">
+      <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -472,6 +481,15 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\IntegrateBrdf.hlsl">
       <Filter>Shader Files\EnvironmentMap</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\DrawShadow.hlsl">
+      <Filter>Shader Files\Shadow</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\DrawZDepth.hlsl">
+      <Filter>Shader Files\Shadow</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\Shadow.hlsli">
+      <Filter>Shader Files\Shadow</Filter>
     </None>
   </ItemGroup>
 </Project>

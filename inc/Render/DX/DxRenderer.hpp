@@ -53,6 +53,7 @@ namespace Render {
 			namespace ToneMapping { class ToneMappingClass; }
 			namespace GBuffer { class GBufferClass; }
 			namespace BRDF { class BRDFClass; }
+			namespace Shadow { class ShadowClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -77,6 +78,7 @@ namespace Render {
 
 		public:
 			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) override;
+			RendererAPI virtual BOOL UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) override;
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) override;
 
 		protected:
@@ -144,10 +146,12 @@ namespace Render {
 			std::unique_ptr<Shading::ToneMapping::ToneMappingClass> mToneMapping;
 			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer;
 			std::unique_ptr<Shading::BRDF::BRDFClass> mBRDF;
+			std::unique_ptr<Shading::Shadow::ShadowClass> mShadow;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
-			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemRefs;
+			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs;
+			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups;
 		};
 	}
 }

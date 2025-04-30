@@ -10,4 +10,4 @@ Component::Component(Common::Debug::LogFile* const pLogFile, Actor* const pOwner
 	mpOwner->AddComponent(this);
 }
 
-const Transform& Component::ActorTransform() { return mpOwner->GetTransform(); }
+const Common::Foundation::Mesh::Transform& Component::ActorTransform() { return mpOwner->GetTransform(); }

@@ -18,7 +18,7 @@ namespace GameWorld::Prefab {
 		LampShade(
 			Common::Debug::LogFile* const pLogFile, 
 			const std::string& name, 
-			const Transform& trans);
+			const Common::Foundation::Mesh::Transform& trans);
 		virtual ~LampShade() = default;
 
 	protected:

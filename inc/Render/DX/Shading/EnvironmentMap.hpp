@@ -203,33 +203,33 @@ namespace Render::DX::Shading {
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates = {};
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mTemporaryEquirectangularMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhTemporaryEquirectangularMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhTemporaryEquirectangularMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhTemporaryEquirectangularMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhTemporaryEquirectangularMapGpuSrv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mEquirectangularMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEquirectangularMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhEquirectangularMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEquirectangularMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhEquirectangularMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhEquirectangularMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhEquirectangularMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mEnvironmentCubeMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhEnvironmentCubeMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mDiffuseIrradianceCubeMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDiffuseIrradianceCubeMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mPrefilteredEnvironmentCubeMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhPrefilteredEnvironmentCubeMapCpuRtvs[ShadingConvention::MipmapGenerator::MaxMipLevel] = {};
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mBrdfLutMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhBrdfLutMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhBrdfLutMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhBrdfLutMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhBrdfLutMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhBrdfLutMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhBrdfLutMapCpuRtv;
 		};
 
 		using InitDataPtr = std::unique_ptr<EnvironmentMapClass::InitData>;

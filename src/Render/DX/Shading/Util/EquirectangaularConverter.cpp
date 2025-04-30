@@ -158,7 +158,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildPipelineState
 
 BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectangularToCube(
 		Foundation::Resource::GpuResource* const pCube,
-		CD3DX12_CPU_DESCRIPTOR_HANDLE ro_cubes[],
+		D3D12_CPU_DESCRIPTOR_HANDLE ro_cubes[],
 		Foundation::Resource::GpuResource* const pEquirect,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
 		D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube,
@@ -202,7 +202,7 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectang
 
 BOOL EquirectangularConverter::EquirectangularConverterClass::ConvertEquirectangularToCube(
 		Foundation::Resource::GpuResource* const pCube,
-		CD3DX12_CPU_DESCRIPTOR_HANDLE ro_cube,
+		D3D12_CPU_DESCRIPTOR_HANDLE ro_cube,
 		Foundation::Resource::GpuResource* const pEquirect,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
 		D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube,

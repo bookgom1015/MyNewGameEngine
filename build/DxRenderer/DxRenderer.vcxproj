@@ -51,6 +51,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\ToneMapping.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp" />
@@ -90,6 +91,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\ToneMapping.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\EquirectangaularConverter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\MipmapGenerator.cpp" />
@@ -108,6 +110,7 @@
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderConstants.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\Shadow.hlsli" />
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
@@ -180,6 +183,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\IntegrateBrdf.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\DrawShadow.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\DrawZDepth.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

@@ -50,11 +50,11 @@ namespace Render::DX::Shading {
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* InterMediateMapResource();
-			__forceinline constexpr CD3DX12_GPU_DESCRIPTOR_HANDLE InterMediateMapSrv() const;
-			__forceinline constexpr CD3DX12_CPU_DESCRIPTOR_HANDLE InterMediateMapRtv() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE InterMediateMapSrv() const;
+			__forceinline constexpr D3D12_CPU_DESCRIPTOR_HANDLE InterMediateMapRtv() const;
 
 			__forceinline Foundation::Resource::GpuResource* InterMediateCopyMapResource();
-			__forceinline constexpr CD3DX12_GPU_DESCRIPTOR_HANDLE InterMediateCopyMapSrv() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE InterMediateCopyMapSrv() const;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -92,13 +92,13 @@ namespace Render::DX::Shading {
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mIntermediateMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhIntermediateMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhIntermediateMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mIntermediateCopyMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapGpuSrv;
 		};
 
 		using InitDataPtr = std::unique_ptr<ToneMappingClass::InitData>;

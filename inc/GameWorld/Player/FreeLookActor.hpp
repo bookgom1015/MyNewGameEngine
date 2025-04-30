@@ -19,7 +19,7 @@ namespace GameWorld {
 			FreeLookActor(
 				Common::Debug::LogFile* const pLogFile, 
 				const std::string& name, 
-				const Transform& trans);
+				const Common::Foundation::Mesh::Transform& trans);
 			virtual ~FreeLookActor() = default;
 
 		public:

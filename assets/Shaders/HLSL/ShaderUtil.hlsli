@@ -95,6 +95,66 @@ namespace ShaderUtil {
     uint GetIndex32(in ByteAddressBuffer buf, in uint idx) {
         return buf.Load(idx * 4);
     }
+    
+    uint GetCubeFaceIndex(in float3 direction) {
+        const float3 AbsDir = abs(direction);
+        if (AbsDir.x >= AbsDir.y && AbsDir.x >= AbsDir.z)
+            return (direction.x > 0.f) ? 0 : 1; // +X : -X
+        else if (AbsDir.y >= AbsDir.x && AbsDir.y >= AbsDir.z)
+            return (direction.y > 0.f) ? 2 : 3; // +Y : -Y
+        else
+            return (direction.z > 0.f) ? 4 : 5; // +Z : -Z    
+    }
+    
+    // Convert normalized direction to UV coordinates for the 2D texture
+    float2 ConvertDirectionToUV(in float3 dir) {
+        const float AbsX = abs(dir.x);
+        const float AbsY = abs(dir.y);
+        const float AbsZ = abs(dir.z);
+
+        const float DirX = dir.x > 0.f ? dir.x : min(dir.x, -1e-6f);
+        const float DirY = dir.y > 0.f ? dir.y : min(dir.y, -1e-6f);
+        const float DirZ = dir.z > 0.f ? dir.z : min(dir.z, -1e-6f);
+
+        float u, v;
+
+	// Check which face the vector corresponds to
+        if (AbsX >= AbsY && AbsX >= AbsZ) {
+		// +X or -X face
+            if (dir.x > 0.f) {
+                u = 0.5f * (-dir.z / DirX + 1.f);
+                v = 0.5f * (-dir.y / DirX + 1.f);
+            }
+            else {
+                u = 0.5f * (dir.z / -DirX + 1.f);
+                v = 0.5f * (dir.y / DirX + 1.f);
+            }
+        }
+        else if (AbsY >= AbsX && AbsY >= AbsZ) {
+		// +Y or -Y face
+            if (dir.y > 0.f) {
+                u = 0.5f * (dir.x / DirY + 1.f);
+                v = 0.5f * (dir.z / DirY + 1.f);
+            }
+            else {
+                u = 0.5f * (dir.x / -DirY + 1.f);
+                v = 0.5f * (dir.z / DirY + 1.f);
+            }
+        }
+        else {
+		// +Z or -Z face
+            if (dir.z > 0.f) {
+                u = 0.5f * (dir.x / DirZ + 1.f);
+                v = 0.5f * (-dir.y / DirZ + 1.f);
+            }
+            else {
+                u = 0.5f * (dir.x / DirZ + 1.f);
+                v = 0.5f * (dir.y / DirZ + 1.f);
+            }
+        }
+
+        return float2(u, v);
+    }
 }
 
 #endif // __SHADERUITL_HLSLI__

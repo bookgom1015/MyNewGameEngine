@@ -34,7 +34,10 @@ namespace Common {
 			class GameCamera;
 		}
 
-		namespace Mesh {
+		namespace Mesh 
+		{
+			struct Transform;
+
 			class Mesh;
 		}
 	}
@@ -62,6 +65,7 @@ namespace Common {
 
 		public:
 			RendererAPI virtual BOOL AddMesh(Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) = 0;
+			RendererAPI virtual BOOL UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) = 0;
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) = 0;
 
 		public:

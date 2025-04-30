@@ -29,6 +29,7 @@ namespace Render {
 
 		public:
 			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) override;
+			RendererAPI virtual BOOL UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) override;
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) override;
 		};
 	}

@@ -107,34 +107,34 @@ namespace Render::DX::Shading {
 			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mAlbedoMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhAlbedoMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhAlbedoMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhAlbedoMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhAlbedoMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhAlbedoMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhAlbedoMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mNormalMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhNormalMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhNormalMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mSpecularMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhSpecularMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhSpecularMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mRoughnessMetalnessMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mVelocityMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhVelocityMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhVelocityMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhVelocityMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhVelocityMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhVelocityMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhVelocityMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mPositionMap;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuSrv;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhPositionMapGpuSrv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuRtv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhPositionMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuRtv;
 		};
 
 		using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;

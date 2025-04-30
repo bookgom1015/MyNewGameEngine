@@ -2,6 +2,7 @@
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
+#include "Common/Foundation/Mesh/Transform.hpp"
 #include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX/Foundation/ConstantBuffer.h"
 #include "Render/DX/Foundation/RenderItem.hpp"
@@ -25,6 +26,7 @@
 #include "Render/DX/Shading/ToneMapping.hpp"
 #include "Render/DX/Shading/GBuffer.hpp"
 #include "Render/DX/Shading/BRDF.hpp"
+#include "Render/DX/Shading/Shadow.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
 using namespace Render::DX;
@@ -51,6 +53,7 @@ DxRenderer::DxRenderer() {
 	mToneMapping = std::make_unique<Shading::ToneMapping::ToneMappingClass>();
 	mGBuffer = std::make_unique<Shading::GBuffer::GBufferClass>();
 	mBRDF = std::make_unique<Shading::BRDF::BRDFClass>();
+	mShadow = std::make_unique<Shading::Shadow::ShadowClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -59,6 +62,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mToneMapping.get());
 	mShadingObjectManager->AddShadingObject(mGBuffer.get());
 	mShadingObjectManager->AddShadingObject(mBRDF.get());
+	mShadingObjectManager->AddShadingObject(mShadow.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -121,8 +125,8 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 BOOL DxRenderer::Draw() {
 	CheckReturn(mpLogFile, mCurrentFrameResource->ResetCommandListAllocators());
 
-	const auto skySphere = mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Sky].front();
-	const auto& opaques = mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque];
+	const auto skySphere = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].front();
+	const auto& opaques = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque];
 
 	std::vector<Foundation::RenderItem*> opaquesReadyToDraw;
 	for (const auto opaque : opaques) {
@@ -247,7 +251,8 @@ BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Fo
 
 			CheckReturn(mpLogFile, BuildMeshMaterial(CmdList, &material, ritem->Material));
 
-			mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Opaque].push_back(ritem.get());
+			mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque].push_back(ritem.get());
+			mRenderItemRefs[hash] = ritem.get();
 			mRenderItems.push_back(std::move(ritem));
 		}
 	}
@@ -257,8 +262,25 @@ BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Fo
 	return TRUE;
 }
 
-void DxRenderer::RemoveMesh(Common::Foundation::Hash hash) {
+BOOL DxRenderer::UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) {
+	if (mRenderItemRefs.find(hash) == mRenderItemRefs.end()) return TRUE;
 
+	const auto ritem = mRenderItemRefs[hash];
+	XMStoreFloat4x4(
+		&ritem->World,
+		XMMatrixAffineTransformation(
+			pTransform->Scale,
+			XMVectorSet(0.f, 0.f, 0.f, 1.f),
+			pTransform->Rotation,
+			pTransform->Position
+		)
+	);
+
+	return TRUE;
+}
+
+void DxRenderer::RemoveMesh(Common::Foundation::Hash hash) {
+	if (mRenderItemRefs.find(hash) == mRenderItemRefs.end()) return;
 }
 
 BOOL DxRenderer::CreateDescriptorHeaps() {
@@ -679,6 +701,16 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mBRDF->Initialize(mpLogFile, initData.get()));
 	}
+	// Shadow
+	{
+		auto initData = Shading::Shadow::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		CheckReturn(mpLogFile, mShadow->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -739,7 +771,7 @@ BOOL DxRenderer::BuildSkySphere() {
 	ritem->BaseVertexLocation = ritem->Geometry->Subsets["SkySphere"].BaseVertexLocation;
 	XMStoreFloat4x4(&ritem->World, XMMatrixScaling(1000.f, 1000.f, 1000.f));
 
-	mRenderItemRefs[Common::Foundation::Mesh::RenderType::E_Sky].push_back(ritem.get());
+	mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].push_back(ritem.get());
 	mRenderItems.push_back(std::move(ritem));
 
 	return TRUE;

@@ -75,7 +75,7 @@ namespace Render::DX::Shading::Util {
 		public:
 			BOOL ConvertEquirectangularToCube(
 				Foundation::Resource::GpuResource* const pCube,
-				CD3DX12_CPU_DESCRIPTOR_HANDLE ro_cubes[],
+				D3D12_CPU_DESCRIPTOR_HANDLE ro_cubes[],
 				Foundation::Resource::GpuResource* const pEquirect,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
 				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
@@ -83,7 +83,7 @@ namespace Render::DX::Shading::Util {
 				UINT maxMipLevel = 0);
 			BOOL ConvertEquirectangularToCube(
 				Foundation::Resource::GpuResource* const pCube,
-				CD3DX12_CPU_DESCRIPTOR_HANDLE ro_cube,
+				D3D12_CPU_DESCRIPTOR_HANDLE ro_cube,
 				Foundation::Resource::GpuResource* const pEquirect,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
 				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,

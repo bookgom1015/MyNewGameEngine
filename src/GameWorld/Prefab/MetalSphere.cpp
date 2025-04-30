@@ -20,7 +20,7 @@ MetalSphere::MetalSphere(
 MetalSphere::MetalSphere(
 	Common::Debug::LogFile* const pLogFile,
 	const std::string& name,
-	const Transform& trans)
+	const Common::Foundation::Mesh::Transform& trans)
 	: Actor(pLogFile, name, trans) {
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }

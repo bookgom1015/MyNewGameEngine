@@ -14,8 +14,7 @@ BOOL MeshComponent::OnInitialzing() {
 }
 
 void MeshComponent::OnCleaningUp() {
-	if (mbAddedMesh)
-		GameWorld::GameWorldClass::spGameWorld->Renderer()->RemoveMesh(mMeshHash);
+	if (mbAddedMesh) GameWorld::GameWorldClass::spGameWorld->Renderer()->RemoveMesh(mMeshHash);
 }
 
 BOOL MeshComponent::ProcessInput(Common::Input::InputState* const pInput) {
@@ -27,6 +26,9 @@ BOOL MeshComponent::Update(FLOAT delta) {
 }
 
 BOOL MeshComponent::OnUpdateWorldTransform() {
+	auto transform = ActorTransform();
+	if (mbAddedMesh) GameWorld::GameWorldClass::spGameWorld->Renderer()->UpdateMeshTransform(mMeshHash, &transform);
+
 	return TRUE;
 }
 

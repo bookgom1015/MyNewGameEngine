@@ -61,8 +61,11 @@ namespace Render::DX::Shading {
 		namespace PipelineState {
 			enum Type {
 				GP_IntegrateDiffuse_BlinnPhong = 0,
+				MP_IntegrateDiffuse_BlinnPhong,
 				GP_IntegrateDiffuse_CookTorrance,
+				MP_IntegrateDiffuse_CookTorrance,
 				GP_IntegrateSpecular,
+				MP_IntegrateSpecular,
 				Count
 			};
 		}

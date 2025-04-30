@@ -167,7 +167,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 BOOL BRDF::BRDFClass::BuildPipelineStates() {
 	// IntegrateDiffuse
 	{
-		// GraphicsPipeline
+		// GraphicsPipelineState
 		{
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateDiffuse].Get();
@@ -208,6 +208,47 @@ BOOL BRDF::BRDFClass::BuildPipelineStates() {
 					L"BRDF_GP_IntegrateDiffuse_CookTorrance"));
 			}
 		}
+		// MeshShaderPipelineState
+		if (mInitData.MeshShaderSupported) {
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateDiffuse].Get();
+			{
+				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_IntegrateDiffuse]);
+				NullCheck(mpLogFile, MS);
+				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
+			}
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			// BlinnPhong
+			{
+				{
+					const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateDiffuse_BlinnPhong]);
+					NullCheck(mpLogFile, PS);
+					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+				}
+
+				CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
+					mInitData.Device,
+					psoDesc,
+					IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_IntegrateDiffuse_BlinnPhong]),
+					L"BRDF_MP_IntegrateDiffuse_BlinnPhong"));
+			}
+			// CookTorrance
+			{
+				{
+					const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateDiffuse_CookTorrance]);
+					NullCheck(mpLogFile, PS);
+					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+				}
+
+				CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
+					mInitData.Device,
+					psoDesc,
+					IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_IntegrateDiffuse_CookTorrance]),
+					L"BRDF_MP_IntegrateDiffuse_CookTorrance"));
+			}
+		}
 	}
 	// IntegrateSpecular
 	{
@@ -231,6 +272,27 @@ BOOL BRDF::BRDFClass::BuildPipelineStates() {
 				psoDesc,
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_IntegrateSpecular]),
 				L"BRDF_GP_IntegrateSpecular"));
+		}
+		// MeshShaderPipelineState
+		if (mInitData.MeshShaderSupported) {
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateSpecular].Get();
+			{
+				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_IntegrateSpecular]);
+				NullCheck(mpLogFile, MS);
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateSpecular]);
+				NullCheck(mpLogFile, PS);
+				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_IntegrateSpecular]),
+				L"BRDF_MP_IntegrateSpecular"));
 		}
 	}
 
@@ -260,7 +322,7 @@ BOOL BRDF::BRDFClass::IntegrateDiffuse(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[PipelineState::GP_IntegrateDiffuse_CookTorrance].Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_IntegrateDiffuse_CookTorrance : PipelineState::GP_IntegrateDiffuse_CookTorrance].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -290,10 +352,15 @@ BOOL BRDF::BRDFClass::IntegrateDiffuse(
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_PositionMap, si_positionMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_DiffuseIrradianceCubeMap, si_diffuseIrradianceMap);
 
-	CmdList->IASetVertexBuffers(0, 0, nullptr);
-	CmdList->IASetIndexBuffer(nullptr);
-	CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	CmdList->DrawInstanced(6, 1, 0, 0);
+	if (mInitData.MeshShaderSupported) {
+		CmdList->DispatchMesh(1, 1, 1);
+	}
+	else {
+		CmdList->IASetVertexBuffers(0, 0, nullptr);
+		CmdList->IASetIndexBuffer(nullptr);
+		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CmdList->DrawInstanced(6, 1, 0, 0);
+	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
 
@@ -327,7 +394,7 @@ BOOL BRDF::BRDFClass::IntegrateSpecular(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[PipelineState::GP_IntegrateSpecular].Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_IntegrateSpecular : PipelineState::GP_IntegrateSpecular].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -367,10 +434,15 @@ BOOL BRDF::BRDFClass::IntegrateSpecular(
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateSpecular::SI_BrdfLutMap, si_brdfLutMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateSpecular::SI_PrefilteredEnvCubeMap, si_prefilteredEnvCubeMap);
 
-	CmdList->IASetVertexBuffers(0, 0, nullptr);
-	CmdList->IASetIndexBuffer(nullptr);
-	CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	CmdList->DrawInstanced(6, 1, 0, 0);
+	if (mInitData.MeshShaderSupported) {
+		CmdList->DispatchMesh(1, 1, 1);
+	}
+	else {
+		CmdList->IASetVertexBuffers(0, 0, nullptr);
+		CmdList->IASetIndexBuffer(nullptr);
+		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CmdList->DrawInstanced(6, 1, 0, 0);
+	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
 
