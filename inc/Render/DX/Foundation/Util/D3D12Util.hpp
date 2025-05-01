@@ -73,6 +73,12 @@ namespace Render::DX::Foundation {
 				ID3D12Resource* const pResource,
 				const D3D12_SHADER_RESOURCE_VIEW_DESC* const pDesc,
 				D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor);
+			static void CreateUnorderedAccessView(
+				Core::Device* const pDevice,
+				ID3D12Resource* const pResource,
+				ID3D12Resource* const pCounterResource,
+				const D3D12_UNORDERED_ACCESS_VIEW_DESC* const pDesc,
+				D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor);
 			static void CreateRenderTargetView(
 				Core::Device* const pDevice,
 				ID3D12Resource* const pResource,

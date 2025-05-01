@@ -217,6 +217,8 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 
 		CmdList->OMSetRenderTargets(static_cast<UINT>(renderTargets.size()), renderTargets.data(), TRUE, &do_depthBuffer);
 
+		CmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Pass, pFrameResource->MainPassCBAddress());
+
 		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems));
 	}
 
@@ -419,8 +421,6 @@ BOOL GBuffer::GBufferClass::DrawRenderItems(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		ID3D12GraphicsCommandList6* const pCmdList,
 		const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
-	pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Pass, pFrameResource->MainPassCBAddress());
-
 	for (size_t i = 0, end = ritems.size(); i < end; ++i) {
 		const auto ri = ritems[i];
 

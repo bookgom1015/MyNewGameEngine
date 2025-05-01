@@ -6,6 +6,8 @@
 
 #include <array>
 
+#include <DirectXCollision.h>
+
 namespace Common::Foundation {
 	namespace Camera {
 		class GameCamera;
@@ -87,6 +89,7 @@ namespace Render {
 		private:
 			BOOL UpdateConstantBuffers();
 			BOOL UpdateMainPassCB();
+			BOOL UpdateLightCB();
 			BOOL UpdateObjectCB();
 			BOOL UpdateMaterialCB();
 			BOOL UpdateProjectToCubeCB();
@@ -117,7 +120,8 @@ namespace Render {
 			BOOL BuildFrameResources();
 
 			BOOL BuildSkySphere();
-			BOOL FinishUpInitializing();
+			BOOL BuildLights();
+			BOOL BuildScene();
 
 			BOOL PresentAndSignal();
 
@@ -152,6 +156,9 @@ namespace Render {
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
 			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs;
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups;
+
+			// Scene bounds
+			DirectX::BoundingSphere mSceneBounds;
 		};
 	}
 }

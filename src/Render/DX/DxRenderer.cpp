@@ -4,6 +4,7 @@
 #include "Common/Foundation/Camera/GameCamera.hpp"
 #include "Common/Foundation/Mesh/Transform.hpp"
 #include "Common/Render/ShadingArgument.hpp"
+#include "Common/Util/MathUtil.hpp"
 #include "Render/DX/Foundation/ConstantBuffer.h"
 #include "Render/DX/Foundation/RenderItem.hpp"
 #include "Render/DX/Foundation/Core/Factory.hpp"
@@ -88,8 +89,7 @@ BOOL DxRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
 
-	CheckReturn(mpLogFile, BuildSkySphere());
-	CheckReturn(mpLogFile, FinishUpInitializing());
+	CheckReturn(mpLogFile, BuildScene());
 
 	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
 
@@ -135,6 +135,10 @@ BOOL DxRenderer::Draw() {
 		opaquesReadyToDraw.push_back(opaque);
 	}
 	
+	CheckReturn(mpLogFile, mShadow->Run(
+		mCurrentFrameResource,
+		opaquesReadyToDraw));
+
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(), 
@@ -294,6 +298,7 @@ BOOL DxRenderer::CreateDescriptorHeaps() {
 }
 
 BOOL DxRenderer::UpdateConstantBuffers() {
+	CheckReturn(mpLogFile, UpdateLightCB());
 	CheckReturn(mpLogFile, UpdateMainPassCB());
 	CheckReturn(mpLogFile, UpdateObjectCB());
 	CheckReturn(mpLogFile, UpdateMaterialCB());
@@ -337,6 +342,122 @@ BOOL DxRenderer::UpdateMainPassCB() {
 	//mMainPassCB->JitteredOffset = bTaaEnabled ? mFittedToBakcBufferHaltonSequence[offsetIndex] : XMFLOAT2(0.f, 0.f);
 	
 	mCurrentFrameResource->CopyMainPassCB(0, *mMainPassCB.get());
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateLightCB() {
+	for (UINT i = 0; i < mShadow->LightCount(); ++i) {
+		auto& light = mShadow->Light(i);
+
+		if (light.Type == Common::Render::LightType::E_Directional) {
+			const XMMATRIX T(
+				0.5f, 0.f, 0.f, 0.f,
+				0.f, -0.5f, 0.f, 0.f,
+				0.f, 0.f, 1.f, 0.f,
+				0.5f, 0.5f, 0.f, 1.f
+			);
+
+			const XMVECTOR lightDir = XMLoadFloat3(&light.Direction);
+			const XMVECTOR lightPos = -2.f * mSceneBounds.Radius * lightDir;
+			const XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
+			const XMVECTOR lightUp = UnitVector::UpVector;
+			const XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
+
+			// Transform bounding sphere to light space.
+			XMFLOAT3 sphereCenterLS;
+			XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
+
+			// Ortho frustum in light space encloses scene.
+			const FLOAT l = sphereCenterLS.x - mSceneBounds.Radius;
+			const FLOAT b = sphereCenterLS.y - mSceneBounds.Radius;
+			const FLOAT n = sphereCenterLS.z - mSceneBounds.Radius;
+			const FLOAT r = sphereCenterLS.x + mSceneBounds.Radius;
+			const FLOAT t = sphereCenterLS.y + mSceneBounds.Radius;
+			const FLOAT f = sphereCenterLS.z + mSceneBounds.Radius;
+
+			const XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+			const XMMATRIX viewProj = XMMatrixMultiply(lightView, lightProj);
+			XMStoreFloat4x4(&light.Mat0, XMMatrixTranspose(viewProj));
+
+			const XMMATRIX S = lightView * lightProj * T;
+			XMStoreFloat4x4(&light.Mat1, XMMatrixTranspose(S));
+
+			XMStoreFloat3(&light.Position, lightPos);
+		}
+		else if (light.Type == Common::Render::LightType::E_Point || light.Type == Common::Render::LightType::E_Tube) {
+			const auto proj = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 1.f, 50.f);
+			const auto pos = XMLoadFloat3(&light.Position);
+
+			// Positive +X
+			{
+				const auto target = pos + XMVectorSet(1.f, 0.f, 0.f, 0.f);
+				const auto view_px = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_px = view_px * proj;
+				XMStoreFloat4x4(&light.Mat0, XMMatrixTranspose(vp_px));
+			}
+			// Positive -X
+			{
+				const auto target = pos + XMVectorSet(-1.f, 0.f, 0.f, 0.f);
+				const auto view_nx = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_nx = view_nx * proj;
+				XMStoreFloat4x4(&light.Mat1, XMMatrixTranspose(vp_nx));
+			}
+			// Positive +Y
+			{
+				const auto target = pos + XMVectorSet(0.f, 1.f, 0.f, 0.f);
+				const auto view_py = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 0.f, -1.f, 0.f));
+				const auto vp_py = view_py * proj;
+				XMStoreFloat4x4(&light.Mat2, XMMatrixTranspose(vp_py));
+			}
+			// Positive -Y
+			{
+				const auto target = pos + XMVectorSet(0.f, -1.f, 0.f, 0.f);
+				const auto view_ny = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 0.f, 1.f, 0.f));
+				const auto vp_ny = view_ny * proj;
+				XMStoreFloat4x4(&light.Mat3, XMMatrixTranspose(vp_ny));
+			}
+			// Positive +Z
+			{
+				const auto target = pos + XMVectorSet(0.f, 0.f, 1.f, 0.f);
+				const auto view_pz = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_pz = view_pz * proj;
+				XMStoreFloat4x4(&light.Mat4, XMMatrixTranspose(vp_pz));
+			}
+			// Positive -Z
+			{
+				const auto target = pos + XMVectorSet(0.f, 0.f, -1.f, 0.f);
+				const auto view_nz = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_nz = view_nz * proj;
+				XMStoreFloat4x4(&light.Mat5, XMMatrixTranspose(vp_nz));
+			}
+		}
+		else if (light.Type == Common::Render::LightType::E_Rect) {
+			const XMVECTOR lightDir = XMLoadFloat3(&light.Direction);
+			const XMVECTOR lightUp = Common::Util::MathUtil::CalcUpVector(light.Direction);
+			const XMVECTOR lightRight = XMVector3Cross(lightUp, lightDir);
+			XMStoreFloat3(&light.Up, lightUp);
+			XMStoreFloat3(&light.Right, lightRight);
+
+			const XMVECTOR lightCenter = XMLoadFloat3(&light.Center);
+			const FLOAT halfSizeX = light.Size.x * 0.5f;
+			const FLOAT halfSizeY = light.Size.y * 0.5f;
+			const XMVECTOR lightPos0 = lightCenter + lightUp * halfSizeY + lightRight * halfSizeX;
+			const XMVECTOR lightPos1 = lightCenter + lightUp * halfSizeY - lightRight * halfSizeX;
+			const XMVECTOR lightPos2 = lightCenter - lightUp * halfSizeY - lightRight * halfSizeX;
+			const XMVECTOR lightPos3 = lightCenter - lightUp * halfSizeY + lightRight * halfSizeX;
+			XMStoreFloat3(&light.Position, lightPos0);
+			XMStoreFloat3(&light.Position1, lightPos1);
+			XMStoreFloat3(&light.Position2, lightPos2);
+			XMStoreFloat3(&light.Position3, lightPos3);
+
+			const XMVECTOR targetPos = lightCenter + lightDir;
+			const XMMATRIX lightView = XMMatrixLookAtLH(lightCenter, targetPos, lightUp);
+		}
+
+		mMainPassCB->Lights[i] = light;
+	}
 
 	return TRUE;
 }
@@ -709,6 +830,10 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
 		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		initData->TexWidth = 2048;
+		initData->TexHeight = 2048;
 		CheckReturn(mpLogFile, mShadow->Initialize(mpLogFile, initData.get()));
 	}
 
@@ -777,9 +902,39 @@ BOOL DxRenderer::BuildSkySphere() {
 	return TRUE;
 }
 
-BOOL DxRenderer::FinishUpInitializing() {
+BOOL DxRenderer::BuildLights() {
+	// Directional light 1
+	{
+		Foundation::Light light;
+		light.Type = Common::Render::LightType::E_Directional;
+		light.Direction = { 0.577f, -0.577f, 0.577f };
+		light.Color = { 240.f / 255.f, 235.f / 255.f, 223.f / 255.f };
+		light.Intensity = 1.802f;
+		mShadow->AddLight(light);
+	}
+	// Directional light 2
+	{
+		Foundation::Light light;
+		light.Type = Common::Render::LightType::E_Directional;
+		light.Direction = { 0.067f, -0.701f, -0.836f };
+		light.Color = { 149.f / 255.f, 142.f / 255.f, 100.f / 255.f };
+		light.Intensity = 1.534f;
+		mShadow->AddLight(light);
+	}
+
+	return TRUE;
+}
+
+BOOL DxRenderer::BuildScene() {
+	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
+	const FLOAT WidthSquared = 32.f * 32.f;
+	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
+
 	// Some of shading objects require particular constant buffers
-	CheckReturn(mpLogFile, UpdateConstantBuffers());
+	CheckReturn(mpLogFile, UpdateConstantBuffers());	
+
+	CheckReturn(mpLogFile, BuildSkySphere());
+	CheckReturn(mpLogFile, BuildLights());
 
 	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(
 		mCurrentFrameResource,

@@ -15,7 +15,9 @@ void CreateDebuggingConsole() {
 	ConsoleLog("Debugging Console Initialized");
 }
 
-void DestroyDebuggingConsole() {
+void DestroyDebuggingConsole(BOOL bNeedToPause = FALSE) {
+	ConsoleLog("Debugging Console will be terminated");
+	if (bNeedToPause) system("pause");
 	FreeConsole();
 }
 
@@ -31,21 +33,35 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	try {
 		GameWorld::GameWorldClass gw;
-		
-		CheckReturn(logFile, gw.Initialize(logFile, hInstance));
-		CheckReturn(logFile, gw.RunLoop());
+
+		if (!gw.Initialize(logFile, hInstance)) {
+			WLogln(logFile, L"Failed to initialize game");
+#ifdef _DEBUG
+			DestroyDebuggingConsole(TRUE);
+#endif
+			return -1;
+		}
+		if (!gw.RunLoop()) {
+			WLogln(logFile, L"Game-loop broke");
+#ifdef _DEBUG
+			DestroyDebuggingConsole(TRUE);
+#endif
+			return -1;
+		}
 		gw.CleanUp();
 
-		WLogln(logFile, L"Game successfully shotdowned");
+		WLogln(logFile, L"Game successfully cleaned up");
+#ifdef _DEBUG
+		DestroyDebuggingConsole();
+#endif
 
 		return 0;
 	}
 	catch (std::exception& e) {
-		Logln(logFile, "Game catched exception: ", e.what());
+		Logln(logFile, "Catched exception: ", e.what());
+#ifdef _DEBUG
+		DestroyDebuggingConsole(TRUE);
+#endif
 		return -1;
 	}
-	
-#ifdef _DEBUG
-	DestroyDebuggingConsole();
-#endif
 }
