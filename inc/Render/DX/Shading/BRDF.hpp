@@ -27,6 +27,7 @@ namespace Render::DX::Shading {
 			namespace IntegrateDiffuse {
 				enum {
 					CB_Pass = 0,
+					CB_Light,
 					SI_AlbedoMap,
 					SI_NormalMap,
 					SI_DepthMap,
@@ -78,7 +79,6 @@ namespace Render::DX::Shading {
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
 				Util::ShaderManager* ShaderManager = nullptr;
-
 				UINT ClientWidth = 0;
 				UINT ClientHeight = 0;
 			};
@@ -110,6 +110,7 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pSpecularMap, D3D12_GPU_DESCRIPTOR_HANDLE si_specularMap, 
 				Foundation::Resource::GpuResource* const pRoughnessMetalnessMap, D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
 				Foundation::Resource::GpuResource* const pPositionMap, D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+				Foundation::Resource::GpuResource* const pShadowMap, D3D12_GPU_DESCRIPTOR_HANDLE si_shadowMap,
 				Foundation::Resource::GpuResource* const pDiffuseIrradianceMap, D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap);
 			BOOL IntegrateSpecular(
 				Foundation::Resource::FrameResource* const pFrameResource,

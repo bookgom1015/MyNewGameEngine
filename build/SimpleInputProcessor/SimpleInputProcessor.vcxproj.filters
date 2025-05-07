@@ -50,12 +50,6 @@
     <ClInclude Include="..\..\inc\Input\SimpleInputProcessor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
-      <Filter>Common Files\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp">
-      <Filter>Common Files\Foundation\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Input\KeyCodes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

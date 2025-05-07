@@ -3,6 +3,7 @@
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
+#include "ImGuiManager/DX/DxImGuiManager.hpp"
 
 using namespace Render::DX::Foundation::Core;
 

@@ -10,6 +10,7 @@
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
+#include "ImGuiManager/DX/DxImGuiManager.hpp"
 
 #include <algorithm>
 
@@ -35,11 +36,14 @@ DxLowRenderer::~DxLowRenderer() {}
 BOOL DxLowRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile,
 		Common::Foundation::Core::WindowsManager* const pWndManager, 
+		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
 	mpLogFile = pLogFile;
 	mpWindowsManager = pWndManager;
 	mpArgumentSet = pArgSet;
+
+	mpImGuiManager = dynamic_cast<ImGuiManager::DX::DxImGuiManager*>(pImGuiManager);
 
 	mClientWidth = width;
 	mClientHeight = height;

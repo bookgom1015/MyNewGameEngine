@@ -29,7 +29,7 @@ namespace Render::DX::Foundation {
 		// relative to the world space, which defines the position, orientation,
 		// and scale of the object in thw world.
 		DirectX::XMFLOAT4X4 World = Common::Util::MathUtil::Identity4x4();
-		DirectX::XMFLOAT4X4 PrevWolrd = Common::Util::MathUtil::Identity4x4();
+		DirectX::XMFLOAT4X4 PrevWorld = Common::Util::MathUtil::Identity4x4();
 		DirectX::XMFLOAT4X4 TexTransform = Common::Util::MathUtil::Identity4x4();
 
 		// Dirty flag indicating the object data has changed and we need to update the constant buffer.

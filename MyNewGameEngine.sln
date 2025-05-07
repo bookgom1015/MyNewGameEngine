@@ -4,8 +4,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxRenderer", "build\DxRenderer\DxRenderer.vcxproj", "{A034ED57-2314-46DB-A79F-FCCF8A20FB89}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8} = {C98B9AFB-00AA-4489-89DD-13024AD4E7B8}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VkRenderer", "build\VkRenderer\VkRenderer.vcxproj", "{0E9B5E75-A8C2-4A9A-B0AC-83C636C753E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55} = {876BD09D-9FFD-4784-93F3-FC37C5991F55}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Renderer", "Renderer", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -26,6 +32,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Physics", "Physics", "{9D1DAD29-1E41-4DC6-9901-B1A8DB0EAC8E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleInputProcessor", "build\SimpleInputProcessor\SimpleInputProcessor.vcxproj", "{9DB6BEBF-8895-4285-B0FD-5FCE92D84231}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImGui", "ImGui", "{ECDAF2AE-A17C-4160-91B5-781C1DB3C93E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxImGuiManager", "build\DxImGuiManager\DxImGuiManager.vcxproj", "{C98B9AFB-00AA-4489-89DD-13024AD4E7B8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VkImGuiManager", "build\VkImGuiManager\VkImGuiManager.vcxproj", "{876BD09D-9FFD-4784-93F3-FC37C5991F55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +75,18 @@ Global
 		{9DB6BEBF-8895-4285-B0FD-5FCE92D84231}.VkDebug|x64.Build.0 = VkDebug|x64
 		{9DB6BEBF-8895-4285-B0FD-5FCE92D84231}.VkRelease|x64.ActiveCfg = VkRelease|x64
 		{9DB6BEBF-8895-4285-B0FD-5FCE92D84231}.VkRelease|x64.Build.0 = VkRelease|x64
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8}.DxDebug|x64.ActiveCfg = Debug|x64
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8}.DxDebug|x64.Build.0 = Debug|x64
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8}.DxRelease|x64.ActiveCfg = Release|x64
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8}.DxRelease|x64.Build.0 = Release|x64
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8}.VkDebug|x64.ActiveCfg = Debug|x64
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8}.VkRelease|x64.ActiveCfg = Release|x64
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55}.DxDebug|x64.ActiveCfg = Debug|x64
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55}.DxRelease|x64.ActiveCfg = Release|x64
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55}.VkDebug|x64.ActiveCfg = Debug|x64
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55}.VkDebug|x64.Build.0 = Debug|x64
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55}.VkRelease|x64.ActiveCfg = Release|x64
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55}.VkRelease|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +95,8 @@ Global
 		{A034ED57-2314-46DB-A79F-FCCF8A20FB89} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{0E9B5E75-A8C2-4A9A-B0AC-83C636C753E3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9DB6BEBF-8895-4285-B0FD-5FCE92D84231} = {0FF95092-F8F8-4C97-9FEA-10EAD8CE5A51}
+		{C98B9AFB-00AA-4489-89DD-13024AD4E7B8} = {ECDAF2AE-A17C-4160-91B5-781C1DB3C93E}
+		{876BD09D-9FFD-4784-93F3-FC37C5991F55} = {ECDAF2AE-A17C-4160-91B5-781C1DB3C93E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19B1D607-C7E0-44CC-A026-89F763074BE5}

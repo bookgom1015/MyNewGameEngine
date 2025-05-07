@@ -81,7 +81,7 @@ void MS(
 }
 
 float4 PS(in VertexOut pin) : SV_Target {
-    return gi_EnvCubeMap.SampleLevel(gsamLinearClamp, normalize(pin.PosL), 0);
+    return gi_EnvCubeMap.SampleLevel(gsamAnisotropicClamp, normalize(pin.PosL), 0);
 }
 
 #endif // __DRAWSKYSPHERE_HLSL__

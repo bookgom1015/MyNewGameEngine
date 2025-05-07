@@ -28,7 +28,7 @@ namespace Render::DX::Shading {
 
 			namespace DrawZDepth {
 				enum {
-					CB_Pass = 0,
+					CB_Light = 0,
 					CB_Object,
 					CB_Material,
 					RC_Consts,
@@ -39,7 +39,7 @@ namespace Render::DX::Shading {
 
 			namespace DrawShadow {
 				enum {
-					CB_Pass = 0,
+					CB_Light = 0,
 					RC_Consts,
 					SI_PositionMap,
 					SI_ZDepthMap,
@@ -66,10 +66,10 @@ namespace Render::DX::Shading {
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
 				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth;
-				UINT ClientHeight;
-				UINT TexWidth;
-				UINT TexHeight;
+				UINT ClientWidth = 0;
+				UINT ClientHeight = 0;
+				UINT TexWidth = 0;
+				UINT TexHeight = 0;
 			};
 
 		public:
@@ -80,6 +80,9 @@ namespace Render::DX::Shading {
 			__forceinline constexpr const Foundation::Light* Lights() const;
 			__forceinline constexpr Foundation::Light Light(UINT index) const;
 			__forceinline constexpr UINT LightCount() const;
+
+			__forceinline Foundation::Resource::GpuResource* ShadowMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ShadowMapSrv() const;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -98,6 +101,8 @@ namespace Render::DX::Shading {
 		public:
 			BOOL Run(
 				Foundation::Resource::FrameResource* const pFrameResource, 
+				Foundation::Resource::GpuResource* const pPositionMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
 
 			BOOL AddLight(const Foundation::Light& light);
@@ -111,6 +116,12 @@ namespace Render::DX::Shading {
 
 			BOOL DrawZDepth(
 				Foundation::Resource::FrameResource* const pFrameResource,
+				const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
+				UINT lightIndex);
+			BOOL DrawShadow(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Foundation::Resource::GpuResource* const pPositionMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 				const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
 				UINT lightIndex);
 			BOOL DrawRenderItems(
@@ -151,14 +162,4 @@ namespace Render::DX::Shading {
 	}
 }
 
-constexpr const Render::DX::Foundation::Light* Render::DX::Shading::Shadow::ShadowClass::Lights() const {
-	return mLights.data();
-}
-
-constexpr Render::DX::Foundation::Light Render::DX::Shading::Shadow::ShadowClass::Light(UINT index) const {
-	return mLights[index];
-}
-
-constexpr UINT Render::DX::Shading::Shadow::ShadowClass::LightCount() const {
-	return mLightCount;
-}
+#include "Shadow.inl"

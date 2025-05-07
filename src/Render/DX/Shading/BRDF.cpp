@@ -95,6 +95,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::IntegrateDiffuse::Count] = {};
 		slotRootParameter[RootSignature::IntegrateDiffuse::CB_Pass].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::IntegrateDiffuse::CB_Light].InitAsConstantBufferView(1);
 		slotRootParameter[RootSignature::IntegrateDiffuse::SI_AlbedoMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::IntegrateDiffuse::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::IntegrateDiffuse::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -303,22 +304,15 @@ BOOL BRDF::BRDFClass::IntegrateDiffuse(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		D3D12_VIEWPORT viewport,
 		D3D12_RECT scissorRect,
-		Foundation::Resource::GpuResource* const pBackBuffer,
-		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
-		Foundation::Resource::GpuResource* const pAlbedoMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_albedoMap,
-		Foundation::Resource::GpuResource* const pNormalMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
-		Foundation::Resource::GpuResource* const pDepthMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-		Foundation::Resource::GpuResource* const pSpecularMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_specularMap,
-		Foundation::Resource::GpuResource* const pRoughnessMetalnessMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
-		Foundation::Resource::GpuResource* const pPositionMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
-		Foundation::Resource::GpuResource* const pDiffuseIrradianceMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap) {
+		Foundation::Resource::GpuResource* const pBackBuffer, D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+		Foundation::Resource::GpuResource* const pAlbedoMap, D3D12_GPU_DESCRIPTOR_HANDLE si_albedoMap,
+		Foundation::Resource::GpuResource* const pNormalMap, D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+		Foundation::Resource::GpuResource* const pDepthMap, D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+		Foundation::Resource::GpuResource* const pSpecularMap, D3D12_GPU_DESCRIPTOR_HANDLE si_specularMap,
+		Foundation::Resource::GpuResource* const pRoughnessMetalnessMap, D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
+		Foundation::Resource::GpuResource* const pPositionMap, D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+		Foundation::Resource::GpuResource* const pShadowMap, D3D12_GPU_DESCRIPTOR_HANDLE si_shadowMap,
+		Foundation::Resource::GpuResource* const pDiffuseIrradianceMap, D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -339,17 +333,21 @@ BOOL BRDF::BRDFClass::IntegrateDiffuse(
 	pSpecularMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	pRoughnessMetalnessMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	pShadowMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	pDiffuseIrradianceMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
 
 	CmdList->SetGraphicsRootConstantBufferView(RootSignature::IntegrateDiffuse::CB_Pass, pFrameResource->MainPassCBAddress());
+	CmdList->SetGraphicsRootConstantBufferView(RootSignature::IntegrateDiffuse::CB_Light, pFrameResource->LightCBAddress());
+
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_AlbedoMap, si_albedoMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_NormalMap, si_normalMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_DepthMap, si_depthMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_SpecularMap, si_specularMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_RoughnessMetalicMap, si_roughnessMetalnessMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_PositionMap, si_positionMap);
+	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_ShadowMap, si_shadowMap);
 	CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateDiffuse::SI_DiffuseIrradianceCubeMap, si_diffuseIrradianceMap);
 
 	if (mInitData.MeshShaderSupported) {

@@ -8,6 +8,10 @@ UINT FrameResource::MainPassCBByteSize() const {
 	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::PassCB));
 }
 
+UINT FrameResource::LightCBByteSize() const {
+	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::LightCB));
+}
+
 UINT FrameResource::ObjectCBByteSize() const {
 	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ObjectCB));
 }
@@ -59,6 +63,7 @@ BOOL FrameResource::BuildConstantBuffres(
 		UINT numObjects,
 		UINT numMaterials) {
 	CheckReturn(mpLogFile, mMainPassCB.Initialize(mpLogFile, mpDevice, numPasses, TRUE));
+	CheckReturn(mpLogFile, mLightCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
 	CheckReturn(mpLogFile, mObjectCB.Initialize(mpLogFile, mpDevice, numObjects, TRUE));
 	CheckReturn(mpLogFile, mMaterialCB.Initialize(mpLogFile, mpDevice, numMaterials, TRUE));
 	CheckReturn(mpLogFile, mProjectToCubeCB.Initialize(mpLogFile, mpDevice, 1, TRUE));

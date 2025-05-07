@@ -19,6 +19,14 @@ void Render::DX::Foundation::Resource::FrameResource::CopyMainPassCB(INT element
 	mMainPassCB.CopyData(elementIndex, data);
 }
 
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::LightCBAddress() const {
+	return mLightCB.Resource()->GetGPUVirtualAddress();
+}
+
+void Render::DX::Foundation::Resource::FrameResource::CopyLightCB(INT elementIndex, const ConstantBuffers::LightCB& data) {
+	mLightCB.CopyData(elementIndex, data);
+}
+
 // ObjectCB
 D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::ObjectCBAddress() const {
 	return mObjectCB.Resource()->GetGPUVirtualAddress();

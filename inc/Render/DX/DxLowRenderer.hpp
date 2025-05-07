@@ -29,6 +29,10 @@ namespace Common::Foundation::Core {
 	struct Processor;
 }
 
+namespace ImGuiManager::DX {
+	class DxImGuiManager;
+}
+
 namespace Render::DX {
 	namespace Foundation::Core {
 		class Factory;
@@ -51,6 +55,7 @@ namespace Render::DX {
 		RendererAPI virtual BOOL Initialize(
 			Common::Debug::LogFile* const pLogFile,
 			Common::Foundation::Core::WindowsManager* const pWndManager,
+			Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 			UINT width, UINT height) override;
 		RendererAPI virtual void CleanUp() override;
@@ -77,6 +82,8 @@ namespace Render::DX {
 	protected:
 		UINT mClientWidth = 0;
 		UINT mClientHeight = 0;
+
+		ImGuiManager::DX::DxImGuiManager* mpImGuiManager = nullptr;
 				
 		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor;
 		std::unique_ptr<Foundation::Core::Factory> mFactory;

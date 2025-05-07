@@ -3,6 +3,7 @@
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/SwapChain.hpp"
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
+#include "ImGuiManager/DX/DxImGuiManager.hpp"
 
 using namespace Render::DX::Foundation::Core;
 

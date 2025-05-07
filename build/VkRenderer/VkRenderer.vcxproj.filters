@@ -95,20 +95,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
-      <Filter>Common Files\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
-      <Filter>Common Files\Debug</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\VK\VkLowRenderer.hpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp">
-      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\CommandObject.hpp">
       <Filter>Header Files\Foundation\Core</Filter>
@@ -128,20 +119,11 @@
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Util\VulkanUtil.hpp">
       <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp">
-      <Filter>Common Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
+    <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\inc\Common\Render\Renderer.inl">
-      <Filter>Common Files\Render</Filter>
-    </None>
     <None Include="..\..\inc\Render\VK\Foundation\Core\Device.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
@@ -151,11 +133,11 @@
     <None Include="..\..\inc\Render\VK\Foundation\Core\Surface.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
-    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </None>
     <None Include="..\..\inc\Render\VK\Foundation\Surface.inl">
       <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Render\Renderer.inl">
+      <Filter>Common Files\Render</Filter>
     </None>
   </ItemGroup>
 </Project>

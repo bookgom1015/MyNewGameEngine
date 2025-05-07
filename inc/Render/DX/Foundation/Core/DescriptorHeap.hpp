@@ -15,61 +15,70 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
-namespace Render::DX::Foundation::Core {
-	class Device;
-	class SwapChain;
-	class DepthStencilBuffer;
+namespace ImGuiManager::DX {
+	class DxImGuiManager;
+}
 
-	class DescriptorHeap {
-	public:
-		DescriptorHeap() = default;
-		virtual ~DescriptorHeap() = default;
+namespace Render::DX {
+	namespace Foundation::Core {
+		class Device;
+		class SwapChain;
+		class DepthStencilBuffer;
 
-	public:
-		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE CbvSrvUavCpuOffset(UINT offset);
-		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE CbvSrvUavGpuOffset(UINT offset);
-		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuOffset(UINT offset);
-		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuOffset(UINT offset);
+		class DescriptorHeap {
+		private:
+			friend class ImGuiManager::DX::DxImGuiManager;
 
-	public:
-		BOOL Initialize(
-			Common::Debug::LogFile* const pLogFile, 
-			Device* const pDevice,
-			SwapChain* const pSwapChain, 
-			DepthStencilBuffer* const pDepthStencilBuffer);
+		public:
+			DescriptorHeap() = default;
+			virtual ~DescriptorHeap() = default;
 
-		BOOL CreateDescriptorHeaps(UINT numCbvSrvUav, UINT numRtv, UINT numDsv);
-		BOOL BuildDescriptors();
+		public:
+			__forceinline D3D12_CPU_DESCRIPTOR_HANDLE CbvSrvUavCpuOffset(UINT offset);
+			__forceinline D3D12_GPU_DESCRIPTOR_HANDLE CbvSrvUavGpuOffset(UINT offset);
+			__forceinline D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuOffset(UINT offset);
+			__forceinline D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuOffset(UINT offset);
 
-		BOOL SetDescriptorHeap(ID3D12GraphicsCommandList4* const pCmdList);
+		public:
+			BOOL Initialize(
+				Common::Debug::LogFile* const pLogFile,
+				Device* const pDevice,
+				SwapChain* const pSwapChain,
+				DepthStencilBuffer* const pDepthStencilBuffer);
 
-	private:
-		BOOL BuildDescriptorSizes();
+			BOOL CreateDescriptorHeaps(UINT numCbvSrvUav, UINT numRtv, UINT numDsv);
+			BOOL BuildDescriptors();
 
-	private:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+			BOOL SetDescriptorHeap(ID3D12GraphicsCommandList4* const pCmdList);
 
-		Device* mDevice = nullptr;
+		private:
+			BOOL BuildDescriptorSizes();
 
-		SwapChain* mpSwapChain = nullptr;
-		DepthStencilBuffer* mpDepthStencilBuffer = nullptr;
+		private:
+			Common::Debug::LogFile* mpLogFile = nullptr;
 
-		// Descriptor heaps
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mCbvSrvUavHeap;
+			Device* mDevice = nullptr;
 
-		// Descriptor handle sizes
-		UINT mRtvDescriptorSize = 0;
-		UINT mDsvDescriptorSize = 0;
-		UINT mCbvSrvUavDescriptorSize = 0;
+			SwapChain* mpSwapChain = nullptr;
+			DepthStencilBuffer* mpDepthStencilBuffer = nullptr;
 
-		// Descriptor handles
-		CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuCbvSrvUav;
-		CD3DX12_GPU_DESCRIPTOR_HANDLE mhGpuCbvSrvUav;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuDsv;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuRtv;
-	};
+			// Descriptor heaps
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mCbvSrvUavHeap;
+
+			// Descriptor handle sizes
+			UINT mRtvDescriptorSize = 0;
+			UINT mDsvDescriptorSize = 0;
+			UINT mCbvSrvUavDescriptorSize = 0;
+
+			// Descriptor handles
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuCbvSrvUav;
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhGpuCbvSrvUav;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuDsv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuRtv;
+		};
+	}
 }
 
 #include "Render/DX/Foundation/Core/DescriptorHeap.inl"

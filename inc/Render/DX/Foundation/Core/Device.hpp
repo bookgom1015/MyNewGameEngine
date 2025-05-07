@@ -15,53 +15,60 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
-namespace Render::DX::Foundation {
-	namespace Resource {
-		class GpuResource;
-	}
+namespace ImGuiManager::DX {
+	class DxImGuiManager;
+}
 
-	namespace Util {
-		class D3D12Util;
-	}
+namespace Render::DX {
+	namespace Foundation {
+		namespace Resource {
+			class GpuResource;
+		}
 
-	namespace Core {
-		class Factory;
+		namespace Util {
+			class D3D12Util;
+		}
 
-		class Device {
-		private:
-			friend class Factory;
-			friend class Resource::GpuResource;
-			friend class Util::D3D12Util;
+		namespace Core {
+			class Factory;
 
-		public:
-			Device() = default;
-			virtual ~Device() = default;
+			class Device {
+			private:
+				friend class Factory;
+				friend class Resource::GpuResource;
+				friend class Util::D3D12Util;
+				friend class ImGuiManager::DX::DxImGuiManager;
 
-		public:
-			BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+			public:
+				Device() = default;
+				virtual ~Device() = default;
 
-		public:
-			BOOL QueryInterface(Microsoft::WRL::ComPtr<ID3D12InfoQueue1>& pInfoQueue);
+			public:
+				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
 
-			BOOL CreateCommandQueue(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& pCommandQueue);
-			BOOL CreateCommandAllocator(Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& pCommandAllocator);
-			BOOL CreateCommandList(
-				ID3D12CommandAllocator* const pCommandAllocator,
-				Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6>& pCommandList);
-			BOOL CreateFence(Microsoft::WRL::ComPtr<ID3D12Fence>& pFence);
+			public:
+				BOOL QueryInterface(Microsoft::WRL::ComPtr<ID3D12InfoQueue1>& pInfoQueue);
 
-			BOOL CreateRtvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
-			BOOL CreateDsvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
-			BOOL CreateCbvUavSrvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
-			UINT DescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType) const;
+				BOOL CreateCommandQueue(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& pCommandQueue);
+				BOOL CreateCommandAllocator(Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& pCommandAllocator);
+				BOOL CreateCommandList(
+					ID3D12CommandAllocator* const pCommandAllocator,
+					Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6>& pCommandList);
+				BOOL CreateFence(Microsoft::WRL::ComPtr<ID3D12Fence>& pFence);
 
-			BOOL CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const;
+				BOOL CreateRtvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
+				BOOL CreateDsvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
+				BOOL CreateCbvUavSrvDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pDescHeap, UINT numDescs);
+				UINT DescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType) const;
 
-		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+				BOOL CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const;
 
-			Microsoft::WRL::ComPtr<ID3D12Device5> md3dDevice;
-		};
+			private:
+				Common::Debug::LogFile* mpLogFile = nullptr;
+
+				Microsoft::WRL::ComPtr<ID3D12Device5> md3dDevice;
+			};
+		}
 	}
 }
 

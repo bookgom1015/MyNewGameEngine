@@ -1,5 +1,6 @@
 #include "Render/DX/DxRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
 #include "Common/Foundation/Mesh/Transform.hpp"
@@ -13,6 +14,7 @@
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
 #include "Render/DX/Foundation/Core/SwapChain.hpp"
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
+#include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Resource/MeshGeometry.hpp"
 #include "Render/DX/Foundation/Resource/MaterialData.hpp"
@@ -28,6 +30,8 @@
 #include "Render/DX/Shading/GBuffer.hpp"
 #include "Render/DX/Shading/BRDF.hpp"
 #include "Render/DX/Shading/Shadow.hpp"
+#include "Render/DX/Shading/TAA.hpp"
+#include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
 using namespace Render::DX;
@@ -55,6 +59,7 @@ DxRenderer::DxRenderer() {
 	mGBuffer = std::make_unique<Shading::GBuffer::GBufferClass>();
 	mBRDF = std::make_unique<Shading::BRDF::BRDFClass>();
 	mShadow = std::make_unique<Shading::Shadow::ShadowClass>();
+	mTAA = std::make_unique<Shading::TAA::TAAClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -64,25 +69,29 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mGBuffer.get());
 	mShadingObjectManager->AddShadingObject(mBRDF.get());
 	mShadingObjectManager->AddShadingObject(mShadow.get());
+	mShadingObjectManager->AddShadingObject(mTAA.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
+	mLightCB = std::make_unique<ConstantBuffers::LightCB>();
 	mProjectToCubeCB = std::make_unique<ConstantBuffers::ProjectToCubeCB>();
 }
 
-DxRenderer::~DxRenderer() {
-	CleanUp();
-}
+DxRenderer::~DxRenderer() {}
 
 BOOL DxRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
 		Common::Foundation::Core::WindowsManager* const pWndManager, 
+		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
-	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, pArgSet, width, height));
+	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
 	CheckReturn(mpLogFile, InitShadingObjects());
 	CheckReturn(mpLogFile, BuildFrameResources());
+
+	CheckReturn(mpLogFile, mpImGuiManager->InitializeD3D12(mDevice.get(), mDescriptorHeap.get()));
+	mpImGuiManager->HookMsgCallback(mpWindowsManager);
 
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
@@ -97,6 +106,10 @@ BOOL DxRenderer::Initialize(
 }
 
 void DxRenderer::CleanUp() {
+	mCommandObject->FlushCommandQueue();
+
+	mpImGuiManager->CleanUpD3D12();
+
 	DxLowRenderer::CleanUp();
 }
 
@@ -137,6 +150,8 @@ BOOL DxRenderer::Draw() {
 	
 	CheckReturn(mpLogFile, mShadow->Run(
 		mCurrentFrameResource,
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv(),
 		opaquesReadyToDraw));
 
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
@@ -167,6 +182,8 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->RoughnessMetalnessMapSrv(),
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
+		mShadow->ShadowMap(),
+		mShadow->ShadowMapSrv(),
 		mEnvironmentMap->DiffuseIrradianceCubeMap(), 
 		mEnvironmentMap->DiffuseIrradianceCubeMapSrv()));
 
@@ -205,6 +222,18 @@ BOOL DxRenderer::Draw() {
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		skySphere));
 
+	CheckReturn(mpLogFile, mTAA->ApplyTAA(
+		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(),
+		mToneMapping->InterMediateCopyMapSrv(),
+		mGBuffer->VelocityMap(),
+		mGBuffer->VelocityMapSrv(),
+		mpArgumentSet->TAA.ModulationFactor));
+
 	CheckReturn(mpLogFile, mToneMapping->Resolve(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
@@ -222,13 +251,14 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->BackBufferCopy(),
 		mSwapChain->BackBufferCopySrv(),
 		mpArgumentSet->GammaCorrection.Gamma));
-	
+
+	CheckReturn(mpLogFile, DrawImGui());		
 	CheckReturn(mpLogFile, PresentAndSignal());
 
 	return TRUE;
 }
 
-BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) {
+BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) {
 	CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
 		mCurrentFrameResource->CommandAllocator(0),
 		0));
@@ -250,6 +280,15 @@ BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Fo
 			ritem->IndexCount = meshGeo->Subsets[subset.first].IndexCount;
 			ritem->StartIndexLocation = meshGeo->Subsets[subset.first].StartIndexLocation;
 			ritem->BaseVertexLocation = meshGeo->Subsets[subset.first].BaseVertexLocation;
+			XMStoreFloat4x4(
+				&ritem->World,
+				XMMatrixAffineTransformation(
+					pTransform->Scale,
+					XMVectorSet(0.f, 0.f, 0.f, 1.f),
+					pTransform->Rotation,
+					pTransform->Position
+				)
+			);
 			
 			auto material = pMesh->GetMaterial(count++);
 
@@ -270,6 +309,8 @@ BOOL DxRenderer::UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foun
 	if (mRenderItemRefs.find(hash) == mRenderItemRefs.end()) return TRUE;
 
 	const auto ritem = mRenderItemRefs[hash];
+
+	ritem->PrevWorld = ritem->World;
 	XMStoreFloat4x4(
 		&ritem->World,
 		XMMatrixAffineTransformation(
@@ -279,6 +320,7 @@ BOOL DxRenderer::UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foun
 			pTransform->Position
 		)
 	);
+	ritem->NumFramesDirty = Foundation::Resource::FrameResource::Count;
 
 	return TRUE;
 }
@@ -298,8 +340,8 @@ BOOL DxRenderer::CreateDescriptorHeaps() {
 }
 
 BOOL DxRenderer::UpdateConstantBuffers() {
-	CheckReturn(mpLogFile, UpdateLightCB());
 	CheckReturn(mpLogFile, UpdateMainPassCB());
+	CheckReturn(mpLogFile, UpdateLightCB());
 	CheckReturn(mpLogFile, UpdateObjectCB());
 	CheckReturn(mpLogFile, UpdateMaterialCB());
 	CheckReturn(mpLogFile, UpdateProjectToCubeCB());
@@ -338,6 +380,9 @@ BOOL DxRenderer::UpdateMainPassCB() {
 	XMStoreFloat4x4(&mMainPassCB->ViewProjTex, XMMatrixTranspose(viewProjTex));
 	XMStoreFloat3(&mMainPassCB->EyePosW, mpCamera->Position());
 
+	const auto OffsetIndex = static_cast<UINT>(mCommandObject->CurrentFence() % mTAA->HaltonSequenceSize());
+	mMainPassCB->JitteredOffset = mTAA->HaltonSequence(OffsetIndex);
+
 	//const size_t offsetIndex = static_cast<size_t>(mCommandObject->CurrentFence()) % mFittedToBakcBufferHaltonSequence.size();
 	//mMainPassCB->JitteredOffset = bTaaEnabled ? mFittedToBakcBufferHaltonSequence[offsetIndex] : XMFLOAT2(0.f, 0.f);
 	
@@ -347,7 +392,11 @@ BOOL DxRenderer::UpdateMainPassCB() {
 }
 
 BOOL DxRenderer::UpdateLightCB() {
-	for (UINT i = 0; i < mShadow->LightCount(); ++i) {
+	const auto LightCount = mShadow->LightCount();
+
+	mLightCB->LightCount = LightCount;
+
+	for (UINT i = 0; i < LightCount; ++i) {
 		auto& light = mShadow->Light(i);
 
 		if (light.Type == Common::Render::LightType::E_Directional) {
@@ -456,7 +505,8 @@ BOOL DxRenderer::UpdateLightCB() {
 			const XMMATRIX lightView = XMMatrixLookAtLH(lightCenter, targetPos, lightUp);
 		}
 
-		mMainPassCB->Lights[i] = light;
+		mLightCB->Lights[i] = light;
+		mCurrentFrameResource->CopyLightCB(0, *mLightCB.get());
 	}
 
 	return TRUE;
@@ -467,18 +517,18 @@ BOOL DxRenderer::UpdateObjectCB() {
 		// Only update the cbuffer data if the constants have changed.  
 		// This needs to be tracked per frame resource.
 		if (ritem->NumFramesDirty > 0) {
-			const XMMATRIX world = XMLoadFloat4x4(&ritem->World);
-			const XMMATRIX texTransform = XMLoadFloat4x4(&ritem->TexTransform);
+			const XMMATRIX PrevWorld = XMLoadFloat4x4(&ritem->PrevWorld);
+			const XMMATRIX World = XMLoadFloat4x4(&ritem->World);
+			const XMMATRIX TexTransform = XMLoadFloat4x4(&ritem->TexTransform);
 
 			ConstantBuffers::ObjectCB objCB;
 
-			objCB.PrevWorld = ritem->PrevWolrd;
-			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(world));
-			XMStoreFloat4x4(&objCB.TexTransform, XMMatrixTranspose(texTransform));
+			XMStoreFloat4x4(&objCB.PrevWorld, XMMatrixTranspose(PrevWorld));
+			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(World));
+			XMStoreFloat4x4(&objCB.TexTransform, XMMatrixTranspose(TexTransform));
 
 			mCurrentFrameResource->CopyObjectCB(ritem->ObjectCBIndex, objCB);
 
-			ritem->PrevWolrd = objCB.World;
 			// Next FrameResource need to be updated too.
 			--ritem->NumFramesDirty;
 		}
@@ -836,6 +886,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->TexHeight = 2048;
 		CheckReturn(mpLogFile, mShadow->Initialize(mpLogFile, initData.get()));
 	}
+	// TAA
+	{
+		auto initData = Shading::TAA::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mTAA->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -927,7 +989,7 @@ BOOL DxRenderer::BuildLights() {
 
 BOOL DxRenderer::BuildScene() {
 	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
-	const FLOAT WidthSquared = 32.f * 32.f;
+	const FLOAT WidthSquared = 64.f * 64.f;
 	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
 
 	// Some of shading objects require particular constant buffers
@@ -941,6 +1003,29 @@ BOOL DxRenderer::BuildScene() {
 		mMipmapGenerator.get(), 
 		mEquirectangularConverter.get(), 
 		L"forest_hdr", L"./../../../../assets/textures/"));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::DrawImGui() {
+	CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
+		mCurrentFrameResource->CommandAllocator(0),
+		0,
+		nullptr));
+
+	const auto CmdList = mCommandObject->CommandList(0);
+	mDescriptorHeap->SetDescriptorHeap(CmdList);
+
+	CmdList->RSSetViewports(1, &mSwapChain->ScreenViewport());
+	CmdList->RSSetScissorRects(1, &mSwapChain->ScissorRect());
+
+	mSwapChain->BackBuffer()->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	CmdList->OMSetRenderTargets(1, &mSwapChain->BackBufferRtv(), TRUE, nullptr);
+
+	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(CmdList, mClientWidth, mClientHeight));
+
+	CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
 
 	return TRUE;
 }

@@ -6,6 +6,7 @@
 #include "Common/Render/Renderer.hpp"
 #include "Common/Render/ShadingArgument.hpp"
 #include "Common/Input/InputProcessor.hpp"
+#include "Common/ImGuiManager/ImGuiManager.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "GameWorld/Player/FreeLookActor.hpp"
 #include "GameWorld/Prefab/LampShade.hpp"
@@ -26,6 +27,9 @@ namespace {
 
 	typedef Common::Input::InputProcessor* (*CreateInputProcessorFunc)();
 	typedef void (*DestroyInputProcessorFunc)(Common::Input::InputProcessor*);
+
+	typedef Common::ImGuiManager::ImGuiManager* (*CreateImGuiManagerFunc)();
+	typedef void (*DestroyImGuiManagerFunc)(Common::ImGuiManager::ImGuiManager*);
 }
 
 GameWorldClass* GameWorldClass::spGameWorld = nullptr;
@@ -48,9 +52,10 @@ BOOL GameWorldClass::Initialize(Common::Debug::LogFile* const pLogFile, HINSTANC
 
 	CheckReturn(mpLogFile, BuildHWInfo());
 	CheckReturn(mpLogFile, InitWindowsManager(hInstance));
-	CheckReturn(mpLogFile, InitActorManager());
-	CheckReturn(mpLogFile, CreateInputProcessor());
+	CheckReturn(mpLogFile, CreateImGuiManager());
 	CheckReturn(mpLogFile, CreateRenderer());
+	CheckReturn(mpLogFile, CreateInputProcessor());
+	CheckReturn(mpLogFile, InitActorManager());
 
 	mWindowsManager->RegisterOnResizeFunc(std::bind(&GameWorldClass::OnResize, this, std::placeholders::_1, std::placeholders::_2));
 	mWindowsManager->RegisterInputProcessor(mInputProcessor.get());
@@ -134,6 +139,8 @@ BOOL GameWorldClass::RunLoop() {
 
 void GameWorldClass::CleanUp() {
 	mActorManager->CleanUp();
+	if (mRenderer != nullptr) mRenderer->CleanUp();	
+	if (mImGuiManager != nullptr) mImGuiManager->CleanUp();
 }
 
 BOOL GameWorldClass::BuildHWInfo() {
@@ -174,8 +181,16 @@ BOOL GameWorldClass::InitWindowsManager(HINSTANCE hInstance) {
 	return TRUE;
 }
 
-BOOL GameWorldClass::InitActorManager() {
-	CheckReturn(mpLogFile, mActorManager->Initialize(mpLogFile));
+BOOL GameWorldClass::CreateImGuiManager() {
+	const auto hInputDLL = LoadLibraryW(L"ImGuiManager.dll");
+	if (!hInputDLL) ReturnFalse(mpLogFile, L"Failed to load ImGuiManager.dll");
+
+	CreateImGuiManagerFunc createFunc = (CreateImGuiManagerFunc)GetProcAddress(hInputDLL, "CreateImGuiManager");
+	DestroyImGuiManagerFunc destroyFunc = (DestroyImGuiManagerFunc)GetProcAddress(hInputDLL, "DestroyImGuiManager");
+	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find ImGuiManager.dll functions");
+
+	mImGuiManager = std::unique_ptr<Common::ImGuiManager::ImGuiManager>(createFunc());
+	CheckReturn(mpLogFile, mImGuiManager->Initialize(mpLogFile, mWindowsManager->MainWindowHandle()));
 
 	return TRUE;
 }
@@ -189,21 +204,27 @@ BOOL GameWorldClass::CreateRenderer() {
 	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
 
 	mRenderer = std::unique_ptr<Common::Render::Renderer>(createFunc());
-	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager.get(), mArgumentSet.get(), InitClientWidth, InitClientHeight));
+	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager.get(), mImGuiManager.get(), mArgumentSet.get(), InitClientWidth, InitClientHeight));
 
 	return TRUE;
 }
 
 BOOL GameWorldClass::CreateInputProcessor() {
-	const auto hInputDLL = LoadLibraryW(L"Input.dll");
-	if (!hInputDLL) ReturnFalse(mpLogFile, L"Failed to load Input.dll");
+	const auto hInputDLL = LoadLibraryW(L"InputProcessor.dll");
+	if (!hInputDLL) ReturnFalse(mpLogFile, L"Failed to load InputProcessor.dll");
 
 	CreateInputProcessorFunc createFunc = (CreateInputProcessorFunc)GetProcAddress(hInputDLL, "CreateInputProcessor");
 	DestroyInputProcessorFunc destroyFunc = (DestroyInputProcessorFunc)GetProcAddress(hInputDLL, "DestroyInputProcessor");
-	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Input.dll functions");
+	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find InputProcessor.dll functions");
 
 	mInputProcessor = std::unique_ptr<Common::Input::InputProcessor>(createFunc());
 	CheckReturn(mpLogFile, mInputProcessor->Initialize(mpLogFile));
+
+	return TRUE;
+}
+
+BOOL GameWorldClass::InitActorManager() {
+	CheckReturn(mpLogFile, mActorManager->Initialize(mpLogFile));
 
 	return TRUE;
 }

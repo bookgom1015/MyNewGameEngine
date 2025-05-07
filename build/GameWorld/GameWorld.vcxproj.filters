@@ -82,11 +82,11 @@
     <Filter Include="External Files\tinyobjloader">
       <UniqueIdentifier>{159b7991-5abf-4962-a7ea-1b855fd99059}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files\ImGuiManager">
+      <UniqueIdentifier>{3f8ee9f9-7857-42ff-b7d3-31d338555e5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
-      <Filter>Common Files\Debug</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
@@ -150,9 +150,6 @@
     <ClInclude Include="..\..\inc\GameWorld\Prefab\LampShade.hpp">
       <Filter>Header Files\Prefab</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
-      <Filter>Common Files\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\GameWorld\Foundation\Mesh\MeshComponent.hpp">
       <Filter>Header Files\Foundation\Mesh</Filter>
     </ClInclude>
@@ -162,13 +159,16 @@
     <ClInclude Include="..\..\inc\GameWorld\Prefab\MetalSphere.hpp">
       <Filter>Header Files\Prefab</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\ImGuiManager\ImGuiManager.hpp">
+      <Filter>Common Files\ImGuiManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
       <Filter>Common Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
-      <Filter>Common Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\GameWorld\Main.cpp">
       <Filter>Source Files</Filter>
@@ -221,9 +221,6 @@
     <ClCompile Include="..\..\src\GameWorld\Foundation\Camera\CameraComponent.cpp">
       <Filter>Source Files\Foundation\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Common\Input\InputProcessor.cpp">
-      <Filter>Common Files\Input</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\GameWorld\Prefab\LampShade.cpp">
       <Filter>Source Files\Prefab</Filter>
     </ClCompile>
@@ -255,9 +252,6 @@
     </None>
     <None Include="..\..\inc\GameWorld\Foundation\Core\Component.inl">
       <Filter>Header Files\Foundation\Core</Filter>
-    </None>
-    <None Include="..\..\inc\Common\Input\InputProcessor.inl">
-      <Filter>Common Files\Input</Filter>
     </None>
     <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl">
       <Filter>Common Files\Foundation\Mesh</Filter>

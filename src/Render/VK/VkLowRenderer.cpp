@@ -7,6 +7,7 @@
 #include "Render/VK/Foundation/Core/SwapChain.hpp"
 #include "Render/VK/Foundation/Core/CommandObject.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
+#include "ImGuiManager/VK/VkImGuiManager.hpp"
 
 #pragma warning(disable: 26495)
 
@@ -32,11 +33,14 @@ VkLowRenderer::~VkLowRenderer() {}
 BOOL VkLowRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile,
 		Common::Foundation::Core::WindowsManager* const pWndManager,
+		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
 	mpLogFile = pLogFile;
 	mpWindowsManager = pWndManager;
 	mpArgumentSet = pArgSet;
+
+	mpImGuiManager = dynamic_cast<ImGuiManager::VK::VkImGuiManager*>(pImGuiManager);
 
 	mClientWidth = width;
 	mClientHeight = height;

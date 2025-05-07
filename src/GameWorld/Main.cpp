@@ -48,12 +48,12 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 #endif
 			return -1;
 		}
-		gw.CleanUp();
 
-		WLogln(logFile, L"Game successfully cleaned up");
 #ifdef _DEBUG
 		DestroyDebuggingConsole();
 #endif
+
+		WLogln(logFile, L"Game successfully cleaned up");
 
 		return 0;
 	}

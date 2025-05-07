@@ -18,9 +18,14 @@ namespace Common::Render {
 			FLOAT Exposure = 1.4f;
 		};
 
+		struct TAAArguments {
+			FLOAT ModulationFactor = 0.9f;
+		};
+
 		struct ShadingArgumentSet {
-			GammaCorrectionArguments GammaCorrection;
+			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
+			TAAArguments TAA;
 		};
 	}
 }

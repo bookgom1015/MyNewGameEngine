@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Common/Input/InputProcessor.hpp"
 
 namespace Input {

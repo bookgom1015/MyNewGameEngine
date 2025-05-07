@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma comment(lib, "ImGuiManager.lib")
+
 #include "Common/Util/HashUtil.hpp"
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -8,6 +10,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif // NOMINMAX
+#include <wrl.h>
 #include <Windows.h>
 
 #ifdef _DLLEXPORT
@@ -42,6 +45,10 @@ namespace Common {
 		}
 	}
 
+	namespace ImGuiManager {
+		class ImGuiManager;
+	}
+
 	namespace Render {
 		namespace ShadingArgument {
 			struct ShadingArgumentSet;
@@ -52,6 +59,7 @@ namespace Common {
 			RendererAPI virtual BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile,
 				Common::Foundation::Core::WindowsManager* const pWndManager,
+				Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 				ShadingArgument::ShadingArgumentSet* const pArgSet,
 				UINT width, UINT height) = 0;
 			RendererAPI virtual void CleanUp() = 0;
@@ -64,7 +72,7 @@ namespace Common {
 			RendererAPI virtual BOOL Draw() = 0;
 
 		public:
-			RendererAPI virtual BOOL AddMesh(Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) = 0;
+			RendererAPI virtual BOOL AddMesh(Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) = 0;
 			RendererAPI virtual BOOL UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) = 0;
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) = 0;
 

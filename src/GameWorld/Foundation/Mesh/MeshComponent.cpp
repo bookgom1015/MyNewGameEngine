@@ -37,7 +37,8 @@ BOOL MeshComponent::LoadMesh(LPCSTR fileName, LPCSTR baseDir, LPCSTR extension) 
 
 	CheckReturn(mpLogFile, Common::Foundation::Mesh::Mesh::Load(mpLogFile, mesh, fileName, baseDir, extension));
 
-	CheckReturn(mpLogFile, GameWorld::GameWorldClass::spGameWorld->Renderer()->AddMesh(&mesh, mMeshHash));
+	auto transform = ActorTransform();
+	CheckReturn(mpLogFile, GameWorld::GameWorldClass::spGameWorld->Renderer()->AddMesh(&mesh, &transform, mMeshHash));
 
 	mbAddedMesh = TRUE;
 

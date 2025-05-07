@@ -32,6 +32,7 @@ namespace Common {
 			};
 
 			using OnResizeFunc = std::function<void(UINT, UINT)>;
+			using MsgCallBackFunc = std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)>;
 			using SelectDialogInitDataPtr = std::unique_ptr<SelectDialogInitData>;
 
 		public:
@@ -69,6 +70,8 @@ namespace Common {
 
 			void RegisterInputProcessor(Common::Input::InputProcessor* const pInputProc);
 
+			void HookMsgCallback(const MsgCallBackFunc& func);
+
 		public:
 			BOOL SelectDialog(SelectDialogInitData* const pInitData);
 
@@ -103,6 +106,9 @@ namespace Common {
 
 			UINT mMainWndWidth = 0;
 			UINT mMainWndHeight = 0;
+
+			MsgCallBackFunc mMsgCallBackFunc;
+			BOOL mbMsgCallbackHooked = FALSE;
 		};
 	}
 }

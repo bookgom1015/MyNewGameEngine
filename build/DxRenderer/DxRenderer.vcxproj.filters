@@ -109,6 +109,15 @@
     <Filter Include="Shader Files\Shadow">
       <UniqueIdentifier>{ce5cf224-50f8-4945-a301-558076fbbd9d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\TAA">
+      <UniqueIdentifier>{5cc5c69b-7915-43c6-8626-97e0897fa0f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files\ImGui">
+      <UniqueIdentifier>{954b57ae-80fe-4fba-a449-1447ebbfcd0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files\ImGuiManager">
+      <UniqueIdentifier>{49368825-054f-417f-a943-922028a8f568}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -119,12 +128,6 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
       <Filter>Common Files\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
-      <Filter>Common Files\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp">
-      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h">
       <Filter>Header Files\Foundation</Filter>
@@ -153,9 +156,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.hpp">
       <Filter>Header Files\Foundation\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\externs\FrankLuna\GeometryGenerator.h">
-      <Filter>External Files\FrankLuna</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
@@ -183,14 +183,8 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h">
-      <Filter>Common Files\Foundation\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\MipmapGenerator.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
@@ -201,21 +195,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp">
-      <Filter>Common Files\Foundation\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Util\HashUtil.hpp">
-      <Filter>Common Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Util\MathUtil.hpp">
-      <Filter>Common Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp">
-      <Filter>Common Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Util\TaskQueue.hpp">
-      <Filter>Common Files\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShadingObjectManager.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
     </ClInclude>
@@ -224,9 +203,6 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp">
       <Filter>Header Files\Shading Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
-      <Filter>Common Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\ToneMapping.hpp">
       <Filter>Header Files\Shading Files</Filter>
@@ -240,10 +216,10 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MaterialData.hpp">
       <Filter>Header Files\Foundation\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Render\LightType.h">
-      <Filter>Common Files\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\TAA.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -362,6 +338,30 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\TAA.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_draw.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_dx12.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp">
+      <Filter>External Files\ImGuiManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -392,9 +392,6 @@
     <None Include="..\..\assets\Shaders\HLSL\DrawSkySphere.hlsl">
       <Filter>Shader Files\EnvironmentMap</Filter>
     </None>
-    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </None>
     <None Include="..\..\assets\Shaders\HLSL\GenerateMipmap.hlsl">
       <Filter>Shader Files\MipmapGenerator</Filter>
     </None>
@@ -421,12 +418,6 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\ConvertEquirectangularToCubeMap.hlsl">
       <Filter>Shader Files\EquirectangularConverter</Filter>
-    </None>
-    <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl">
-      <Filter>Common Files\Foundation\Camera</Filter>
-    </None>
-    <None Include="..\..\inc\Common\Util\MathUtil.inl">
-      <Filter>Common Files\Util</Filter>
     </None>
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl">
       <Filter>Header Files\Foundation\Util</Filter>
@@ -490,6 +481,15 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\Shadow.hlsli">
       <Filter>Shader Files\Shadow</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\Shadow.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\TAA.hlsl">
+      <Filter>Shader Files\TAA</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\TAA.inl">
+      <Filter>Header Files\Shading Files</Filter>
     </None>
   </ItemGroup>
 </Project>

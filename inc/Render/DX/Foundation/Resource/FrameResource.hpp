@@ -38,6 +38,9 @@ namespace Render::DX::Foundation {
 
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS MainPassCBAddress() const;
 			UINT MainPassCBByteSize() const;
+
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS LightCBAddress() const;
+			UINT LightCBByteSize() const;
 			
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ObjectCBAddress() const;
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ObjectCBAddress(UINT index) const;
@@ -64,6 +67,7 @@ namespace Render::DX::Foundation {
 
 		public:
 			__forceinline void CopyMainPassCB(INT elementIndex, const ConstantBuffers::PassCB& data);
+			__forceinline void CopyLightCB(INT elementIndex, const ConstantBuffers::LightCB& data);
 			__forceinline void CopyObjectCB(INT elementIndex, const ConstantBuffers::ObjectCB& data);
 			__forceinline void CopyMaterialCB(INT elementIndex, const ConstantBuffers::MaterialCB& data);
 			__forceinline void CopyProjectToCubeCB(INT elementIndex, const ConstantBuffers::ProjectToCubeCB& data);
@@ -87,6 +91,7 @@ namespace Render::DX::Foundation {
 			UINT mThreadCount = 0;
 
 			UploadBuffer<ConstantBuffers::PassCB> mMainPassCB;
+			UploadBuffer<ConstantBuffers::LightCB> mLightCB;
 			UploadBuffer<ConstantBuffers::ObjectCB> mObjectCB;
 			UploadBuffer<ConstantBuffers::MaterialCB> mMaterialCB;
 			UploadBuffer<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;

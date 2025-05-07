@@ -9,9 +9,9 @@
 #include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
 #include "./../../../../assets/Shaders/HLSL/Shadow.hlsli"
 
-ConstantBuffer<ConstantBuffers::PassCB>     cbPass      : register(b0);
-ConstantBuffer<ConstantBuffers::ObjectCB>   cbObject    : register(b1);
-ConstantBuffer<ConstantBuffers::MaterialCB> cbMaterial  : register(b2);
+ConstantBuffer<ConstantBuffers::LightCB>    cbLight    : register(b0);
+ConstantBuffer<ConstantBuffers::ObjectCB>   cbObject   : register(b1);
+ConstantBuffer<ConstantBuffers::MaterialCB> cbMaterial : register(b2);
 
 Shadow_DrawZDepth_RootConstants(b3)
 
@@ -45,7 +45,7 @@ VertexOut VS(in VertexIn vin) {
 void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
     GeoOut gout = (GeoOut) 0;
 	
-    Render::DX::Foundation::Light light = cbPass.Lights[gLightIndex];
+    Render::DX::Foundation::Light light = cbLight.Lights[gLightIndex];
 
 	// Directional light
     if (light.Type == Common::Render::LightType::E_Directional) {
@@ -82,7 +82,7 @@ void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
 
 void PS(in GeoOut pin) {
     float4 albedo = cbMaterial.Albedo;
-    if (cbMaterial.AlbedoMapIndex != -1) albedo *= gi_Textures[cbMaterial.AlbedoMapIndex].SampleLevel(gsamLinearClamp, pin.TexC, 0);
+    if (cbMaterial.AlbedoMapIndex != -1) albedo *= gi_Textures[cbMaterial.AlbedoMapIndex].SampleLevel(gsamAnisotropicClamp, pin.TexC, 0);
 
 #ifdef ALPHA_TEST
 	// Discard pixel if texture alpha < 0.1.  We do this test as soon 

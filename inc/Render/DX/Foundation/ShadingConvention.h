@@ -256,6 +256,10 @@ namespace ShadingConvention{
 			return position.w != InvalidPositionWValue;
 		}
 
+		bool IsValidVelocity(float2 velocity) {
+			return all(velocity != InvalidVelocityValue);
+		}
+
 #ifndef GBuffer_Default_RootConstants
 #define GBuffer_Default_RootConstants(reg) cbuffer cbRootConstant : register(reg) GBuffer_Default_RCSTRUCT
 #endif
@@ -351,6 +355,30 @@ namespace ShadingConvention{
 				};
 			}
 		}
+	}
+
+	namespace TAA {
+#ifndef TAA_Default_RCSTRUCT
+#define TAA_Default_RCSTRUCT {		\
+		FLOAT gModulationFactor;	\
+	};
+#endif
+
+#ifdef _HLSL
+#ifndef TAA_Default_RootConstants
+#define TAA_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) TAA_Default_RCSTRUCT
+#endif
+#else
+		namespace RootConstant {
+			namespace Default {
+				struct Struct TAA_Default_RCSTRUCT
+				enum {
+					E_ModulationFactor = 0,
+					Count
+				};
+			}
+		}
+#endif
 	}
 }
 

@@ -12,8 +12,10 @@
 #include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
 #include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
 #include "./../../../../assets/Shaders/HLSL/LightingUtil.hlsli"
+#include "./../../../../assets/Shaders/HLSL/Shadow.hlsli"
 
 ConstantBuffer<ConstantBuffers::PassCB> cbPass : register(b0);
+ConstantBuffer<ConstantBuffers::LightCB> cbLight : register(b1);
 
 Texture2D<ShadingConvention::GBuffer::AlbedoMapFormat>              gi_AlbedoMap             : register(t0);
 Texture2D<ShadingConvention::GBuffer::NormalMapFormat>              gi_NormalMap             : register(t1);
@@ -21,8 +23,8 @@ Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat> gi_DepthMap 
 Texture2D<ShadingConvention::GBuffer::SpecularMapFormat>            gi_SpecularMap           : register(t3);
 Texture2D<ShadingConvention::GBuffer::RoughnessMetalnessMapFormat>  gi_RoughnessMetalnessMap : register(t4);
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap           : register(t5);
+Texture2D<ShadingConvention::Shadow::ShadowMapFormat>               gi_ShadowMap             : register(t6);
 
-Texture2D gi_ShadowMap : register(t6);
 Texture2D gi_AOMap : register(t7);
 TextureCube<ShadingConvention::EnvironmentMap::DiffuseIrradianceCubeMapFormat> gi_DiffuseIrradianceCubeEnv : register(t8);
 
@@ -49,30 +51,26 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
 
     Material mat = { Albedo, FresnelR0, Shiness, Metalness };
 
-    float shadowFactor[MaxLights];
-	//{
-	//	[unroll]
-    //    for (uint i = 0; i < MaxLights; ++i)
-    //        shadowFactor[i] = 1;
-    //}
-    //
-	//{
-    //    uint2 size;
-    //    gi_Shadow.GetDimensions(size.x, size.y);
-    //
-    //    const uint2 id = pin.TexC * size - 0.5;
-    //    const uint value = gi_Shadow.Load(uint3(id, 0));
-    //
-	//	[loop]
-    //    for (uint i = 0; i < cb_Pass.LightCount; ++i) {
-    //        shadowFactor[i] = GetShiftedShadowValue(value, i);
-    //    }
-    //}
+    float shadowFactor[MaxLights];    
+	[unroll]
+    for (uint i = 0; i < MaxLights; ++i) { shadowFactor[i] = 1; }    
+	{
+        uint2 size;
+        gi_ShadowMap.GetDimensions(size.x, size.y);
+    
+        const uint2 Id = pin.TexC * size - 0.5;
+        const uint Value = gi_ShadowMap.Load(uint3(Id, 0));
+    
+		[loop]
+        for (uint i = 0; i < cbLight.LightCount; ++i) {
+            shadowFactor[i] = Shadow::GetShiftedShadowValue(Value, i);
+        }
+    }
 
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);
 
     const float3 ViewW = normalize(cbPass.EyePosW - PosW.xyz);
-    const float3 DiffuseRadiance = max(ComputeBRDF(cbPass.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactor, cbPass.LightCount), (float3)0.f);
+    const float3 DiffuseRadiance = max(ComputeBRDF(cbLight.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactor, cbLight.LightCount), (float3) 0.f);
 
     const float3 kS = FresnelSchlickRoughness(saturate(dot(NormalW, ViewW)), FresnelR0, Roughness);
     float3 kD = 1.f - kS;

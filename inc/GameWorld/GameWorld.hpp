@@ -1,5 +1,9 @@
 #pragma once
 
+#pragma comment(lib, "Renderer.lib")
+#pragma comment(lib, "InputProcessor.lib")
+#pragma comment(lib, "ImGuiManager.lib")
+
 #include <condition_variable>
 #include <memory>
 #include <mutex>
@@ -33,6 +37,10 @@ namespace Common {
 
 	namespace Input {
 		class InputProcessor;
+	}
+
+	namespace ImGuiManager {
+		class ImGuiManager;
 	}
 }
 
@@ -70,9 +78,10 @@ namespace GameWorld {
 	private: // Functions that is called only once
 		BOOL BuildHWInfo();
 		BOOL InitWindowsManager(HINSTANCE hInstance);
-		BOOL InitActorManager();
+		BOOL CreateImGuiManager();
 		BOOL CreateRenderer();
 		BOOL CreateInputProcessor();
+		BOOL InitActorManager();
 		BOOL BuildScene();
 
 	private: // Functions that is called whenever a message is called
@@ -114,6 +123,9 @@ namespace GameWorld {
 
 		// Input processor
 		std::unique_ptr<Common::Input::InputProcessor> mInputProcessor;
+
+		// ImGui manager
+		std::unique_ptr<Common::ImGuiManager::ImGuiManager> mImGuiManager;
 	};
 }
 

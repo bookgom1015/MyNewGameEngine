@@ -42,7 +42,7 @@ float3 ComputeDirectionalLight(
     const float NoL = max(dot(normal, L), 0);
 
 #if defined(BLINN_PHONG)
-	return BlinnPhong(mat, Li, L, normal, toEye, NoL);
+	return BlinnPhong(mat, Li, L, normal, toEye, NoL);    
 #elif defined(COOK_TORRANCE)
 	return CookTorrance(mat, Li, L, normal, toEye, NoL);
 #else

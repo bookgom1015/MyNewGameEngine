@@ -121,6 +121,10 @@ INT WindowsManager::ToDLUsWidth(INT width) { return (width * 4) / LOWORD(DialogB
 INT WindowsManager::ToDLUsHeight(INT height) { return (height * 8) / HIWORD(DialogBaseUnits); }
 
 LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	if (mbMsgCallbackHooked) {
+		if (mMsgCallBackFunc(hWnd, msg, wParam, lParam)) return TRUE;
+	}
+
 	switch (msg) {
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  
 		// We pause the game when the window is deactivated and unpause it 
@@ -262,6 +266,11 @@ void WindowsManager::DestroyWindow() {
 void WindowsManager::RegisterInputProcessor(Common::Input::InputProcessor* const pInputProc) {
 	mpInputProcessor = pInputProc;
 	mbInputProcessorRegistered = TRUE;
+}
+
+void WindowsManager::HookMsgCallback(const MsgCallBackFunc& func) {
+	mMsgCallBackFunc = func;
+	mbMsgCallbackHooked = TRUE;
 }
 
 BOOL WindowsManager::SelectDialog(SelectDialogInitData* const pInitData) {

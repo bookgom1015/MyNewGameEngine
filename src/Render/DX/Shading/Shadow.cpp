@@ -86,7 +86,7 @@ BOOL Shadow::ShadowClass::BuildRootSignatures(const Render::DX::Shading::Util::S
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawZDepth::Count] = {};
-		slotRootParameter[RootSignature::DrawZDepth::CB_Pass].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::DrawZDepth::CB_Light].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DrawZDepth::CB_Object].InitAsConstantBufferView(1);
 		slotRootParameter[RootSignature::DrawZDepth::CB_Material].InitAsConstantBufferView(2);
 		slotRootParameter[RootSignature::DrawZDepth::RC_Consts].InitAsConstants(ShadingConvention::Shadow::RootConstant::DrawZDepth::Count, 3);
@@ -114,7 +114,7 @@ BOOL Shadow::ShadowClass::BuildRootSignatures(const Render::DX::Shading::Util::S
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawShadow::Count] = {};
-		slotRootParameter[RootSignature::DrawShadow::CB_Pass].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::DrawShadow::CB_Light].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DrawShadow::RC_Consts].InitAsConstants(ShadingConvention::Shadow::RootConstant::DrawShadow::Count, 1);
 		slotRootParameter[RootSignature::DrawShadow::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DrawShadow::SI_ZDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -155,9 +155,10 @@ BOOL Shadow::ShadowClass::BuildPipelineStates() {
 		}
 		psoDesc.NumRenderTargets = 0;
 		psoDesc.DSVFormat = ShadingConvention::Shadow::ZDepthMapFormat;
-		psoDesc.RasterizerState.DepthBias = 100000;
+		psoDesc.RasterizerState.DepthBias = 1;
 		psoDesc.RasterizerState.SlopeScaledDepthBias = 1.f;
-		psoDesc.RasterizerState.DepthBiasClamp = 0.1f;
+		psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
@@ -212,11 +213,14 @@ BOOL Shadow::ShadowClass::OnResize(UINT width, UINT height) {
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::Run(Foundation::Resource::FrameResource* const pFrameResource, const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
+BOOL Shadow::ShadowClass::Run(
+		Foundation::Resource::FrameResource* const pFrameResource, 
+		Foundation::Resource::GpuResource* const pPositionMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+		const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
 	for (UINT i = 0; i < mLightCount; ++i) {
-		const BOOL NeedCubeMap = mLights[i].Type == Common::Render::E_Point;
-
 		CheckReturn(mpLogFile, DrawZDepth(pFrameResource, ritems, i));
+		CheckReturn(mpLogFile, DrawShadow(pFrameResource, pPositionMap, si_positionMap, ritems, i));
 	}
 
 	return TRUE;
@@ -390,7 +394,6 @@ BOOL Shadow::ShadowClass::BuildDescriptor(BOOL bCube) {
 	return TRUE;
 }
 
-
 BOOL Shadow::ShadowClass::DrawZDepth(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
@@ -417,7 +420,7 @@ BOOL Shadow::ShadowClass::DrawZDepth(
 		CmdList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 		CmdList->OMSetRenderTargets(0, nullptr, FALSE, &dsv);
 
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawZDepth::CB_Pass, pFrameResource->MainPassCBAddress());
+		CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawZDepth::CB_Light, pFrameResource->LightCBAddress());
 
 		ShadingConvention::Shadow::RootConstant::DrawZDepth::Struct rc;
 		rc.gLightIndex = lightIndex;
@@ -429,6 +432,53 @@ BOOL Shadow::ShadowClass::DrawZDepth(
 		//CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawZDepth::SI_Textures, si_textures);
 
 		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems));
+	}
+
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL Shadow::ShadowClass::DrawShadow(
+		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pPositionMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+		const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
+		UINT lightIndex) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0,
+		mPipelineStates[PipelineState::CP_DrawShadow].Get()));
+
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+
+	{
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_DrawShadow].Get());
+
+		mShadowMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+		CmdList->SetComputeRootConstantBufferView(RootSignature::DrawShadow::CB_Light, pFrameResource->LightCBAddress());
+
+		ShadingConvention::Shadow::RootConstant::DrawShadow::Struct rc;
+		rc.gLightIndex = lightIndex;
+
+		std::array<std::uint32_t, ShadingConvention::Shadow::RootConstant::DrawShadow::Count> consts;
+		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::Shadow::RootConstant::DrawShadow::Struct));
+
+		CmdList->SetComputeRoot32BitConstants(RootSignature::DrawShadow::RC_Consts, ShadingConvention::Shadow::RootConstant::DrawShadow::Count, consts.data(), 0);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_PositionMap, si_positionMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::UIO_ShadowMap, mhShadowMapGpuUav);
+
+		BOOL NeedCube = mLights[lightIndex].Type == Common::Render::LightType::E_Point;
+
+		if (NeedCube) CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
+		else CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthMap, mhZDepthMapGpuSrvs[lightIndex]);
+
+		CmdList->Dispatch(
+			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.ClientWidth), ShadingConvention::Shadow::ThreadGroup::DrawShadow::Width),
+			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.ClientHeight), ShadingConvention::Shadow::ThreadGroup::DrawShadow::Height), 
+			ShadingConvention::Shadow::ThreadGroup::DrawShadow::Depth);
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

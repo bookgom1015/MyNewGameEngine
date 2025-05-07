@@ -114,17 +114,18 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DxDebug|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -132,12 +133,13 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DxRelease|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <WarningLevel>Level3</WarningLevel>
@@ -148,12 +150,13 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='VkRelease|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -164,6 +167,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -177,9 +181,9 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Transform.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h" />
+    <ClInclude Include="..\..\inc\Common\ImGuiManager\ImGuiManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Input\InputProcessor.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
-    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\HashUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\MathUtil.hpp" />
     <ClInclude Include="..\..\inc\Common\Util\StringUtil.hpp" />
@@ -202,8 +206,6 @@
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Mesh.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
-    <ClCompile Include="..\..\src\Common\Input\InputProcessor.cpp" />
-    <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
     <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
@@ -223,7 +225,6 @@
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl" />
-    <None Include="..\..\inc\Common\Input\InputProcessor.inl" />
     <None Include="..\..\inc\Common\Util\MathUtil.inl" />
     <None Include="..\..\inc\GameWorld\Foundation\Core\Actor.inl" />
     <None Include="..\..\inc\GameWorld\Foundation\Core\ActorManager.inl" />

@@ -20,6 +20,7 @@ namespace Common::Foundation {
 
 namespace ConstantBuffers {
 	struct PassCB;
+	struct LightCB;
 	struct ProjectToCubeCB;
 }
 
@@ -56,6 +57,7 @@ namespace Render {
 			namespace GBuffer { class GBufferClass; }
 			namespace BRDF { class BRDFClass; }
 			namespace Shadow { class ShadowClass; }
+			namespace TAA { class TAAClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -67,6 +69,7 @@ namespace Render {
 			RendererAPI virtual BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
 				Common::Foundation::Core::WindowsManager* const pWndManager, 
+				Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 				UINT width, UINT height) override;
 			RendererAPI virtual void CleanUp() override;
@@ -79,7 +82,7 @@ namespace Render {
 			RendererAPI virtual BOOL Draw() override;
 
 		public:
-			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) override;
+			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) override;
 			RendererAPI virtual BOOL UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) override;
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) override;
 
@@ -123,6 +126,8 @@ namespace Render {
 			BOOL BuildLights();
 			BOOL BuildScene();
 
+			BOOL DrawImGui();
+
 			BOOL PresentAndSignal();
 
 		private:
@@ -136,6 +141,7 @@ namespace Render {
 
 			// Constant buffers
 			std::unique_ptr<ConstantBuffers::PassCB> mMainPassCB;
+			std::unique_ptr<ConstantBuffers::LightCB> mLightCB;
 			std::unique_ptr<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
 
 			// Shading objects
@@ -151,6 +157,7 @@ namespace Render {
 			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer;
 			std::unique_ptr<Shading::BRDF::BRDFClass> mBRDF;
 			std::unique_ptr<Shading::Shadow::ShadowClass> mShadow;
+			std::unique_ptr<Shading::TAA::TAAClass> mTAA;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

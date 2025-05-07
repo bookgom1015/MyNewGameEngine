@@ -22,11 +22,13 @@ Texture2D<float4> gi_Textures[ShadingConvention::GBuffer::MaxNumTextures] : regi
 VERTEX_IN
 
 struct VertexOut {
-    float4 PosH     : SV_Position;
-    float3 PosW     : POSITION_W;
-    float3 PosL     : POSITION_L;
-    float3 NormalW  : NORMAL_W;
-    float2 TexC     : TEXCOORD;
+    float4 PosH       : SV_Position;
+    float4 CurrPosH   : POSITION_CURR;
+    float4 PrevPosH   : POSITION_PREV;
+    float3 PosW       : POSITION_W;
+    float3 PosL       : POSITION_L;
+    float3 NormalW    : NORMAL_W;
+    float2 TexC       : TEXCOORD;
 };
 
 struct PixelOut {
@@ -43,10 +45,15 @@ VertexOut VS(in VertexIn vin) {
     
     vout.PosL = vin.PosL;
     
-    float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);    
+    const float4 PosW = mul(float4(vin.PosL, 1.f), cbObject.World);
     vout.PosW = PosW.xyz;
     
-    vout.PosH = mul(PosW, cbPass.ViewProj);
+    const float4 PosH = mul(PosW, cbPass.ViewProj);
+    vout.CurrPosH = PosH;
+    vout.PosH = PosH + float4(cbPass.JitteredOffset * PosH.w, 0, 0);
+    
+    const float4 PrevPosW = mul(float4(vin.PosL, 1), cbObject.PrevWorld);
+    vout.PrevPosH = mul(PrevPosW, cbPass.PrevViewProj);
     
     vout.NormalW = mul(vin.NormalL, (float3x3)cbObject.World);
     
@@ -87,9 +94,14 @@ void MS(
             float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);
             vout.PosW = PosW.xyz;
     
-            vout.PosH = mul(PosW, cbPass.ViewProj);
+            const float4 PosH = mul(PosW, cbPass.ViewProj);
+            vout.CurrPosH = PosH;
+            vout.PosH = PosH + float4(cbPass.JitteredOffset * PosH.w, 0, 0);
+    
+            const float4 PrevPosW = mul(float4(vin.Position, 1), cbObject.PrevWorld);
+            vout.PrevPosH = mul(PrevPosW, cbPass.PrevViewProj);
             
-            vout.NormalW = mul(vin.Normal, (float3x3)cbObject.World);
+            vout.NormalW = mul(vin.Normal, (float3x3) cbObject.World);
     
             float4 TexC = mul(float4(vin.TexCoord, 0.f, 1.f), cbObject.TexTransform);
             vout.TexC = TexC.xy;
@@ -100,13 +112,17 @@ void MS(
 }
 
 PixelOut PS(in VertexOut pin) {
-    PixelOut pout = (PixelOut)0;
+    PixelOut pout = (PixelOut) 0;
+    
+    pin.CurrPosH /= pin.CurrPosH.w;
+    pin.PrevPosH /= pin.PrevPosH.w;
+    const float2 Velocity = ShaderUtil::CalcVelocity(pin.CurrPosH, pin.PrevPosH);
     
     pout.Color = cbMaterial.Albedo;
     pout.Normal = float4(pin.NormalW, 1.f);
     pout.Specular = float4(cbMaterial.Specular, 1.f);
     pout.RoughnessMetalness = float2(cbMaterial.Roughness, cbMaterial.Metalness);
-    pout.Velocity = (float2)0;
+    pout.Velocity = Velocity;
     pout.Position = float4(pin.PosW, 1.f);
     
     return pout;

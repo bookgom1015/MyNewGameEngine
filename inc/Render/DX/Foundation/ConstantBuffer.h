@@ -18,7 +18,18 @@ namespace ConstantBuffers {
 		DirectX::XMFLOAT4X4 ViewProjTex;
 
 		DirectX::XMFLOAT3	EyePosW;
-		UINT				LightCount;
+		FLOAT				__ConstantPad0__;
+
+		DirectX::XMFLOAT2	JitteredOffset;
+		FLOAT				__ConstantPad1__;
+		FLOAT				__ConstantPad2__;
+	};
+
+	struct LightCB {
+		UINT	LightCount;
+		FLOAT	__ConstantPad0__;
+		FLOAT	__ConstantPad1__;
+		FLOAT	__ConstantPad2__;
 
 		Render::DX::Foundation::Light Lights[MaxLights];
 	};

@@ -22,9 +22,10 @@ VkRenderer::~VkRenderer() {
 BOOL VkRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile,
 		Common::Foundation::Core::WindowsManager* const pWndManager,
+		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
-	CheckReturn(mpLogFile, VkLowRenderer::Initialize(pLogFile, pWndManager, pArgSet, width, height));
+	CheckReturn(mpLogFile, VkLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
 	return TRUE;
 }
@@ -51,7 +52,7 @@ BOOL VkRenderer::Draw() {
 	return TRUE;
 }
 
-BOOL VkRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Hash& hash) {
+BOOL VkRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) {
 	return TRUE;
 }
 

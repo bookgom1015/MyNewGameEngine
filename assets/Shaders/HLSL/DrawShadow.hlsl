@@ -9,7 +9,7 @@
 #include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
 #include "./../../../../assets/Shaders/HLSL/Shadow.hlsli"
 
-ConstantBuffer<ConstantBuffers::PassCB> cbPass : register(b0);
+ConstantBuffer<ConstantBuffers::LightCB> cbLight : register(b0);
 
 Shadow_DrawShadow_RootConstants(b1)
 
@@ -26,7 +26,7 @@ RWTexture2D<ShadingConvention::Shadow::ShadowMapFormat>    guio_ShadowMap   : re
 void CS(in uint2 DTid : SV_DispatchThreadID) {
     uint value = gLightIndex != 0 ? guio_ShadowMap[DTid] : 0;
 
-    Render::DX::Foundation::Light light = cbPass.Lights[gLightIndex];
+    Render::DX::Foundation::Light light = cbLight.Lights[gLightIndex];
 
     const float4 PosW = gi_PositionMap.Load(uint3(DTid, 0));
     if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) return;

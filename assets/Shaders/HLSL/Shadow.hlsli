@@ -48,6 +48,10 @@ namespace Shadow {
 
         return depthMap.SampleCmpLevelZero(sampComp, float3(uv, index), Depth);
     }
+    
+    uint GetShiftedShadowValue(in uint value, in uint index) {
+        return (value >> index) & 1;
+    }
 }
 
 #endif // __SHADOW_HLSLI__

@@ -12,6 +12,10 @@
 
 #include "Common/Render/Renderer.hpp"
 
+namespace ImGuiManager::VK {
+	class VkImGuiManager;
+}
+
 namespace Render::VK {
 	namespace Foundation::Core {
 		class Instance;
@@ -30,6 +34,7 @@ namespace Render::VK {
 		RendererAPI virtual BOOL Initialize(
 			Common::Debug::LogFile* const pLogFile,
 			Common::Foundation::Core::WindowsManager* const pWndManager,
+			Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 			UINT width, UINT height) override;
 		RendererAPI virtual void CleanUp() override;
@@ -50,6 +55,8 @@ namespace Render::VK {
 
 	protected:
 		Common::Debug::LogFile* mpLogFile = nullptr;
+
+		ImGuiManager::VK::VkImGuiManager* mpImGuiManager = nullptr;
 
 		UINT mClientWidth = 0;
 		UINT mClientHeight = 0;

@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Common Files">
+      <UniqueIdentifier>{286beb70-b323-476e-97b5-757e632bd327}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files">
+      <UniqueIdentifier>{c9caa80e-bd6a-48e6-a951-82d4e56a0cc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\ImGuiManager">
+      <UniqueIdentifier>{49615b04-ccf3-40c8-9520-4957fbdd8013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Debug">
+      <UniqueIdentifier>{fed263ad-0319-4ad6-bcc7-ad9f4ea9db79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Util">
+      <UniqueIdentifier>{4a50dd8b-96df-441d-be8e-ec521e6819f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files\ImGui">
+      <UniqueIdentifier>{4c257c5e-c375-469a-a925-3f597f868754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation">
+      <UniqueIdentifier>{5516d997-0716-45e5-abea-953a10b0a445}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Core">
+      <UniqueIdentifier>{bdffaf1f-d556-4d6c-8684-545ca1b8ec45}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\inc\ImGuiManager\DX\DxImGuiManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\ImGuiManager\ImGuiManager.hpp">
+      <Filter>Common Files\ImGuiManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\ImGuiManager\ImGuiManager.cpp">
+      <Filter>Common Files\ImGuiManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_draw.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_dx12.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
