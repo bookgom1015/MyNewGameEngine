@@ -19,13 +19,28 @@ namespace Common::Render {
 		};
 
 		struct TAAArguments {
+			BOOL Enabled = TRUE;
 			FLOAT ModulationFactor = 0.9f;
+		};
+
+		struct ShadowArguments {
+			BOOL Enabled = TRUE;
+		};
+
+		struct SSAOArguments {
+			BOOL Enabled = TRUE;
+			FLOAT OcclusionRadius = 0.5f;
+			FLOAT OcclusionFadeStart = 0.2f;
+			FLOAT OcclusionFadeEnd = 2.f;
+			FLOAT SurfaceEpsilon = 0.05f;
 		};
 
 		struct ShadingArgumentSet {
 			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
 			TAAArguments TAA;
+			ShadowArguments Shadow;
+			SSAOArguments SSAO;
 		};
 	}
 }

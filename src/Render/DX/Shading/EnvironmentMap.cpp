@@ -485,53 +485,55 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_DrawSkySphere].Get());
+	{
+		CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_DrawSkySphere].Get());
 
-	CmdList->RSSetViewports(1, &viewport);
-	CmdList->RSSetScissorRects(1, &scissorRect);
+		CmdList->RSSetViewports(1, &viewport);
+		CmdList->RSSetScissorRects(1, &scissorRect);
 
-	backBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	depthBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-	mEnvironmentCubeMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		backBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		depthBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		mEnvironmentCubeMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &di_depthStencil);
+		CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &di_depthStencil);
 
-	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, pFrameResource->MainPassCBAddress());
-	
-	D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(sphere->ObjectCBIndex);
-	CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, ritemObjCBAddress);
-	CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
+		CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, pFrameResource->MainPassCBAddress());
 
-	if (mInitData.MeshShaderSupported) {
-		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
-		CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
+		D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(sphere->ObjectCBIndex);
+		CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, ritemObjCBAddress);
+		CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
 
-		ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct rc;	
-		rc.gVertexCount = sphere->Geometry->VertexBufferByteSize / sphere->Geometry->VertexByteStride;
-		rc.gIndexCount = sphere->Geometry->IndexBufferByteSize / sizeof(std::uint16_t);
+		if (mInitData.MeshShaderSupported) {
+			CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
+			CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
 
-		std::array<std::uint32_t, ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count> consts;
-		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct));
+			ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct rc;
+			rc.gVertexCount = sphere->Geometry->VertexBufferByteSize / sphere->Geometry->VertexByteStride;
+			rc.gIndexCount = sphere->Geometry->IndexBufferByteSize / sphere->Geometry->IndexByteStride;
 
-		CmdList->SetGraphicsRoot32BitConstants(
-			RootSignature::DrawSkySphere::RC_Consts,
-			ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count,
-			consts.data(),
-			0);
+			std::array<std::uint32_t, ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count> consts;
+			std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct));
 
-		const UINT PrimCount = rc.gIndexCount / 3;
+			CmdList->SetGraphicsRoot32BitConstants(
+				RootSignature::DrawSkySphere::RC_Consts,
+				ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count,
+				consts.data(),
+				0);
 
-		CmdList->DispatchMesh(
-			Foundation::Util::D3D12Util::CeilDivide(PrimCount, ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::ThreadsPerGroup),
-			1, 
-			1);
-	}
-	else {
-		CmdList->IASetVertexBuffers(0, 1, &sphere->Geometry->VertexBufferView());
-		CmdList->IASetIndexBuffer(&sphere->Geometry->IndexBufferView());
-		CmdList->IASetPrimitiveTopology(sphere->PrimitiveType);
+			const UINT PrimCount = rc.gIndexCount / 3;
 
-		CmdList->DrawIndexedInstanced(sphere->IndexCount, 1, sphere->StartIndexLocation, sphere->BaseVertexLocation, 0);
+			CmdList->DispatchMesh(
+				Foundation::Util::D3D12Util::CeilDivide(PrimCount, ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::ThreadsPerGroup),
+				1,
+				1);
+		}
+		else {
+			CmdList->IASetVertexBuffers(0, 1, &sphere->Geometry->VertexBufferView());
+			CmdList->IASetIndexBuffer(&sphere->Geometry->IndexBufferView());
+			CmdList->IASetPrimitiveTopology(sphere->PrimitiveType);
+
+			CmdList->DrawIndexedInstanced(sphere->IndexCount, 1, sphere->StartIndexLocation, sphere->BaseVertexLocation, 0);
+		}
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

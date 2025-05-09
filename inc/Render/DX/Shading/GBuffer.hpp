@@ -28,6 +28,14 @@ namespace Render::DX::Shading {
 			}
 		}
 
+		namespace PipelineState {
+			enum Type {
+				GP_GBuffer = 0,
+				MP_GBuffer,
+				Count
+			};
+		}
+
 		class GBufferClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
@@ -104,7 +112,7 @@ namespace Render::DX::Shading {
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes = {};
 
 			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mAlbedoMap;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhAlbedoMapCpuSrv;

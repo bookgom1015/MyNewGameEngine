@@ -78,9 +78,9 @@ void MS(
     
     if (GlobalPrimId < TotalPrimCount) {
         const uint3 Index = uint3(
-            ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 0),
-            ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 1),
-            ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 2));
+            ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 0),
+            ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 1),
+            ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 2));
                 
         prims[GTid] = uint3(VertexBase + 0, VertexBase + 1, VertexBase + 2);
         

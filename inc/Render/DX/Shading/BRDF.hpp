@@ -6,28 +6,29 @@ namespace Render::DX::Shading {
 	namespace BRDF {
 		namespace Shader {
 			enum Type {
-				VS_IntegrateDiffuse = 0,
-				MS_IntegrateDiffuse,
-				PS_IntegrateDiffuse_BlinnPhong,
-				PS_IntegrateDiffuse_CookTorrance,
-				VS_IntegrateSpecular,
-				MS_IntegrateSpecular,
-				PS_IntegrateSpecular,
+				VS_ComputeBRDF = 0,
+				MS_ComputeBRDF,
+				PS_ComputeBRDF_BlinnPhong,
+				PS_ComputeBRDF_CookTorrance,
+				VS_IntegrateIrradiance,
+				MS_IntegrateIrradiance,
+				PS_IntegrateIrradiance,
 				Count
 			};
 		}
 
 		namespace RootSignature {
 			enum Type {
-				GR_IntegrateDiffuse = 0,
-				GR_IntegrateSpecular,
+				GR_ComputeBRDF = 0,
+				GR_IntegrateIrradiance,
 				Count
 			};
 
-			namespace IntegrateDiffuse {
+			namespace ComputeBRDF {
 				enum {
 					CB_Pass = 0,
 					CB_Light,
+					RC_Consts,
 					SI_AlbedoMap,
 					SI_NormalMap,
 					SI_DepthMap,
@@ -35,14 +36,13 @@ namespace Render::DX::Shading {
 					SI_RoughnessMetalicMap,
 					SI_PositionMap,
 					SI_ShadowMap,
-					SI_AOMap,
-					SI_DiffuseIrradianceCubeMap,
 					Count
 				};
 			}
-			namespace IntegrateSpecular {
+			namespace IntegrateIrradiance {
 				enum {
 					CB_Pass = 0,
+					RC_Consts,
 					SI_BackBuffer,
 					SI_AlbedoMap,
 					SI_NormalMap,
@@ -52,6 +52,7 @@ namespace Render::DX::Shading {
 					SI_PositionMap,
 					SI_AOMap,
 					SI_ReflectionMap,
+					SI_DiffuseIrradianceCubeMap,
 					SI_BrdfLutMap,
 					SI_PrefilteredEnvCubeMap,
 					Count
@@ -61,12 +62,12 @@ namespace Render::DX::Shading {
 
 		namespace PipelineState {
 			enum Type {
-				GP_IntegrateDiffuse_BlinnPhong = 0,
-				MP_IntegrateDiffuse_BlinnPhong,
-				GP_IntegrateDiffuse_CookTorrance,
-				MP_IntegrateDiffuse_CookTorrance,
-				GP_IntegrateSpecular,
-				MP_IntegrateSpecular,
+				GP_ComputeBRDF_BlinnPhong = 0,
+				MP_ComputeBRDF_BlinnPhong,
+				GP_ComputeBRDF_CookTorrance,
+				MP_ComputeBRDF_CookTorrance,
+				GP_IntegrateIrradiance,
+				MP_IntegrateIrradiance,
 				Count
 			};
 		}
@@ -100,7 +101,7 @@ namespace Render::DX::Shading {
 			virtual BOOL BuildPipelineStates() override;
 
 		public:
-			BOOL IntegrateDiffuse(
+			BOOL ComputeBRDF(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				D3D12_VIEWPORT viewport, D3D12_RECT scissorRect,
 				Foundation::Resource::GpuResource* const pBackBuffer, D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
@@ -111,8 +112,8 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pRoughnessMetalnessMap, D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
 				Foundation::Resource::GpuResource* const pPositionMap, D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 				Foundation::Resource::GpuResource* const pShadowMap, D3D12_GPU_DESCRIPTOR_HANDLE si_shadowMap,
-				Foundation::Resource::GpuResource* const pDiffuseIrradianceMap, D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap);
-			BOOL IntegrateSpecular(
+				BOOL bShadowEnabled);
+			BOOL IntegrateIrradiance(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				D3D12_VIEWPORT viewport, D3D12_RECT scissorRect,
 				Foundation::Resource::GpuResource* const pBackBuffer, D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
@@ -123,8 +124,11 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pSpecularMap, D3D12_GPU_DESCRIPTOR_HANDLE si_specularMap,
 				Foundation::Resource::GpuResource* const pRoughnessMetalnessMap, D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
 				Foundation::Resource::GpuResource* const pPositionMap, D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+				Foundation::Resource::GpuResource* const pAOMap, D3D12_GPU_DESCRIPTOR_HANDLE si_aoMap,
+				Foundation::Resource::GpuResource* const pDiffuseIrradianceMap, D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap,
 				Foundation::Resource::GpuResource* const pBrdfLutMap, D3D12_GPU_DESCRIPTOR_HANDLE si_brdfLutMap,
-				Foundation::Resource::GpuResource* const pPrefilteredEnvCubeMap, D3D12_GPU_DESCRIPTOR_HANDLE si_prefilteredEnvCubeMap);
+				Foundation::Resource::GpuResource* const pPrefilteredEnvCubeMap, D3D12_GPU_DESCRIPTOR_HANDLE si_prefilteredEnvCubeMap, 
+				BOOL bSsaoEnabled);
 
 		private:
 			InitData mInitData;

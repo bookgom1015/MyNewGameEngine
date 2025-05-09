@@ -79,10 +79,6 @@ namespace Common {
 		public:
 			__forceinline void SetCamera(Common::Foundation::Camera::GameCamera* const pCamera);
 
-		public: // Shading control functions
-			void EnableShadow(BOOL state);
-			__forceinline constexpr BOOL IsShadowEnabled() const;
-
 		protected:
 			Common::Debug::LogFile* mpLogFile = nullptr;
 			Common::Foundation::Core::WindowsManager* mpWindowsManager = nullptr;
@@ -92,8 +88,6 @@ namespace Common {
 
 			BOOL mbRaytracingSupported = FALSE;
 			BOOL mbMeshShaderSupported = FALSE;
-
-			BOOL mbShadowEnabled = TRUE;
 		};
 	}
 }

@@ -51,9 +51,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
-      <Filter>Common Files\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
       <Filter>Common Files\Debug</Filter>
     </ClCompile>
@@ -120,6 +117,9 @@
       <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
+      <Filter>Common Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
       <Filter>Common Files\Render</Filter>
     </ClInclude>
   </ItemGroup>

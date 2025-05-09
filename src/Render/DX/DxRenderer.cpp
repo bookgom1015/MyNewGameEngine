@@ -31,6 +31,8 @@
 #include "Render/DX/Shading/BRDF.hpp"
 #include "Render/DX/Shading/Shadow.hpp"
 #include "Render/DX/Shading/TAA.hpp"
+#include "Render/DX/Shading/SSAO.hpp"
+#include "Render/DX/Shading/BlurFilter.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -60,6 +62,8 @@ DxRenderer::DxRenderer() {
 	mBRDF = std::make_unique<Shading::BRDF::BRDFClass>();
 	mShadow = std::make_unique<Shading::Shadow::ShadowClass>();
 	mTAA = std::make_unique<Shading::TAA::TAAClass>();
+	mSSAO= std::make_unique<Shading::SSAO::SSAOClass>();
+	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -70,6 +74,8 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mBRDF.get());
 	mShadingObjectManager->AddShadingObject(mShadow.get());
 	mShadingObjectManager->AddShadingObject(mTAA.get());
+	mShadingObjectManager->AddShadingObject(mSSAO.get());
+	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -154,6 +160,9 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMapSrv(),
 		opaquesReadyToDraw));
 
+	if (mpArgumentSet->SSAO.Enabled)
+		CheckReturn(mpLogFile, DrawSSAO());
+
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(), 
@@ -164,7 +173,7 @@ BOOL DxRenderer::Draw() {
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		opaquesReadyToDraw));
 
-	CheckReturn(mpLogFile, mBRDF->IntegrateDiffuse(
+	CheckReturn(mpLogFile, mBRDF->ComputeBRDF(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
@@ -184,10 +193,9 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMapSrv(),
 		mShadow->ShadowMap(),
 		mShadow->ShadowMapSrv(),
-		mEnvironmentMap->DiffuseIrradianceCubeMap(), 
-		mEnvironmentMap->DiffuseIrradianceCubeMapSrv()));
+		mpArgumentSet->Shadow.Enabled));
 
-	CheckReturn(mpLogFile, mBRDF->IntegrateSpecular(
+	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(), 
 		mSwapChain->ScissorRect(),
@@ -207,10 +215,15 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->RoughnessMetalnessMapSrv(),
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
+		mSSAO->AOMap(0),
+		mSSAO->AOMapSrv(0),
+		mEnvironmentMap->DiffuseIrradianceCubeMap(),
+		mEnvironmentMap->DiffuseIrradianceCubeMapSrv(),
 		mEnvironmentMap->BrdfLutMap(),
 		mEnvironmentMap->BrdfLutMapSrv(),
 		mEnvironmentMap->PrefilteredEnvironmentCubeMap(),
-		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv()));
+		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv(),
+		mpArgumentSet->SSAO.Enabled));
 
 	CheckReturn(mpLogFile, mEnvironmentMap->DrawSkySphere(
 		mCurrentFrameResource,
@@ -222,17 +235,19 @@ BOOL DxRenderer::Draw() {
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		skySphere));
 
-	CheckReturn(mpLogFile, mTAA->ApplyTAA(
-		mCurrentFrameResource,
-		mSwapChain->ScreenViewport(),
-		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv(),
-		mGBuffer->VelocityMap(),
-		mGBuffer->VelocityMapSrv(),
-		mpArgumentSet->TAA.ModulationFactor));
+	if (mpArgumentSet->TAA.Enabled) {
+		CheckReturn(mpLogFile, mTAA->ApplyTAA(
+			mCurrentFrameResource,
+			mSwapChain->ScreenViewport(),
+			mSwapChain->ScissorRect(),
+			mToneMapping->InterMediateMapResource(),
+			mToneMapping->InterMediateMapRtv(),
+			mToneMapping->InterMediateCopyMapResource(),
+			mToneMapping->InterMediateCopyMapSrv(),
+			mGBuffer->VelocityMap(),
+			mGBuffer->VelocityMapSrv(),
+			mpArgumentSet->TAA.ModulationFactor));
+	}
 
 	CheckReturn(mpLogFile, mToneMapping->Resolve(
 		mCurrentFrameResource,
@@ -340,18 +355,19 @@ BOOL DxRenderer::CreateDescriptorHeaps() {
 }
 
 BOOL DxRenderer::UpdateConstantBuffers() {
+	if (mpCamera == nullptr) return TRUE;
+
 	CheckReturn(mpLogFile, UpdateMainPassCB());
 	CheckReturn(mpLogFile, UpdateLightCB());
 	CheckReturn(mpLogFile, UpdateObjectCB());
 	CheckReturn(mpLogFile, UpdateMaterialCB());
 	CheckReturn(mpLogFile, UpdateProjectToCubeCB());
+	CheckReturn(mpLogFile, UpdateSsaoCB());
 
 	return TRUE;
 }
 
 BOOL DxRenderer::UpdateMainPassCB() {
-	if (mpCamera == nullptr) return TRUE;
-
 	// Transform NDC space [-1 , +1]^2 to texture space [0, 1]^2
 	const XMMATRIX T(
 		0.5f, 0.f,  0.f, 0.f,
@@ -380,11 +396,13 @@ BOOL DxRenderer::UpdateMainPassCB() {
 	XMStoreFloat4x4(&mMainPassCB->ViewProjTex, XMMatrixTranspose(viewProjTex));
 	XMStoreFloat3(&mMainPassCB->EyePosW, mpCamera->Position());
 
-	const auto OffsetIndex = static_cast<UINT>(mCommandObject->CurrentFence() % mTAA->HaltonSequenceSize());
-	mMainPassCB->JitteredOffset = mTAA->HaltonSequence(OffsetIndex);
-
-	//const size_t offsetIndex = static_cast<size_t>(mCommandObject->CurrentFence()) % mFittedToBakcBufferHaltonSequence.size();
-	//mMainPassCB->JitteredOffset = bTaaEnabled ? mFittedToBakcBufferHaltonSequence[offsetIndex] : XMFLOAT2(0.f, 0.f);
+	if (mpArgumentSet->TAA.Enabled) {
+		const auto OffsetIndex = static_cast<UINT>(mCommandObject->CurrentFence() % mTAA->HaltonSequenceSize());
+		mMainPassCB->JitteredOffset = mTAA->HaltonSequence(OffsetIndex);
+	}
+	else {
+		mMainPassCB->JitteredOffset = { 0.f, 0.f };
+	}
 	
 	mCurrentFrameResource->CopyMainPassCB(0, *mMainPassCB.get());
 
@@ -622,7 +640,38 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 		))
 	);
 
-	mCurrentFrameResource->CopyProjectToCubeCB(0, *mProjectToCubeCB.get());
+	mCurrentFrameResource->CopyProjectToCubeCB(*mProjectToCubeCB.get());
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateSsaoCB() {
+	ConstantBuffers::SsaoCB ssaoCB;
+	ssaoCB.View = mMainPassCB->View;
+	ssaoCB.Proj = mMainPassCB->Proj;
+	ssaoCB.InvProj = mMainPassCB->InvProj;
+
+	const XMMATRIX P = XMLoadFloat4x4(&mpCamera->Proj());
+	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+	const XMMATRIX T(
+		0.5f, 0.f, 0.f, 0.f,
+		0.f, -0.5f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f,
+		0.5f, 0.5f, 0.f, 1.f
+	);
+	XMStoreFloat4x4(&ssaoCB.ProjTex, XMMatrixTranspose(P * T));
+
+	mSSAO->GetOffsetVectors(ssaoCB.OffsetVectors);
+
+	// Coordinates given in view space.
+	ssaoCB.OcclusionRadius = mpArgumentSet->SSAO.OcclusionRadius;
+	ssaoCB.OcclusionFadeStart = mpArgumentSet->SSAO.OcclusionFadeStart;
+	ssaoCB.OcclusionFadeEnd = mpArgumentSet->SSAO.OcclusionFadeEnd;
+	ssaoCB.SurfaceEpsilon = mpArgumentSet->SSAO.SurfaceEpsilon;
+
+	ssaoCB.SampleCount = ShadingConvention::SSAO::SampleCount;
+
+	mCurrentFrameResource->CopySsaoCB(ssaoCB);
 
 	return TRUE;
 }
@@ -670,6 +719,7 @@ BOOL DxRenderer::BuildMeshGeometry(
 	geo->VertexBufferByteSize = VerticesByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = IndicesByteSize;
+	geo->IndexByteStride = sizeof(std::uint16_t);
 	geo->Subsets[name] = *pSubmesh;
 	
 	pMeshGeo = geo.get();
@@ -722,6 +772,7 @@ BOOL DxRenderer::BuildMeshGeometry(
 	geo->VertexBufferByteSize = VerticesByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R32_UINT;
 	geo->IndexBufferByteSize = IndicesByteSize;
+	geo->IndexByteStride = sizeof(std::uint32_t);
 	geo->Fence = Fence;
 
 	std::vector<Common::Foundation::Mesh::Mesh::SubsetPair> subsets;
@@ -898,6 +949,27 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mTAA->Initialize(mpLogFile, initData.get()));
 	}
+	// SSAO
+	{
+		auto initData = Shading::SSAO::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mSSAO->Initialize(mpLogFile, initData.get()));
+	}
+	// BlurFilter
+	{
+		auto initData = Shading::BlurFilter::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		CheckReturn(mpLogFile, mBlurFilter->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -998,6 +1070,8 @@ BOOL DxRenderer::BuildScene() {
 	CheckReturn(mpLogFile, BuildSkySphere());
 	CheckReturn(mpLogFile, BuildLights());
 
+	CheckReturn(mpLogFile, mSSAO->BuildRandomVectorTexture());
+
 	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(
 		mCurrentFrameResource,
 		mMipmapGenerator.get(), 
@@ -1023,9 +1097,40 @@ BOOL DxRenderer::DrawImGui() {
 
 	CmdList->OMSetRenderTargets(1, &mSwapChain->BackBufferRtv(), TRUE, nullptr);
 
-	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(CmdList, mClientWidth, mClientHeight));
+	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(CmdList, mpArgumentSet, mClientWidth, mClientHeight));
 
 	CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::DrawSSAO() {
+	CheckReturn(mpLogFile, mSSAO->DrawSSAO(
+		mCurrentFrameResource,
+		mGBuffer->NormalMap(),
+		mGBuffer->NormalMapSrv(),
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv()));
+
+	for (UINT i = 0; i < 3; ++i) {
+		CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
+			mCurrentFrameResource,
+			Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
+			mSSAO->AOMap(0),
+			mSSAO->AOMapSrv(0),
+			mSSAO->AOMap(1),
+			mSSAO->AOMapUav(1),
+			mSSAO->TexWidth(), mSSAO->TexHeight()));
+
+		CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
+			mCurrentFrameResource,
+			Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
+			mSSAO->AOMap(1),
+			mSSAO->AOMapSrv(1),
+			mSSAO->AOMap(0),
+			mSSAO->AOMapUav(0),
+			mSSAO->TexWidth(), mSSAO->TexHeight()));
+	}
 
 	return TRUE;
 }

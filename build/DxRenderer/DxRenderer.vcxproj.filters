@@ -118,6 +118,12 @@
     <Filter Include="External Files\ImGuiManager">
       <UniqueIdentifier>{49368825-054f-417f-a943-922028a8f568}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\SSAO">
+      <UniqueIdentifier>{0a55c4c9-991a-49a4-a289-afd7897ee42b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\BlurFilter">
+      <UniqueIdentifier>{59727938-514d-487c-8a90-42decf997f3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -222,11 +228,17 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\TAA.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
+      <Filter>Common Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\SSAO.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\BlurFilter.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Common\Render\Renderer.cpp">
-      <Filter>Common Files\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
       <Filter>Common Files\Debug</Filter>
     </ClCompile>
@@ -362,6 +374,12 @@
     <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp">
       <Filter>External Files\ImGuiManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\SSAO.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\BlurFilter.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -437,10 +455,10 @@
     <None Include="..\..\assets\Shaders\HLSL\GBuffer.hlsl">
       <Filter>Shader Files\GBuffer</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\IntegrateSpecular.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\IntegrateIrradiance.hlsl">
       <Filter>Shader Files\BRDF</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\IntegrateDiffuse.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\ComputeBRDF.hlsl">
       <Filter>Shader Files\BRDF</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\CookTorrance.hlsli">
@@ -490,6 +508,21 @@
     </None>
     <None Include="..\..\inc\Render\DX\Shading\TAA.inl">
       <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\SSAO.hlsl">
+      <Filter>Shader Files\SSAO</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\SSAO.hlsli">
+      <Filter>Shader Files\SSAO</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\SSAO.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilter3x3CS.hlsl">
+      <Filter>Shader Files\BlurFilter</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterRG3x3CS.hlsl">
+      <Filter>Shader Files\BlurFilter</Filter>
     </None>
   </ItemGroup>
 </Project>

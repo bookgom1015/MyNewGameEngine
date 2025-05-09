@@ -264,12 +264,12 @@ namespace ShadingConvention{
 #define GBuffer_Default_RootConstants(reg) cbuffer cbRootConstant : register(reg) GBuffer_Default_RCSTRUCT
 #endif
 #else 
-		static const DXGI_FORMAT AlbedoMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-		static const DXGI_FORMAT SpecularMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		static const DXGI_FORMAT RoughnessMetalnessMapFormat = DXGI_FORMAT_R16G16_UNORM;
-		static const DXGI_FORMAT VelocityMapFormat = DXGI_FORMAT_R16G16_FLOAT;
-		static const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		const DXGI_FORMAT AlbedoMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		const DXGI_FORMAT SpecularMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		const DXGI_FORMAT RoughnessMetalnessMapFormat = DXGI_FORMAT_R16G16_UNORM;
+		const DXGI_FORMAT VelocityMapFormat = DXGI_FORMAT_R16G16_FLOAT;
+		const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		const FLOAT AlbedoMapClearValues[4] = { 0.f,  0.f, 0.f,  0.f };
 		const FLOAT NormalMapClearValues[4] = { 0.f,  0.f, 0.f, InvalidNormalWValue };
@@ -282,13 +282,55 @@ namespace ShadingConvention{
 			namespace Default {
 				struct Struct GBuffer_Default_RCSTRUCT
 					enum {
-					EC_VertexCount = 0,
-					EC_IndexCount,
+					E_VertexCount = 0,
+					E_IndexCount,
 					Count
 				};
 			}
 		}
 #endif 
+	}
+
+	namespace BRDF {
+#ifndef BRDF_ComputeBRDF_RCSTRUCT
+#define BRDF_ComputeBRDF_RCSTRUCT {	\
+		BOOL gShadowEnabled;		\
+	};
+#endif
+
+#ifndef BRDF_IntegrateIrradiance_RCSTRUCT
+#define BRDF_IntegrateIrradiance_RCSTRUCT {	\
+		BOOL gSsaoEnabled;					\
+	};
+#endif
+
+#ifdef _HLSL
+#ifndef BRDF_ComputeBRDF_RootConstants
+#define BRDF_ComputeBRDF_RootConstants(reg) cbuffer cbRootConstant : register(reg) BRDF_ComputeBRDF_RCSTRUCT
+#endif
+
+#ifndef BRDF_IntegrateIrradiance_RootConstants
+#define BRDF_IntegrateIrradiance_RootConstants(reg) cbuffer cbRootConstant : register(reg) BRDF_IntegrateIrradiance_RCSTRUCT
+#endif
+#else
+		namespace RootConstant {
+			namespace ComputeBRDF {
+				struct Struct BRDF_ComputeBRDF_RCSTRUCT
+					enum {
+					E_ShadowEnabled = 0,
+					Count
+				};
+			}
+
+			namespace IntegrateIrradiance {
+				struct Struct BRDF_IntegrateIrradiance_RCSTRUCT
+					enum {
+					E_SsaoEnabled = 0,
+					Count
+				};
+			}
+		}
+#endif
 	}
 
 	namespace Shadow {
@@ -333,8 +375,8 @@ namespace ShadingConvention{
 #define Shadow_DrawShadow_RootConstants(reg) cbuffer cbRootConstants : register(reg) Shadow_DrawShadow_RCSTRUCT
 #endif
 #else 
-		static const DXGI_FORMAT ZDepthMapFormat = DXGI_FORMAT_D32_FLOAT;
-		static const DXGI_FORMAT ShadowMapFormat = DXGI_FORMAT_R16_UINT;
+		const DXGI_FORMAT ZDepthMapFormat = DXGI_FORMAT_D32_FLOAT;
+		const DXGI_FORMAT ShadowMapFormat = DXGI_FORMAT_R16_UINT;
 
 		const FLOAT FaceIdCubeMapClearValues[4] = { 255.f, 0.f, 0.f, 0.f };
 #endif 
@@ -374,6 +416,91 @@ namespace ShadingConvention{
 				struct Struct TAA_Default_RCSTRUCT
 				enum {
 					E_ModulationFactor = 0,
+					Count
+				};
+			}
+		}
+#endif
+	}
+
+	namespace SSAO {
+#ifndef SSAO_Default_RCSTRUCT
+#define SSAO_Default_RCSTRUCT {			\
+		DirectX::XMFLOAT2 gInvTexDim;	\
+	};
+#endif
+
+		namespace ThreadGroup {
+			namespace Default {
+				enum {
+					Width = 8,
+					Height = 8,
+					Depth = 1,
+					Size = Width * Height * Depth
+				};
+			}
+		}
+
+		static const INT SampleCount = 14;
+
+#ifdef _HLSL
+		typedef float	AOMapFormat;
+		typedef float3	RandomVectorMapFormat;
+
+#ifndef SSAO_Default_RootConstants
+#define SSAO_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_Default_RCSTRUCT
+#endif
+#else
+		const DXGI_FORMAT AOMapFormat = DXGI_FORMAT_R16_UNORM;
+		const DXGI_FORMAT RandomVectorMapFormat = DXGI_FORMAT_R8G8B8A8_SNORM;
+
+		const FLOAT AOMapClearValues[4] = { 1.f, 0.f, 0.f, 0.f };
+
+		namespace RootConstant {
+			namespace Default {
+				struct Struct SSAO_Default_RCSTRUCT
+					enum {
+					E_InvTexDimX = 0,
+					E_InvTexDimY,
+					Count
+				};
+			}
+		}
+#endif
+	}
+
+	namespace BlurFilter {
+		namespace ThreadGroup {
+			namespace Default {
+				enum {
+					Width = 8,
+					Height = 8,
+					Depth = 1,
+					Size = Width * Height * Depth
+				};
+			}
+		}
+
+#ifndef BlurFilter_Default_RCSTRUCT
+#define BlurFilter_Default_RCSTRUCT {	\
+		DirectX::XMFLOAT2 gTexDim;		\
+		DirectX::XMFLOAT2 gInvTexDim;	\
+	};
+#endif
+
+#ifdef _HLSL
+#ifndef BlurFilter_Default_RootConstants
+#define BlurFilter_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) BlurFilter_Default_RCSTRUCT
+#endif
+#else
+		namespace RootConstant {
+			namespace Default {
+				struct Struct BlurFilter_Default_RCSTRUCT
+				enum {
+					E_TexDimX = 0,
+					E_TexDimY,
+					E_InvTexDimX,
+					E_InvTexDimY,
 					Count
 				};
 			}

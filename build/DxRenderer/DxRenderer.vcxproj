@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
+    <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ConstantBuffer.h" />
@@ -35,11 +36,13 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingConvention.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\BlurFilter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\BRDF.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\SSAO.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\TAA.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\ToneMapping.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\EquirectangularConverter.hpp" />
@@ -61,7 +64,6 @@
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
-    <ClCompile Include="..\..\src\Common\Render\Renderer.cpp" />
     <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
@@ -83,11 +85,13 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\Texture.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\BlurFilter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\BRDF.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\SSAO.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\TAA.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\ToneMapping.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\EquirectangaularConverter.cpp" />
@@ -108,6 +112,7 @@
     <None Include="..\..\assets\Shaders\HLSL\ShaderConstants.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Shadow.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\SSAO.hlsli" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\DepthStencilBuffer.inl" />
@@ -122,6 +127,7 @@
     <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
     <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Shadow.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\SSAO.inl" />
     <None Include="..\..\inc\Render\DX\Shading\TAA.inl" />
     <None Include="..\..\inc\Render\DX\Shading\ToneMapping.inl" />
     <None Include="packages.config" />
@@ -160,10 +166,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\IntegrateDiffuse.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\ComputeBRDF.hlsl">
       <FileType>Document</FileType>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\IntegrateSpecular.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\IntegrateIrradiance.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -192,6 +198,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\TAA.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\SSAO.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilter3x3CS.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterRG3x3CS.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

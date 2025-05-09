@@ -1,6 +1,7 @@
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
@@ -54,6 +55,7 @@ void DxImGuiManager::HookMsgCallback(Common::Foundation::Core::WindowsManager* c
 
 BOOL DxImGuiManager::DrawImGui(
 		ID3D12GraphicsCommandList6* const pCmdList,
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT clientWidth, UINT clientHeight) {
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -67,16 +69,15 @@ BOOL DxImGuiManager::DrawImGui(
 		ImGui::Begin("Control Panel", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 		// Framerate text
-		{
-			CHAR buffer[64];
-			snprintf(buffer, sizeof(buffer), "%.1f FPS (%.3f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
-
-			const float TextWidth = ImGui::CalcTextSize(buffer).x;
-			const float RegionWidth = ImGui::GetContentRegionAvail().x;
-
-			ImGui::SetCursorPosX(RegionWidth - TextWidth);
-			ImGui::TextUnformatted(buffer);
-			ImGui::NewLine();
+		FrameRateText(clientWidth, clientHeight);
+		// Shading objects
+		if (ImGui::CollapsingHeader("Shading Objects")) {
+			// Shadow
+			ShadowHeader(pArgSet);
+			// TAA
+			TaaHeader(pArgSet);
+			// SSAO
+			SsaoHeader(pArgSet);
 		}
 	
 		ImGui::End();
@@ -86,4 +87,40 @@ BOOL DxImGuiManager::DrawImGui(
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), pCmdList);
 
 	return TRUE;
+}
+
+void DxImGuiManager::FrameRateText(UINT clientWidth, UINT clientHeight) {
+	CHAR buffer[64];
+	snprintf(buffer, sizeof(buffer), "%.1f FPS (%.3f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+
+	const float TextWidth = ImGui::CalcTextSize(buffer).x;
+	const float RegionWidth = ImGui::GetContentRegionAvail().x;
+
+	ImGui::SetCursorPosX(RegionWidth - TextWidth);
+	ImGui::TextUnformatted(buffer);
+	ImGui::NewLine();
+}
+
+void DxImGuiManager::ShadowHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("Shadow")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->Shadow.Enabled));
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::TaaHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("TAA")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->TAA.Enabled));
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::SsaoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("SSAO")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->SSAO.Enabled));
+
+		ImGui::TreePop();
+	}
 }

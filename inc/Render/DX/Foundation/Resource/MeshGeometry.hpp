@@ -41,6 +41,7 @@ namespace Render::DX::Foundation::Resource {
 
 		DXGI_FORMAT IndexFormat = DXGI_FORMAT_R16_UINT;
 		UINT IndexBufferByteSize = 0;
+		UINT IndexByteStride = 0;
 
 		UINT64 Fence = 0;
 

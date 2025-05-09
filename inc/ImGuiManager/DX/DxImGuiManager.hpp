@@ -23,6 +23,10 @@ namespace Render::DX::Foundation {
 	}
 }
 
+namespace Common::Render::ShadingArgument {
+	struct ShadingArgumentSet;
+}
+
 namespace ImGuiManager {
 	extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* CreateImGuiManager();
 	extern "C" ImGuiManagerAPI void DestroyImGuiManager(Common::ImGuiManager::ImGuiManager* const imGuiManager);
@@ -43,7 +47,14 @@ namespace ImGuiManager {
 
 			BOOL DrawImGui(
 				ID3D12GraphicsCommandList6* const pCmdList,
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 				UINT clientWidth, UINT clientHeight);
+
+		private:
+			void FrameRateText(UINT clientWidth, UINT clientHeight);
+			void ShadowHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void TaaHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void SsaoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
 			BOOL mbIsD3D12Initialized = FALSE;

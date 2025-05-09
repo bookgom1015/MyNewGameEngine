@@ -115,8 +115,34 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 			mInitData.Device,
 			psoDesc, 
-			IID_PPV_ARGS(&mPipelineState), 
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GBuffer]),
 			L"GBuffer_GP_Default"));
+	}
+	// MeshPipelineState
+	if (mInitData.MeshShaderSupported) {
+		auto psoDesc = Foundation::Util::D3D12Util::DefaultMeshPsoDesc(ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
+		psoDesc.pRootSignature = mRootSignature.Get();
+		{
+			const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_GBuffer]);
+			NullCheck(mpLogFile, MS);
+			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GBuffer]);
+			NullCheck(mpLogFile, PS);
+			psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
+			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+		}
+		psoDesc.NumRenderTargets = NumRenderTargtes;
+		psoDesc.RTVFormats[0] = ShadingConvention::GBuffer::AlbedoMapFormat;
+		psoDesc.RTVFormats[1] = ShadingConvention::GBuffer::NormalMapFormat;
+		psoDesc.RTVFormats[2] = ShadingConvention::GBuffer::SpecularMapFormat;
+		psoDesc.RTVFormats[3] = ShadingConvention::GBuffer::RoughnessMetalnessMapFormat;
+		psoDesc.RTVFormats[4] = ShadingConvention::GBuffer::VelocityMapFormat;
+		psoDesc.RTVFormats[5] = ShadingConvention::GBuffer::PositionMapFormat;
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_GBuffer]),
+			L"GBuffer_MP_Default"));
 	}
 
 	return TRUE;
@@ -174,7 +200,7 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineState.Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_GBuffer : PipelineState::GP_GBuffer].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -430,13 +456,25 @@ BOOL GBuffer::GBufferClass::DrawRenderItems(
 		const D3D12_GPU_VIRTUAL_ADDRESS ritemMatCBAddress = pFrameResource->MaterialCBAddress(ri->Material->MaterialCBIndex);
 		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Material, ritemMatCBAddress);
 
-		if (false) {
+		if (mInitData.MeshShaderSupported) {
+			pCmdList->SetGraphicsRootShaderResourceView(RootSignature::Default::SI_VertexBuffer, ri->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
+			pCmdList->SetGraphicsRootShaderResourceView(RootSignature::Default::SI_IndexBuffer, ri->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
+
 			ShadingConvention::GBuffer::RootConstant::Default::Struct rc;
+			rc.gVertexCount = ri->Geometry->VertexBufferByteSize / ri->Geometry->VertexByteStride;
+			rc.gIndexCount = ri->Geometry->IndexBufferByteSize / ri->Geometry->IndexByteStride;
 
 			std::array<std::uint32_t, ShadingConvention::GBuffer::RootConstant::Default::Count> consts;
 			std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::GBuffer::RootConstant::Default::Struct));
 
 			pCmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::GBuffer::RootConstant::Default::Count, consts.data(), 0);
+
+			const UINT PrimCount = rc.gIndexCount / 3;
+
+			pCmdList->DispatchMesh(
+				Foundation::Util::D3D12Util::CeilDivide(PrimCount, ShadingConvention::GBuffer::ThreadGroup::MeshShader::ThreadsPerGroup),
+				1,
+				1);
 		}
 		else {
 			pCmdList->IASetVertexBuffers(0, 1, &ri->Geometry->VertexBufferView());

@@ -70,4 +70,22 @@ namespace ConstantBuffers {
 		DirectX::XMFLOAT4X4 Proj;
 		DirectX::XMFLOAT4X4 View[6];
 	};
+
+	struct SsaoCB {
+		DirectX::XMFLOAT4X4	View;
+		DirectX::XMFLOAT4X4	Proj;
+		DirectX::XMFLOAT4X4	InvProj;
+		DirectX::XMFLOAT4X4	ProjTex;
+		DirectX::XMFLOAT4	OffsetVectors[14];
+
+		FLOAT				OcclusionRadius;
+		FLOAT				OcclusionFadeStart;
+		FLOAT				OcclusionFadeEnd;
+		FLOAT				SurfaceEpsilon;
+
+		UINT				SampleCount;
+		FLOAT				__ConstantPad0__;
+		FLOAT				__ConstantPad1__;
+		FLOAT				__ConstantPad2__;
+	};
 }

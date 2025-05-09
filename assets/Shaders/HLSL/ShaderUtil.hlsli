@@ -165,6 +165,19 @@ namespace ShaderUtil {
 
         return (curr_pos - prev_pos).xy;
     }
+    
+    float NdcDepthToViewDepth(in float z_ndc, in float4x4 proj) {
+	    // z_ndc = A + B/viewZ, where proj[2,2]=A and proj[3,2]=B.
+        const float viewZ = proj[3][2] / (z_ndc - proj[2][2]);
+        
+        return viewZ;
+    }
+
+    float NdcDepthToExpViewDepth(in float z_ndc, in float z_exp, in float near, in float far) {
+        const float viewZ = pow(z_ndc, z_exp) * (far - near) + near;
+        
+        return viewZ;
+    }
 }
 
 #endif // __SHADERUITL_HLSLI__

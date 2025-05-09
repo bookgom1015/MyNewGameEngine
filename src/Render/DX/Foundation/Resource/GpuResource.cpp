@@ -65,8 +65,5 @@ void GpuResource::Transite(ID3D12GraphicsCommandList* const pCmdList, D3D12_RESO
 
 	pCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), mCurrState, state));
 
-	if (mCurrState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS || state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
-		Util::D3D12Util::UavBarrier(pCmdList, mResource.Get());
-
 	mCurrState = state;
 }

@@ -5,8 +5,4 @@ void Common::Render::Renderer::SetCamera(Common::Foundation::Camera::GameCamera*
 	mpCamera = pCamera;
 }
 
-constexpr BOOL Common::Render::Renderer::IsShadowEnabled() const {
-	return mbShadowEnabled;
-}
-
 #endif // __RENDERER_INL__

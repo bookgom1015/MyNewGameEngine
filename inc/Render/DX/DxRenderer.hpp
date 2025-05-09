@@ -58,6 +58,8 @@ namespace Render {
 			namespace BRDF { class BRDFClass; }
 			namespace Shadow { class ShadowClass; }
 			namespace TAA { class TAAClass; }
+			namespace SSAO { class SSAOClass; }
+			namespace BlurFilter { class BlurFilterClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -96,6 +98,7 @@ namespace Render {
 			BOOL UpdateObjectCB();
 			BOOL UpdateMaterialCB();
 			BOOL UpdateProjectToCubeCB();
+			BOOL UpdateSsaoCB();
 
 		private:
 			BOOL BuildMeshGeometry(
@@ -128,6 +131,7 @@ namespace Render {
 
 			BOOL DrawImGui();
 
+			BOOL DrawSSAO();
 			BOOL PresentAndSignal();
 
 		private:
@@ -158,6 +162,8 @@ namespace Render {
 			std::unique_ptr<Shading::BRDF::BRDFClass> mBRDF;
 			std::unique_ptr<Shading::Shadow::ShadowClass> mShadow;
 			std::unique_ptr<Shading::TAA::TAAClass> mTAA;
+			std::unique_ptr<Shading::SSAO::SSAOClass> mSSAO;
+			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

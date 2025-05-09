@@ -53,6 +53,9 @@ namespace Render::DX::Foundation {
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ProjectToCubeCBAddress() const;
 			UINT ProjectToCubeCBByteSize() const;
 
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS SsaoCBAddress() const;
+			UINT SsaoCBByteSize() const;
+
 		public:
 			BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
@@ -70,7 +73,8 @@ namespace Render::DX::Foundation {
 			__forceinline void CopyLightCB(INT elementIndex, const ConstantBuffers::LightCB& data);
 			__forceinline void CopyObjectCB(INT elementIndex, const ConstantBuffers::ObjectCB& data);
 			__forceinline void CopyMaterialCB(INT elementIndex, const ConstantBuffers::MaterialCB& data);
-			__forceinline void CopyProjectToCubeCB(INT elementIndex, const ConstantBuffers::ProjectToCubeCB& data);
+			__forceinline void CopyProjectToCubeCB(const ConstantBuffers::ProjectToCubeCB& data);
+			__forceinline void CopySsaoCB(const ConstantBuffers::SsaoCB& data);
 
 		private:
 			BOOL CreateCommandListAllocators();
@@ -95,6 +99,7 @@ namespace Render::DX::Foundation {
 			UploadBuffer<ConstantBuffers::ObjectCB> mObjectCB;
 			UploadBuffer<ConstantBuffers::MaterialCB> mMaterialCB;
 			UploadBuffer<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
+			UploadBuffer<ConstantBuffers::SsaoCB> mSsaoCB;
 		};
 	}
 }

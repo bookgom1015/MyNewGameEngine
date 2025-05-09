@@ -457,6 +457,8 @@ BOOL Shadow::ShadowClass::DrawShadow(
 		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_DrawShadow].Get());
 
 		mShadowMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		mZDepthMaps[lightIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_READ);
+		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 		CmdList->SetComputeRootConstantBufferView(RootSignature::DrawShadow::CB_Light, pFrameResource->LightCBAddress());
 
@@ -479,6 +481,8 @@ BOOL Shadow::ShadowClass::DrawShadow(
 			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.ClientWidth), ShadingConvention::Shadow::ThreadGroup::DrawShadow::Width),
 			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.ClientHeight), ShadingConvention::Shadow::ThreadGroup::DrawShadow::Height), 
 			ShadingConvention::Shadow::ThreadGroup::DrawShadow::Depth);
+
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mShadowMap.get());
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

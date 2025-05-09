@@ -1,5 +1,5 @@
-#ifndef __INTEGRATESPECULAR_HLSL__
-#define __INTEGRATESPECULAR_HLSL__
+#ifndef __INTEGRATEIRRADIANCE_HLSL__
+#define __INTEGRATEIRRADIANCE_HLSL__
 
 #ifndef _HLSL
 #define _HLSL
@@ -15,6 +15,8 @@
 
 ConstantBuffer<ConstantBuffers::PassCB> cbPass : register(b0);
 
+BRDF_IntegrateIrradiance_RootConstants(b1)
+
 Texture2D<ShadingConvention::ToneMapping::IntermediateMapFormat>    gi_BackBuffer            : register(t0);
 Texture2D<ShadingConvention::GBuffer::AlbedoMapFormat>              gi_AlbedoMap             : register(t1);
 Texture2D<ShadingConvention::GBuffer::NormalMapFormat>              gi_NormalMap             : register(t2);
@@ -22,11 +24,11 @@ Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat> gi_DepthMap 
 Texture2D<ShadingConvention::GBuffer::SpecularMapFormat>            gi_SpecularMap           : register(t4);
 Texture2D<ShadingConvention::GBuffer::RoughnessMetalnessMapFormat>  gi_RoughnessMetalnessMap : register(t5);
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap           : register(t6);
-
-Texture2D gi_AOMap : register(t7);
+Texture2D<ShadingConvention::SSAO::AOMapFormat>                     gi_AOMap                 : register(t7);
 Texture2D gi_ReflectionMap : register(t8);
-Texture2D<ShadingConvention::EnvironmentMap::BrdfLutMapFormat>                      gi_BrdfLutMap            : register(t9);
-TextureCube<ShadingConvention::EnvironmentMap::PrefilteredEnvironmentCubeMapFormat> gi_PrefilteredEnvCubeMap : register(t10);
+TextureCube<ShadingConvention::EnvironmentMap::DiffuseIrradianceCubeMapFormat>      gi_DiffuseIrradianceCubeEnv : register(t9);
+Texture2D<ShadingConvention::EnvironmentMap::BrdfLutMapFormat>                      gi_BrdfLutMap               : register(t10);
+TextureCube<ShadingConvention::EnvironmentMap::PrefilteredEnvironmentCubeMapFormat> gi_PrefilteredEnvCubeMap    : register(t11);
 
 struct VertexOut {
     float4 PosH : SV_Position;
@@ -39,9 +41,9 @@ FitToScreenMeshShader
 
 HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float4 PosW = gi_PositionMap.Sample(gsamLinearClamp, pin.TexC);
-    const float3 DiffuseRadiance = gi_BackBuffer.Sample(gsamLinearClamp, pin.TexC).rgb;
+    const float3 Radiance = gi_BackBuffer.Sample(gsamLinearClamp, pin.TexC).rgb;
 
-    if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) return float4(DiffuseRadiance, 1.f);
+    if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) return float4(Radiance, 1.f);
 
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);
 
@@ -68,18 +70,24 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float3 FresnelR0 = lerp((float3) 0.08f * Specular, Albedo.rgb, Metalness);
 
     const float3 kS = FresnelSchlickRoughness(saturate(dot(NormalW, ViewW)), FresnelR0, Roughness);
-    const float3 kD = 1.f - kS;
-
+    float3 kD = 1.f - kS;
+    kD *= (1.f - Metalness);
+    
     const float2 Brdf = gi_BrdfLutMap.Sample(gsamLinearClamp, float2(NdotV, Roughness));
     const float3 SpecularBias = (kS * Brdf.x + Brdf.y);
     const float Alpha = Reflection.a;
 
-    const float3 SpecularRadiance = (1.f - Alpha) * PrefilteredColor + Alpha * Reflection.rgb;
+    const float3 SpecularIrradiance = (1.f - Alpha) * PrefilteredColor + Alpha * Reflection.rgb;
 
-    //const float AO = gi_AOMap.Sample(gsamLinearClamp, pin.TexC);
-    const float AO = 1.f;
+    float ao = 1.f;
+    if (gSsaoEnabled) ao = gi_AOMap.SampleLevel(gsamLinearClamp, pin.TexC, 0);
+    
+    const float3 DiffuseIrradiance = gi_DiffuseIrradianceCubeEnv.SampleLevel(gsamLinearClamp, NormalW, 0).rgb;
+    const float3 AmbientDiffuse = kD * Albedo.rgb * DiffuseIrradiance * ao;
+    const float3 AmbientSpecular = SpecularBias * SpecularIrradiance;
+    const float3 AmbientLight = AmbientDiffuse + AmbientSpecular;
 
-    return float4(DiffuseRadiance + AO * SpecularBias * SpecularRadiance, 1.f);
+    return float4(Radiance + AmbientLight, 1.f);
 }
 
-#endif // __INTEGRATESPECULAR_HLSL__
+#endif // __INTEGRATEIRRADIANCE_HLSL__

@@ -58,8 +58,17 @@ D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::Proje
 	return mProjectToCubeCB.Resource()->GetGPUVirtualAddress();
 }
 
-void Render::DX::Foundation::Resource::FrameResource::CopyProjectToCubeCB(INT elementIndex, const ConstantBuffers::ProjectToCubeCB& data) {
-	mProjectToCubeCB.CopyData(elementIndex, data);
+void Render::DX::Foundation::Resource::FrameResource::CopyProjectToCubeCB(const ConstantBuffers::ProjectToCubeCB& data) {
+	mProjectToCubeCB.CopyData(0, data);
+}
+
+// SsaoCB
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::SsaoCBAddress() const {
+	return mSsaoCB.Resource()->GetGPUVirtualAddress();
+}
+
+void Render::DX::Foundation::Resource::FrameResource::CopySsaoCB(const ConstantBuffers::SsaoCB& data) {
+	mSsaoCB.CopyData(0, data);
 }
 
 #endif // __FRAMERESOURCE_INL__

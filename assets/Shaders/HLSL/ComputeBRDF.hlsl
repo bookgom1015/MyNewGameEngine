@@ -1,5 +1,5 @@
-#ifndef __INTEGRATEDIFFUSE_HLSL__
-#define __INTEGRATEDIFFUSE_HLSL__
+#ifndef __COMPUTEBRDF_HLSL__
+#define __COMPUTEBRDF_HLSL__
 
 #ifndef _HLSL
 #define _HLSL
@@ -17,6 +17,8 @@
 ConstantBuffer<ConstantBuffers::PassCB> cbPass : register(b0);
 ConstantBuffer<ConstantBuffers::LightCB> cbLight : register(b1);
 
+BRDF_ComputeBRDF_RootConstants(b2)
+
 Texture2D<ShadingConvention::GBuffer::AlbedoMapFormat>              gi_AlbedoMap             : register(t0);
 Texture2D<ShadingConvention::GBuffer::NormalMapFormat>              gi_NormalMap             : register(t1);
 Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat> gi_DepthMap              : register(t2);
@@ -24,9 +26,6 @@ Texture2D<ShadingConvention::GBuffer::SpecularMapFormat>            gi_SpecularM
 Texture2D<ShadingConvention::GBuffer::RoughnessMetalnessMapFormat>  gi_RoughnessMetalnessMap : register(t4);
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap           : register(t5);
 Texture2D<ShadingConvention::Shadow::ShadowMapFormat>               gi_ShadowMap             : register(t6);
-
-Texture2D gi_AOMap : register(t7);
-TextureCube<ShadingConvention::EnvironmentMap::DiffuseIrradianceCubeMapFormat> gi_DiffuseIrradianceCubeEnv : register(t8);
 
 struct VertexOut {
     float4 PosH : SV_Position;
@@ -51,10 +50,12 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
 
     Material mat = { Albedo, FresnelR0, Shiness, Metalness };
 
-    float shadowFactor[MaxLights];    
+    float shadowFactor[MaxLights];
+    
 	[unroll]
     for (uint i = 0; i < MaxLights; ++i) { shadowFactor[i] = 1; }    
-	{
+    
+    if (gShadowEnabled) {
         uint2 size;
         gi_ShadowMap.GetDimensions(size.x, size.y);
     
@@ -70,18 +71,9 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);
 
     const float3 ViewW = normalize(cbPass.EyePosW - PosW.xyz);
-    const float3 DiffuseRadiance = max(ComputeBRDF(cbLight.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactor, cbLight.LightCount), (float3) 0.f);
-
-    const float3 kS = FresnelSchlickRoughness(saturate(dot(NormalW, ViewW)), FresnelR0, Roughness);
-    float3 kD = 1.f - kS;
-    kD *= (1.f - mat.Metalness);
-    
-    const float3 DiffuseIrradiance = gi_DiffuseIrradianceCubeEnv.SampleLevel(gsamLinearClamp, NormalW, 0).rgb;
-    //const float AO = gi_AOMap.SampleLevel(gsamLinearClamp, pin.TexC, 0);
-    const float AO = 1.f;
-    const float3 AmbientLight = (kD * Albedo.rgb * DiffuseIrradiance) * AO;    
-    
-    return float4(DiffuseRadiance + AmbientLight, 1.f);
+    const float3 Radiance = max(ComputeBRDF(cbLight.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactor, cbLight.LightCount), (float3) 0.f);
+        
+    return float4(Radiance, 1.f);
 }
 
-#endif // __INTEGRATEDIFFUSE_HLSL__
+#endif // __COMPUTEBRDF_HLSL__
