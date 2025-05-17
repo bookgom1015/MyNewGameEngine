@@ -226,8 +226,7 @@ BOOL ToneMapping::ToneMappingClass::BuildResources() {
 			&rscDesc,
 			D3D12_RESOURCE_STATE_COMMON,
 			&optClear,
-			L"ToneMapping_IntermediateMap"
-		));
+			L"ToneMapping_IntermediateMap"));
 	}
 	// IntermediateCopyMap
 	{
@@ -240,8 +239,7 @@ BOOL ToneMapping::ToneMappingClass::BuildResources() {
 			&rscDesc,
 			D3D12_RESOURCE_STATE_COMMON,
 			nullptr,
-			L"ToneMapping_IntermediateCopyMap"
-		));
+			L"ToneMapping_IntermediateCopyMap"));
 	}
 
 	return TRUE;

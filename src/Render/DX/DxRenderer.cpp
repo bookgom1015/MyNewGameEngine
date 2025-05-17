@@ -24,6 +24,7 @@
 #include "Render/DX/Shading/Util/MipmapGenerator.hpp"
 #include "Render/DX/Shading/Util/EquirectangularConverter.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
+#include "Render/DX/Shading/Util/AccelerationStructure.hpp"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "Render/DX/Shading/GammaCorrection.hpp"
 #include "Render/DX/Shading/ToneMapping.hpp"
@@ -32,6 +33,7 @@
 #include "Render/DX/Shading/Shadow.hpp"
 #include "Render/DX/Shading/TAA.hpp"
 #include "Render/DX/Shading/SSAO.hpp"
+#include "Render/DX/Shading/RTAO.hpp"
 #include "Render/DX/Shading/BlurFilter.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
@@ -63,6 +65,7 @@ DxRenderer::DxRenderer() {
 	mShadow = std::make_unique<Shading::Shadow::ShadowClass>();
 	mTAA = std::make_unique<Shading::TAA::TAAClass>();
 	mSSAO= std::make_unique<Shading::SSAO::SSAOClass>();
+	mRTAO = std::make_unique<Shading::RTAO::RTAOClass>();
 	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
@@ -75,12 +78,16 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mShadow.get());
 	mShadingObjectManager->AddShadingObject(mTAA.get());
 	mShadingObjectManager->AddShadingObject(mSSAO.get());
+	mShadingObjectManager->AddShadingObject(mRTAO.get());
 	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
 	mLightCB = std::make_unique<ConstantBuffers::LightCB>();
 	mProjectToCubeCB = std::make_unique<ConstantBuffers::ProjectToCubeCB>();
+
+	// Accleration structure manager
+	mAccelerationStructureManager = std::make_unique<Shading::Util::AccelerationStructureManager>();
 }
 
 DxRenderer::~DxRenderer() {}
@@ -98,6 +105,8 @@ BOOL DxRenderer::Initialize(
 
 	CheckReturn(mpLogFile, mpImGuiManager->InitializeD3D12(mDevice.get(), mDescriptorHeap.get()));
 	mpImGuiManager->HookMsgCallback(mpWindowsManager);
+
+	CheckReturn(mpLogFile, mAccelerationStructureManager->Initialize(mpLogFile, mDevice.get(), mCommandObject.get()));
 
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
@@ -134,16 +143,36 @@ BOOL DxRenderer::OnResize(UINT width, UINT height) {
 BOOL DxRenderer::Update(FLOAT deltaTime) {
 	mCurrentFrameResourceIndex = (mCurrentFrameResourceIndex + 1) % Foundation::Resource::FrameResource::Count;
 	mCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
-	CheckReturn(mpLogFile, mCommandObject->WaitCompletion(mCurrentFrameResource->mFence));
-	
+	CheckReturn(mpLogFile, mCommandObject->WaitCompletion(mCurrentFrameResource->mFence));	
+	CheckReturn(mpLogFile, mCurrentFrameResource->ResetCommandListAllocators());
+
 	CheckReturn(mpLogFile, UpdateConstantBuffers());
+
+	if (mbRaytracingSupported) {
+		const auto& opaques = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque];
+
+		std::vector<Foundation::RenderItem*> opaquesReadyToDraw;
+		for (const auto opaque : opaques) {
+			if (mCurrentFrameResource->mFence < opaque->Geometry->Fence) continue;
+
+			opaquesReadyToDraw.push_back(opaque);
+		}
+
+		const UINT NumRitems = static_cast<UINT>(opaquesReadyToDraw.size());
+
+		if (mbMeshGeometryAdded && NumRitems > 0) {
+			CheckReturn(mpLogFile, mAccelerationStructureManager->Update(mCurrentFrameResource, opaquesReadyToDraw.data(), NumRitems));
+
+			CheckReturn(mpLogFile, mShadingObjectManager->BuildShaderTables(NumRitems));
+
+			mbMeshGeometryAdded = FALSE;
+		}
+	}
 
 	return TRUE;
 }
 
 BOOL DxRenderer::Draw() {
-	CheckReturn(mpLogFile, mCurrentFrameResource->ResetCommandListAllocators());
-
 	const auto skySphere = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].front();
 	const auto& opaques = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque];
 
@@ -153,15 +182,6 @@ BOOL DxRenderer::Draw() {
 
 		opaquesReadyToDraw.push_back(opaque);
 	}
-	
-	CheckReturn(mpLogFile, mShadow->Run(
-		mCurrentFrameResource,
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv(),
-		opaquesReadyToDraw));
-
-	if (mpArgumentSet->SSAO.Enabled)
-		CheckReturn(mpLogFile, DrawSSAO());
 
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
 		mCurrentFrameResource,
@@ -173,6 +193,15 @@ BOOL DxRenderer::Draw() {
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		opaquesReadyToDraw));
 
+	CheckReturn(mpLogFile, mShadow->Run(
+		mCurrentFrameResource,
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv(),
+		opaquesReadyToDraw));
+
+	if (mpArgumentSet->AOEnabled)
+		CheckReturn(mpLogFile, DrawAO());
+
 	CheckReturn(mpLogFile, mBRDF->ComputeBRDF(
 		mCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
@@ -181,9 +210,9 @@ BOOL DxRenderer::Draw() {
 		mToneMapping->InterMediateMapRtv(),
 		mGBuffer->AlbedoMap(),
 		mGBuffer->AlbedoMapSrv(),
-		mGBuffer->NormalMap(), 
+		mGBuffer->NormalMap(),
 		mGBuffer->NormalMapSrv(),
-		mDepthStencilBuffer->GetDepthStencilBuffer(), 
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferSrv(),
 		mGBuffer->SpecularMap(),
 		mGBuffer->SpecularMapSrv(),
@@ -193,37 +222,9 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMapSrv(),
 		mShadow->ShadowMap(),
 		mShadow->ShadowMapSrv(),
-		mpArgumentSet->Shadow.Enabled));
+		mpArgumentSet->ShadowEnabled));
 
-	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
-		mCurrentFrameResource,
-		mSwapChain->ScreenViewport(), 
-		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(), 
-		mToneMapping->InterMediateCopyMapSrv(),
-		mGBuffer->AlbedoMap(), 
-		mGBuffer->AlbedoMapSrv(),
-		mGBuffer->NormalMap(),
-		mGBuffer->NormalMapSrv(),
-		mDepthStencilBuffer->GetDepthStencilBuffer(),
-		mDepthStencilBuffer->DepthStencilBufferSrv(),
-		mGBuffer->SpecularMap(), 
-		mGBuffer->SpecularMapSrv(),
-		mGBuffer->RoughnessMetalnessMap(), 
-		mGBuffer->RoughnessMetalnessMapSrv(),
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv(),
-		mSSAO->AOMap(0),
-		mSSAO->AOMapSrv(0),
-		mEnvironmentMap->DiffuseIrradianceCubeMap(),
-		mEnvironmentMap->DiffuseIrradianceCubeMapSrv(),
-		mEnvironmentMap->BrdfLutMap(),
-		mEnvironmentMap->BrdfLutMapSrv(),
-		mEnvironmentMap->PrefilteredEnvironmentCubeMap(),
-		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv(),
-		mpArgumentSet->SSAO.Enabled));
+	CheckReturn(mpLogFile, IntegrateIrradiance());
 
 	CheckReturn(mpLogFile, mEnvironmentMap->DrawSkySphere(
 		mCurrentFrameResource,
@@ -277,11 +278,17 @@ BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Fo
 	CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
 		mCurrentFrameResource->CommandAllocator(0),
 		0));
+
 	const auto CmdList = mCommandObject->CommandList(0);
 
 	{
 		Foundation::Resource::MeshGeometry* meshGeo;
 		CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, pMesh, meshGeo));
+
+		if (mbRaytracingSupported)
+			CheckReturn(mpLogFile, mAccelerationStructureManager->BuildBLAS(CmdList, meshGeo));
+
+		mbMeshGeometryAdded = TRUE;
 
 		UINT count = 0;
 
@@ -362,7 +369,7 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 	CheckReturn(mpLogFile, UpdateObjectCB());
 	CheckReturn(mpLogFile, UpdateMaterialCB());
 	CheckReturn(mpLogFile, UpdateProjectToCubeCB());
-	CheckReturn(mpLogFile, UpdateSsaoCB());
+	CheckReturn(mpLogFile, UpdateAmbientOcclusionCB());
 
 	return TRUE;
 }
@@ -645,11 +652,11 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	return TRUE;
 }
 
-BOOL DxRenderer::UpdateSsaoCB() {
-	ConstantBuffers::SsaoCB ssaoCB;
-	ssaoCB.View = mMainPassCB->View;
-	ssaoCB.Proj = mMainPassCB->Proj;
-	ssaoCB.InvProj = mMainPassCB->InvProj;
+BOOL DxRenderer::UpdateAmbientOcclusionCB() {
+	ConstantBuffers::AmbientOcclusionCB aoCB;
+	aoCB.View = mMainPassCB->View;
+	aoCB.Proj = mMainPassCB->Proj;
+	aoCB.InvProj = mMainPassCB->InvProj;
 
 	const XMMATRIX P = XMLoadFloat4x4(&mpCamera->Proj());
 	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
@@ -659,19 +666,30 @@ BOOL DxRenderer::UpdateSsaoCB() {
 		0.f, 0.f, 1.f, 0.f,
 		0.5f, 0.5f, 0.f, 1.f
 	);
-	XMStoreFloat4x4(&ssaoCB.ProjTex, XMMatrixTranspose(P * T));
+	XMStoreFloat4x4(&aoCB.ProjTex, XMMatrixTranspose(P * T));
 
-	mSSAO->GetOffsetVectors(ssaoCB.OffsetVectors);
+	mSSAO->GetOffsetVectors(aoCB.OffsetVectors);
 
-	// Coordinates given in view space.
-	ssaoCB.OcclusionRadius = mpArgumentSet->SSAO.OcclusionRadius;
-	ssaoCB.OcclusionFadeStart = mpArgumentSet->SSAO.OcclusionFadeStart;
-	ssaoCB.OcclusionFadeEnd = mpArgumentSet->SSAO.OcclusionFadeEnd;
-	ssaoCB.SurfaceEpsilon = mpArgumentSet->SSAO.SurfaceEpsilon;
+	if (mpArgumentSet->RaytracingEnabled) {
+		aoCB.OcclusionRadius = mpArgumentSet->RTAO.OcclusionRadius;
+		aoCB.OcclusionFadeStart = mpArgumentSet->RTAO.OcclusionFadeStart;
+		aoCB.OcclusionFadeEnd = mpArgumentSet->RTAO.OcclusionFadeEnd;
+		aoCB.OcclusionStrength = mpArgumentSet->RTAO.OcclusionStrength;
+		aoCB.SurfaceEpsilon = mpArgumentSet->RTAO.SurfaceEpsilon;
+		aoCB.SampleCount = mpArgumentSet->RTAO.SampleCount;
+	}
+	else {
+		aoCB.OcclusionRadius = mpArgumentSet->SSAO.OcclusionRadius;
+		aoCB.OcclusionFadeStart = mpArgumentSet->SSAO.OcclusionFadeStart;
+		aoCB.OcclusionFadeEnd = mpArgumentSet->SSAO.OcclusionFadeEnd;
+		aoCB.OcclusionStrength = mpArgumentSet->SSAO.OcclusionStrength;
+		aoCB.SurfaceEpsilon = mpArgumentSet->SSAO.SurfaceEpsilon;
+		aoCB.SampleCount = mpArgumentSet->SSAO.SampleCount;
+	}
 
-	ssaoCB.SampleCount = ShadingConvention::SSAO::SampleCount;
+	aoCB.FrameCount = static_cast<UINT>(mCurrentFrameResource->mFence);
 
-	mCurrentFrameResource->CopySsaoCB(ssaoCB);
+	mCurrentFrameResource->CopyAmbientOcclusionCB(aoCB);
 
 	return TRUE;
 }
@@ -961,6 +979,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mSSAO->Initialize(mpLogFile, initData.get()));
 	}
+	// RTAO
+	{
+		auto initData = Shading::RTAO::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mRTAO->Initialize(mpLogFile, initData.get()));
+	}
 	// BlurFilter
 	{
 		auto initData = Shading::BlurFilter::MakeInitData();
@@ -1104,33 +1134,83 @@ BOOL DxRenderer::DrawImGui() {
 	return TRUE;
 }
 
-BOOL DxRenderer::DrawSSAO() {
-	CheckReturn(mpLogFile, mSSAO->DrawSSAO(
+BOOL DxRenderer::DrawAO() {
+	if (mpArgumentSet->RaytracingEnabled) {
+		CheckReturn(mpLogFile, mRTAO->DrawAO(
+			mCurrentFrameResource,
+			mAccelerationStructureManager->AccelerationStructure(),
+			mGBuffer->PositionMap(),
+			mGBuffer->PositionMapSrv(),
+			mGBuffer->NormalMap(),
+			mGBuffer->NormalMapSrv(),
+			mDepthStencilBuffer->GetDepthStencilBuffer(),
+			mDepthStencilBuffer->DepthStencilBufferSrv()));
+	}
+	else {
+		CheckReturn(mpLogFile, mSSAO->DrawAO(
+			mCurrentFrameResource,
+			mGBuffer->NormalMap(),
+			mGBuffer->NormalMapSrv(),
+			mGBuffer->PositionMap(),
+			mGBuffer->PositionMapSrv()));
+
+		for (UINT i = 0, end = mpArgumentSet->SSAO.BlurCount; i < end; ++i) {
+			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
+				mCurrentFrameResource,
+				Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
+				mSSAO->AOMap(0),
+				mSSAO->AOMapSrv(0),
+				mSSAO->AOMap(1),
+				mSSAO->AOMapUav(1),
+				mSSAO->TexWidth(), mSSAO->TexHeight()));
+
+			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
+				mCurrentFrameResource,
+				Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
+				mSSAO->AOMap(1),
+				mSSAO->AOMapSrv(1),
+				mSSAO->AOMap(0),
+				mSSAO->AOMapUav(0),
+				mSSAO->TexWidth(), mSSAO->TexHeight()));
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL DxRenderer::IntegrateIrradiance() {
+	const auto ao = mpArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMap() : mSSAO->AOMap(0);
+	const auto aoSrv = mpArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMapSrv() : mSSAO->AOMapSrv(0);
+
+	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
 		mCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(),
+		mToneMapping->InterMediateCopyMapSrv(),
+		mGBuffer->AlbedoMap(),
+		mGBuffer->AlbedoMapSrv(),
 		mGBuffer->NormalMap(),
 		mGBuffer->NormalMapSrv(),
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
+		mDepthStencilBuffer->DepthStencilBufferSrv(),
+		mGBuffer->SpecularMap(),
+		mGBuffer->SpecularMapSrv(),
+		mGBuffer->RoughnessMetalnessMap(),
+		mGBuffer->RoughnessMetalnessMapSrv(),
 		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv()));
-
-	for (UINT i = 0; i < 3; ++i) {
-		CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
-			mCurrentFrameResource,
-			Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
-			mSSAO->AOMap(0),
-			mSSAO->AOMapSrv(0),
-			mSSAO->AOMap(1),
-			mSSAO->AOMapUav(1),
-			mSSAO->TexWidth(), mSSAO->TexHeight()));
-
-		CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
-			mCurrentFrameResource,
-			Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
-			mSSAO->AOMap(1),
-			mSSAO->AOMapSrv(1),
-			mSSAO->AOMap(0),
-			mSSAO->AOMapUav(0),
-			mSSAO->TexWidth(), mSSAO->TexHeight()));
-	}
+		mGBuffer->PositionMapSrv(),
+		ao,
+		aoSrv,
+		mEnvironmentMap->DiffuseIrradianceCubeMap(),
+		mEnvironmentMap->DiffuseIrradianceCubeMapSrv(),
+		mEnvironmentMap->BrdfLutMap(),
+		mEnvironmentMap->BrdfLutMapSrv(),
+		mEnvironmentMap->PrefilteredEnvironmentCubeMap(),
+		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv(),
+		mpArgumentSet->AOEnabled));
 
 	return TRUE;
 }

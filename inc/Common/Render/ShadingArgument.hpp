@@ -23,24 +23,35 @@ namespace Common::Render {
 			FLOAT ModulationFactor = 0.9f;
 		};
 
-		struct ShadowArguments {
-			BOOL Enabled = TRUE;
-		};
-
 		struct SSAOArguments {
-			BOOL Enabled = TRUE;
 			FLOAT OcclusionRadius = 0.5f;
 			FLOAT OcclusionFadeStart = 0.2f;
 			FLOAT OcclusionFadeEnd = 2.f;
+			FLOAT OcclusionStrength = 4.f;
 			FLOAT SurfaceEpsilon = 0.05f;
+			UINT SampleCount = 14;
+			UINT BlurCount = 3;
+		};
+
+		struct RTAOArguments {
+			FLOAT OcclusionRadius = 10.f;
+			FLOAT OcclusionFadeStart = 0.001f;
+			FLOAT OcclusionFadeEnd = 10.f;
+			FLOAT OcclusionStrength = 4.f;
+			FLOAT SurfaceEpsilon = 0.001f;
+			UINT SampleCount = 2;
 		};
 
 		struct ShadingArgumentSet {
 			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
 			TAAArguments TAA;
-			ShadowArguments Shadow;
 			SSAOArguments SSAO;
+			RTAOArguments RTAO;
+
+			BOOL ShadowEnabled = TRUE;
+			BOOL AOEnabled = TRUE;
+			BOOL RaytracingEnabled = FALSE;
 		};
 	}
 }

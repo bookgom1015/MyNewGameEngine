@@ -26,7 +26,7 @@ BOOL Render::DX::Foundation::Resource::UploadBuffer<T>::Initialize(
 	if (isConstantBuffer)
 		mElementByteSize = Util::D3D12Util::CalcConstantBufferByteSize(sizeof(T));
 
-	CheckReturn(pLogFile, Util::D3D12Util::CreateUploadBuffer(pDevice, mElementByteSize * elementCount, mUploadBuffer));
+	CheckReturn(pLogFile, Util::D3D12Util::CreateUploadBuffer(pDevice, mElementByteSize * elementCount, IID_PPV_ARGS(&mUploadBuffer)));
 
 	if (FAILED(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedData))))
 		ReturnFalse(pLogFile, L"Failed mapping upload buffer");

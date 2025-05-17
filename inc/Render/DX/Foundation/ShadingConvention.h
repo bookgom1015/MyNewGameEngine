@@ -252,6 +252,10 @@ namespace ShadingConvention{
 		typedef float2								VelocityMapFormat;
 		typedef float4								PositionMapFormat;
 
+		bool IsValidNormal(float4 normal) {
+			return normal.w != InvalidNormalWValue;
+		}
+
 		bool IsValidPosition(float4 position) {
 			return position.w != InvalidPositionWValue;
 		}
@@ -300,7 +304,7 @@ namespace ShadingConvention{
 
 #ifndef BRDF_IntegrateIrradiance_RCSTRUCT
 #define BRDF_IntegrateIrradiance_RCSTRUCT {	\
-		BOOL gSsaoEnabled;					\
+		BOOL gAoEnabled;					\
 	};
 #endif
 
@@ -401,8 +405,9 @@ namespace ShadingConvention{
 
 	namespace TAA {
 #ifndef TAA_Default_RCSTRUCT
-#define TAA_Default_RCSTRUCT {		\
-		FLOAT gModulationFactor;	\
+#define TAA_Default_RCSTRUCT {					\
+		FLOAT			  gModulationFactor;	\
+		DirectX::XMFLOAT2 gInvTexDim;			\
 	};
 #endif
 
@@ -416,6 +421,8 @@ namespace ShadingConvention{
 				struct Struct TAA_Default_RCSTRUCT
 				enum {
 					E_ModulationFactor = 0,
+					E_InvTexDimX,
+					E_InvTexDimY,
 					Count
 				};
 			}
@@ -441,8 +448,6 @@ namespace ShadingConvention{
 			}
 		}
 
-		static const INT SampleCount = 14;
-
 #ifdef _HLSL
 		typedef float	AOMapFormat;
 		typedef float3	RandomVectorMapFormat;
@@ -466,6 +471,27 @@ namespace ShadingConvention{
 				};
 			}
 		}
+#endif
+	}
+
+	namespace RTAO {
+#ifdef _HLSL
+		typedef float	AOCoefficientMapFormat;
+		typedef uint	TSPPMapFormat;
+		typedef float	AOCoefficientSquaredMeanMapFormat;
+		typedef float	RayHitDistanceFormat;
+
+		static const float RayHitDistanceOnMiss = 0.f;
+		static const float InvalidAOCoefficientValue = -1.f;
+
+		bool HasAORayHitAnyGeometry(float tHit) {
+			return tHit != RayHitDistanceOnMiss;
+		}
+#else
+		const DXGI_FORMAT AOCoefficientMapFormat			= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT TSPPMapFormat						= DXGI_FORMAT_R8_UINT;
+		const DXGI_FORMAT AOCoefficientSquaredMeanMapFormat	= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT RayHitDistanceFormat				= DXGI_FORMAT_R16_FLOAT;
 #endif
 	}
 

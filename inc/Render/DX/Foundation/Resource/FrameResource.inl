@@ -62,13 +62,13 @@ void Render::DX::Foundation::Resource::FrameResource::CopyProjectToCubeCB(const 
 	mProjectToCubeCB.CopyData(0, data);
 }
 
-// SsaoCB
-D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::SsaoCBAddress() const {
-	return mSsaoCB.Resource()->GetGPUVirtualAddress();
+// AmbientOcclusionCB
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::AmbientOcclusionCBAddress() const {
+	return mAmbientOcclusionCB.Resource()->GetGPUVirtualAddress();
 }
 
-void Render::DX::Foundation::Resource::FrameResource::CopySsaoCB(const ConstantBuffers::SsaoCB& data) {
-	mSsaoCB.CopyData(0, data);
+void Render::DX::Foundation::Resource::FrameResource::CopyAmbientOcclusionCB(const ConstantBuffers::AmbientOcclusionCB& data) {
+	mAmbientOcclusionCB.CopyData(0, data);
 }
 
 #endif // __FRAMERESOURCE_INL__

@@ -35,13 +35,10 @@ HDR_FORMAT PS(in VertexOut pin) : SV_TARGET {
     
     const float2 PrevTexC = pin.TexC - Velocity;
 
-    float3 historyColor = gi_HistoryMap.SampleLevel(gsamPointClamp, PrevTexC, 0).rgb;
-    
-    uint2 size;
-    gi_BackBuffer.GetDimensions(size.x, size.y);
-    
-    const float2 dx = float2(1.f / size.x, 0.f);
-    const float2 dy = float2(0.f, 1.f / size.y);
+    float3 historyColor = gi_HistoryMap.SampleLevel(gsamLinearClamp, PrevTexC, 0).rgb;
+        
+    const float2 dx = float2(gInvTexDim.x, 0.f);
+    const float2 dy = float2(0.f, gInvTexDim.y);
 
     const float3 NearColor0 = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(pin.TexC + dx), 0).rgb;
     const float3 NearColor1 = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(pin.TexC - dx), 0).rgb;

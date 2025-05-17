@@ -155,9 +155,9 @@ BOOL Shadow::ShadowClass::BuildPipelineStates() {
 		}
 		psoDesc.NumRenderTargets = 0;
 		psoDesc.DSVFormat = ShadingConvention::Shadow::ZDepthMapFormat;
-		psoDesc.RasterizerState.DepthBias = 1;
+		psoDesc.RasterizerState.DepthBias = 0;
 		psoDesc.RasterizerState.SlopeScaledDepthBias = 1.f;
-		psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+		psoDesc.RasterizerState.DepthBiasClamp = 0.f;
 		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
@@ -457,6 +457,8 @@ BOOL Shadow::ShadowClass::DrawShadow(
 		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_DrawShadow].Get());
 
 		mShadowMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mShadowMap.get());
+
 		mZDepthMaps[lightIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_READ);
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
@@ -476,6 +478,7 @@ BOOL Shadow::ShadowClass::DrawShadow(
 
 		if (NeedCube) CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
 		else CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthMap, mhZDepthMapGpuSrvs[lightIndex]);
+
 
 		CmdList->Dispatch(
 			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.ClientWidth), ShadingConvention::Shadow::ThreadGroup::DrawShadow::Width),

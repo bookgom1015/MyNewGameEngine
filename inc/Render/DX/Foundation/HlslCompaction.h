@@ -6,6 +6,7 @@
 	#include "./../../../../assets/Shaders/HLSL/HardCodedCoordinates.hlsli"
 	#include "./../../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
 	#include "./../../../../assets/Shaders/HLSL/ShaderUtil.hlsli"
+	#include "./../../../../assets/Shaders/HLSL/Random.hlsli"
 	#include "./../../../../inc/Common/Foundation/Mesh/Vertex.h"
 	#include "./../../../../inc/Common/Foundation/Mesh/Material.h"
 	#include "./../../../../inc/Render/DX/Foundation/ShadingConvention.h"

@@ -15,10 +15,13 @@
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
 #include <dxgi1_6.h>
 
-#include "Common/Debug/Logger.hpp"
 #include "Common/Util/HashUtil.hpp"
 #include "Render/DX/Foundation/HlslCompaction.h"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
+
+namespace Common::Debug {
+	struct LogFile;
+}
 
 namespace Render::DX {
 	namespace Shading::Util {
@@ -54,6 +57,7 @@ namespace Render::DX {
 			virtual BOOL BuildPipelineStates();
 			virtual BOOL BuildDescriptors(Core::DescriptorHeap* const pDescHeap);
 			virtual BOOL OnResize(UINT width, UINT height);
+			virtual BOOL BuildShaderTables(UINT numRitems);
 
 		protected:
 			Common::Debug::LogFile* mpLogFile = nullptr;

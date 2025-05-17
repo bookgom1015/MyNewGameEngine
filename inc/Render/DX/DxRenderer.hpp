@@ -46,6 +46,7 @@ namespace Render {
 			namespace Util {
 				class ShadingObjectManager;
 				class ShaderManager;
+				class AccelerationStructureManager;
 
 				namespace MipmapGenerator { class MipmapGeneratorClass; }
 				namespace EquirectangularConverter { class EquirectangularConverterClass; }
@@ -59,6 +60,7 @@ namespace Render {
 			namespace Shadow { class ShadowClass; }
 			namespace TAA { class TAAClass; }
 			namespace SSAO { class SSAOClass; }
+			namespace RTAO { class RTAOClass; }
 			namespace BlurFilter { class BlurFilterClass; }
 		}
 
@@ -98,7 +100,7 @@ namespace Render {
 			BOOL UpdateObjectCB();
 			BOOL UpdateMaterialCB();
 			BOOL UpdateProjectToCubeCB();
-			BOOL UpdateSsaoCB();
+			BOOL UpdateAmbientOcclusionCB();
 
 		private:
 			BOOL BuildMeshGeometry(
@@ -131,7 +133,8 @@ namespace Render {
 
 			BOOL DrawImGui();
 
-			BOOL DrawSSAO();
+			BOOL DrawAO();
+			BOOL IntegrateIrradiance();
 			BOOL PresentAndSignal();
 
 		private:
@@ -163,15 +166,20 @@ namespace Render {
 			std::unique_ptr<Shading::Shadow::ShadowClass> mShadow;
 			std::unique_ptr<Shading::TAA::TAAClass> mTAA;
 			std::unique_ptr<Shading::SSAO::SSAOClass> mSSAO;
+			std::unique_ptr<Shading::RTAO::RTAOClass> mRTAO;
 			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
 			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs;
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups;
+			BOOL mbMeshGeometryAdded = FALSE;
 
 			// Scene bounds
 			DirectX::BoundingSphere mSceneBounds;
+
+			// Acceleration structure manager
+			std::unique_ptr<Shading::Util::AccelerationStructureManager> mAccelerationStructureManager;
 		};
 	}
 }

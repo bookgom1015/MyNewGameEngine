@@ -19,7 +19,6 @@
 #define Log(__logfile, __x, ...) {								\
 	std::vector<std::string> _msgs = { __x, __VA_ARGS__ };		\
 	std::stringstream _sstream;									\
-	_sstream << "[Log] ";										\
 	for (const auto& _msg : _msgs) _sstream << _msg;			\
 	Common::Debug::Logger::LogFn(__logfile, _sstream.str());	\
 }
@@ -29,7 +28,6 @@
 #define Logln(__logfile, __x, ...) {							\
 	std::vector<std::string> _msgs = { __x, __VA_ARGS__ };		\
 	std::stringstream _sstream;									\
-	_sstream << "[Log] ";										\
 	for (const auto& _msg : _msgs) _sstream << _msg;			\
 	_sstream << '\n';											\
 	Common::Debug::Logger::LogFn(__logfile, _sstream.str());	\
@@ -40,7 +38,6 @@
 #define WLog(__logfile, __x, ...) {								\
 	std::vector<std::wstring> _msgs = { __x, __VA_ARGS__ };		\
 	std::wstringstream _wsstream;								\
-	_wsstream << L"[Log] ";										\
 	for (const auto& _msg : _msgs) _wsstream << _msg;			\
 	Common::Debug::Logger::LogFn(__logfile, _wsstream.str());	\
 }
@@ -50,7 +47,6 @@
 #define WLogln(__logfile, __x, ...) {							\
 	std::vector<std::wstring> _msgs = { __x, __VA_ARGS__ };		\
 	std::wstringstream _wsstream;								\
-	_wsstream << L"[Log] ";										\
 	for (const auto& _msg : _msgs) _wsstream << _msg;			\
 	_wsstream << L'\n';											\
 	Common::Debug::Logger::LogFn(__logfile, _wsstream.str());	\

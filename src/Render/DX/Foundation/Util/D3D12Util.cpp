@@ -27,6 +27,20 @@ using namespace DirectX;
 
 Common::Debug::LogFile* D3D12Util::mpLogFile = nullptr;
 
+D3D12Util::D3D12BufferCreateInfo::D3D12BufferCreateInfo() {}
+
+D3D12Util::D3D12BufferCreateInfo::D3D12BufferCreateInfo(UINT64 size, D3D12_RESOURCE_FLAGS flags) : Size(size), Flags(flags) {}
+
+D3D12Util::D3D12BufferCreateInfo::D3D12BufferCreateInfo(UINT64 size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES state) : Size(size), HeapType(heapType), State(state) {}
+
+D3D12Util::D3D12BufferCreateInfo::D3D12BufferCreateInfo(UINT64 size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES state) : Size(size), Flags(flags), State(state) {}
+
+D3D12Util::D3D12BufferCreateInfo::D3D12BufferCreateInfo(UINT64 size, UINT64 alignment, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES state)
+	: Size(size), Alignment(alignment), HeapType(heapType), Flags(flags), State(state) {}
+
+D3D12Util::D3D12BufferCreateInfo::D3D12BufferCreateInfo(UINT64 size, UINT64 alignment, D3D12_HEAP_TYPE heapType, D3D12_HEAP_FLAGS heapFlags, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES state)
+	: Size(size), Alignment(alignment), HeapType(heapType), HeapFlags(heapFlags), Flags(flags), State(state) {}
+
 BOOL D3D12Util::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
 
@@ -113,15 +127,51 @@ BOOL D3D12Util::CreateDefaultBuffer(
 BOOL D3D12Util::CreateUploadBuffer(
 		Core::Device* const pDevice,
 		UINT64 byteSize,
-		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer) {
-	if (FAILED(
-		pDevice->md3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
-			D3D12_RESOURCE_STATE_COMMON,
-			nullptr,
-			IID_PPV_ARGS(&uploadBuffer)))) return FALSE;
+		const IID& riid,
+		void** const ppResource) {
+	if (FAILED(pDevice->md3dDevice->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
+		D3D12_RESOURCE_STATE_COMMON,
+		nullptr,
+		riid,
+		ppResource))) 
+		return FALSE;
+	return TRUE;
+}
+
+BOOL D3D12Util::CreateBuffer(
+		Core::Device* const pDevice,
+		D3D12BufferCreateInfo& info,
+		const IID& riid,
+		void** const ppResource,
+		ID3D12InfoQueue* pInfoQueue) {
+	D3D12_HEAP_PROPERTIES heapDesc = {};
+	heapDesc.Type = info.HeapType;
+	heapDesc.CreationNodeMask = 1;
+	heapDesc.VisibleNodeMask = 1;
+
+	D3D12_RESOURCE_DESC resourceDesc = {};
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resourceDesc.Alignment = info.Alignment;
+	resourceDesc.Height = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.SampleDesc.Quality = 0;
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	resourceDesc.Width = info.Size;
+	resourceDesc.Flags = info.Flags;
+
+	if (pInfoQueue != nullptr) {
+		CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateCommittedResource(&heapDesc, info.HeapFlags, &resourceDesc, info.State, nullptr, riid, ppResource));
+	}
+	else {
+		CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateCommittedResource(&heapDesc, info.HeapFlags, &resourceDesc, info.State, nullptr, riid, ppResource));
+	}
+
 	return TRUE;
 }
 
@@ -385,6 +435,16 @@ BOOL D3D12Util::CreatePipelineState(
 		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
 		pso->SetName(name);
 	}
+
+	return TRUE;
+}
+
+BOOL D3D12Util::CreateStateObject(
+		Core::Device* const pDevice,
+		const D3D12_STATE_OBJECT_DESC* pDesc,
+		const IID& riid,
+		void** const ppStateObject) {
+	CheckHRESULT(mpLogFile, pDevice->md3dDevice->CreateStateObject(pDesc, riid, ppStateObject));
 
 	return TRUE;
 }

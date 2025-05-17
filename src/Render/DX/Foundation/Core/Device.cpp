@@ -115,3 +115,11 @@ BOOL Device::CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const {
 
 	return TRUE;
 }
+
+BOOL Device::GetRaytracingAccelerationStructurePrebuildInfo(
+		const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* const pDesc,
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO* pInfo) {
+	md3dDevice->GetRaytracingAccelerationStructurePrebuildInfo(pDesc, pInfo);
+
+	return TRUE;
+}

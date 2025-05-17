@@ -24,8 +24,8 @@ UINT FrameResource::ProjectToCubeCBByteSize() const {
 	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ProjectToCubeCB));
 }
 
-UINT FrameResource::SsaoCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SsaoCB));
+UINT FrameResource::AmbientOcclusionCBByteSize() const {
+	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::AmbientOcclusionCB));
 }
 
 BOOL FrameResource::Initialize(
@@ -71,7 +71,7 @@ BOOL FrameResource::BuildConstantBuffres(
 	CheckReturn(mpLogFile, mObjectCB.Initialize(mpLogFile, mpDevice, numObjects, TRUE));
 	CheckReturn(mpLogFile, mMaterialCB.Initialize(mpLogFile, mpDevice, numMaterials, TRUE));
 	CheckReturn(mpLogFile, mProjectToCubeCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
-	CheckReturn(mpLogFile, mSsaoCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
+	CheckReturn(mpLogFile, mAmbientOcclusionCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
 
 	return TRUE;
 }

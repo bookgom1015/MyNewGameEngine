@@ -71,7 +71,7 @@ namespace ConstantBuffers {
 		DirectX::XMFLOAT4X4 View[6];
 	};
 
-	struct SsaoCB {
+	struct AmbientOcclusionCB {
 		DirectX::XMFLOAT4X4	View;
 		DirectX::XMFLOAT4X4	Proj;
 		DirectX::XMFLOAT4X4	InvProj;
@@ -84,8 +84,8 @@ namespace ConstantBuffers {
 		FLOAT				SurfaceEpsilon;
 
 		UINT				SampleCount;
+		UINT				FrameCount;
+		FLOAT				OcclusionStrength;
 		FLOAT				__ConstantPad0__;
-		FLOAT				__ConstantPad1__;
-		FLOAT				__ConstantPad2__;
 	};
 }

@@ -14,7 +14,7 @@ namespace Render::DX::Shading {
 		namespace RootSignature {
 			namespace Default {
 				enum {
-					CB_SSAO = 0,
+					CB_AO = 0,
 					RC_Consts,
 					SI_NormalMap,
 					SI_PositionMap,
@@ -68,12 +68,13 @@ namespace Render::DX::Shading {
 		public:
 			BOOL BuildRandomVectorTexture();
 
-			BOOL DrawSSAO(
+			BOOL DrawAO(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				Foundation::Resource::GpuResource* const pNormalMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
 				Foundation::Resource::GpuResource* const pPositionMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap);
+
 
 		private:
 			BOOL BuildRandomVectorMapResource();

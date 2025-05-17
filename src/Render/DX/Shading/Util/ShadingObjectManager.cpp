@@ -78,3 +78,10 @@ BOOL ShadingObjectManager::OnResize(UINT width, UINT height) {
 
 	return TRUE;
 }
+
+BOOL ShadingObjectManager::BuildShaderTables(UINT numRitems) {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->BuildShaderTables(numRitems));
+
+	return TRUE;
+}

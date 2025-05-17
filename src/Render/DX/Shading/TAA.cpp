@@ -195,6 +195,8 @@ BOOL TAA::TAAClass::ApplyTAA(
 
 		ShadingConvention::TAA::RootConstant::Default::Struct rc;
 		rc.gModulationFactor = factor;
+		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mInitData.ClientWidth);
+		rc.gInvTexDim.y = 1.f / static_cast<FLOAT>(mInitData.ClientHeight);
 
 		std::array<std::uint32_t, ShadingConvention::TAA::RootConstant::Default::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::TAA::RootConstant::Default::Struct));
@@ -239,15 +241,14 @@ BOOL TAA::TAAClass::BuildResources() {
 	rscDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	rscDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	mHistoryMap->Initialize(
+	CheckReturn(mpLogFile, mHistoryMap->Initialize(
 		mInitData.Device,
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&rscDesc,
-		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_STATE_COMMON,
 		nullptr,
-		L"TAA_HistoryMap"
-	);
+		L"TAA_HistoryMap"));
 
 	return TRUE;
 }

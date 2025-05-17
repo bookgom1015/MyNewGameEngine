@@ -62,12 +62,9 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float3 PrefilteredColor = gi_PrefilteredEnvCubeMap.SampleLevel(gsamLinearClamp, ToLightW, Roughness * (float)ShadingConvention::MipmapGenerator::MaxMipLevel).rgb;
 
     const float NdotV = max(dot(NormalW, ViewW), 0.f);
-
-    //const float4 Reflection = gi_ReflectionMap.Sample(gsamLinearClamp, pin.TexC);
-    const float4 Reflection = (float4)0.f;
-
+    
     const float Shiness = 1.f - Roughness;
-    const float3 FresnelR0 = lerp((float3) 0.08f * Specular, Albedo.rgb, Metalness);
+    const float3 FresnelR0 = lerp(0.08f * Specular, Albedo.rgb, Metalness);
 
     const float3 kS = FresnelSchlickRoughness(saturate(dot(NormalW, ViewW)), FresnelR0, Roughness);
     float3 kD = 1.f - kS;
@@ -75,12 +72,15 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     
     const float2 Brdf = gi_BrdfLutMap.Sample(gsamLinearClamp, float2(NdotV, Roughness));
     const float3 SpecularBias = (kS * Brdf.x + Brdf.y);
+    
+    //const float4 Reflection = gi_ReflectionMap.Sample(gsamLinearClamp, pin.TexC);
+    const float4 Reflection = (float4) 0.f;
     const float Alpha = Reflection.a;
 
     const float3 SpecularIrradiance = (1.f - Alpha) * PrefilteredColor + Alpha * Reflection.rgb;
 
     float ao = 1.f;
-    if (gSsaoEnabled) ao = gi_AOMap.SampleLevel(gsamLinearClamp, pin.TexC, 0);
+    if (gAoEnabled) ao = gi_AOMap.SampleLevel(gsamLinearClamp, pin.TexC, 0);
     
     const float3 DiffuseIrradiance = gi_DiffuseIrradianceCubeEnv.SampleLevel(gsamLinearClamp, NormalW, 0).rgb;
     const float3 AmbientDiffuse = kD * Albedo.rgb * DiffuseIrradiance * ao;

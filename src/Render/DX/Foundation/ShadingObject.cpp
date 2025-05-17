@@ -1,4 +1,5 @@
 #include "Render/DX/Foundation/ShadingObject.hpp"
+#include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
 
 using namespace Render::DX::Foundation;
@@ -19,3 +20,5 @@ BOOL ShadingObject::BuildPipelineStates() { return TRUE; }
 BOOL ShadingObject::BuildDescriptors(Core::DescriptorHeap* const pDescHeap) { return TRUE; }
 
 BOOL ShadingObject::OnResize(UINT width, UINT height) { return TRUE;  }
+
+BOOL ShadingObject::BuildShaderTables(UINT numRitems) { return TRUE; }

@@ -71,7 +71,7 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);
 
     const float3 ViewW = normalize(cbPass.EyePosW - PosW.xyz);
-    const float3 Radiance = max(ComputeBRDF(cbLight.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactor, cbLight.LightCount), (float3) 0.f);
+    const float3 Radiance = ComputeBRDF(cbLight.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactor, cbLight.LightCount);
         
     return float4(Radiance, 1.f);
 }

@@ -64,20 +64,21 @@ BOOL DxImGuiManager::DrawImGui(
 	// ControlPanel
 	{
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(340.f, static_cast<FLOAT>(clientHeight)), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<FLOAT>(clientWidth) * 0.5f, static_cast<FLOAT>(clientHeight)), ImGuiCond_Always);
 		ImGui::SetNextWindowCollapsed(TRUE, ImGuiCond_Once);
 		ImGui::Begin("Control Panel", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 		// Framerate text
 		FrameRateText(clientWidth, clientHeight);
+		RaytraycingEnableCheckBox(pArgSet);
 		// Shading objects
 		if (ImGui::CollapsingHeader("Shading Objects")) {
 			// Shadow
 			ShadowHeader(pArgSet);
 			// TAA
 			TaaHeader(pArgSet);
-			// SSAO
-			SsaoHeader(pArgSet);
+			// AO
+			AoHeader(pArgSet);
 		}
 	
 		ImGui::End();
@@ -101,9 +102,14 @@ void DxImGuiManager::FrameRateText(UINT clientWidth, UINT clientHeight) {
 	ImGui::NewLine();
 }
 
+void DxImGuiManager::RaytraycingEnableCheckBox(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	ImGui::Checkbox("Raytracing", reinterpret_cast<bool*>(&pArgSet->RaytracingEnabled));
+	ImGui::NewLine();
+}
+
 void DxImGuiManager::ShadowHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("Shadow")) {
-		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->Shadow.Enabled));
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->ShadowEnabled));
 
 		ImGui::TreePop();
 	}
@@ -112,14 +118,25 @@ void DxImGuiManager::ShadowHeader(Common::Render::ShadingArgument::ShadingArgume
 void DxImGuiManager::TaaHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("TAA")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->TAA.Enabled));
+		ImGui::SliderFloat("Modulation Factor", &pArgSet->TAA.ModulationFactor, 0.f, 1.f);
 
 		ImGui::TreePop();
 	}
 }
 
-void DxImGuiManager::SsaoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
-	if (ImGui::TreeNode("SSAO")) {
-		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->SSAO.Enabled));
+void DxImGuiManager::AoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("AO")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->AOEnabled));
+		if (pArgSet->AOEnabled) {
+			if (pArgSet->RaytracingEnabled) {
+				ImGui::Text("RTAO - TODO");
+			}
+			else {
+				ImGui::Text("SSAO");
+				ImGui::SliderFloat("Occlusion Strength", &pArgSet->SSAO.OcclusionStrength, 1.f, 10.f);
+				ImGui::SliderInt("Blur Count", reinterpret_cast<int*>(&pArgSet->SSAO.BlurCount), 0, 10);
+			}
+		}
 
 		ImGui::TreePop();
 	}

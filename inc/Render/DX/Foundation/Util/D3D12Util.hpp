@@ -13,6 +13,14 @@
 #include <dxgi.h>
 #include <DirectXTex.h>
 
+#ifndef ReleaseCom
+#define ReleaseCom(x) { if (x){ x->Release(); x = NULL; } }
+#endif
+
+#ifndef Align
+#define Align(alignment, val) (((val + alignment - 1) / alignment) * alignment)
+#endif
+
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -31,6 +39,23 @@ namespace Render::DX::Foundation {
 
 	namespace Util {
 		class D3D12Util {
+		public:
+			struct D3D12BufferCreateInfo {
+				UINT64					Size		= 0;
+				UINT64					Alignment	= 0;
+				D3D12_HEAP_TYPE			HeapType	= D3D12_HEAP_TYPE_DEFAULT;
+				D3D12_HEAP_FLAGS		HeapFlags	= D3D12_HEAP_FLAG_NONE;
+				D3D12_RESOURCE_FLAGS	Flags	= D3D12_RESOURCE_FLAG_NONE;
+				D3D12_RESOURCE_STATES	State	= D3D12_RESOURCE_STATE_COMMON;
+
+				D3D12BufferCreateInfo();
+				D3D12BufferCreateInfo(UINT64 size, D3D12_RESOURCE_FLAGS flags);
+				D3D12BufferCreateInfo(UINT64 size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES state);
+				D3D12BufferCreateInfo(UINT64 size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES state);
+				D3D12BufferCreateInfo(UINT64 size, UINT64 alignment, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES state);
+				D3D12BufferCreateInfo(UINT64 size, UINT64 alignment, D3D12_HEAP_TYPE heapType, D3D12_HEAP_FLAGS heapFlags, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES state);
+			};
+
 		public:
 			static BOOL Initialize(Common::Debug::LogFile* const pLogFile);
 
@@ -55,7 +80,14 @@ namespace Render::DX::Foundation {
 			static BOOL CreateUploadBuffer(
 				Core::Device* const pDevice,
 				UINT64 byteSize,
-				Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
+				const IID& riid,
+				void** const ppResource);
+			static BOOL CreateBuffer(
+				Core::Device* const pDevice, 
+				D3D12BufferCreateInfo& info, 
+				const IID& riid,
+				void** const ppResource,
+				ID3D12InfoQueue* pInfoQueue = nullptr);
 
 			static void Transite(
 				Core::CommandObject* const pCmdObect, 
@@ -129,6 +161,11 @@ namespace Render::DX::Foundation {
 				const IID& riid,
 				void** const ppPipelineState,
 				LPCWSTR name);
+			static BOOL CreateStateObject(
+				Core::Device* const pDevice,
+				const D3D12_STATE_OBJECT_DESC* pDesc,
+				const IID& riid,
+				void** const ppStateObject);
 
 			static D3D12_INPUT_LAYOUT_DESC InputLayoutDesc();
 

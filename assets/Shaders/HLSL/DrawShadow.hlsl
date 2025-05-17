@@ -29,7 +29,10 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     Render::DX::Foundation::Light light = cbLight.Lights[gLightIndex];
 
     const float4 PosW = gi_PositionMap.Load(uint3(DTid, 0));
-    if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) return;
+    if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) {
+        guio_ShadowMap[DTid] = value;
+        return;
+    }
     
     if (light.Type == Common::Render::LightType::E_Directional) {
         const float ShadowFactor = Shadow::CalcShadowFactorDirectional(gi_ZDepthMap, gsamShadow, light.Mat1, PosW.xyz);
@@ -42,7 +45,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float2 UV = ShaderUtil::ConvertDirectionToUV(Normalized);
 
         const float4x4 ViewProj = Shadow::GetViewProjMatrix(light, Index);
-        const float ShadowFactor = all(ViewProj != (float4x4)0.f) ? Shadow::CalcShadowFactorCubeCS(gi_ZDepthCubeMap, gsamShadow, ViewProj, PosW.xyz, UV, Index) : 1.f;
+        const float ShadowFactor = Shadow::CalcShadowFactorCubeCS(gi_ZDepthCubeMap, gsamShadow, ViewProj, PosW.xyz, UV, Index);
 
         value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, gLightIndex);
     }

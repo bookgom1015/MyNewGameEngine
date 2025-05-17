@@ -37,7 +37,7 @@ UINT SSAO::SSAOClass::CbvSrvUavDescCount() const { return 0
 	; 
 }
 
-UINT SSAO::SSAOClass::RtvDescCount() const { return 0; }
+UINT SSAO::SSAOClass::RtvDescCount() const { return 2; }
 
 UINT SSAO::SSAOClass::DsvDescCount() const { return 0; }
 
@@ -78,7 +78,7 @@ BOOL SSAO::SSAOClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	index = 0;
 
 	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
-	slotRootParameter[RootSignature::Default::CB_SSAO].InitAsConstantBufferView(0);
+	slotRootParameter[RootSignature::Default::CB_AO].InitAsConstantBufferView(0);
 	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(ShadingConvention::SSAO::RootConstant::Default::Count, 1);
 	slotRootParameter[RootSignature::Default::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::Default::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -213,7 +213,7 @@ BOOL SSAO::SSAOClass::BuildRandomVectorTexture() {
 	return TRUE;
 }
 
-BOOL SSAO::SSAOClass::DrawSSAO(
+BOOL SSAO::SSAOClass::DrawAO(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		Foundation::Resource::GpuResource* const pNormalMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
@@ -230,11 +230,7 @@ BOOL SSAO::SSAOClass::DrawSSAO(
 	{
 		CmdList->SetComputeRootSignature(mRootSignature.Get());
 
-		CmdList->RSSetViewports(1, &mViewport);
-		CmdList->RSSetScissorRects(1, &mScissorRect);
-
-
-		CmdList->SetComputeRootConstantBufferView(RootSignature::Default::CB_SSAO, pFrameResource->SsaoCBAddress());
+		CmdList->SetComputeRootConstantBufferView(RootSignature::Default::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
 
 		ShadingConvention::SSAO::RootConstant::Default::Struct rc;
 		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mTexWidth);
@@ -332,15 +328,14 @@ BOOL SSAO::SSAOClass::BuildAOMapResources() {
 		std::wstringstream wsstream;
 		wsstream << L"SSAO_AOMap_" << i;
 
-		mAOMaps[i]->Initialize(
+		CheckReturn(mpLogFile, mAOMaps[i]->Initialize(
 			mInitData.Device,
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&texDesc,
 			D3D12_RESOURCE_STATE_COMMON,
 			nullptr,
-			wsstream.str().c_str()
-		);
+			wsstream.str().c_str()));
 	}
 
 	return TRUE;

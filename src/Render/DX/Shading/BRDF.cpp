@@ -389,7 +389,7 @@ BOOL BRDF::BRDFClass::IntegrateIrradiance(
 		Foundation::Resource::GpuResource* const pDiffuseIrradianceMap, D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap,
 		Foundation::Resource::GpuResource* const pBrdfLutMap, D3D12_GPU_DESCRIPTOR_HANDLE si_brdfLutMap,
 		Foundation::Resource::GpuResource* const pPrefilteredEnvCubeMap, D3D12_GPU_DESCRIPTOR_HANDLE si_prefilteredEnvCubeMap,
-		BOOL bSsaoEnabled) {
+		BOOL bAoEnabled) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -428,7 +428,7 @@ BOOL BRDF::BRDFClass::IntegrateIrradiance(
 		CmdList->SetGraphicsRootConstantBufferView(RootSignature::IntegrateIrradiance::CB_Pass, pFrameResource->MainPassCBAddress());
 
 		ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Struct rc;
-		rc.gSsaoEnabled = bSsaoEnabled;
+		rc.gAoEnabled = bAoEnabled;
 
 		std::array<std::uint32_t, ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Struct));

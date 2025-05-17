@@ -63,6 +63,10 @@ namespace Render::DX {
 
 				BOOL CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const;
 
+				BOOL GetRaytracingAccelerationStructurePrebuildInfo(
+					const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* const pDesc,
+					D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO* pInfo);
+
 			private:
 				Common::Debug::LogFile* mpLogFile = nullptr;
 

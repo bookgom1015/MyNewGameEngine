@@ -52,9 +52,10 @@ namespace ImGuiManager {
 
 		private:
 			void FrameRateText(UINT clientWidth, UINT clientHeight);
+			void RaytraycingEnableCheckBox(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void ShadowHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void TaaHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void SsaoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void AoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
 			BOOL mbIsD3D12Initialized = FALSE;

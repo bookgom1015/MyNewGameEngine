@@ -128,7 +128,7 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pDiffuseIrradianceMap, D3D12_GPU_DESCRIPTOR_HANDLE si_diffuseIrradianceMap,
 				Foundation::Resource::GpuResource* const pBrdfLutMap, D3D12_GPU_DESCRIPTOR_HANDLE si_brdfLutMap,
 				Foundation::Resource::GpuResource* const pPrefilteredEnvCubeMap, D3D12_GPU_DESCRIPTOR_HANDLE si_prefilteredEnvCubeMap, 
-				BOOL bSsaoEnabled);
+				BOOL bAoEnabled);
 
 		private:
 			InitData mInitData;
