@@ -101,6 +101,8 @@ BOOL RTAO::RTAOClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 }
 
 BOOL RTAO::RTAOClass::BuildPipelineStates() {
+	if (!mInitData.RaytracingSupported) return TRUE;
+
 	CD3DX12_STATE_OBJECT_DESC rtaoStateObject = { D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE };
 
 	// RTAO-Library

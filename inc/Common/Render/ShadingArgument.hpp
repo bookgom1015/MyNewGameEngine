@@ -24,21 +24,20 @@ namespace Common::Render {
 		};
 
 		struct SSAOArguments {
-			FLOAT OcclusionRadius = 0.5f;
-			FLOAT OcclusionFadeStart = 0.2f;
-			FLOAT OcclusionFadeEnd = 2.f;
+			FLOAT OcclusionRadius = 1.f;
+			FLOAT OcclusionFadeStart = 0.f;
+			FLOAT OcclusionFadeEnd = 1.f;
 			FLOAT OcclusionStrength = 4.f;
 			FLOAT SurfaceEpsilon = 0.05f;
-			UINT SampleCount = 14;
+			UINT SampleCount = 6;
 			UINT BlurCount = 3;
 		};
 
 		struct RTAOArguments {
 			FLOAT OcclusionRadius = 10.f;
-			FLOAT OcclusionFadeStart = 0.001f;
+			FLOAT OcclusionFadeStart = 0.f;
 			FLOAT OcclusionFadeEnd = 10.f;
-			FLOAT OcclusionStrength = 4.f;
-			FLOAT SurfaceEpsilon = 0.001f;
+			FLOAT SurfaceEpsilon = 0.0001f;
 			UINT SampleCount = 2;
 		};
 

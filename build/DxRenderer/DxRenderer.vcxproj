@@ -44,6 +44,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\RTAO.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\SSAO.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\SVGF.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\TAA.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\ToneMapping.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\AccelerationStructure.hpp" />
@@ -96,6 +97,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\RTAO.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\SSAO.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\SVGF.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\TAA.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\ToneMapping.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\AccelerationStructure.cpp" />
@@ -110,9 +112,12 @@
     <None Include="..\..\assets\Shaders\HLSL\BlinnPhong.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\BRDF.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\CookTorrance.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\FloatPrecision.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli" />
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\Kernels.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\LightingUtil.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Random.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\RTAO.hlsli" />
@@ -121,6 +126,8 @@
     <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Shadow.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\SSAO.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\SVGF.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\ValuePackaging.hlsli" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\DepthStencilBuffer.inl" />
@@ -134,6 +141,7 @@
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl" />
     <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
     <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\RTAO.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Shadow.inl" />
     <None Include="..\..\inc\Render\DX\Shading\SSAO.inl" />
     <None Include="..\..\inc\Render\DX\Shading\TAA.inl" />
@@ -226,6 +234,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\RTAO.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Color.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Contrast.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

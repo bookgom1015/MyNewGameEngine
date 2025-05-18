@@ -11,6 +11,11 @@ Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::GBuffer::GBu
 
 constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::GBuffer::GBufferClass::NormalMapSrv() const { return mhNormalMapGpuSrv; }
 
+// NormalDepthMap
+Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::GBuffer::GBufferClass::NormalDepthMap() const { return mNormalDepthMap.get(); }
+
+constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::GBuffer::GBufferClass::NormalDepthMapSrv() const { return mhNormalDepthMapGpuSrv; }
+
 // SpecularMap
 Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::GBuffer::GBufferClass::SpecularMap() const { return mSpecularMap.get(); }
 

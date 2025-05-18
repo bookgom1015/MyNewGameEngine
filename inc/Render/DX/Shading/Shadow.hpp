@@ -3,10 +3,6 @@
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Render/DX/Foundation/Light.h"
 
-namespace Render::DX::Foundation {
-	struct Light;
-}
-
 namespace Render::DX::Shading {
 	namespace Shadow {
 		namespace Shader {
@@ -77,7 +73,7 @@ namespace Render::DX::Shading {
 			virtual ~ShadowClass() = default;
 
 		public:
-			__forceinline constexpr const Foundation::Light* Lights() const;
+			__forceinline Foundation::Light* Lights();
 			__forceinline constexpr Foundation::Light Light(UINT index) const;
 			__forceinline constexpr UINT LightCount() const;
 

@@ -1,7 +1,7 @@
 #ifndef __SHADOW_INL__
 #define __SHADOW_INL__
 
-constexpr const Render::DX::Foundation::Light* Render::DX::Shading::Shadow::ShadowClass::Lights() const {
+Render::DX::Foundation::Light* Render::DX::Shading::Shadow::ShadowClass::Lights() {
 	return mLights.data();
 }
 

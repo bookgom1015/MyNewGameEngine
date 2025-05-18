@@ -63,6 +63,30 @@ namespace Render::DX {
 
 				BOOL CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const;
 
+				BOOL CreateRootSignature(
+					const D3D12_ROOT_SIGNATURE_DESC& rootSignatureDesc,
+					const IID& riid,
+					void** const ppRootSignature,
+					LPCWSTR name);
+
+				void CreateShaderResourceView(
+					ID3D12Resource* const pResource,
+					const D3D12_SHADER_RESOURCE_VIEW_DESC* const pDesc,
+					D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor);
+				void CreateUnorderedAccessView(
+					ID3D12Resource* const pResource,
+					ID3D12Resource* const pCounterResource,
+					const D3D12_UNORDERED_ACCESS_VIEW_DESC* const pDesc,
+					D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor);
+				void CreateRenderTargetView(
+					ID3D12Resource* const pResource,
+					const D3D12_RENDER_TARGET_VIEW_DESC* const pDesc,
+					D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor);
+				void CreateDepthStencilView(
+					ID3D12Resource* const pResource,
+					const D3D12_DEPTH_STENCIL_VIEW_DESC* const pDesc,
+					D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor);
+
 				BOOL GetRaytracingAccelerationStructurePrebuildInfo(
 					const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* const pDesc,
 					D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO* pInfo);

@@ -11,6 +11,8 @@ namespace Common::Foundation::Core {
 }
 
 namespace Render::DX::Foundation {
+	struct Light;
+
 	namespace Core {
 		class Device;
 		class DescriptorHeap;
@@ -48,14 +50,22 @@ namespace ImGuiManager {
 			BOOL DrawImGui(
 				ID3D12GraphicsCommandList6* const pCmdList,
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
-				UINT clientWidth, UINT clientHeight);
+				Render::DX::Foundation::Light lights[],
+				UINT numLights,
+				UINT clientWidth, UINT clientHeight,
+				BOOL bRaytracingSupported);
 
 		private:
 			void FrameRateText(UINT clientWidth, UINT clientHeight);
 			void RaytraycingEnableCheckBox(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void ShadowHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void TaaHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void AoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void LightHeader(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
+				Render::DX::Foundation::Light lights[],
+				UINT numLights);
+			void ShadingObjectHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void ShadowTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void TAATree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void AOTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
 			BOOL mbIsD3D12Initialized = FALSE;

@@ -108,7 +108,7 @@ void RTAO_RayGen() {
 }
 
 [shader("closesthit")]
-void RTAO_ClosestHit(inout RayPayload payload, Attributes attrib) {
+void RTAO_ClosestHit(inout RayPayload payload, in Attributes attrib) {
     payload.tHit = RayTCurrent();
 }
 

@@ -225,9 +225,10 @@ namespace ShadingConvention{
 	namespace GBuffer {
 		static const UINT MaxNumTextures = 32;
 
-		static const FLOAT InvalidNormalWValue = -1.f;
-		static const FLOAT InvalidVelocityValue = 1000.f;
-		static const FLOAT InvalidPositionWValue = -1.f;
+		static const FLOAT	InvalidNormalWValue		= -1.f;
+		static const UINT	InvalidNormDepthValue	= 0;
+		static const FLOAT	InvalidVelocityValue	= 1000.f;
+		static const FLOAT	InvalidPositionWValue	= -1.f;
 
 		namespace ThreadGroup {
 			namespace MeshShader {
@@ -245,15 +246,20 @@ namespace ShadingConvention{
 #endif
 
 #ifdef _HLSL
-		typedef float4								AlbedoMapFormat;
-		typedef float4								NormalMapFormat;
-		typedef float4								SpecularMapFormat;
-		typedef float2								RoughnessMetalnessMapFormat;
-		typedef float2								VelocityMapFormat;
-		typedef float4								PositionMapFormat;
+		typedef float4	AlbedoMapFormat;
+		typedef float4	NormalMapFormat;
+		typedef uint	NormalDepthMapFormat;
+		typedef float4	SpecularMapFormat;
+		typedef float2	RoughnessMetalnessMapFormat;
+		typedef float2	VelocityMapFormat;
+		typedef float4	PositionMapFormat;
 
 		bool IsValidNormal(float4 normal) {
 			return normal.w != InvalidNormalWValue;
+		}
+
+		bool IsValidNormalDepth(uint normalDepth) {
+			return normalDepth != InvalidNormDepthValue;
 		}
 
 		bool IsValidPosition(float4 position) {
@@ -268,19 +274,21 @@ namespace ShadingConvention{
 #define GBuffer_Default_RootConstants(reg) cbuffer cbRootConstant : register(reg) GBuffer_Default_RCSTRUCT
 #endif
 #else 
-		const DXGI_FORMAT AlbedoMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-		const DXGI_FORMAT SpecularMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		const DXGI_FORMAT RoughnessMetalnessMapFormat = DXGI_FORMAT_R16G16_UNORM;
-		const DXGI_FORMAT VelocityMapFormat = DXGI_FORMAT_R16G16_FLOAT;
-		const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		const DXGI_FORMAT AlbedoMapFormat				= DXGI_FORMAT_R8G8B8A8_UNORM;
+		const DXGI_FORMAT NormalMapFormat				= DXGI_FORMAT_R16G16B16A16_FLOAT;
+		const DXGI_FORMAT NormalDepthMapFormat			= DXGI_FORMAT_R32_UINT;
+		const DXGI_FORMAT SpecularMapFormat				= DXGI_FORMAT_R8G8B8A8_UNORM;
+		const DXGI_FORMAT RoughnessMetalnessMapFormat	= DXGI_FORMAT_R16G16_UNORM;
+		const DXGI_FORMAT VelocityMapFormat				= DXGI_FORMAT_R16G16_FLOAT;
+		const DXGI_FORMAT PositionMapFormat				= DXGI_FORMAT_R16G16B16A16_FLOAT;
 
-		const FLOAT AlbedoMapClearValues[4] = { 0.f,  0.f, 0.f,  0.f };
-		const FLOAT NormalMapClearValues[4] = { 0.f,  0.f, 0.f, InvalidNormalWValue };
-		const FLOAT SpecularMapClearValues[4] = { 0.08f, 0.08f, 0.08f, 0.f };
+		const FLOAT AlbedoMapClearValues[4]				= { 0.f,  0.f, 0.f,  0.f };
+		const FLOAT NormalMapClearValues[4]				= { 0.f,  0.f, 0.f, InvalidNormalWValue };
+		const FLOAT NormalDepthMapClearValues[4]		= { 0.f,  0.f, 0.f,  0.f };
+		const FLOAT SpecularMapClearValues[4]			= { 0.08f, 0.08f, 0.08f, 0.f };
 		const FLOAT RoughnessMetalnessMapClearValues[2] = { 0.5f, 0.f };
-		const FLOAT VelocityMapClearValues[2] = { InvalidVelocityValue, InvalidVelocityValue };
-		const FLOAT PositionMapClearValues[4] = { 0.f, 0.f, 0.f, InvalidPositionWValue };
+		const FLOAT VelocityMapClearValues[2]			= { InvalidVelocityValue, InvalidVelocityValue };
+		const FLOAT PositionMapClearValues[4]			= { 0.f, 0.f, 0.f, InvalidPositionWValue };
 
 		namespace RootConstant {
 			namespace Default {
@@ -532,6 +540,107 @@ namespace ShadingConvention{
 			}
 		}
 #endif
+	}
+
+	namespace SVGF {
+		namespace ThreadGroup {
+			namespace Default {
+				enum {
+					Width	= 8,
+					Height	= 8,
+					Depth	= 1,
+					Size	= Width * Height * Depth
+				};
+			}
+
+			namespace Atrous {
+				enum {
+					Width	= 16,
+					Height	= 16,
+					Depth	= 1,
+					Size	= Width * Height * Depth
+				};
+			}
+		}
+
+#ifndef SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
+#define SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT {	\
+		DirectX::XMFLOAT2 gTexDim;								\
+		DirectX::XMFLOAT2 gInvTexDim;							\
+	};
+#endif
+
+#ifdef _HLSL
+		typedef float		ValueMapFormat_Contrast;
+		typedef HDR_FORMAT	ValueMapFormat_Color;
+		typedef float		ValueSquaredMeanMapFormat_Contrast;
+		typedef HDR_FORMAT	ValueSquaredMeanMapFormat_Color;
+
+		typedef uint4	TSPPSquaredMeanRayHitDistanceMapFormat;
+		typedef float2	DepthPartialDerivativeMapFormat;
+		typedef float2	LocalMeanVarianceMapFormat;
+		typedef float	VarianceMapFormat;
+		typedef float	RayHitDistanceFormat;
+		typedef uint	TSPPMapFormat;
+		typedef float	DisocclusionBlurStrengthMapFormat;
+
+#ifndef SVGF_TemporalSupersamplingReverseReproject_RootConstants
+#define SVGF_TemporalSupersamplingReverseReproject_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
+#endif		
+#else
+		const DXGI_FORMAT ValueMapFormat_Contrast				= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT ValueMapFormat_Color					= HDR_FORMAT;
+		const DXGI_FORMAT ValueSquaredMeanMapFormat_Contrast	= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT ValueSquaredMeanMapFormat_Color		= HDR_FORMAT;
+
+		const DXGI_FORMAT TSPPSquaredMeanRayHitDistanceMapFormat	= DXGI_FORMAT_R16G16B16A16_UINT;
+		const DXGI_FORMAT DepthPartialDerivativeMapFormat			= DXGI_FORMAT_R16G16_FLOAT;
+		const DXGI_FORMAT LocalMeanVarianceMapFormat				= DXGI_FORMAT_R32G32_FLOAT;
+		const DXGI_FORMAT VarianceMapFormat							= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT RayHitDistanceFormat						= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT TSPPMapFormat								= DXGI_FORMAT_R8_UINT;
+		const DXGI_FORMAT DisocclusionBlurStrengthMapFormat			= DXGI_FORMAT_R8_UNORM;
+#endif
+		
+
+		namespace RootConstant {
+			namespace TemporalSupersamplingReverseReproject {
+				struct Struct SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
+				enum {
+					E_TexDim_X = 0,
+					E_TexDim_Y,
+					E_InvTexDim_X,
+					E_InvTexDim_Y,
+					Count
+				};
+			}
+
+			namespace CalcDepthPartialDerivative {
+				enum {
+					E_InvTexDim_X = 0,
+					E_InvTexDim_Y,
+					Count
+				};
+			}
+
+			namespace AtrousWaveletTransformFilter {
+				enum {
+					E_RayHitDistToKernelWidthScale = 0,
+					E_RayHitDistToKernelSizeScaleExp,
+					Count
+				};
+			}
+
+			namespace DisocclusionBlur {
+				enum {
+					E_TexDim_X = 0,
+					E_TexDim_Y,
+					E_Step,
+					E_MaxStep,
+					Count
+				};
+			}
+		}
 	}
 }
 

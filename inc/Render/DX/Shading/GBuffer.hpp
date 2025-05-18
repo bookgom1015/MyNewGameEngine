@@ -60,6 +60,9 @@ namespace Render::DX::Shading {
 			__forceinline Foundation::Resource::GpuResource* NormalMap() const;
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE NormalMapSrv() const;
 
+			__forceinline Foundation::Resource::GpuResource* NormalDepthMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE NormalDepthMapSrv() const;
+
 			__forceinline Foundation::Resource::GpuResource* SpecularMap() const;
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE SpecularMapSrv() const;
 
@@ -123,6 +126,11 @@ namespace Render::DX::Shading {
 			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuSrv;
 			D3D12_GPU_DESCRIPTOR_HANDLE mhNormalMapGpuSrv;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuRtv;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mNormalDepthMap;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalDepthMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhNormalDepthMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalDepthMapCpuRtv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mSpecularMap;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuSrv;

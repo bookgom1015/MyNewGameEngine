@@ -34,6 +34,7 @@
 #include "Render/DX/Shading/TAA.hpp"
 #include "Render/DX/Shading/SSAO.hpp"
 #include "Render/DX/Shading/RTAO.hpp"
+#include "Render/DX/Shading/SVGF.hpp"
 #include "Render/DX/Shading/BlurFilter.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
@@ -66,6 +67,7 @@ DxRenderer::DxRenderer() {
 	mTAA = std::make_unique<Shading::TAA::TAAClass>();
 	mSSAO= std::make_unique<Shading::SSAO::SSAOClass>();
 	mRTAO = std::make_unique<Shading::RTAO::RTAOClass>();
+	mSVGF = std::make_unique<Shading::SVGF::SVGFClass>();
 	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
@@ -79,6 +81,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mTAA.get());
 	mShadingObjectManager->AddShadingObject(mSSAO.get());
 	mShadingObjectManager->AddShadingObject(mRTAO.get());
+	mShadingObjectManager->AddShadingObject(mSVGF.get());
 	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
 
 	// Constant buffers
@@ -674,7 +677,6 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 		aoCB.OcclusionRadius = mpArgumentSet->RTAO.OcclusionRadius;
 		aoCB.OcclusionFadeStart = mpArgumentSet->RTAO.OcclusionFadeStart;
 		aoCB.OcclusionFadeEnd = mpArgumentSet->RTAO.OcclusionFadeEnd;
-		aoCB.OcclusionStrength = mpArgumentSet->RTAO.OcclusionStrength;
 		aoCB.SurfaceEpsilon = mpArgumentSet->RTAO.SurfaceEpsilon;
 		aoCB.SampleCount = mpArgumentSet->RTAO.SampleCount;
 	}
@@ -970,7 +972,6 @@ BOOL DxRenderer::InitShadingObjects() {
 	// SSAO
 	{
 		auto initData = Shading::SSAO::MakeInitData();
-		initData->MeshShaderSupported = mbMeshShaderSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
@@ -982,7 +983,7 @@ BOOL DxRenderer::InitShadingObjects() {
 	// RTAO
 	{
 		auto initData = Shading::RTAO::MakeInitData();
-		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->RaytracingSupported = mbRaytracingSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
@@ -990,6 +991,17 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mRTAO->Initialize(mpLogFile, initData.get()));
+	}
+	// SVGF
+	{
+		auto initData = Shading::SVGF::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mSVGF->Initialize(mpLogFile, initData.get()));
 	}
 	// BlurFilter
 	{
@@ -1127,7 +1139,14 @@ BOOL DxRenderer::DrawImGui() {
 
 	CmdList->OMSetRenderTargets(1, &mSwapChain->BackBufferRtv(), TRUE, nullptr);
 
-	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(CmdList, mpArgumentSet, mClientWidth, mClientHeight));
+	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
+		CmdList, 
+		mpArgumentSet, 
+		mShadow->Lights(),
+		mShadow->LightCount(),
+		mClientWidth, 
+		mClientHeight, 
+		mbRaytracingSupported));
 
 	CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
 

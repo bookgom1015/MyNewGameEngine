@@ -2,6 +2,8 @@
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Render/ShadingArgument.hpp"
+#include "Common/Render/LightType.h"
+#include "Render/DX/Foundation/Light.h"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
@@ -15,6 +17,7 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 using namespace ImGuiManager::DX;
+using namespace DirectX;
 
 extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* ImGuiManager::CreateImGuiManager() {
 	return new DxImGuiManager();
@@ -56,7 +59,10 @@ void DxImGuiManager::HookMsgCallback(Common::Foundation::Core::WindowsManager* c
 BOOL DxImGuiManager::DrawImGui(
 		ID3D12GraphicsCommandList6* const pCmdList,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
-		UINT clientWidth, UINT clientHeight) {
+		Render::DX::Foundation::Light lights[],
+		UINT numLights,
+		UINT clientWidth, UINT clientHeight,
+		BOOL bRaytracingSupported) {
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -70,16 +76,11 @@ BOOL DxImGuiManager::DrawImGui(
 
 		// Framerate text
 		FrameRateText(clientWidth, clientHeight);
-		RaytraycingEnableCheckBox(pArgSet);
+		if (bRaytracingSupported) RaytraycingEnableCheckBox(pArgSet);
+		// Lights
+		LightHeader(pArgSet, lights, numLights);
 		// Shading objects
-		if (ImGui::CollapsingHeader("Shading Objects")) {
-			// Shadow
-			ShadowHeader(pArgSet);
-			// TAA
-			TaaHeader(pArgSet);
-			// AO
-			AoHeader(pArgSet);
-		}
+		ShadingObjectHeader(pArgSet);
 	
 		ImGui::End();
 	}
@@ -107,7 +108,44 @@ void DxImGuiManager::RaytraycingEnableCheckBox(Common::Render::ShadingArgument::
 	ImGui::NewLine();
 }
 
-void DxImGuiManager::ShadowHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+void DxImGuiManager::LightHeader(
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
+		Render::DX::Foundation::Light lights[],
+		UINT numLights) {
+	if (ImGui::CollapsingHeader("Lights")) {
+		for (UINT i = 0; i < numLights; ++i) {
+			auto& light = lights[i];
+
+			if (light.Type == Common::Render::LightType::E_Directional) {
+				if (ImGui::TreeNode((std::to_string(i) + " Directional Light").c_str())) {
+					ImGui::ColorPicker3("Light Color", reinterpret_cast<FLOAT*>(&light.Color));
+					ImGui::SliderFloat("Light Intensity", &light.Intensity, 0.f, 100.f);
+					if (ImGui::SliderFloat3("Light Direction", reinterpret_cast<FLOAT*>(&light.Direction), -1.f, 1.f)) {
+						const XMVECTOR Direction = XMLoadFloat3(&light.Direction);
+						const XMVECTOR Normalized = XMVector3Normalize(Direction);
+
+						XMStoreFloat3(&light.Direction, Normalized);
+					}
+
+					ImGui::TreePop();
+				}
+			}
+		}
+	}
+}
+
+void DxImGuiManager::ShadingObjectHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::CollapsingHeader("Shading Objects")) {
+		// Shadow
+		ShadowTree(pArgSet);
+		// TAA
+		TAATree(pArgSet);
+		// AO
+		AOTree(pArgSet);
+	}
+}
+
+void DxImGuiManager::ShadowTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("Shadow")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->ShadowEnabled));
 
@@ -115,7 +153,7 @@ void DxImGuiManager::ShadowHeader(Common::Render::ShadingArgument::ShadingArgume
 	}
 }
 
-void DxImGuiManager::TaaHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+void DxImGuiManager::TAATree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("TAA")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->TAA.Enabled));
 		ImGui::SliderFloat("Modulation Factor", &pArgSet->TAA.ModulationFactor, 0.f, 1.f);
@@ -124,16 +162,24 @@ void DxImGuiManager::TaaHeader(Common::Render::ShadingArgument::ShadingArgumentS
 	}
 }
 
-void DxImGuiManager::AoHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("AO")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->AOEnabled));
 		if (pArgSet->AOEnabled) {
 			if (pArgSet->RaytracingEnabled) {
-				ImGui::Text("RTAO - TODO");
+				ImGui::Text("RTAO");
+				ImGui::SliderFloat("Occlusion Radius", &pArgSet->RTAO.OcclusionRadius, 0.01f, 32.f);
+				ImGui::SliderFloat("Occlusion Fade Start", &pArgSet->RTAO.OcclusionFadeStart, 0.f, 32.f);
+				ImGui::SliderFloat("Occlusion Fade End", &pArgSet->RTAO.OcclusionFadeEnd, 0.f, 32.f);
+				ImGui::SliderInt("Sample Count", reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount), 1, 4);
 			}
 			else {
 				ImGui::Text("SSAO");
+				ImGui::SliderFloat("Occlusion Radius", &pArgSet->SSAO.OcclusionRadius, 0.01f, 1.f);
+				ImGui::SliderFloat("Occlusion Fade Start", &pArgSet->SSAO.OcclusionFadeStart, 0.f, 10.f);
+				ImGui::SliderFloat("Occlusion Fade End", &pArgSet->SSAO.OcclusionFadeEnd, 0.f, 10.f);
 				ImGui::SliderFloat("Occlusion Strength", &pArgSet->SSAO.OcclusionStrength, 1.f, 10.f);
+				ImGui::SliderInt("Sample Count", reinterpret_cast<int*>(&pArgSet->SSAO.SampleCount), 1, 16);
 				ImGui::SliderInt("Blur Count", reinterpret_cast<int*>(&pArgSet->SSAO.BlurCount), 0, 10);
 			}
 		}

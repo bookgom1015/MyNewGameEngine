@@ -7,6 +7,7 @@
 
 #include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
 #include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
 
 ConstantBuffer<ConstantBuffers::PassCB>     cbPass      : register(b0);
 ConstantBuffer<ConstantBuffers::ObjectCB>   cbObject    : register(b1);
@@ -34,10 +35,11 @@ struct VertexOut {
 struct PixelOut {
     ShadingConvention::GBuffer::AlbedoMapFormat             Color              : SV_TARGET0;
     ShadingConvention::GBuffer::NormalMapFormat             Normal             : SV_TARGET1;
-    ShadingConvention::GBuffer::SpecularMapFormat           Specular           : SV_TARGET2;
-    ShadingConvention::GBuffer::RoughnessMetalnessMapFormat RoughnessMetalness : SV_TARGET3;
-    ShadingConvention::GBuffer::VelocityMapFormat           Velocity           : SV_TARGET4;
-    ShadingConvention::GBuffer::PositionMapFormat           Position           : SV_TARGET5;
+    ShadingConvention::GBuffer::NormalDepthMapFormat        NormalDepth        : SV_TARGET2;
+    ShadingConvention::GBuffer::SpecularMapFormat           Specular           : SV_TARGET3;
+    ShadingConvention::GBuffer::RoughnessMetalnessMapFormat RoughnessMetalness : SV_TARGET4;
+    ShadingConvention::GBuffer::VelocityMapFormat           Velocity           : SV_TARGET5;
+    ShadingConvention::GBuffer::PositionMapFormat           Position           : SV_TARGET6;
 };
 
 VertexOut VS(in VertexIn vin) {
@@ -120,6 +122,7 @@ PixelOut PS(in VertexOut pin) {
     
     pout.Color = cbMaterial.Albedo;
     pout.Normal = float4(pin.NormalW, 1.f);
+    pout.NormalDepth = ValuePackaging::EncodeNormalDepth(pin.NormalW, pin.CurrPosH.z);
     pout.Specular = float4(cbMaterial.Specular, 1.f);
     pout.RoughnessMetalness = float2(cbMaterial.Roughness, cbMaterial.Metalness);
     pout.Velocity = Velocity;

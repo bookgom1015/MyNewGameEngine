@@ -82,7 +82,7 @@ namespace Render::DX::Shading {
 		class RTAOClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
+				BOOL RaytracingSupported = FALSE;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
@@ -157,10 +157,4 @@ namespace Render::DX::Shading {
 	}
 }
 
-Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::RTAO::RTAOClass::AOCoefficientMap() const {
-	return mAOResources[Resource::AO::E_AOCoefficient].get();
-}
-
-constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::RTAO::RTAOClass::AOCoefficientMapSrv() const {
-	return mhAOResourceGpus[Descriptor::AO::ES_AOCoefficient];
-}
+#include "RTAO.inl"

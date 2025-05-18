@@ -6,6 +6,7 @@
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 
 using namespace Render::DX::Foundation::Core;
+using namespace Microsoft::WRL;
 
 BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
@@ -114,6 +115,71 @@ BOOL Device::CheckMeshShaderSupported(BOOL& bMeshShaderSupported) const {
 	}
 
 	return TRUE;
+}
+
+BOOL Device::CreateRootSignature(
+		const D3D12_ROOT_SIGNATURE_DESC& rootSignatureDesc,
+		const IID& riid,
+		void** const ppRootSignature,
+		LPCWSTR name) {
+	ComPtr<ID3DBlob> serializedRootSig = nullptr;
+	ComPtr<ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(
+		&rootSignatureDesc,
+		D3D_ROOT_SIGNATURE_VERSION_1,
+		serializedRootSig.GetAddressOf(),
+		errorBlob.GetAddressOf()
+	);
+
+	std::wstringstream wsstream;
+	if (errorBlob != nullptr)
+		wsstream << reinterpret_cast<char*>(errorBlob->GetBufferPointer());
+
+	if (FAILED(hr))
+		ReturnFalse(mpLogFile, wsstream.str().c_str());
+
+	CheckHRESULT(mpLogFile, md3dDevice->CreateRootSignature(
+		0,
+		serializedRootSig->GetBufferPointer(),
+		serializedRootSig->GetBufferSize(),
+		riid,
+		ppRootSignature));
+
+	if (name != nullptr) {
+		auto rootSig = reinterpret_cast<ID3D12RootSignature*>(*ppRootSignature);
+		rootSig->SetName(name);
+	}
+
+	return TRUE;
+}
+
+void Device::CreateShaderResourceView(
+		ID3D12Resource* const pResource,
+		const D3D12_SHADER_RESOURCE_VIEW_DESC* const pDesc,
+		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
+	md3dDevice->CreateShaderResourceView(pResource, pDesc, destDescriptor);
+}
+
+void Device::CreateUnorderedAccessView(
+		ID3D12Resource* const pResource,
+		ID3D12Resource* const pCounterResource,
+		const D3D12_UNORDERED_ACCESS_VIEW_DESC* const pDesc,
+		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
+	md3dDevice->CreateUnorderedAccessView(pResource, pCounterResource, pDesc, destDescriptor);
+}
+
+void Device::CreateRenderTargetView(
+		ID3D12Resource* const pResource,
+		const D3D12_RENDER_TARGET_VIEW_DESC* const pDesc,
+		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
+	md3dDevice->CreateRenderTargetView(pResource, pDesc, destDescriptor);
+}
+
+void Device::CreateDepthStencilView(
+		ID3D12Resource* const pResource,
+		const D3D12_DEPTH_STENCIL_VIEW_DESC* const pDesc,
+		D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) {
+	md3dDevice->CreateDepthStencilView(pResource, pDesc, destDescriptor);
 }
 
 BOOL Device::GetRaytracingAccelerationStructurePrebuildInfo(

@@ -88,4 +88,13 @@ namespace ConstantBuffers {
 		FLOAT				OcclusionStrength;
 		FLOAT				__ConstantPad0__;
 	};
+
+	namespace SVGF {
+		struct CrossBilateralFilter {
+			FLOAT	DepthSigma;
+			UINT	DepthNumMantissaBits;
+			FLOAT	ConstantPad0;
+			FLOAT	ConstantPad1;
+		};
+	}
 }

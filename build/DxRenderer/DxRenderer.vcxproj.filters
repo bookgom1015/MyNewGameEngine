@@ -127,6 +127,15 @@
     <Filter Include="Shader Files\RTAO">
       <UniqueIdentifier>{b9d3107b-a85b-4286-b71a-c8076c784620}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\SVGF">
+      <UniqueIdentifier>{3587e849-eb80-4fb4-b7ef-51fb74012c80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\SVGF\Denoising">
+      <UniqueIdentifier>{75215d84-61ab-40ca-b822-d9ae9eb1dbbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\SVGF\Temporal">
+      <UniqueIdentifier>{a04d805d-d8b0-4287-b88d-c469135323ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -248,6 +257,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderTable.hpp">
       <Filter>Header Files\Shading Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\SVGF.hpp">
+      <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -400,6 +412,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderTable.cpp">
       <Filter>Source Files\Shading Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\SVGF.cpp">
+      <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -559,6 +574,30 @@
     </None>
     <None Include="..\..\inc\Render\DX\Shading\Util\AccelerationStructure.inl">
       <Filter>Header Files\Shading Files\Util</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\RTAO.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\SVGF.hlsli">
+      <Filter>Shader Files\SVGF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\Kernels.hlsli">
+      <Filter>Shader Files\SVGF\Denoising</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli">
+      <Filter>Shader Files\SVGF\Denoising</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ValuePackaging.hlsli">
+      <Filter>Shader Files\SVGF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\FloatPrecision.hlsli">
+      <Filter>Shader Files\SVGF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Color.hlsl">
+      <Filter>Shader Files\SVGF\Temporal</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Contrast.hlsl">
+      <Filter>Shader Files\SVGF\Temporal</Filter>
     </None>
   </ItemGroup>
 </Project>
