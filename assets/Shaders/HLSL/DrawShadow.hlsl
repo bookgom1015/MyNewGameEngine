@@ -17,20 +17,20 @@ Texture2D<ShadingConvention::GBuffer::PositionMapFormat>   gi_PositionMap   : re
 Texture2D<ShadingConvention::Shadow::ZDepthMapFormat>      gi_ZDepthMap     : register(t1);
 Texture2DArray<ShadingConvention::Shadow::ZDepthMapFormat> gi_ZDepthCubeMap : register(t2);
 
-RWTexture2D<ShadingConvention::Shadow::ShadowMapFormat>    guio_ShadowMap   : register(u0);
+RWTexture2D<ShadingConvention::Shadow::ShadowMapFormat>    gio_ShadowMap    : register(u0);
 
 [numthreads(
     ShadingConvention::Shadow::ThreadGroup::DrawShadow::Width, 
     ShadingConvention::Shadow::ThreadGroup::DrawShadow::Height, 
     ShadingConvention::Shadow::ThreadGroup::DrawShadow::Depth)]
 void CS(in uint2 DTid : SV_DispatchThreadID) {
-    uint value = gLightIndex != 0 ? guio_ShadowMap[DTid] : 0;
+    uint value = gLightIndex != 0 ? gio_ShadowMap[DTid] : 0;
 
     Render::DX::Foundation::Light light = cbLight.Lights[gLightIndex];
 
     const float4 PosW = gi_PositionMap.Load(uint3(DTid, 0));
     if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) {
-        guio_ShadowMap[DTid] = value;
+        gio_ShadowMap[DTid] = value;
         return;
     }
     
@@ -42,6 +42,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float3 Direction = PosW.xyz - light.Position;
         const uint Index = ShaderUtil::GetCubeFaceIndex(Direction);
         const float3 Normalized = normalize(Direction);
+        
         const float2 UV = ShaderUtil::ConvertDirectionToUV(Normalized);
 
         const float4x4 ViewProj = Shadow::GetViewProjMatrix(light, Index);
@@ -54,7 +55,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     //    value = CalcShiftedShadowValueF(shadowFactor, value, gLightIndex);
     //}
 	
-    guio_ShadowMap[DTid] = value;
+    gio_ShadowMap[DTid] = value;
 }
 
 #endif // __DRAWSHADOW_HLSL__

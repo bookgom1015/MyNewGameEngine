@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Render/DX/Foundation/Light.h"
 
@@ -73,8 +75,8 @@ namespace Render::DX::Shading {
 			virtual ~ShadowClass() = default;
 
 		public:
-			__forceinline Foundation::Light* Lights();
-			__forceinline constexpr Foundation::Light Light(UINT index) const;
+			Foundation::Light** Lights();
+			__forceinline Foundation::Light* Light(UINT index) const;
 			__forceinline constexpr UINT LightCount() const;
 
 			__forceinline Foundation::Resource::GpuResource* ShadowMap() const;
@@ -101,7 +103,7 @@ namespace Render::DX::Shading {
 				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
 
-			BOOL AddLight(const Foundation::Light& light);
+			BOOL AddLight(const std::shared_ptr<Foundation::Light>& light);
 
 		private:
 			BOOL BuildResources();
@@ -148,7 +150,7 @@ namespace Render::DX::Shading {
 			D3D12_GPU_DESCRIPTOR_HANDLE mhShadowMapGpuUav;
 
 			// Lights
-			std::array<Foundation::Light, MaxLights> mLights;
+			std::array<std::shared_ptr<Foundation::Light>, MaxLights> mLights;
 			UINT mLightCount = 0;
 		};
 

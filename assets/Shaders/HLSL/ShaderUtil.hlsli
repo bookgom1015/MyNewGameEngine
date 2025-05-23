@@ -108,52 +108,51 @@ namespace ShaderUtil {
     
     // Convert normalized direction to UV coordinates for the 2D texture
     float2 ConvertDirectionToUV(in float3 dir) {
-        const float AbsX = abs(dir.x);
-        const float AbsY = abs(dir.y);
-        const float AbsZ = abs(dir.z);
+        const float3 AbsDir = abs(dir);
+        float u = 0.f;
+        float v = 0.f;
 
-        const float DirX = dir.x > 0.f ? dir.x : min(dir.x, -1e-6f);
-        const float DirY = dir.y > 0.f ? dir.y : min(dir.y, -1e-6f);
-        const float DirZ = dir.z > 0.f ? dir.z : min(dir.z, -1e-6f);
-
-        float u, v;
-
-	// Check which face the vector corresponds to
-        if (AbsX >= AbsY && AbsX >= AbsZ) {
-		// +X or -X face
+        if (AbsDir.x >= AbsDir.y && AbsDir.x >= AbsDir.z) {
+        // X-major face
             if (dir.x > 0.f) {
-                u = 0.5f * (-dir.z / DirX + 1.f);
-                v = 0.5f * (-dir.y / DirX + 1.f);
+            // +X face: (-Z, -Y)
+                u = -dir.z / AbsDir.x;
+                v = -dir.y / AbsDir.x;
             }
             else {
-                u = 0.5f * (dir.z / -DirX + 1.f);
-                v = 0.5f * (dir.y / DirX + 1.f);
+            // -X face: (Z, -Y)
+                u =  dir.z / AbsDir.x;
+                v = -dir.y / AbsDir.x;
             }
         }
-        else if (AbsY >= AbsX && AbsY >= AbsZ) {
-		// +Y or -Y face
+        else if (AbsDir.y >= AbsDir.x && AbsDir.y >= AbsDir.z) {
+        // Y-major face
             if (dir.y > 0.f) {
-                u = 0.5f * (dir.x / DirY + 1.f);
-                v = 0.5f * (dir.z / DirY + 1.f);
+            // +Y face: (X, Z)
+                u = dir.x / AbsDir.y;
+                v = dir.z / AbsDir.y;
             }
             else {
-                u = 0.5f * (dir.x / -DirY + 1.f);
-                v = 0.5f * (dir.z / DirY + 1.f);
+            // -Y face: (X, -Z)
+                u =  dir.x / AbsDir.y;
+                v = -dir.z / AbsDir.y;
             }
         }
         else {
-		// +Z or -Z face
+        // Z-major face
             if (dir.z > 0.f) {
-                u = 0.5f * (dir.x / DirZ + 1.f);
-                v = 0.5f * (-dir.y / DirZ + 1.f);
+            // +Z face: (X, -Y)
+                u =  dir.x / AbsDir.z;
+                v = -dir.y / AbsDir.z;
             }
             else {
-                u = 0.5f * (dir.x / DirZ + 1.f);
-                v = 0.5f * (dir.y / DirZ + 1.f);
+            // -Z face: (-X, -Y)
+                u = -dir.x / AbsDir.z;
+                v = -dir.y / AbsDir.z;
             }
         }
 
-        return float2(u, v);
+        return float2(u, v) * 0.5f + 0.5f; // Map from [-1,1] to [0,1]
     }
     
     float2 CalcVelocity(in float4 curr_pos, in float4 prev_pos) {

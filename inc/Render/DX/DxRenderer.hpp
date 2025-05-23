@@ -5,6 +5,7 @@
 #include "Render/DX/DxLowRenderer.hpp"
 
 #include <array>
+#include <queue>
 
 #include <DirectXCollision.h>
 
@@ -30,6 +31,7 @@ namespace Render {
 
 	namespace DX {
 		namespace Foundation {
+			struct Light;
 			struct RenderItem;
 
 			namespace Resource {
@@ -102,6 +104,8 @@ namespace Render {
 			BOOL UpdateMaterialCB();
 			BOOL UpdateProjectToCubeCB();
 			BOOL UpdateAmbientOcclusionCB();
+			BOOL ResolvePendingLights();
+			BOOL PopulateRendableItems();
 
 		private:
 			BOOL BuildMeshGeometry(
@@ -139,6 +143,8 @@ namespace Render {
 			BOOL PresentAndSignal();
 
 		private:
+			BOOL mbInitialized = FALSE;
+
 			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries;
 			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials;
 
@@ -175,6 +181,7 @@ namespace Render {
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
 			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs;
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups;
+			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRendableItems;
 			BOOL mbMeshGeometryAdded = FALSE;
 
 			// Scene bounds
@@ -182,6 +189,9 @@ namespace Render {
 
 			// Acceleration structure manager
 			std::unique_ptr<Shading::Util::AccelerationStructureManager> mAccelerationStructureManager;
+
+			// Pending lights
+			std::queue<std::shared_ptr<Foundation::Light>> mPendingLights;
 		};
 	}
 }

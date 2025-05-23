@@ -34,11 +34,19 @@ BOOL CommandObject::Initialize(
 
 void CommandObject::CleanUp() {
 	for (UINT i = 0; i < mSwapChainImageCount; ++i) {
-		vkDestroyFence(mDevice, mInFlightFences[i], nullptr);
-		vkDestroySemaphore(mDevice, mRenderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(mDevice, mImageAvailableSemaphores[i], nullptr);
+		const auto inFlightFence = mInFlightFences[i];
+		const auto renderSemaphore = mRenderFinishedSemaphores[i];
+		const auto imageSemaphore = mImageAvailableSemaphores[i];
+
+		if (inFlightFence != VK_NULL_HANDLE)
+			vkDestroyFence(mDevice, inFlightFence, nullptr);
+		if (renderSemaphore != VK_NULL_HANDLE)
+			vkDestroySemaphore(mDevice, renderSemaphore, nullptr);
+		if (imageSemaphore != VK_NULL_HANDLE)
+			vkDestroySemaphore(mDevice, imageSemaphore, nullptr);
 	}
-	vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
+	if (mCommandPool != VK_NULL_HANDLE)
+		vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
 }
 
 BOOL CommandObject::CreateQueues() {

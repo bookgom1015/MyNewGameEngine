@@ -30,5 +30,6 @@ BOOL Surface::CreateSurface() {
 }
 
 void Surface::CleanUp() {
-	vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
+	if (mSurface != VK_NULL_HANDLE)
+		vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
 }

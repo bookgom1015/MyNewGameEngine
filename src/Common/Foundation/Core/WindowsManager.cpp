@@ -4,6 +4,7 @@
 
 #include <string>
 
+#define ID_BTN_HALT		201
 #define ID_BTN_SELECT	202
 
 #define ID_RADIO_BTN_0	1000
@@ -45,6 +46,18 @@ namespace {
 			// Set caption title
 			if (!SetWindowTextW(hDlg, L"Select GPU")) break;
 
+			// Halt button
+			{
+				CreateWindow(
+					TEXT("BUTTON"),
+					TEXT("Halt"),
+					WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+					15,										// X
+					dialogBoxHeight - ButtonHeight - 15,	// Y
+					ButtonWidth,							// Width
+					ButtonHeight,							// Height
+					hDlg, (HMENU)ID_BTN_HALT, initData->InstanceHandle, nullptr);
+			}
 			// Select button
 			{
 				CreateWindow(
@@ -89,7 +102,12 @@ namespace {
 			break;
 		}
 		case WM_COMMAND: {
-			if (LOWORD(wParam) == ID_BTN_SELECT) {
+			if (LOWORD(wParam) == ID_BTN_HALT) {
+				initData->Halted = TRUE;
+
+				EndDialog(hDlg, 0);
+			}
+			else if (LOWORD(wParam) == ID_BTN_SELECT) {
 				for (size_t i = 0, end = initData->Items.size(); i < end; ++i) {
 					if (SendMessageW(radioButtons[i], BM_GETCHECK, 0, 0) == BST_CHECKED) {
 						initData->SelectedItemIndex = static_cast<UINT>(i);
@@ -299,6 +317,8 @@ BOOL WindowsManager::SelectDialog(SelectDialogInitData* const pInitData) {
 	dialogTemplate->cy = ToDLUsHeight(dialogBoxHeight);
 
 	DialogBoxIndirectParamW(mhInst, dialogTemplate, mhMainWnd, DialogProc, reinterpret_cast<LPARAM>(pInitData));
+
+	if (pInitData->Halted) ReturnFalse(mpLogFile, "The game has been halted");
 
 	return TRUE;
 }

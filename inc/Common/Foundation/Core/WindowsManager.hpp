@@ -29,6 +29,7 @@ namespace Common {
 				HINSTANCE InstanceHandle;
 				std::vector<std::wstring> Items;
 				UINT SelectedItemIndex;
+				BOOL Halted = FALSE;
 			};
 
 			using OnResizeFunc = std::function<void(UINT, UINT)>;

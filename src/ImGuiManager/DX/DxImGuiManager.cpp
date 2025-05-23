@@ -59,8 +59,9 @@ void DxImGuiManager::HookMsgCallback(Common::Foundation::Core::WindowsManager* c
 BOOL DxImGuiManager::DrawImGui(
 		ID3D12GraphicsCommandList6* const pCmdList,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
-		Render::DX::Foundation::Light lights[],
+		Render::DX::Foundation::Light* lights[],
 		UINT numLights,
+		std::queue<std::shared_ptr<Render::DX::Foundation::Light>>& pendingLights,
 		UINT clientWidth, UINT clientHeight,
 		BOOL bRaytracingSupported) {
 	ImGui_ImplDX12_NewFrame();
@@ -78,7 +79,7 @@ BOOL DxImGuiManager::DrawImGui(
 		FrameRateText(clientWidth, clientHeight);
 		if (bRaytracingSupported) RaytraycingEnableCheckBox(pArgSet);
 		// Lights
-		LightHeader(pArgSet, lights, numLights);
+		LightHeader(pArgSet, lights, numLights, pendingLights);
 		// Shading objects
 		ShadingObjectHeader(pArgSet);
 	
@@ -110,22 +111,78 @@ void DxImGuiManager::RaytraycingEnableCheckBox(Common::Render::ShadingArgument::
 
 void DxImGuiManager::LightHeader(
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
-		Render::DX::Foundation::Light lights[],
-		UINT numLights) {
+		Render::DX::Foundation::Light* lights[],
+		UINT numLights,
+		std::queue<std::shared_ptr<Render::DX::Foundation::Light>>& pendingLights) {
 	if (ImGui::CollapsingHeader("Lights")) {
-		for (UINT i = 0; i < numLights; ++i) {
-			auto& light = lights[i];
+		if (ImGui::Button("Directional")) {
+			std::shared_ptr<Render::DX::Foundation::Light> light = std::make_shared<Render::DX::Foundation::Light>();
+			light->Type = Common::Render::LightType::E_Directional;
+			light->Direction = { 0.f, -1.f, 0.f };
+			light->Color = { 255.f / 255.f, 255.f / 255.f, 255.f / 255.f };
+			light->Intensity = 1.f;
 
-			if (light.Type == Common::Render::LightType::E_Directional) {
+			pendingLights.push(light);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Point")) {
+			std::shared_ptr<Render::DX::Foundation::Light> light = std::make_shared<Render::DX::Foundation::Light>();
+			light->Type = Common::Render::LightType::E_Point;
+			light->Position = { 0.f,0.f,0.f };
+			light->Radius = 1.f;
+			light->AttenuationRadius = 10.f;
+			light->Color = { 255.f / 255.f, 255.f / 255.f, 255.f / 255.f };
+			light->Intensity = 1.f;
+
+			pendingLights.push(light);
+		}
+
+		for (UINT i = 0; i < numLights; ++i) {
+			const auto light = lights[i];
+
+			if (light->Type == Common::Render::LightType::E_Directional) {
 				if (ImGui::TreeNode((std::to_string(i) + " Directional Light").c_str())) {
-					ImGui::ColorPicker3("Light Color", reinterpret_cast<FLOAT*>(&light.Color));
-					ImGui::SliderFloat("Light Intensity", &light.Intensity, 0.f, 100.f);
-					if (ImGui::SliderFloat3("Light Direction", reinterpret_cast<FLOAT*>(&light.Direction), -1.f, 1.f)) {
-						const XMVECTOR Direction = XMLoadFloat3(&light.Direction);
+					ImGui::Text("Light Color");
+					ImGui::ColorPicker3("##Light Color", reinterpret_cast<FLOAT*>(&light->Color));
+					ImGui::NewLine();
+
+					ImGui::Text("Light Intensity");
+					ImGui::SliderFloat("##Light Intensity", &light->Intensity, 0.f, 100.f);
+					ImGui::NewLine();
+
+					ImGui::Text("Light Direction");
+					if (ImGui::SliderFloat3("##Light Direction", reinterpret_cast<FLOAT*>(&light->Direction), -1.f, 1.f)) {
+						const XMVECTOR Direction = XMLoadFloat3(&light->Direction);
 						const XMVECTOR Normalized = XMVector3Normalize(Direction);
 
-						XMStoreFloat3(&light.Direction, Normalized);
+						XMStoreFloat3(&light->Direction, Normalized);
 					}
+					ImGui::NewLine();
+
+					ImGui::TreePop();
+				}
+			}
+			else if (light->Type == Common::Render::LightType::E_Point) {
+				if (ImGui::TreeNode((std::to_string(i) + " Point Light").c_str())) {
+					ImGui::Text("Light Color");
+					ImGui::ColorPicker3("##Light Color", reinterpret_cast<FLOAT*>(&light->Color));
+					ImGui::NewLine();
+
+					ImGui::Text("Light Intensity");
+					ImGui::SliderFloat("##Light Intensity", &light->Intensity, 0.f, 1600.f);
+					ImGui::NewLine();
+
+					ImGui::Text("Light Position");
+					ImGui::InputFloat3("##Light Position", reinterpret_cast<FLOAT*>(&light->Position));
+					ImGui::NewLine();
+
+					ImGui::Text("Light Radius");
+					ImGui::SliderFloat("##Light Radius", &light->Radius, 0.f, 100.f);
+					ImGui::NewLine();
+
+					ImGui::Text("Attenuation Radius");
+					ImGui::SliderFloat("##Attenuation Radius", &light->AttenuationRadius, 0.f, 100.f);
+					ImGui::NewLine();
 
 					ImGui::TreePop();
 				}

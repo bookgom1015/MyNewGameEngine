@@ -20,10 +20,12 @@ BOOL Instance::Initalize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void Instance::CleanUp() {
+	if (mInstance != VK_NULL_HANDLE) {
 #ifdef _DEBUG
-	Foundation::Util::VulkanUtil::DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
+		Foundation::Util::VulkanUtil::DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
 #endif
-	vkDestroyInstance(mInstance, nullptr);
+		vkDestroyInstance(mInstance, nullptr);
+	}	
 }
 
 BOOL Instance::CreateInstance() {

@@ -46,7 +46,7 @@ BOOL FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 	mLookUpSpeed = 0.f;
 	mTurnSpeed = 0.f;
 
-	if (pInput->Mouse.ButtonState(VK_LBUTTON) == Common::Input::ButtonStates::E_Pressed) {
+	if (pInput->Mouse.ButtonState(VK_RBUTTON) == Common::Input::ButtonStates::E_Pressed) {
 		const auto CurrMousePos = pInput->Mouse.MousePosition();
 		const auto CurrMousePosV = XMLoadFloat2(&CurrMousePos);
 		const auto PrevMousePosV = XMLoadFloat2(&mPrevMousePos);

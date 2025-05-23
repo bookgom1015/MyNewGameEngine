@@ -1,12 +1,8 @@
 #ifndef __SHADOW_INL__
 #define __SHADOW_INL__
 
-Render::DX::Foundation::Light* Render::DX::Shading::Shadow::ShadowClass::Lights() {
-	return mLights.data();
-}
-
-constexpr Render::DX::Foundation::Light Render::DX::Shading::Shadow::ShadowClass::Light(UINT index) const {
-	return mLights[index];
+Render::DX::Foundation::Light* Render::DX::Shading::Shadow::ShadowClass::Light(UINT index) const {
+	return mLights[index].get();
 }
 
 constexpr UINT Render::DX::Shading::Shadow::ShadowClass::LightCount() const {

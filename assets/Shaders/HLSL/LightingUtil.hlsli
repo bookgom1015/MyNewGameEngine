@@ -68,7 +68,7 @@ float3 ComputePointLight(
     const float3 L = normalize(closestPoint);
 
     const float NoL = max(dot(normal, L), 0);
-
+    
 #if defined(BLINN_PHONG)
 	return BlinnPhong(mat, Li, L, normal, toEye, NoL);
 #elif defined(COOK_TORRANCE)

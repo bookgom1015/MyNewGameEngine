@@ -16,6 +16,8 @@ using namespace Render::DX::Shading;
 namespace {
 	const WCHAR* const HLSL_DrawZDepth = L"DrawZDepth.hlsl";
 	const WCHAR* const HLSL_DrawShadow = L"DrawShadow.hlsl";
+
+	std::vector<Render::DX::Foundation::Light*> gLights;
 }
 
 Shadow::InitDataPtr Shadow::MakeInitData() {
@@ -26,6 +28,15 @@ Shadow::ShadowClass::ShadowClass() {
 	for (UINT i = 0; i < MaxLights; ++i) 
 		mZDepthMaps[i] = std::make_unique<Foundation::Resource::GpuResource>();
 	mShadowMap = std::make_unique<Foundation::Resource::GpuResource>();
+}
+
+Render::DX::Foundation::Light** Shadow::ShadowClass::Lights() {
+	gLights.clear();
+
+	for (const auto& light : mLights) 
+		gLights.push_back(light.get());
+
+	return gLights.data();
 }
 
 UINT Shadow::ShadowClass::CbvSrvUavDescCount() const { return 0
@@ -155,7 +166,7 @@ BOOL Shadow::ShadowClass::BuildPipelineStates() {
 		}
 		psoDesc.NumRenderTargets = 0;
 		psoDesc.DSVFormat = ShadingConvention::Shadow::ZDepthMapFormat;
-		psoDesc.RasterizerState.DepthBias = 0;
+		psoDesc.RasterizerState.DepthBias = 10000;
 		psoDesc.RasterizerState.SlopeScaledDepthBias = 1.f;
 		psoDesc.RasterizerState.DepthBiasClamp = 0.f;
 		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
@@ -226,10 +237,10 @@ BOOL Shadow::ShadowClass::Run(
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::AddLight(const Foundation::Light& light) {
+BOOL Shadow::ShadowClass::AddLight(const std::shared_ptr<Foundation::Light>& light) {
 	if (mLightCount >= MaxLights) ReturnFalse(mpLogFile, L"Can not add light due to the light count limit");
 
-	const BOOL NeedCubeMap = light.Type == Common::Render::LightType::E_Point;
+	const BOOL NeedCubeMap = light->Type == Common::Render::LightType::E_Point;
 
 	BuildResource(NeedCubeMap);
 	BuildDescriptor(NeedCubeMap);
@@ -246,7 +257,6 @@ BOOL Shadow::ShadowClass::BuildResources() {
 	rscDesc.Alignment = 0;
 	rscDesc.Width = mInitData.ClientWidth;
 	rscDesc.Height = mInitData.ClientHeight;
-	rscDesc.Format = ShadingConvention::Shadow::ShadowMapFormat;
 	rscDesc.DepthOrArraySize = 1;
 	rscDesc.MipLevels = 1;
 	rscDesc.SampleDesc.Count = 1;
@@ -259,15 +269,20 @@ BOOL Shadow::ShadowClass::BuildResources() {
 	zdepthOptClear.DepthStencil.Depth = 1.f;
 	zdepthOptClear.DepthStencil.Stencil = 0;
 
-	CheckReturn(mpLogFile, mShadowMap->Initialize(
-		mInitData.Device,
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&rscDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		nullptr,
-		L"Shadow_ShadowMap"));
+	// ShadowMap
+	{
+		rscDesc.Format = ShadingConvention::Shadow::ShadowMapFormat;
 
+		CheckReturn(mpLogFile, mShadowMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&rscDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			L"Shadow_ShadowMap"));
+	}
+	
 	return TRUE;
 }
 
@@ -275,7 +290,6 @@ BOOL Shadow::ShadowClass::BuildDescriptors() {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Format = ShadingConvention::Shadow::ShadowMapFormat;
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = 1;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
@@ -283,12 +297,17 @@ BOOL Shadow::ShadowClass::BuildDescriptors() {
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	uavDesc.Format = ShadingConvention::Shadow::ShadowMapFormat;
 
-	const auto shadowMap = mShadowMap->Resource();
-	Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, shadowMap, &srvDesc, mhShadowMapCpuSrv);
-	Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, shadowMap, nullptr, &uavDesc, mhShadowMapCpuUav);
+	// ShadowMap
+	{
+		srvDesc.Format = ShadingConvention::Shadow::ShadowMapFormat;
+		uavDesc.Format = ShadingConvention::Shadow::ShadowMapFormat;
 
+		const auto shadowMap = mShadowMap->Resource();
+		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, shadowMap, &srvDesc, mhShadowMapCpuSrv);
+		Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, shadowMap, nullptr, &uavDesc, mhShadowMapCpuUav);
+	}
+	
 	return TRUE;
 }
 
@@ -474,9 +493,9 @@ BOOL Shadow::ShadowClass::DrawShadow(
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_PositionMap, si_positionMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::UIO_ShadowMap, mhShadowMapGpuUav);
 
-		BOOL NeedCube = mLights[lightIndex].Type == Common::Render::LightType::E_Point;
+		BOOL NeedCubeMap = mLights[lightIndex]->Type == Common::Render::LightType::E_Point;
 
-		if (NeedCube) CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
+		if (NeedCubeMap) CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
 		else CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthMap, mhZDepthMapGpuSrvs[lightIndex]);
 
 

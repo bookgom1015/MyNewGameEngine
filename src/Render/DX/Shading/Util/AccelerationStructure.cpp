@@ -221,6 +221,8 @@ BOOL AccelerationStructureManager::BuildTLAS(
 	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDescs;
 	CheckReturn(mpLogFile, BuildInstanceDescriptors(instanceDescs, ritems, numRitems));
 
+	if (instanceDescs.size() == 0) return TRUE;
+
 	CheckReturn(mpLogFile, mTLAS->BuildTLAS(
 		mpLogFile,
 		mpDevice,
@@ -238,6 +240,8 @@ BOOL AccelerationStructureManager::UpdateTLAS(
 	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDescs;
 	CheckReturn(mpLogFile, BuildInstanceDescriptors(instanceDescs, ritems, numRitems));
 
+	if (instanceDescs.size() == 0) return TRUE;
+
 	CheckReturn(mpLogFile, mTLAS->UpdateTLAS(
 		mpLogFile,
 		pCmdList,
@@ -253,6 +257,8 @@ BOOL AccelerationStructureManager::BuildInstanceDescriptors(
 		UINT numRitems) {
 	for (UINT i = 0; i < numRitems; ++i) {
 		const auto ri = ritems[i];
+
+		if (!ri->RebuildAccerationStructure) continue;
 
 		const UINT HitGroupIndex = i;
 		const auto Hash = Foundation::Resource::MeshGeometry::Hash(ri->Geometry);

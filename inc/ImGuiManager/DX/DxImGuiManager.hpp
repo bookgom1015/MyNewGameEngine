@@ -3,6 +3,7 @@
 #include "Common/ImGuiManager/ImGuiManager.hpp"
 
 #include <memory>
+#include <queue>
 
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
 
@@ -50,8 +51,9 @@ namespace ImGuiManager {
 			BOOL DrawImGui(
 				ID3D12GraphicsCommandList6* const pCmdList,
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
-				Render::DX::Foundation::Light lights[],
+				Render::DX::Foundation::Light* lights[],
 				UINT numLights,
+				std::queue<std::shared_ptr<Render::DX::Foundation::Light>>& pendingLights,
 				UINT clientWidth, UINT clientHeight,
 				BOOL bRaytracingSupported);
 
@@ -60,8 +62,9 @@ namespace ImGuiManager {
 			void RaytraycingEnableCheckBox(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void LightHeader(
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
-				Render::DX::Foundation::Light lights[],
-				UINT numLights);
+				Render::DX::Foundation::Light* lights[],
+				UINT numLights,
+				std::queue<std::shared_ptr<Render::DX::Foundation::Light>>& pendingLights);
 			void ShadingObjectHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void ShadowTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void TAATree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);

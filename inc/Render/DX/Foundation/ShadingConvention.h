@@ -372,6 +372,7 @@ namespace ShadingConvention{
 #ifdef _HLSL
 		typedef float	ZDepthMapFormat;
 		typedef uint	ShadowMapFormat;
+		typedef float4	DebugMapFormat;
 
 		static const uint InvalidFaceId = 255;
 
@@ -389,6 +390,7 @@ namespace ShadingConvention{
 #else 
 		const DXGI_FORMAT ZDepthMapFormat = DXGI_FORMAT_D32_FLOAT;
 		const DXGI_FORMAT ShadowMapFormat = DXGI_FORMAT_R16_UINT;
+		const DXGI_FORMAT DebugMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		const FLOAT FaceIdCubeMapClearValues[4] = { 255.f, 0.f, 0.f, 0.f };
 #endif 

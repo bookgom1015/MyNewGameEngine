@@ -51,6 +51,9 @@ namespace Render::DX::Foundation {
 
 		Resource::MaterialData* Material;
 
+		BOOL RebuildAccerationStructure = TRUE;
+
+	public:
 		static Common::Foundation::Hash Hash(const RenderItem* ptr);
 	};
 }

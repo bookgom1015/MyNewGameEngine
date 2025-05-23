@@ -21,9 +21,14 @@ BOOL SwapChain::Initialize(void* const pData) {
 }
 
 void SwapChain::CleanUp() {
-	for (UINT i = 0; i < SwapChainImageCount; ++i)
-		vkDestroyImageView(mInitData.Device, mSwapChainImageViews[i], nullptr);
-	vkDestroySwapchainKHR(mInitData.Device, mSwapChain, nullptr);
+	for (UINT i = 0; i < SwapChainImageCount; ++i) {
+		const auto swapChainImageView = mSwapChainImageViews[i];
+		if (swapChainImageView != VK_NULL_HANDLE)
+			vkDestroyImageView(mInitData.Device, swapChainImageView, nullptr);
+	}
+	
+	if (mSwapChain != VK_NULL_HANDLE)
+		vkDestroySwapchainKHR(mInitData.Device, mSwapChain, nullptr);
 }
 
 BOOL SwapChain::OnResize(UINT width, UINT height) {

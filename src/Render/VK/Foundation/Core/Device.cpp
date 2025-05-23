@@ -21,7 +21,8 @@ BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile, VkInstance insta
 }
 
 void Device::CleanUp() {
-	vkDestroyDevice(mDevice, nullptr);
+	if (mDevice != VK_NULL_HANDLE)
+		vkDestroyDevice(mDevice, nullptr);
 }
 
 BOOL Device::SortPhysicalDevices() {
