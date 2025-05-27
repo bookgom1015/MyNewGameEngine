@@ -125,6 +125,19 @@ void DxImGuiManager::LightHeader(
 			pendingLights.push(light);
 		}
 		ImGui::SameLine();
+		if (ImGui::Button("Spot")) {
+			std::shared_ptr<Render::DX::Foundation::Light> light = std::make_shared<Render::DX::Foundation::Light>();
+			light->Type = Common::Render::LightType::E_Spot;
+			light->Direction = { 0.f, 0.f, 1.f };
+			light->Color = { 255.f / 255.f, 255.f / 255.f, 255.f / 255.f };
+			light->Intensity = 1.f;
+			light->InnerConeAngle = 30.f;
+			light->OuterConeAngle = 45.f;
+			light->AttenuationRadius = 10.f;
+
+			pendingLights.push(light);
+		}
+		ImGui::SameLine();
 		if (ImGui::Button("Point")) {
 			std::shared_ptr<Render::DX::Foundation::Light> light = std::make_shared<Render::DX::Foundation::Light>();
 			light->Type = Common::Render::LightType::E_Point;
@@ -147,7 +160,7 @@ void DxImGuiManager::LightHeader(
 					ImGui::NewLine();
 
 					ImGui::Text("Light Intensity");
-					ImGui::SliderFloat("##Light Intensity", &light->Intensity, 0.f, 100.f);
+					ImGui::InputFloat("##Light Intensity", &light->Intensity, 0.f, 100.f);
 					ImGui::NewLine();
 
 					ImGui::Text("Light Direction");
@@ -162,6 +175,44 @@ void DxImGuiManager::LightHeader(
 					ImGui::TreePop();
 				}
 			}
+			else if (light->Type == Common::Render::LightType::E_Spot) {
+				if (ImGui::TreeNode((std::to_string(i) + " Spot Light").c_str())) {
+					ImGui::Text("Light Color");
+					ImGui::ColorPicker3("##Light Color", reinterpret_cast<FLOAT*>(&light->Color));
+					ImGui::NewLine();
+
+					ImGui::Text("Light Intensity");
+					ImGui::InputFloat("##Light Intensity", &light->Intensity, 0.f, 1600.f);
+					ImGui::NewLine();
+
+					ImGui::Text("Light Position");
+					ImGui::InputFloat3("##Light Position", reinterpret_cast<FLOAT*>(&light->Position));
+					ImGui::NewLine();
+
+					ImGui::Text("Light Direction");
+					if (ImGui::SliderFloat3("##Light Direction", reinterpret_cast<FLOAT*>(&light->Direction), -1.f, 1.f)) {
+						const XMVECTOR Direction = XMLoadFloat3(&light->Direction);
+						const XMVECTOR Normalized = XMVector3Normalize(Direction);
+
+						XMStoreFloat3(&light->Direction, Normalized);
+					}
+					ImGui::NewLine();
+
+					ImGui::Text("Inner Cone Angle");
+					ImGui::SliderFloat("##Inner Cone Angle", &light->InnerConeAngle, 0.f, 90.f);
+					ImGui::NewLine();
+
+					ImGui::Text("Outer Cone Angle");
+					ImGui::SliderFloat("##Outer Cone Angle", &light->OuterConeAngle, 0.f, 90.f);
+					ImGui::NewLine();
+
+					ImGui::Text("Attenuation Radius");
+					ImGui::SliderFloat("##Attenuation Radius", &light->AttenuationRadius, 0.f, 100.f);
+					ImGui::NewLine();
+
+					ImGui::TreePop();
+				}
+			}
 			else if (light->Type == Common::Render::LightType::E_Point) {
 				if (ImGui::TreeNode((std::to_string(i) + " Point Light").c_str())) {
 					ImGui::Text("Light Color");
@@ -169,7 +220,7 @@ void DxImGuiManager::LightHeader(
 					ImGui::NewLine();
 
 					ImGui::Text("Light Intensity");
-					ImGui::SliderFloat("##Light Intensity", &light->Intensity, 0.f, 1600.f);
+					ImGui::InputFloat("##Light Intensity", &light->Intensity, 0.f, 1600.f);
 					ImGui::NewLine();
 
 					ImGui::Text("Light Position");
@@ -177,7 +228,7 @@ void DxImGuiManager::LightHeader(
 					ImGui::NewLine();
 
 					ImGui::Text("Light Radius");
-					ImGui::SliderFloat("##Light Radius", &light->Radius, 0.f, 100.f);
+					ImGui::InputFloat("##Light Radius", &light->Radius, 0.f, 100.f);
 					ImGui::NewLine();
 
 					ImGui::Text("Attenuation Radius");

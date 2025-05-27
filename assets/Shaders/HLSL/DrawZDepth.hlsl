@@ -34,7 +34,7 @@ VertexOut VS(in VertexIn vin) {
     VertexOut vout = (VertexOut) 0;
 
     vout.PosW = mul(float4(vin.PosL, 1.f), cbObject.World);
-
+    
     const float4 TexC = mul(float4(vin.TexC, 0.f, 1.f), cbObject.TexTransform);
     vout.TexC = mul(TexC, cbMaterial.MatTransform).xy;
 
@@ -47,14 +47,12 @@ void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
 	
     Render::DX::Foundation::Light light = cbLight.Lights[gLightIndex];
 
-	// Directional light
-    if (light.Type == Common::Render::LightType::E_Directional) {
+	// Directional light or spot light
+    if (light.Type == Common::Render::LightType::E_Directional || light.Type == Common::Render::LightType::E_Spot) {
 		[unroll]
         for (uint i = 0; i < 3; ++i) {
             gout.PosH = mul(gin[i].PosW, light.Mat0);
-
-            const float4 TexC = mul(float4(gin[i].TexC, 0.f, 1.f), cbObject.TexTransform);
-            gout.TexC = mul(TexC, cbMaterial.MatTransform).xy;
+            gout.TexC = gin[i].TexC;
 
             triStream.Append(gout);
         }

@@ -14,7 +14,7 @@ namespace Shadow {
         }
     }
     
-    float CalcShadowFactorDirectional(
+    float CalcShadowFactor(
 		    in Texture2D<float> depthMap,
 		    in SamplerComparisonState sampComp,
 		    in float4x4 viewProjTex,
@@ -34,7 +34,7 @@ namespace Shadow {
         return value | Shifted;
     }
     
-    float CalcShadowFactorCubeCS(
+    float CalcShadowFactorCube(
 		    in Texture2DArray<float> depthMap,
 		    in SamplerComparisonState sampComp,
 		    in float4x4 viewProj,

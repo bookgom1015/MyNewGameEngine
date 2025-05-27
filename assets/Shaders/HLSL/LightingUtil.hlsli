@@ -9,7 +9,7 @@
 #include "./../../../../inc/Render/DX/Foundation/Light.h"
 #include "./../../../../assets/Shaders/HLSL/BRDF.hlsli"
 
-static const float DEG2RAD = 3.14159265359 / 180.0;
+static const float DEG2RAD = 3.14159265359f / 180.f;
 
 float DegToRad(in float degrees) {
     return degrees * DEG2RAD;

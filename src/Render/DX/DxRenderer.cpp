@@ -419,17 +419,17 @@ BOOL DxRenderer::UpdateLightCB() {
 
 	mLightCB->LightCount = LightCount;
 
+	const XMMATRIX T(
+		0.5f,  0.f, 0.f, 0.f,
+		0.f, -0.5f, 0.f, 0.f,
+		0.f,  0.f,  1.f, 0.f,
+		0.5f, 0.5f, 0.f, 1.f
+	);
+
 	for (UINT i = 0; i < LightCount; ++i) {
 		const auto light = mShadow->Light(i);
 
 		if (light->Type == Common::Render::LightType::E_Directional) {
-			const XMMATRIX T(
-				0.5f, 0.f, 0.f, 0.f,
-				0.f, -0.5f, 0.f, 0.f,
-				0.f, 0.f, 1.f, 0.f,
-				0.5f, 0.5f, 0.f, 1.f
-			);
-
 			const XMVECTOR lightDir = XMLoadFloat3(&light->Direction);
 			const XMVECTOR lightPos = -2.f * mSceneBounds.Radius * lightDir;
 			const XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
@@ -459,7 +459,7 @@ BOOL DxRenderer::UpdateLightCB() {
 			XMStoreFloat3(&light->Position, lightPos);
 		}
 		else if (light->Type == Common::Render::LightType::E_Point || light->Type == Common::Render::LightType::E_Tube) {
-			const auto proj = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 1.f, 50.f);
+			const auto proj = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 50.f);
 			const auto pos = XMLoadFloat3(&light->Position);
 
 			// Positive +X
@@ -505,6 +505,22 @@ BOOL DxRenderer::UpdateLightCB() {
 				XMStoreFloat4x4(&light->Mat5, XMMatrixTranspose(vp_nz));
 			}
 		}
+		else if (light->Type == Common::Render::LightType::E_Spot) {
+			const auto Proj = XMMatrixPerspectiveFovLH(Common::Util::MathUtil::DegreesToRadians(light->OuterConeAngle), 1.f, 0.1f, light->AttenuationRadius);
+			const auto Pos = XMLoadFloat3(&light->Position);
+
+			const XMVECTOR Direction = XMLoadFloat3(&light->Direction);
+
+			const XMVECTOR UpVector = Common::Util::MathUtil::CalcUpVector(Direction);
+
+			const auto Target = Pos + Direction;
+			const auto View = XMMatrixLookAtLH(Pos, Target, UpVector);
+			const auto ViewProj = View * Proj;
+			XMStoreFloat4x4(&light->Mat0, XMMatrixTranspose(ViewProj));
+
+			const XMMATRIX S = View * Proj * T;
+			XMStoreFloat4x4(&light->Mat1, XMMatrixTranspose(S));
+		}
 		else if (light->Type == Common::Render::LightType::E_Rect) {
 			const XMVECTOR lightDir = XMLoadFloat3(&light->Direction);
 			const XMVECTOR lightUp = Common::Util::MathUtil::CalcUpVector(light->Direction);
@@ -523,9 +539,6 @@ BOOL DxRenderer::UpdateLightCB() {
 			XMStoreFloat3(&light->Position1, lightPos1);
 			XMStoreFloat3(&light->Position2, lightPos2);
 			XMStoreFloat3(&light->Position3, lightPos3);
-
-			const XMVECTOR targetPos = lightCenter + lightDir;
-			const XMMATRIX lightView = XMMatrixLookAtLH(lightCenter, targetPos, lightUp);
 		}
 
 		mLightCB->Lights[i] = *light;

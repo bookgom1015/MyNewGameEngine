@@ -23,10 +23,10 @@ namespace UnitVector {
 }
 
 const FLOAT Infinity = FLT_MAX;
-const FLOAT Pi		 = 3.1415926535f;
+const FLOAT Pi		 = 3.14159265359f;
 const FLOAT Epsilon	 = 0.0000000001f;
-const FLOAT RadToDeg = 180.f / 3.1415926535f;
-const FLOAT DegToRad = 3.1415926535f / 180.f;
+const FLOAT RadToDeg = 180.f / 3.14159265359f;
+const FLOAT DegToRad = 3.14159265359f / 180.f;
 
 namespace Common::Util {
 	namespace MathUtil {

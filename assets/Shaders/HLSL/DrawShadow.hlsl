@@ -34,8 +34,8 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         return;
     }
     
-    if (light.Type == Common::Render::LightType::E_Directional) {
-        const float ShadowFactor = Shadow::CalcShadowFactorDirectional(gi_ZDepthMap, gsamShadow, light.Mat1, PosW.xyz);
+    if (light.Type == Common::Render::LightType::E_Directional || light.Type == Common::Render::LightType::E_Spot) {
+        const float ShadowFactor = Shadow::CalcShadowFactor(gi_ZDepthMap, gsamShadow, light.Mat1, PosW.xyz);
         value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, gLightIndex);
     }
     else if (light.Type == Common::Render::LightType::E_Point) {
@@ -46,7 +46,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float2 UV = ShaderUtil::ConvertDirectionToUV(Normalized);
 
         const float4x4 ViewProj = Shadow::GetViewProjMatrix(light, Index);
-        const float ShadowFactor = Shadow::CalcShadowFactorCubeCS(gi_ZDepthCubeMap, gsamShadow, ViewProj, PosW.xyz, UV, Index);
+        const float ShadowFactor = Shadow::CalcShadowFactorCube(gi_ZDepthCubeMap, gsamShadow, ViewProj, PosW.xyz, UV, Index);
 
         value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, gLightIndex);
     }
