@@ -38,10 +38,17 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float ShadowFactor = Shadow::CalcShadowFactor(gi_ZDepthMap, gsamShadow, light.Mat1, PosW.xyz);
         value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, gLightIndex);
     }
-    else if (light.Type == Common::Render::LightType::E_Point) {
-        const float3 Direction = PosW.xyz - light.Position;
-        const uint Index = ShaderUtil::GetCubeFaceIndex(Direction);
-        const float3 Normalized = normalize(Direction);
+    else if (light.Type == Common::Render::LightType::E_Point || light.Type == Common::Render::LightType::E_Tube) {
+        float3 direction;
+        if (light.Type == Common::Render::LightType::E_Tube) {
+            direction = PosW.xyz - (light.Position + light.Position1) * 0.5f;
+        }
+        else {
+            direction = PosW.xyz - light.Position;
+        }
+        
+        const uint Index = ShaderUtil::GetCubeFaceIndex(direction);
+        const float3 Normalized = normalize(direction);
         
         const float2 UV = ShaderUtil::ConvertDirectionToUV(Normalized);
 
@@ -50,10 +57,6 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 
         value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, gLightIndex);
     }
-    //else {
-    //    const float shadowFactor = CalcShadowFactorDirectional(gi_ZDepthMap, gsamShadow, light.Mat0, posW.xyz);
-    //    value = CalcShiftedShadowValueF(shadowFactor, value, gLightIndex);
-    //}
 	
     gio_ShadowMap[DTid] = value;
 }

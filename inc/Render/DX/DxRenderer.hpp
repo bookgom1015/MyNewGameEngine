@@ -150,7 +150,7 @@ namespace Render {
 
 			// Frame resource
 			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources;
-			Foundation::Resource::FrameResource* mCurrentFrameResource = nullptr;
+			Foundation::Resource::FrameResource* mpCurrentFrameResource = nullptr;
 			UINT mCurrentFrameResourceIndex = 0;
 
 			// Constant buffers

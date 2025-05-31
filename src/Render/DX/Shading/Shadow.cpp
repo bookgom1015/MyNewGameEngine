@@ -18,6 +18,10 @@ namespace {
 	const WCHAR* const HLSL_DrawShadow = L"DrawShadow.hlsl";
 
 	std::vector<Render::DX::Foundation::Light*> gLights;
+
+	BOOL RequiresCubeMap(const Render::DX::Foundation::Light* const light) {
+		return light->Type == Common::Render::LightType::E_Point || light->Type == Common::Render::LightType::E_Tube;
+	}
 }
 
 Shadow::InitDataPtr Shadow::MakeInitData() {
@@ -240,7 +244,7 @@ BOOL Shadow::ShadowClass::Run(
 BOOL Shadow::ShadowClass::AddLight(const std::shared_ptr<Foundation::Light>& light) {
 	if (mLightCount >= MaxLights) ReturnFalse(mpLogFile, L"Can not add light due to the light count limit");
 
-	const BOOL NeedCubeMap = light->Type == Common::Render::LightType::E_Point;
+	const BOOL NeedCubeMap = RequiresCubeMap(light.get());
 
 	BuildResource(NeedCubeMap);
 	BuildDescriptor(NeedCubeMap);
@@ -493,7 +497,7 @@ BOOL Shadow::ShadowClass::DrawShadow(
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_PositionMap, si_positionMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::UIO_ShadowMap, mhShadowMapGpuUav);
 
-		BOOL NeedCubeMap = mLights[lightIndex]->Type == Common::Render::LightType::E_Point;
+		BOOL NeedCubeMap = RequiresCubeMap(mLights[lightIndex].get());
 
 		if (NeedCubeMap) CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
 		else CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthMap, mhZDepthMapGpuSrvs[lightIndex]);

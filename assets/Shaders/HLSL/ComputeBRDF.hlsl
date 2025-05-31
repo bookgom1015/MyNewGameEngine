@@ -36,6 +36,19 @@ FitToScreenVertexShader
 
 FitToScreenMeshShader
 
+void CalcShadowFactors(out float shadowFactors[MaxLights], float2 texc) {    
+    uint2 size;
+    gi_ShadowMap.GetDimensions(size.x, size.y);
+    
+    const uint2 Id = texc * size - 0.5;
+    const uint Value = gi_ShadowMap.Load(uint3(Id, 0));
+    
+		[loop]
+    for (uint i = 0; i < cbLight.LightCount; ++i) {
+        shadowFactors[i] = Shadow::GetShiftedShadowValue(Value, i);
+    }
+}
+
 HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float4 PosW = gi_PositionMap.Sample(gsamLinearClamp, pin.TexC);    	
     const float4 Albedo = gi_AlbedoMap.Sample(gsamLinearClamp, pin.TexC);
@@ -50,28 +63,19 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
 
     Material mat = { Albedo, FresnelR0, Shiness, Metalness };
 
-    float shadowFactor[MaxLights];
-    
-	[unroll]
-    for (uint i = 0; i < MaxLights; ++i) { shadowFactor[i] = 1; }    
-    
+    float shadowFactors[MaxLights];
+    [unroll]
+    for (uint i = 0; i < MaxLights; ++i) {
+        shadowFactors[i] = 1;
+    }
     if (gShadowEnabled) {
-        uint2 size;
-        gi_ShadowMap.GetDimensions(size.x, size.y);
-    
-        const uint2 Id = pin.TexC * size - 0.5;
-        const uint Value = gi_ShadowMap.Load(uint3(Id, 0));
-    
-		[loop]
-        for (uint i = 0; i < cbLight.LightCount; ++i) {
-            shadowFactor[i] = Shadow::GetShiftedShadowValue(Value, i);
-        }
+        CalcShadowFactors(shadowFactors, pin.TexC);
     }
 
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);
 
     const float3 ViewW = normalize(cbPass.EyePosW - PosW.xyz);
-    const float3 Radiance = ComputeBRDF(cbLight.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactor, cbLight.LightCount);
+    const float3 Radiance = ComputeBRDF(cbLight.Lights, mat, PosW.xyz, NormalW, ViewW, shadowFactors, cbLight.LightCount);
         
     return float4(Radiance, 1.f);
 }

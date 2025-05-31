@@ -147,9 +147,9 @@ BOOL DxRenderer::OnResize(UINT width, UINT height) {
 
 BOOL DxRenderer::Update(FLOAT deltaTime) {
 	mCurrentFrameResourceIndex = (mCurrentFrameResourceIndex + 1) % Foundation::Resource::FrameResource::Count;
-	mCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
-	CheckReturn(mpLogFile, mCommandObject->WaitCompletion(mCurrentFrameResource->mFence));	
-	CheckReturn(mpLogFile, mCurrentFrameResource->ResetCommandListAllocators());
+	mpCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
+	CheckReturn(mpLogFile, mCommandObject->WaitCompletion(mpCurrentFrameResource->mFence));	
+	CheckReturn(mpLogFile, mpCurrentFrameResource->ResetCommandListAllocators());
 
 	CheckReturn(mpLogFile, UpdateConstantBuffers());
 	CheckReturn(mpLogFile, ResolvePendingLights());
@@ -161,7 +161,7 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 
 		const UINT NumRitems = static_cast<UINT>(rendableOpaques.size());
 		if (NumRitems > 0) {
-			CheckReturn(mpLogFile, mAccelerationStructureManager->Update(mCurrentFrameResource, rendableOpaques.data(), NumRitems));
+			CheckReturn(mpLogFile, mAccelerationStructureManager->Update(mpCurrentFrameResource, rendableOpaques.data(), NumRitems));
 
 			if (mbMeshGeometryAdded) {
 				CheckReturn(mpLogFile, mShadingObjectManager->BuildShaderTables(NumRitems));
@@ -181,7 +181,7 @@ BOOL DxRenderer::Draw() {
 	const auto& rendableOpaques = mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque];
 
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(), 
 		mSwapChain->ScissorRect(),
 		mToneMapping->InterMediateMapResource(), 
@@ -191,7 +191,7 @@ BOOL DxRenderer::Draw() {
 		rendableOpaques));
 
 	CheckReturn(mpLogFile, mShadow->Run(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
 		rendableOpaques));
@@ -200,7 +200,7 @@ BOOL DxRenderer::Draw() {
 		CheckReturn(mpLogFile, DrawAO());
 
 	CheckReturn(mpLogFile, mBRDF->ComputeBRDF(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mToneMapping->InterMediateMapResource(),
@@ -224,7 +224,7 @@ BOOL DxRenderer::Draw() {
 	CheckReturn(mpLogFile, IntegrateIrradiance());
 
 	CheckReturn(mpLogFile, mEnvironmentMap->DrawSkySphere(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mToneMapping->InterMediateMapResource(),
@@ -235,7 +235,7 @@ BOOL DxRenderer::Draw() {
 
 	if (mpArgumentSet->TAA.Enabled) {
 		CheckReturn(mpLogFile, mTAA->ApplyTAA(
-			mCurrentFrameResource,
+			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->ScissorRect(),
 			mToneMapping->InterMediateMapResource(),
@@ -248,7 +248,7 @@ BOOL DxRenderer::Draw() {
 	}
 
 	CheckReturn(mpLogFile, mToneMapping->Resolve(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mSwapChain->BackBuffer(),
@@ -256,7 +256,7 @@ BOOL DxRenderer::Draw() {
 		mpArgumentSet->ToneMapping.Exposure));
 
 	CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mSwapChain->BackBuffer(),
@@ -273,7 +273,7 @@ BOOL DxRenderer::Draw() {
 
 BOOL DxRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) {
 	CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
-		mCurrentFrameResource->CommandAllocator(0),
+		mpCurrentFrameResource->CommandAllocator(0),
 		0));
 
 	const auto CmdList = mCommandObject->CommandList(0);
@@ -409,7 +409,7 @@ BOOL DxRenderer::UpdateMainPassCB() {
 		mMainPassCB->JitteredOffset = { 0.f, 0.f };
 	}
 	
-	mCurrentFrameResource->CopyMainPassCB(0, *mMainPassCB.get());
+	mpCurrentFrameResource->CopyMainPassCB(0, *mMainPassCB.get());
 
 	return TRUE;
 }
@@ -460,7 +460,17 @@ BOOL DxRenderer::UpdateLightCB() {
 		}
 		else if (light->Type == Common::Render::LightType::E_Point || light->Type == Common::Render::LightType::E_Tube) {
 			const auto proj = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 50.f);
-			const auto pos = XMLoadFloat3(&light->Position);
+
+			XMVECTOR pos;
+			if (light->Type == Common::Render::LightType::E_Tube) {
+				const auto Pos0 = XMLoadFloat3(&light->Position);
+				const auto Pos1 = XMLoadFloat3(&light->Position1);
+
+				pos = (Pos0 + Pos1) * 0.5f;
+			}
+			else {
+				pos = XMLoadFloat3(&light->Position);
+			}
 
 			// Positive +X
 			{
@@ -528,21 +538,21 @@ BOOL DxRenderer::UpdateLightCB() {
 			XMStoreFloat3(&light->Up, lightUp);
 			XMStoreFloat3(&light->Right, lightRight);
 
-			const XMVECTOR lightCenter = XMLoadFloat3(&light->Center);
-			const FLOAT halfSizeX = light->Size.x * 0.5f;
-			const FLOAT halfSizeY = light->Size.y * 0.5f;
-			const XMVECTOR lightPos0 = lightCenter + lightUp * halfSizeY + lightRight * halfSizeX;
-			const XMVECTOR lightPos1 = lightCenter + lightUp * halfSizeY - lightRight * halfSizeX;
-			const XMVECTOR lightPos2 = lightCenter - lightUp * halfSizeY - lightRight * halfSizeX;
-			const XMVECTOR lightPos3 = lightCenter - lightUp * halfSizeY + lightRight * halfSizeX;
-			XMStoreFloat3(&light->Position, lightPos0);
-			XMStoreFloat3(&light->Position1, lightPos1);
-			XMStoreFloat3(&light->Position2, lightPos2);
-			XMStoreFloat3(&light->Position3, lightPos3);
+			const XMVECTOR LightCenter = XMLoadFloat3(&light->Center);
+			const FLOAT HalfSizeX = light->Size.x * 0.5f;
+			const FLOAT HalfSizeY = light->Size.y * 0.5f;
+			const XMVECTOR LightPos0 = LightCenter + lightUp * HalfSizeY + lightRight * HalfSizeX;
+			const XMVECTOR LightPos1 = LightCenter + lightUp * HalfSizeY - lightRight * HalfSizeX;
+			const XMVECTOR LightPos2 = LightCenter - lightUp * HalfSizeY - lightRight * HalfSizeX;
+			const XMVECTOR LightPos3 = LightCenter - lightUp * HalfSizeY + lightRight * HalfSizeX;
+			XMStoreFloat3(&light->Position, LightPos0);
+			XMStoreFloat3(&light->Position1, LightPos1);
+			XMStoreFloat3(&light->Position2, LightPos2);
+			XMStoreFloat3(&light->Position3, LightPos3);
 		}
 
 		mLightCB->Lights[i] = *light;
-		mCurrentFrameResource->CopyLightCB(0, *mLightCB.get());
+		mpCurrentFrameResource->CopyLightCB(0, *mLightCB.get());
 	}
 
 	return TRUE;
@@ -563,7 +573,7 @@ BOOL DxRenderer::UpdateObjectCB() {
 			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(World));
 			XMStoreFloat4x4(&objCB.TexTransform, XMMatrixTranspose(TexTransform));
 
-			mCurrentFrameResource->CopyObjectCB(ritem->ObjectCBIndex, objCB);
+			mpCurrentFrameResource->CopyObjectCB(ritem->ObjectCBIndex, objCB);
 
 			// Next FrameResource need to be updated too.
 			--ritem->NumFramesDirty;
@@ -591,7 +601,7 @@ BOOL DxRenderer::UpdateMaterialCB() {
 			matCB.MetalnessMapIndex = material->MetalnessMapIndex;
 			matCB.SpecularMapIndex = material->SpecularMapIndex;
 
-			mCurrentFrameResource->CopyMaterialCB(material->MaterialCBIndex, matCB);
+			mpCurrentFrameResource->CopyMaterialCB(material->MaterialCBIndex, matCB);
 
 			--material->NumFramesDirty;
 		}
@@ -658,7 +668,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 		))
 	);
 
-	mCurrentFrameResource->CopyProjectToCubeCB(*mProjectToCubeCB.get());
+	mpCurrentFrameResource->CopyProjectToCubeCB(*mProjectToCubeCB.get());
 
 	return TRUE;
 }
@@ -697,9 +707,9 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 		aoCB.SampleCount = mpArgumentSet->SSAO.SampleCount;
 	}
 
-	aoCB.FrameCount = static_cast<UINT>(mCurrentFrameResource->mFence);
+	aoCB.FrameCount = static_cast<UINT>(mpCurrentFrameResource->mFence);
 
-	mCurrentFrameResource->CopyAmbientOcclusionCB(aoCB);
+	mpCurrentFrameResource->CopyAmbientOcclusionCB(aoCB);
 
 	return TRUE;
 }
@@ -722,7 +732,7 @@ BOOL DxRenderer::PopulateRendableItems() {
 	rendableOpaques.clear();
 
 	for (const auto opaque : opaques) {
-		if (mCurrentFrameResource->mFence < opaque->Geometry->Fence) continue;
+		if (mpCurrentFrameResource->mFence < opaque->Geometry->Fence) continue;
 
 		rendableOpaques.push_back(opaque);
 	}
@@ -820,7 +830,7 @@ BOOL DxRenderer::BuildMeshGeometry(
 	);
 
 	const auto Fence = mCommandObject->IncreaseFence();
-	mCurrentFrameResource->mFence = Fence;
+	mpCurrentFrameResource->mFence = Fence;
 
 	geo->VertexByteStride = static_cast<UINT>(sizeof(Common::Foundation::Mesh::Vertex));
 	geo->VertexBufferByteSize = VerticesByteSize;
@@ -1058,7 +1068,7 @@ BOOL DxRenderer::BuildFrameResources() {
 	}
 
 	mCurrentFrameResourceIndex = 0;
-	mCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
+	mpCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
 
 	return TRUE;
 }
@@ -1149,7 +1159,7 @@ BOOL DxRenderer::BuildScene() {
 	CheckReturn(mpLogFile, mSSAO->BuildRandomVectorTexture());
 
 	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mMipmapGenerator.get(), 
 		mEquirectangularConverter.get(), 
 		L"forest_hdr", L"./../../../../assets/textures/"));
@@ -1159,7 +1169,7 @@ BOOL DxRenderer::BuildScene() {
 
 BOOL DxRenderer::DrawImGui() {
 	CheckReturn(mpLogFile, mCommandObject->ResetCommandList(
-		mCurrentFrameResource->CommandAllocator(0),
+		mpCurrentFrameResource->CommandAllocator(0),
 		0,
 		nullptr));
 
@@ -1191,7 +1201,7 @@ BOOL DxRenderer::DrawImGui() {
 BOOL DxRenderer::DrawAO() {
 	if (mpArgumentSet->RaytracingEnabled) {
 		CheckReturn(mpLogFile, mRTAO->DrawAO(
-			mCurrentFrameResource,
+			mpCurrentFrameResource,
 			mAccelerationStructureManager->AccelerationStructure(),
 			mGBuffer->PositionMap(),
 			mGBuffer->PositionMapSrv(),
@@ -1199,10 +1209,15 @@ BOOL DxRenderer::DrawAO() {
 			mGBuffer->NormalMapSrv(),
 			mDepthStencilBuffer->GetDepthStencilBuffer(),
 			mDepthStencilBuffer->DepthStencilBufferSrv()));
+
+		CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
+			mpCurrentFrameResource,
+			mDepthStencilBuffer->GetDepthStencilBuffer(),
+			mDepthStencilBuffer->DepthStencilBufferSrv()));
 	}
 	else {
 		CheckReturn(mpLogFile, mSSAO->DrawAO(
-			mCurrentFrameResource,
+			mpCurrentFrameResource,
 			mGBuffer->NormalMap(),
 			mGBuffer->NormalMapSrv(),
 			mGBuffer->PositionMap(),
@@ -1210,7 +1225,7 @@ BOOL DxRenderer::DrawAO() {
 
 		for (UINT i = 0, end = mpArgumentSet->SSAO.BlurCount; i < end; ++i) {
 			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
-				mCurrentFrameResource,
+				mpCurrentFrameResource,
 				Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
 				mSSAO->AOMap(0),
 				mSSAO->AOMapSrv(0),
@@ -1219,7 +1234,7 @@ BOOL DxRenderer::DrawAO() {
 				mSSAO->TexWidth(), mSSAO->TexHeight()));
 
 			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
-				mCurrentFrameResource,
+				mpCurrentFrameResource,
 				Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
 				mSSAO->AOMap(1),
 				mSSAO->AOMapSrv(1),
@@ -1237,7 +1252,7 @@ BOOL DxRenderer::IntegrateIrradiance() {
 	const auto aoSrv = mpArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMapSrv() : mSSAO->AOMapSrv(0);
 
 	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
-		mCurrentFrameResource,
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mToneMapping->InterMediateMapResource(),
@@ -1270,11 +1285,11 @@ BOOL DxRenderer::IntegrateIrradiance() {
 }
 
 BOOL DxRenderer::PresentAndSignal() {
-	CheckReturn(mpLogFile, mSwapChain->ReadyToPresent(mCurrentFrameResource));
+	CheckReturn(mpLogFile, mSwapChain->ReadyToPresent(mpCurrentFrameResource));
 	CheckReturn(mpLogFile, mSwapChain->Present(mFactory->AllowTearing()));
 	mSwapChain->NextBackBuffer();
 	
-	mCurrentFrameResource->mFence = mCommandObject->IncreaseFence();
+	mpCurrentFrameResource->mFence = mCommandObject->IncreaseFence();
 
 	CheckReturn(mpLogFile, mCommandObject->Signal());
 

@@ -572,6 +572,12 @@ namespace ShadingConvention{
 	};
 #endif
 
+#ifndef SVGF_CalcDepthPartialDerivative_RCSTRUCT
+#define SVGF_CalcDepthPartialDerivative_RCSTRUCT {	\
+		DirectX::XMFLOAT2 gInvTexDim;				\
+	};
+#endif
+
 #ifdef _HLSL
 		typedef float		ValueMapFormat_Contrast;
 		typedef HDR_FORMAT	ValueMapFormat_Color;
@@ -588,7 +594,11 @@ namespace ShadingConvention{
 
 #ifndef SVGF_TemporalSupersamplingReverseReproject_RootConstants
 #define SVGF_TemporalSupersamplingReverseReproject_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
-#endif		
+#endif
+
+#ifndef SVGF_CalcDepthPartialDerivative_RootConstants
+#define SVGF_CalcDepthPartialDerivative_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_CalcDepthPartialDerivative_RCSTRUCT
+#endif
 #else
 		const DXGI_FORMAT ValueMapFormat_Contrast				= DXGI_FORMAT_R16_FLOAT;
 		const DXGI_FORMAT ValueMapFormat_Color					= HDR_FORMAT;
@@ -618,6 +628,7 @@ namespace ShadingConvention{
 			}
 
 			namespace CalcDepthPartialDerivative {
+				struct Struct SVGF_CalcDepthPartialDerivative_RCSTRUCT
 				enum {
 					E_InvTexDim_X = 0,
 					E_InvTexDim_Y,

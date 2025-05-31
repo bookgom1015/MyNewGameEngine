@@ -189,3 +189,63 @@ BOOL Device::GetRaytracingAccelerationStructurePrebuildInfo(
 
 	return TRUE;
 }
+
+BOOL Device::CreateComputePipelineState(
+		const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc,
+		const IID& riid,
+		void** const ppPipelineState,
+		LPCWSTR name) {
+	CheckHRESULT(mpLogFile, md3dDevice->CreateComputePipelineState(&desc, riid, ppPipelineState));
+
+	if (name != nullptr) {
+		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
+		pso->SetName(name);
+	}
+
+	return TRUE;
+}
+
+BOOL Device::CreateGraphicsPipelineState(
+		const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc,
+		const IID& riid,
+		void** const ppPipelineState,
+		LPCWSTR name) {
+	CheckHRESULT(mpLogFile, md3dDevice->CreateGraphicsPipelineState(&desc, riid, ppPipelineState));
+
+	if (name != nullptr) {
+		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
+		pso->SetName(name);
+	}
+
+	return TRUE;
+}
+
+BOOL Device::CreatePipelineState(
+		const D3DX12_MESH_SHADER_PIPELINE_STATE_DESC& desc,
+		const IID& riid,
+		void** const ppPipelineState,
+		LPCWSTR name) {
+	auto meshStreamDesc = CD3DX12_PIPELINE_MESH_STATE_STREAM(desc);
+
+	D3D12_PIPELINE_STATE_STREAM_DESC streamDesc = {};
+	streamDesc.SizeInBytes = sizeof(meshStreamDesc);
+	streamDesc.pPipelineStateSubobjectStream = &meshStreamDesc;
+
+	CheckHRESULT(mpLogFile, md3dDevice->CreatePipelineState(&streamDesc, riid, ppPipelineState));
+
+	if (name != nullptr) {
+		auto pso = reinterpret_cast<ID3D12PipelineState*>(*ppPipelineState);
+		pso->SetName(name);
+	}
+
+	return TRUE;
+}
+
+BOOL Device::CreateStateObject(
+		const D3D12_STATE_OBJECT_DESC* pDesc,
+		const IID& riid,
+		void** const ppStateObject) {
+	CheckHRESULT(mpLogFile, md3dDevice->CreateStateObject(pDesc, riid, ppStateObject));
+
+	return TRUE;
+}

@@ -57,8 +57,8 @@ void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
             triStream.Append(gout);
         }
     }
-	// Point light
-    else if (light.Type == Common::Render::LightType::E_Point) {
+	// Point light or tube light
+    else if (light.Type == Common::Render::LightType::E_Point || light.Type == Common::Render::LightType::E_Tube) {
 		[loop]
         for (uint face = 0; face < 6; ++face) {
             gout.ArrayIndex = face;

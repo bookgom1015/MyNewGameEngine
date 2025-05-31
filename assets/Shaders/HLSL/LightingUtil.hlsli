@@ -15,11 +15,11 @@ float DegToRad(in float degrees) {
     return degrees * DEG2RAD;
 }
 
-float CalcAttenuation_Linear(in float d, in float attenRadius) {
+float CalcLinearAttenuation(in float d, in float attenRadius) {
     return saturate((attenRadius - d) / (attenRadius));
 }
 
-float CalcAttenuation_InverseSquare(in float d, in float attenRadius) {
+float CalcInverseSquareAttenuation(in float d, in float attenRadius) {
     const float X = pow(d / attenRadius, 4);
     const float numer = pow(saturate(1 - X), 2);
     const float denom = d * d + 1;
@@ -59,13 +59,13 @@ float3 ComputePointLight(
     const float3 Ldisp = light.Position - pos;
     const float d = length(Ldisp);
 
-    const float falloff = CalcAttenuation_InverseSquare(d, light.AttenuationRadius);
-    const float3 Li = light.Color * light.Intensity * falloff;
+    const float Falloff = CalcInverseSquareAttenuation(d, light.AttenuationRadius);
+    const float3 Li = light.Color * light.Intensity * Falloff;
 
     const float3 r = reflect(-toEye, normal);
-    const float3 centerToRay = dot(Ldisp, r) * r - Ldisp;
-    const float3 closestPoint = Ldisp + centerToRay * saturate(light.Radius / length(centerToRay));
-    const float3 L = normalize(closestPoint);
+    const float3 CenterToRay = dot(Ldisp, r) * r - Ldisp;
+    const float3 ClosestPoint = Ldisp + CenterToRay * saturate(light.Radius / length(CenterToRay));
+    const float3 L = normalize(ClosestPoint);
 
     const float NoL = max(dot(normal, L), 0);
     
@@ -87,23 +87,22 @@ float3 ComputeSpotLight(
     const float3 Ldisp = light.Position - pos;
     const float3 L = normalize(Ldisp);
 
-    const float theta = dot(-L, light.Direction);
+    const float Theta = dot(-L, light.Direction);
 
-    const float radOuter = DegToRad(light.OuterConeAngle);
-    const float cosOuter = cos(radOuter);
+    const float RadOuter = DegToRad(light.OuterConeAngle);
+    const float CosOuter = cos(RadOuter);
 
-    if (theta < cosOuter)
-        return 0;
+    if (Theta < CosOuter) return 0;
 
-    const float radInner = DegToRad(light.InnerConeAngle);
-    const float cosInner = cos(radInner);
+    const float RadInner = DegToRad(light.InnerConeAngle);
+    const float CosInner = cos(RadInner);
 
-    const float epsilon = cosInner - cosOuter;
-    const float factor = clamp((theta - cosOuter) / epsilon, 0, 1);
+    const float Epsilon = CosInner - CosOuter;
+    const float Factor = clamp((Theta - CosOuter) / Epsilon, 0, 1);
 
     const float d = length(Ldisp);
-    const float falloff = CalcAttenuation_InverseSquare(d, light.AttenuationRadius);
-    const float3 Li = light.Color * light.Intensity * factor * falloff;
+    const float Falloff = CalcInverseSquareAttenuation(d, light.AttenuationRadius);
+    const float3 Li = light.Color * light.Intensity * Factor * Falloff;
 
     const float NoL = max(dot(normal, L), 0);
 
@@ -140,14 +139,14 @@ float3 ComputeTubeLight(
     const float t = (dot(r, L0) * RoLdisp - dot(L0, Ldisp)) / (Ld * Ld - RoLdisp * RoLdisp);
 
     float3 closestPoint = L0 + Ldisp * saturate(t);
-    const float3 centerToRay = dot(closestPoint, r) * r - closestPoint;
-    closestPoint = closestPoint + centerToRay * saturate(light.Radius / length(centerToRay));
+    const float3 CenterToRay = dot(closestPoint, r) * r - closestPoint;
+    closestPoint = closestPoint + CenterToRay * saturate(light.Radius / length(CenterToRay));
 
     const float3 L = normalize(closestPoint);
     const float d = length(closestPoint);
 		
-    const float falloff = CalcAttenuation_Linear(d, light.AttenuationRadius);
-    const float3 Li = light.Color * light.Intensity * falloff;
+    const float Falloff = CalcLinearAttenuation(d, light.AttenuationRadius);
+    const float3 Li = light.Color * light.Intensity * Falloff;
 
 #if defined(BLINN_PHONG)
 	return 0;
@@ -164,28 +163,29 @@ float3 ComputeRectLight(
         in float3 pos, 
         in float3 normal, 
         in float3 toEye) {
+    if (light.Size.x < FLT_EPSILON || light.Size.y < FLT_EPSILON) return 0;
+    
     const float3 L0 = light.Position - pos;
     const float3 L1 = light.Position1 - pos;
     const float3 L2 = light.Position2 - pos;
     const float3 L3 = light.Position3 - pos;
 	
-    const float facingCheck = dot(L0, cross(light.Position1 - light.Position, light.Position2 - light.Position));
-    if (facingCheck > 0)
-        return 0;
+    const float3 LightNormal = cross(light.Position1 - light.Position, light.Position2 - light.Position);
+    if (dot(normalize(pos - light.Center), LightNormal) < 0) return 0;
 
     const float3 n0 = normalize(cross(L0, L1));
     const float3 n1 = normalize(cross(L1, L2));
     const float3 n2 = normalize(cross(L2, L3));
     const float3 n3 = normalize(cross(L3, L0));
 
-    const float g0 = acos(dot(-n0, n1));
-    const float g1 = acos(dot(-n1, n2));
-    const float g2 = acos(dot(-n2, n3));
-    const float g3 = acos(dot(-n3, n0));
+    const float G0 = acos(dot(-n0, n1));
+    const float G1 = acos(dot(-n1, n2));
+    const float G2 = acos(dot(-n2, n3));            
+    const float G3 = acos(dot(-n3, n0));
 
-    const float solidAngle = g0 + g1 + g2 + g3 - 2 * 3.14159265359;
+    const float SolidAngle = G0 + G1 + G2 + G3 - 2.f * 3.14159265359f;
 
-    const float NoL = solidAngle * 0.2 * (
+    const float NoL = SolidAngle * 0.2f * (
 		saturate(dot(normalize(L0), normal)) +
 		saturate(dot(normalize(L1), normal)) +
 		saturate(dot(normalize(L2), normal)) +
@@ -193,26 +193,20 @@ float3 ComputeRectLight(
 		saturate(dot(normalize(light.Center - pos), normal)));
 
     const float3 r = reflect(-toEye, normal);
-    const float3 intersectPoint = CalcPlaneIntersection(pos, r, light.Direction, light.Center);
+    const float3 IntersectPoint = CalcPlaneIntersection(pos, r, light.Direction, light.Center);
 
-    const float3 intersectionVector = intersectPoint - light.Center;
-    const float2 intersectPlanePoint = float2(dot(intersectionVector, light.Right), dot(intersectionVector, light.Up));
-    const float2 nearest2DPoint = float2(clamp(intersectPlanePoint.x, -light.Size.x, light.Size.x), clamp(intersectPlanePoint.y, -light.Size.y, light.Size.y));
+    const float3 IntersectionVector = IntersectPoint - light.Center;
+    const float2 IntersectPlanePoint = float2(dot(IntersectionVector, light.Right), dot(IntersectionVector, light.Up));
+    const float2 Nearest2DPoint = float2(clamp(IntersectPlanePoint.x, -light.Size.x, light.Size.x), clamp(IntersectPlanePoint.y, -light.Size.y, light.Size.y));
+    
+    const float3 NearestPoint = light.Center + (light.Right * Nearest2DPoint.x + light.Up * Nearest2DPoint.y);
+    const float d = distance(pos, NearestPoint);
 
-    float3 specularFactor = 0;
-    const float specularAmount = dot(r, -light.Direction);
-    if (specularAmount > 0) {
-        const float specFactor = 1 - clamp(length(nearest2DPoint - intersectPlanePoint) * pow(mat.Shininess, 2) * 32, 0, 1);
-        specularFactor += mat.FresnelR0 * specFactor * specularAmount * NoL;
-    }
+    const float Area = light.Size.x * light.Size.y;
+    const float Falloff = CalcLinearAttenuation(d, light.AttenuationRadius);
+    const float3 Li = light.Color * light.Intensity * Falloff / Area;
 
-    const float3 nearestPoint = light.Center + (light.Right * nearest2DPoint.x + light.Up * nearest2DPoint.y);
-    const float d = distance(pos, nearestPoint);
-
-    const float falloff = CalcAttenuation_Linear(d, light.AttenuationRadius);
-    const float3 Li = light.Color * light.Intensity * falloff;
-
-    const float3 L = normalize(nearestPoint - pos);
+    const float3 L = normalize(NearestPoint - pos);
 
 #if defined(BLINN_PHONG)
 	return 0;
@@ -245,10 +239,10 @@ float3 ComputeBRDF(
             result += factor * ComputePointLight(light, mat, pos, normal, toEye);
         else if (light.Type == Common::Render::LightType::E_Spot)
             result += factor * ComputeSpotLight(light, mat, pos, normal, toEye);
-        else if (light.Type == Common::Render::LightType::E_Tube)
-            result += ComputeTubeLight(light, mat, pos, normal, toEye);
         else if (light.Type == Common::Render::LightType::E_Rect)
             result += ComputeRectLight(light, mat, pos, normal, toEye);
+        else if (light.Type == Common::Render::LightType::E_Tube)
+            result += factor * ComputeTubeLight(light, mat, pos, normal, toEye);
     }
 
     return result;

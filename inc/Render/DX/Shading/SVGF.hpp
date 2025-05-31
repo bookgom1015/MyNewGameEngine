@@ -10,7 +10,7 @@ namespace Render::DX::Shading {
 				CS_TemporalSupersamplingReverseReproject_Color,
 				CS_TemporalSupersamplingBlendWithCurrentFrame_Contrast,
 				CS_TemporalSupersamplingBlendWithCurrentFrame_Color,
-				CS_ParticalDepthDerivative,
+				CS_CalcParticalDepthDerivative,
 				CS_CalcLocalMeanVariance,
 				CS_FillinCheckerBoard,
 				CS_EdgeStoppingFilterGaussian3x3,
@@ -262,6 +262,12 @@ namespace Render::DX::Shading {
 			virtual BOOL BuildPipelineStates() override;
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 			virtual BOOL OnResize(UINT width, UINT height) override;
+
+		public:
+			BOOL CalculateDepthParticalDerivative(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Foundation::Resource::GpuResource* const pDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap);
 
 		private:
 			BOOL BuildResources();

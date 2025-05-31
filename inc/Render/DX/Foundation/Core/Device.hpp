@@ -9,7 +9,7 @@
 #include <wrl.h>
 #include <Windows.h>
 
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
+#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
 
 namespace Common::Debug {
 	struct LogFile;
@@ -90,6 +90,26 @@ namespace Render::DX {
 				BOOL GetRaytracingAccelerationStructurePrebuildInfo(
 					const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* const pDesc,
 					D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO* pInfo);
+
+				BOOL CreateComputePipelineState(
+					const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc,
+					const IID& riid,
+					void** const ppPipelineState,
+					LPCWSTR name);
+				BOOL CreateGraphicsPipelineState(
+					const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc,
+					const IID& riid,
+					void** const ppPipelineState,
+					LPCWSTR name);
+				BOOL CreatePipelineState(
+					const D3DX12_MESH_SHADER_PIPELINE_STATE_DESC& desc,
+					const IID& riid,
+					void** const ppPipelineState,
+					LPCWSTR name);
+				BOOL CreateStateObject(
+					const D3D12_STATE_OBJECT_DESC* pDesc,
+					const IID& riid,
+					void** const ppStateObject);
 
 			private:
 				Common::Debug::LogFile* mpLogFile = nullptr;

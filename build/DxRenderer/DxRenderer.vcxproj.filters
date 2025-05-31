@@ -599,5 +599,8 @@
     <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Contrast.hlsl">
       <Filter>Shader Files\SVGF\Temporal</Filter>
     </None>
+    <None Include="..\..\assets\Shaders\HLSL\CalcPartialDepthDerivative.hlsl">
+      <Filter>Shader Files\SVGF</Filter>
+    </None>
   </ItemGroup>
 </Project>
