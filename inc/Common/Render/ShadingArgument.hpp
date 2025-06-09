@@ -39,6 +39,7 @@ namespace Common::Render {
 			FLOAT OcclusionFadeEnd = 10.f;
 			FLOAT SurfaceEpsilon = 0.0001f;
 			UINT SampleCount = 2;
+			BOOL RaySortingEnabled = FALSE;
 		};
 
 		struct ShadingArgumentSet {

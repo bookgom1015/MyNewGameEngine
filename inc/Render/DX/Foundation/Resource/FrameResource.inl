@@ -71,4 +71,31 @@ void Render::DX::Foundation::Resource::FrameResource::CopyAmbientOcclusionCB(con
 	mAmbientOcclusionCB.CopyData(0, data);
 }
 
+// RayGenCB
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::RayGenCBAddress() const {
+	return mRayGenCB.Resource()->GetGPUVirtualAddress();
+}
+
+void Render::DX::Foundation::Resource::FrameResource::CopyRayGenCB(const ConstantBuffers::RayGenCB& data) {
+	mRayGenCB.CopyData(0, data);
+}
+
+// CrossBilateralFilterCB
+void Render::DX::Foundation::Resource::FrameResource::CopyCrossBilateralFilterCB(const ConstantBuffers::SVGF::CrossBilateralFilterCB& data) {
+	mCrossBilateralFilterCB.CopyData(0, data);
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::CrossBilateralFilterCBAddress() const {
+	return mCrossBilateralFilterCB.Resource()->GetGPUVirtualAddress();
+}
+
+// CalcLocalMeanVarianceCB
+void Render::DX::Foundation::Resource::FrameResource::CopyCalcLocalMeanVarianceCB(const ConstantBuffers::SVGF::CalcLocalMeanVarianceCB& data) {
+	mCalcLocalMeanVarianceCB.CopyData(0, data);
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::CalcLocalMeanVarianceCBAddress() const {
+	return mCalcLocalMeanVarianceCB.Resource()->GetGPUVirtualAddress();
+}
+
 #endif // __FRAMERESOURCE_INL__

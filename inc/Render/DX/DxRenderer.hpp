@@ -63,6 +63,7 @@ namespace Render {
 			namespace TAA { class TAAClass; }
 			namespace SSAO { class SSAOClass; }
 			namespace RTAO { class RTAOClass; }
+			namespace RaySorting { class RaySortingClass; }
 			namespace SVGF { class SVGFClass; }
 			namespace BlurFilter { class BlurFilterClass; }
 		}
@@ -174,6 +175,7 @@ namespace Render {
 			std::unique_ptr<Shading::TAA::TAAClass> mTAA;
 			std::unique_ptr<Shading::SSAO::SSAOClass> mSSAO;
 			std::unique_ptr<Shading::RTAO::RTAOClass> mRTAO;
+			std::unique_ptr<Shading::RaySorting::RaySortingClass> mRaySorting;
 			std::unique_ptr<Shading::SVGF::SVGFClass> mSVGF;
 			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;
 

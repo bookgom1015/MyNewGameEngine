@@ -56,6 +56,15 @@ namespace Render::DX::Foundation {
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS AmbientOcclusionCBAddress() const;
 			UINT AmbientOcclusionCBByteSize() const;
 
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS RayGenCBAddress() const;
+			UINT RayGenCBByteSize() const;
+
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS CrossBilateralFilterCBAddress() const;
+			UINT CrossBilateralFilterCBByteSize() const;
+
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS CalcLocalMeanVarianceCBAddress() const;
+			UINT CalcLocalMeanVarianceCBByteSize() const;
+
 		public:
 			BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
@@ -75,6 +84,9 @@ namespace Render::DX::Foundation {
 			__forceinline void CopyMaterialCB(INT elementIndex, const ConstantBuffers::MaterialCB& data);
 			__forceinline void CopyProjectToCubeCB(const ConstantBuffers::ProjectToCubeCB& data);
 			__forceinline void CopyAmbientOcclusionCB(const ConstantBuffers::AmbientOcclusionCB& data);
+			__forceinline void CopyRayGenCB(const ConstantBuffers::RayGenCB& data);
+			__forceinline void CopyCrossBilateralFilterCB(const ConstantBuffers::SVGF::CrossBilateralFilterCB& data);
+			__forceinline void CopyCalcLocalMeanVarianceCB(const ConstantBuffers::SVGF::CalcLocalMeanVarianceCB& data);
 
 		private:
 			BOOL CreateCommandListAllocators();
@@ -100,6 +112,9 @@ namespace Render::DX::Foundation {
 			UploadBuffer<ConstantBuffers::MaterialCB> mMaterialCB;
 			UploadBuffer<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
 			UploadBuffer<ConstantBuffers::AmbientOcclusionCB> mAmbientOcclusionCB;
+			UploadBuffer<ConstantBuffers::RayGenCB> mRayGenCB;
+			UploadBuffer<ConstantBuffers::SVGF::CrossBilateralFilterCB> mCrossBilateralFilterCB;
+			UploadBuffer<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> mCalcLocalMeanVarianceCB;
 		};
 	}
 }

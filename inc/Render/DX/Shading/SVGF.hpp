@@ -11,7 +11,8 @@ namespace Render::DX::Shading {
 				CS_TemporalSupersamplingBlendWithCurrentFrame_Contrast,
 				CS_TemporalSupersamplingBlendWithCurrentFrame_Color,
 				CS_CalcParticalDepthDerivative,
-				CS_CalcLocalMeanVariance,
+				CS_CalcLocalMeanVariance_Contrast,
+				CS_CalcLocalMeanVariance_Color,
 				CS_FillinCheckerBoard,
 				CS_EdgeStoppingFilterGaussian3x3,
 				CS_DisocclusionBlur3x3,
@@ -37,12 +38,12 @@ namespace Render::DX::Shading {
 					RC_Consts,
 					SI_NormalDepth,
 					SI_ReprojectedNormalDepth,
-					SI_CachedNormalDepth,
-					SI_DepthPartialDerivative,
 					SI_Velocity,
-					SI_CachedAOCoefficient,
+					SI_DepthPartialDerivative,
+					SI_CachedNormalDepth,
+					SI_CachedValue,
 					SI_CachedTSPP,
-					SI_CachedAOCoefficientSquaredMean,
+					SI_CachedValueSquaredMean,
 					SI_CachedRayHitDistance,
 					UO_CachedTSPP,
 					UO_CachedValue,
@@ -234,6 +235,13 @@ namespace Render::DX::Shading {
 			};
 		}
 
+		namespace Value {
+			enum Type {
+				E_Contrast,
+				E_Color
+			};
+		}
+
 		class SVGFClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
@@ -268,6 +276,32 @@ namespace Render::DX::Shading {
 				Foundation::Resource::FrameResource* const pFrameResource,
 				Foundation::Resource::GpuResource* const pDepthMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap);
+			BOOL CalculateLocalMeanVariance(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Foundation::Resource::GpuResource* const pValueMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_valueMap);
+
+			BOOL ReverseReprojectPreviousFrame(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Foundation::Resource::GpuResource* const pNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
+				Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
+				Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedNormalDepthMap,
+				Foundation::Resource::GpuResource* const pVelocityMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap,
+				Foundation::Resource::GpuResource* const pCachedValueMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedValueMap,
+				Foundation::Resource::GpuResource* const pCachedTSPPMap0,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedTSPPMap,
+				Foundation::Resource::GpuResource* const pCachedValueSquaredMeanMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedValueSquaredMeanMap,
+				Foundation::Resource::GpuResource* const pCachedRayHitDistMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedRayHitDistMap,
+				Foundation::Resource::GpuResource* const pCachedTSPPMap1,
+				D3D12_GPU_DESCRIPTOR_HANDLE uo_cachedTSPPMap,
+				Value::Type type);
 
 		private:
 			BOOL BuildResources();

@@ -136,6 +136,9 @@
     <Filter Include="Shader Files\SVGF\Temporal">
       <UniqueIdentifier>{a04d805d-d8b0-4287-b88d-c469135323ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\SVGF\Ray Sorting">
+      <UniqueIdentifier>{d54da8df-af5e-413b-96a9-3949da9cad05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -259,6 +262,9 @@
       <Filter>Header Files\Shading Files\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\SVGF.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\RaySorting.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -414,6 +420,9 @@
       <Filter>Source Files\Shading Files\Util</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\SVGF.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\RaySorting.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -601,6 +610,21 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\CalcPartialDepthDerivative.hlsl">
       <Filter>Shader Files\SVGF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsli">
+      <Filter>Shader Files\SVGF\Temporal</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Color.hlsl">
+      <Filter>Shader Files\SVGF\Denoising</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance.hlsli">
+      <Filter>Shader Files\SVGF\Denoising</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Contrast.hlsl">
+      <Filter>Shader Files\SVGF\Denoising</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\AORayGen.hlsl">
+      <Filter>Shader Files\SVGF\Ray Sorting</Filter>
     </None>
   </ItemGroup>
 </Project>

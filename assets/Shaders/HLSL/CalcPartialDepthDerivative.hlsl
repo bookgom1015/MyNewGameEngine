@@ -25,8 +25,8 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     const float Bottom = gi_DepthMap.SampleLevel(gsamPointClamp, TexC + float2(0, gInvTexDim.y), 0);
     const float Left = gi_DepthMap.SampleLevel(gsamPointClamp, TexC + float2(-gInvTexDim.x, 0), 0);
     const float Right = gi_DepthMap.SampleLevel(gsamPointClamp, TexC + float2(gInvTexDim.x, 0), 0);
-
     const float Center = gi_DepthMap.SampleLevel(gsamPointClamp, TexC, 0);
+    
     const float2 BackwardDiff = Center - float2(Left, Top);
     const float2 ForwardDiff = float2(Right, Bottom) - Center;
 

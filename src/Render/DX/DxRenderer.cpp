@@ -34,6 +34,7 @@
 #include "Render/DX/Shading/TAA.hpp"
 #include "Render/DX/Shading/SSAO.hpp"
 #include "Render/DX/Shading/RTAO.hpp"
+#include "Render/DX/Shading/RaySorting.hpp"
 #include "Render/DX/Shading/SVGF.hpp"
 #include "Render/DX/Shading/BlurFilter.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
@@ -67,6 +68,7 @@ DxRenderer::DxRenderer() {
 	mTAA = std::make_unique<Shading::TAA::TAAClass>();
 	mSSAO= std::make_unique<Shading::SSAO::SSAOClass>();
 	mRTAO = std::make_unique<Shading::RTAO::RTAOClass>();
+	mRaySorting = std::make_unique<Shading::RaySorting::RaySortingClass>();
 	mSVGF = std::make_unique<Shading::SVGF::SVGFClass>();
 	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
 
@@ -81,6 +83,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mTAA.get());
 	mShadingObjectManager->AddShadingObject(mSSAO.get());
 	mShadingObjectManager->AddShadingObject(mRTAO.get());
+	mShadingObjectManager->AddShadingObject(mRaySorting.get());
 	mShadingObjectManager->AddShadingObject(mSVGF.get());
 	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
 
@@ -1035,6 +1038,17 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mRTAO->Initialize(mpLogFile, initData.get()));
+	}
+	// RaySorting
+	{
+		auto initData = Shading::RaySorting::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mRaySorting->Initialize(mpLogFile, initData.get()));
 	}
 	// SVGF
 	{

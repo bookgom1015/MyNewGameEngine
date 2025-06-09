@@ -28,6 +28,17 @@ UINT FrameResource::AmbientOcclusionCBByteSize() const {
 	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::AmbientOcclusionCB));
 }
 
+UINT FrameResource::RayGenCBByteSize() const {
+	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::RayGenCB));
+}
+
+UINT FrameResource::CrossBilateralFilterCBByteSize() const {
+	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::CrossBilateralFilterCB));
+}
+UINT FrameResource::CalcLocalMeanVarianceCBByteSize() const {
+	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::CalcLocalMeanVarianceCB));
+}
+
 BOOL FrameResource::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
 		Core::Device* const pDevice, 
@@ -72,6 +83,9 @@ BOOL FrameResource::BuildConstantBuffres(
 	CheckReturn(mpLogFile, mMaterialCB.Initialize(mpLogFile, mpDevice, numMaterials, TRUE));
 	CheckReturn(mpLogFile, mProjectToCubeCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
 	CheckReturn(mpLogFile, mAmbientOcclusionCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
+	CheckReturn(mpLogFile, mRayGenCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
+	CheckReturn(mpLogFile, mCrossBilateralFilterCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
+	CheckReturn(mpLogFile, mCalcLocalMeanVarianceCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
 
 	return TRUE;
 }

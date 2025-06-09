@@ -368,7 +368,14 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 				ImGui::SliderFloat("Occlusion Radius", &pArgSet->RTAO.OcclusionRadius, 0.01f, 32.f);
 				ImGui::SliderFloat("Occlusion Fade Start", &pArgSet->RTAO.OcclusionFadeStart, 0.f, 32.f);
 				ImGui::SliderFloat("Occlusion Fade End", &pArgSet->RTAO.OcclusionFadeEnd, 0.f, 32.f);
-				ImGui::SliderInt("Sample Count", reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount), 1, 4);
+				if (pArgSet->RTAO.RaySortingEnabled)
+					ImGui::Text("(Ray sorting enabled)");
+				else
+					ImGui::Text("(Ray sorting disabled)");
+				if(ImGui::SliderInt("Sample Count", reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount), 1, 4)) {
+					if (pArgSet->RTAO.SampleCount > 1) pArgSet->RTAO.RaySortingEnabled = FALSE;
+					else pArgSet->RTAO.RaySortingEnabled = TRUE;
+				}
 			}
 			else {
 				ImGui::Text("SSAO");

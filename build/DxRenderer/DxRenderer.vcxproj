@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('..\..\packages\Microsoft.Direct3D.D3D12.1.615.1\build\native\Microsoft.Direct3D.D3D12.props')" />
   <Import Project="..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('..\..\packages\Microsoft.Direct3D.DXC.1.8.2502.8\build\native\Microsoft.Direct3D.DXC.props')" />
@@ -41,6 +41,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\RaySorting.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RTAO.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\SSAO.hpp" />
@@ -94,6 +95,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\RaySorting.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RTAO.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\SSAO.cpp" />
@@ -111,6 +113,7 @@
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\BlinnPhong.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\BRDF.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\CookTorrance.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli" />
@@ -127,6 +130,7 @@
     <None Include="..\..\assets\Shaders\HLSL\Shadow.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\SSAO.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\SVGF.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ValuePackaging.hlsli" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
@@ -247,6 +251,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\CalcPartialDepthDerivative.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Color.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Contrast.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\AORayGen.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

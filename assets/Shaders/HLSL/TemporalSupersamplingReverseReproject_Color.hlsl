@@ -16,15 +16,15 @@
 #include "./../../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
 #include "./../../../../assets/Shaders/HLSL/CrossBilateralWeights.hlsli"
 
-ConstantBuffer<ConstantBuffers::SVGF::CrossBilateralFilter> cbReproject : register(b0);
+ConstantBuffer<ConstantBuffers::SVGF::CrossBilateralFilterCB> cbReproject : register(b0);
 
 SVGF_TemporalSupersamplingReverseReproject_RootConstants(b1)
 
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_CurrentFrameNormalDepth : register(t0);
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_ReprojectedNormalDepth  : register(t1);
-Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_CachedNormalDepth       : register(t2);
+Texture2D<ShadingConvention::GBuffer::VelocityMapFormat>            gi_Velocity                : register(t2);
 Texture2D<ShadingConvention::SVGF::DepthPartialDerivativeMapFormat> gi_DepthPartialDerivative  : register(t3);
-Texture2D<ShadingConvention::GBuffer::VelocityMapFormat>            gi_Velocity                : register(t4);
+Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_CachedNormalDepth       : register(t4);
 Texture2D<ShadingConvention::SVGF::ValueMapFormat_Color>            gi_CachedValue             : register(t5);
 Texture2D<ShadingConvention::SVGF::ValueSquaredMeanMapFormat_Color> gi_CachedValueSquaredMean  : register(t6);
 Texture2D<ShadingConvention::SVGF::TSPPMapFormat>                   gi_CachedTspp              : register(t7);
@@ -35,42 +35,7 @@ RWTexture2D<ShadingConvention::SVGF::ValueMapFormat_Color>                   go_
 RWTexture2D<ShadingConvention::SVGF::ValueSquaredMeanMapFormat_Color>        go_CachedSquaredMean       : register(u2);
 RWTexture2D<ShadingConvention::SVGF::TSPPSquaredMeanRayHitDistanceMapFormat> go_ReprojectedCachedValues : register(u3);
 
-float4 BilateralResampleWeights(
-		in float targetDepth,
-		in float3 targetNormal,
-		in float4 sampleDepths,
-		in float3 sampleNormals[4],
-		in float2 targetOffset,
-		in uint2 targetIndex,
-		in int2 cacheIndices[4],
-		in float2 ddxy) {
-    const bool4 IsWithinBounds = bool4(
-		SVGF::IsWithinBounds(cacheIndices[0], gTexDim),
-		SVGF::IsWithinBounds(cacheIndices[1], gTexDim),
-		SVGF::IsWithinBounds(cacheIndices[2], gTexDim),
-		SVGF::IsWithinBounds(cacheIndices[3], gTexDim)
-	);
-
-    CrossBilateral::BilinearDepthNormal::Parameters params;
-    params.Depth.Sigma = cbReproject.DepthSigma;
-    params.Depth.WeightCutoff = 0.5f;
-    params.Depth.NumMantissaBits = cbReproject.DepthNumMantissaBits;
-    params.Normal.Sigma = 1.1f; // Bump the sigma a bit to add tolerance for slight geometry misalignments and/or format precision limitations.
-    params.Normal.SigmaExponent = 32;
-
-    const float4 BilinearDepthNormalWeights = CrossBilateral::BilinearDepthNormal::GetWeights(
-		targetDepth,
-		targetNormal,
-		targetOffset,
-		ddxy,
-		sampleDepths,
-		sampleNormals,
-		params);
-
-    const float4 Weights = IsWithinBounds * BilinearDepthNormalWeights;
-
-    return Weights;
-}
+#include "./../../../../assets/Shaders/HLSL/TemporalSupersamplingReverseReproject.hlsli"
 
 [numthreads(
     ShadingConvention::SVGF::ThreadGroup::Default::Width, 
@@ -97,47 +62,46 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 
 	// Find the nearest integer index samller than the texture position.
 	// The floor() ensures the that value sign is taken into consideration.
-    int2 topLeftCacheIndex = floor(CacheTexC * gTexDim - 0.5);
-    float2 adjustedCacheTex = (topLeftCacheIndex + 0.5) * gInvTexDim;
+    const int2 TopLeftCacheIndex = floor(CacheTexC * gTexDim - 0.5);
+    const float2 AdjustedCacheTex = (TopLeftCacheIndex + 0.5) * gInvTexDim;
 
-    float2 cachePixelOffset = CacheTexC * gTexDim - 0.5 - topLeftCacheIndex;
+    const float2 CachePixelOffset = CacheTexC * gTexDim - 0.5 - TopLeftCacheIndex;
 
-    const int2 srcIndexOffsets[4] = { { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } };
+    const int2 SrcIndexOffsets[4] = { { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } };
 
-    int2 cacheIndices[4] = {
-        topLeftCacheIndex + srcIndexOffsets[0],
-		topLeftCacheIndex + srcIndexOffsets[1],
-		topLeftCacheIndex + srcIndexOffsets[2],
-		topLeftCacheIndex + srcIndexOffsets[3]
+    const int2 CacheIndices[4] = {
+        TopLeftCacheIndex + SrcIndexOffsets[0],
+		TopLeftCacheIndex + SrcIndexOffsets[1],
+		TopLeftCacheIndex + SrcIndexOffsets[2],
+		TopLeftCacheIndex + SrcIndexOffsets[3]
     };
 
     float3 cacheNormals[4];
     float4 cacheDepths = 0;
 	{
-        uint4 packed = gi_CachedNormalDepth.GatherRed(gsamPointClamp, adjustedCacheTex).wzxy;
+        const uint4 Packed = gi_CachedNormalDepth.GatherRed(gsamPointClamp, AdjustedCacheTex).wzxy;
         
 		[unroll]
-        for (int i = 0; i < 4; ++i) {
-            ValuePackaging::DecodeNormalDepth(packed[i], cacheNormals[i], cacheDepths[i]);
-        }
+        for (int i = 0; i < 4; ++i) 
+            ValuePackaging::DecodeNormalDepth(Packed[i], cacheNormals[i], cacheDepths[i]);
     }
 
-    float2 ddxy = gi_DepthPartialDerivative.SampleLevel(gsamPointClamp, TexC, 0);
+    const float2 Ddxy = gi_DepthPartialDerivative.SampleLevel(gsamPointClamp, TexC, 0);
 
-    float4 weights = BilateralResampleWeights(reprojDepth, reprojNormal, cacheDepths, cacheNormals, cachePixelOffset, DTid, cacheIndices, ddxy);
+    float4 weights = TemporalSupersamplingReverseReproject::BilateralResampleWeights(reprojDepth, reprojNormal, cacheDepths, cacheNormals, CachePixelOffset, DTid, CacheIndices, Ddxy);
 
-    uint2 size;
-    gi_CachedValue.GetDimensions(size.x, size.y);
+    uint2 Size;
+    gi_CachedValue.GetDimensions(Size.x, Size.y);
 
-    float dx = 1.0 / size.x;
-    float dy = 1.0 / size.y;
+    const float Dx = 1.0 / Size.x;
+    const float Dy = 1.0 / Size.y;
 
 	// Invalidate weights for invalid values in the cache.
     float4 vCacheValues[4];
-    vCacheValues[0] = gi_CachedValue.SampleLevel(gsamPointClamp, adjustedCacheTex, 0);
-    vCacheValues[1] = gi_CachedValue.SampleLevel(gsamPointClamp, adjustedCacheTex + float2(dx, 0), 0);
-    vCacheValues[2] = gi_CachedValue.SampleLevel(gsamPointClamp, adjustedCacheTex + float2(0, dy), 0);
-    vCacheValues[3] = gi_CachedValue.SampleLevel(gsamPointClamp, adjustedCacheTex + float2(dx, dy), 0);
+    vCacheValues[0] = gi_CachedValue.SampleLevel(gsamPointClamp, AdjustedCacheTex, 0);
+    vCacheValues[1] = gi_CachedValue.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(Dx, 0), 0);
+    vCacheValues[2] = gi_CachedValue.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(0, Dy), 0);
+    vCacheValues[3] = gi_CachedValue.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(Dx, Dy), 0);
 
     if (vCacheValues[0].a > 0)
         weights.x = 0;
@@ -148,21 +112,21 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     if (vCacheValues[3].a > 0)
         weights.w = 0;
 
-    float weightSum = dot(1, weights);
+    const float WeightSum = dot(1, weights);
 
     float4 cachedValue = 0;
     float4 cachedValueSquaredMean = 0;
     float cachedRayHitDist = 0;
 
     uint tspp;
-    if (weightSum > 0.001) {
-        uint4 vCachedTspp = gi_CachedTspp.GatherRed(gsamPointClamp, adjustedCacheTex).wzxy;
+    if (WeightSum > 0.001) {
+        uint4 vCachedTspp = gi_CachedTspp.GatherRed(gsamPointClamp, AdjustedCacheTex).wzxy;
 		// Enforce tspp of at least 1 for reprojection for valid values.
 		// This is because the denoiser will fill in invalid values with filtered 
 		// ones if it can. But it doesn't increase tspp.
         vCachedTspp = max(1, vCachedTspp);
 
-        float4 nWeights = weights / weightSum; // Normalize the weights.
+        const float4 nWeights = weights / WeightSum; // Normalize the weights.
 
 		// Scale the tspp by the total weight. This is to keep the tspp low for 
 		// total contributions that have very low reprojection weight. While its preferred to get 
@@ -174,28 +138,25 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 		// Example: rotating camera around dragon's nose up close. 
         const float TsppScale = 1;
 
-        float cachedTspp = TsppScale * dot(nWeights, vCachedTspp);
-        tspp = round(cachedTspp);
+        const float CachedTspp = TsppScale * dot(nWeights, vCachedTspp);
+        tspp = round(CachedTspp);
 
         if (tspp > 0) {
-			{
-				[unroll]
-                for (int i = 0; i < 4; ++i)
-                    cachedValue += nWeights[i] * vCacheValues[i];
-            }
+			[unroll]
+            for (int i = 0; i < 4; ++i)
+                cachedValue += nWeights[i] * vCacheValues[i];
 
             float4 vCachedValueSquaredMeans[4];
-            vCachedValueSquaredMeans[0] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, adjustedCacheTex, 0);
-            vCachedValueSquaredMeans[1] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, adjustedCacheTex + float2(dx, 0), 0);
-            vCachedValueSquaredMeans[2] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, adjustedCacheTex + float2(0, dy), 0);
-            vCachedValueSquaredMeans[3] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, adjustedCacheTex + float2(dx, dy), 0);
-			{
-				[unroll]
-                for (int i = 0; i < 4; ++i)
-                    cachedValueSquaredMean += nWeights[i] * vCachedValueSquaredMeans[i];
-            }
+            vCachedValueSquaredMeans[0] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, AdjustedCacheTex, 0);
+            vCachedValueSquaredMeans[1] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(Dx, 0), 0);
+            vCachedValueSquaredMeans[2] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(0, Dy), 0);
+            vCachedValueSquaredMeans[3] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(Dx, Dy), 0);
+			
+            [unroll]
+            for (int i = 0; i < 4; ++i)
+                cachedValueSquaredMean += nWeights[i] * vCachedValueSquaredMeans[i];
 
-            float4 vCachedRayHitDist = gi_CachedRayHitDistance.GatherRed(gsamPointClamp, adjustedCacheTex).wzxy;
+            const float4 vCachedRayHitDist = gi_CachedRayHitDistance.GatherRed(gsamPointClamp, AdjustedCacheTex).wzxy;
             cachedRayHitDist = dot(nWeights, vCachedRayHitDist);
         }
     }

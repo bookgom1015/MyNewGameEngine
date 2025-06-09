@@ -13,7 +13,11 @@ using namespace Render::DX::Shading;
 
 namespace {
 	const WCHAR* const HLSL_CalcPartialDepthDerivative = L"CalcPartialDepthDerivative.hlsl";
+	const WCHAR* const HLSL_TemporalSupersamplingReverseReproject_Contrast = L"TemporalSupersamplingReverseReproject_Contrast.hlsl";
 	const WCHAR* const HLSL_TemporalSupersamplingReverseReproject_Color = L"TemporalSupersamplingReverseReproject_Color.hlsl";
+	const WCHAR* const HLSL_CalcLocalMeanVariance_Contrast = L"CalcLocalMeanVariance_Contrast.hlsl";
+	const WCHAR* const HLSL_CalcLocalMeanVariance_Color = L"CalcLocalMeanVariance_Color.hlsl";
+
 }
 
 SVGF::InitDataPtr SVGF::MakeInitData() {
@@ -48,10 +52,25 @@ BOOL SVGF::SVGFClass::CompileShaders() {
 		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CalcPartialDepthDerivative, L"CS", L"cs_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_CalcParticalDepthDerivative]));
 	}
+	// TemporalSupersamplingReverseReproject_Contrast
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_TemporalSupersamplingReverseReproject_Contrast, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_TemporalSupersamplingReverseReproject_Contrast]));
+	}
 	// TemporalSupersamplingReverseReproject_Color
 	{
 		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_TemporalSupersamplingReverseReproject_Color, L"CS", L"cs_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_TemporalSupersamplingReverseReproject_Color]));
+	}
+	// CalcLocalMeanVariance_Contrast
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CalcLocalMeanVariance_Contrast, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_CalcLocalMeanVariance_Contrast]));
+	}
+	// CalcLocalMeanVariance_Color
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CalcLocalMeanVariance_Color, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_CalcLocalMeanVariance_Color]));
 	}
 
 	return TRUE;
@@ -82,12 +101,12 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::RC_Consts].InitAsConstants(ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Count, 1);
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_NormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_ReprojectedNormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedNormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_Velocity].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedAOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedNormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValue].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedTSPP].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedAOCoefficientSquaredMean].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValueSquaredMean].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedRayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::UO_CachedTSPP].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::UO_CachedValue].InitAsDescriptorTable(1, &texTables[index++]);
@@ -355,6 +374,127 @@ BOOL SVGF::SVGFClass::CalculateDepthParticalDerivative(
 			ShadingConvention::SVGF::ThreadGroup::Default::Depth);
 	}
 	
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL SVGF::SVGFClass::CalculateLocalMeanVariance(
+		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pValueMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_valueMap) {
+
+
+	return TRUE;
+}
+
+BOOL SVGF::SVGFClass::ReverseReprojectPreviousFrame(
+		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
+		Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
+		Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_cachedNormalDepthMap,
+		Foundation::Resource::GpuResource* const pVelocityMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap,
+		Foundation::Resource::GpuResource* const pCachedValueMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_cachedValueMap,
+		Foundation::Resource::GpuResource* const pCachedTSPPMap0,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_cachedTSPPMap,
+		Foundation::Resource::GpuResource* const pCachedValueSquaredMeanMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_cachedValueSquaredMeanMap,
+		Foundation::Resource::GpuResource* const pCachedRayHitDistMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_cachedRayHitDistMap,
+		Foundation::Resource::GpuResource* const pCachedTSPPMap1,
+		D3D12_GPU_DESCRIPTOR_HANDLE uo_cachedTSPPMap,
+		Value::Type type) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0,
+		mPipelineStates[type == Value::Type::E_Contrast ? 
+		PipelineState::E_TemporalSupersamplingReverseReproject_Contrast : 
+		PipelineState::E_TemporalSupersamplingReverseReproject_Color].Get()));
+
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+
+	{
+		pNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pReprojNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCachedNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pVelocityMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCachedValueMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCachedTSPPMap0->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCachedValueSquaredMeanMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCachedRayHitDistMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		pCachedTSPPMap0->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, pCachedTSPPMap0);
+
+		const auto pTSPPSquaredMeanRayHitDist = mResources[Resource::E_TSPPSquaredMeanRayHitDistance].get();
+		pTSPPSquaredMeanRayHitDist->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, pTSPPSquaredMeanRayHitDist);
+
+		Foundation::Resource::GpuResource* pCachedValue;
+		Foundation::Resource::GpuResource* pCachedSquaredMean;
+		D3D12_GPU_DESCRIPTOR_HANDLE hCachedValue;
+		D3D12_GPU_DESCRIPTOR_HANDLE hCachedSquaredMean;
+		if (type == Value::Type::E_Contrast) {
+			pCachedValue = mResources[Resource::CachedValue::E_Contrast].get();
+			hCachedValue = mhGpuDecs[Descriptor::CachedValue::EU_Contrast];
+
+			pCachedSquaredMean = mResources[Resource::CachedSquaredMean::E_Contrast].get();
+			hCachedSquaredMean = mhGpuDecs[Descriptor::CachedValue::EU_Contrast];
+		}
+		else {
+			pCachedValue = mResources[Resource::CachedValue::E_Color].get();
+			hCachedValue = mhGpuDecs[Descriptor::CachedValue::EU_Color];
+
+			pCachedSquaredMean = mResources[Resource::CachedSquaredMean::E_Color].get();
+			hCachedSquaredMean = mhGpuDecs[Descriptor::CachedValue::EU_Color];
+		}
+
+		pCachedValue->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, pCachedValue);
+
+		pCachedSquaredMean->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, pCachedSquaredMean);
+
+		CmdList->SetComputeRootConstantBufferView(RootSignature::TemporalSupersamplingReverseReproject::CB_CrossBilateralFilter, pFrameResource->CrossBilateralFilterCBAddress());
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_NormalDepth, si_normalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_ReprojectedNormalDepth, si_reprojNormalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_Velocity, si_velocityMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_DepthPartialDerivative, mhGpuDecs[Descriptor::ES_DepthPartialDerivative]);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedNormalDepth, si_cachedNormalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValue, si_cachedValueMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedTSPP, si_cachedTSPPMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValueSquaredMean, si_cachedValueSquaredMeanMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedRayHitDistance, si_cachedRayHitDistMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_CachedTSPP, uo_cachedTSPPMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_CachedValue, hCachedValue);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_CachedSquaredMean, hCachedSquaredMean);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_TSPPSquaredMeanRayHitDistacne, mhGpuDecs[Descriptor::EU_TSPPSquaredMeanRayHitDistance]);
+
+		ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Struct rc;
+		rc.gTexDim = { static_cast<FLOAT>(mInitData.ClientWidth), static_cast<FLOAT>(mInitData.ClientHeight) };
+		rc.gInvTexDim = { 1.f / static_cast<FLOAT>(mInitData.ClientWidth), 1.f / static_cast<FLOAT>(mInitData.ClientHeight) };
+
+		std::array<std::uint32_t, ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Count> consts;
+		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Struct));
+
+		CmdList->SetComputeRoot32BitConstants(
+			RootSignature::TemporalSupersamplingReverseReproject::RC_Consts, 
+			ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Count,
+			consts.data(), 
+			0);
+
+		CmdList->Dispatch(
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height),
+			ShadingConvention::SVGF::ThreadGroup::Default::Depth);
+	}
+
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
 
 	return TRUE;
@@ -636,3 +776,4 @@ BOOL SVGF::SVGFClass::BuildDescriptors() {
 
 	return TRUE;
 }
+

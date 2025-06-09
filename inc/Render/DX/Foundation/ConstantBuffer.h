@@ -89,12 +89,34 @@ namespace ConstantBuffers {
 		FLOAT				__ConstantPad0__;
 	};
 
+	struct RayGenCB {
+		DirectX::XMFLOAT2	TextureDim;
+		BOOL				CheckerboardRayGenEnabled;
+		BOOL				CheckerboardGenerateRaysForEvenPixels;
+
+		UINT				NumSampleSets;
+		UINT				NumSamplesPerSet;
+		UINT				NumPixelsPerDimPerSet;
+		UINT				Seed;
+	};
+
 	namespace SVGF {
-		struct CrossBilateralFilter {
+		struct CrossBilateralFilterCB {
 			FLOAT	DepthSigma;
 			UINT	DepthNumMantissaBits;
 			FLOAT	ConstantPad0;
 			FLOAT	ConstantPad1;
+		};
+
+		struct CalcLocalMeanVarianceCB {
+			DirectX::XMUINT2	TextureDim;
+			UINT				KernelWidth;
+			UINT				KernelRadius;
+
+			BOOL	CheckerboardSamplingEnabled;
+			BOOL	EvenPixelActivated;
+			UINT	PixelStepY;
+			FLOAT	ConstantPad0;
 		};
 	}
 }
