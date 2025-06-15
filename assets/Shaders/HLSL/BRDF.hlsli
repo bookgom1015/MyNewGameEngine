@@ -1,7 +1,7 @@
 #ifndef __BRDF_HLSLI__
 #define __BRDF_HLSLI__
 
-#include "./../../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
+#include "./../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
 
 // Trowbridge-Reitz GGX 
 float DistributionGGX(in float3 N, in float3 H, in float roughness) {
@@ -120,7 +120,7 @@ float3 ImportanceSampleGGX(in float2 Xi, in float3 N, in float roughness) {
     return normalize(sampleVec);
 }
 
-#include "./../../../../assets/Shaders/HLSL/BlinnPhong.hlsli"
-#include "./../../../../assets/Shaders/HLSL/CookTorrance.hlsli"
+#include "./../../../assets/Shaders/HLSL/BlinnPhong.hlsli"
+#include "./../../../assets/Shaders/HLSL/CookTorrance.hlsli"
 
 #endif // __BRDF_HLSLI__

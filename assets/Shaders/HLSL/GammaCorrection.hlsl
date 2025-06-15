@@ -9,8 +9,8 @@
 #define _FIT_TO_SCREEN_COORD
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 
 GammaCorrection_Default_RootConstants(b0)
 

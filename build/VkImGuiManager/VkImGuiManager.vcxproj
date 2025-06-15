@@ -87,12 +87,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\VkDebug\</OutDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\VkDebug\</OutDir>
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>ImGuiManager</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\VkRelease\</OutDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\VkRelease\</OutDir>
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>ImGuiManager</TargetName>
   </PropertyGroup>

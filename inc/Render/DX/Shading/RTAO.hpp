@@ -16,8 +16,9 @@ namespace Render::DX::Shading {
 				SI_AccelerationStructure = 0,
 				CB_AO,
 				SI_PositionMap,
-				SI_NormalMap,
-				SI_DepthMap,
+				SI_NormalDepthMap,
+				SI_RayDirectionOriginDepthMap,
+				SI_TexAOSortedToSourceRayIndexOffsetMap,
 				UO_AOCoefficientMap,
 				UO_RayHitDistanceMap,
 				Count
@@ -120,10 +121,10 @@ namespace Render::DX::Shading {
 				D3D12_GPU_VIRTUAL_ADDRESS accelStruct,
 				Foundation::Resource::GpuResource* const pPositionMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
-				Foundation::Resource::GpuResource* const pNormalMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
-				Foundation::Resource::GpuResource* const pDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap);
+				Foundation::Resource::GpuResource* const pNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
+				Foundation::Resource::GpuResource* const pRayDirectionOriginDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_rayDirectionOriginDepthMap);
 
 		private:
 			BOOL BuildResources();

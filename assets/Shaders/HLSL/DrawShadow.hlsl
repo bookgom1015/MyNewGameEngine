@@ -5,9 +5,9 @@
 #define _HLSL
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
-#include "./../../../../assets/Shaders/HLSL/Shadow.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/Shadow.hlsli"
 
 ConstantBuffer<ConstantBuffers::LightCB> cbLight : register(b0);
 

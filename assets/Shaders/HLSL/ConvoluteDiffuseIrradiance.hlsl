@@ -9,8 +9,8 @@
 #define _CUBE_COORD
 #endif 
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 
 ConstantBuffer<ConstantBuffers::ProjectToCubeCB> cbProjectToCube : register(b0);
 

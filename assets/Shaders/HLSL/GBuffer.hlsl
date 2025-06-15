@@ -5,9 +5,9 @@
 #define _HLSL
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
-#include "./../../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
 
 ConstantBuffer<ConstantBuffers::PassCB>     cbPass      : register(b0);
 ConstantBuffer<ConstantBuffers::ObjectCB>   cbObject    : register(b1);
@@ -15,7 +15,7 @@ ConstantBuffer<ConstantBuffers::MaterialCB> cbMaterial  : register(b2);
 
 GBuffer_Default_RootConstants(b3)
 
-StructuredBuffer<Common:: Foundation::Mesh::Vertex> gi_VertexBuffer : register(t0);
+StructuredBuffer<Common::Foundation::Mesh::Vertex> gi_VertexBuffer : register(t0);
 ByteAddressBuffer gi_IndexBuffer : register(t1);
 
 Texture2D<float4> gi_Textures[ShadingConvention::GBuffer::MaxNumTextures] : register(t0, space1);

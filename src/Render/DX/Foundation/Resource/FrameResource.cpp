@@ -77,15 +77,16 @@ BOOL FrameResource::BuildConstantBuffres(
 		UINT numPasses,
 		UINT numObjects,
 		UINT numMaterials) {
-	CheckReturn(mpLogFile, mMainPassCB.Initialize(mpLogFile, mpDevice, numPasses, TRUE));
-	CheckReturn(mpLogFile, mLightCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
-	CheckReturn(mpLogFile, mObjectCB.Initialize(mpLogFile, mpDevice, numObjects, TRUE));
-	CheckReturn(mpLogFile, mMaterialCB.Initialize(mpLogFile, mpDevice, numMaterials, TRUE));
-	CheckReturn(mpLogFile, mProjectToCubeCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
-	CheckReturn(mpLogFile, mAmbientOcclusionCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
-	CheckReturn(mpLogFile, mRayGenCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
-	CheckReturn(mpLogFile, mCrossBilateralFilterCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
-	CheckReturn(mpLogFile, mCalcLocalMeanVarianceCB.Initialize(mpLogFile, mpDevice, 1, TRUE));
+	CheckReturn(mpLogFile, mMainPassCB.Initialize(mpLogFile, mpDevice, numPasses, 1, TRUE));
+	CheckReturn(mpLogFile, mLightCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mObjectCB.Initialize(mpLogFile, mpDevice, numObjects, 1, TRUE));
+	CheckReturn(mpLogFile, mMaterialCB.Initialize(mpLogFile, mpDevice, numMaterials, 1, TRUE));
+	CheckReturn(mpLogFile, mProjectToCubeCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mAmbientOcclusionCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mRayGenCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mRaySortingCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mCrossBilateralFilterCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mCalcLocalMeanVarianceCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
 
 	return TRUE;
 }

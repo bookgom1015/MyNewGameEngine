@@ -1,8 +1,8 @@
 #ifndef __CROSSBILATERALWEIGHTS_HLSLI__
 #define __CROSSBILATERALWEIGHTS_HLSLI__
 
-#include "./../../../../assets/Shaders/HLSL/FloatPrecision.hlsli"
-#include "./../../../../assets/Shaders/HLSL/SVGF.hlsli"
+#include "./../../../assets/Shaders/HLSL/FloatPrecision.hlsli"
+#include "./../../../assets/Shaders/HLSL/SVGF.hlsli"
 
 namespace CrossBilateral {
     namespace Normal {

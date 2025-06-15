@@ -18,17 +18,17 @@
 #define _HLSL
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
-#include "./../../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
-#include "./../../../../assets/Shaders/HLSL/SVGF.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
+#include "./../../../assets/Shaders/HLSL/SVGF.hlsli"
 
 ConstantBuffer<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> cbLocalMeanVar : register(b0);
 
 Texture2D<ShadingConvention::SVGF::ValueMapFormat_Color>         gi_Value             : register(t0);
 RWTexture2D<ShadingConvention::SVGF::LocalMeanVarianceMapFormat> go_LocalMeanVariance : register(u0);
 
-#include "./../../../../assets/Shaders/HLSL/CalcLocalMeanVariance.hlsli"
+#include "./../../../assets/Shaders/HLSL/CalcLocalMeanVariance.hlsli"
 
 // Group shared memory cache for the row aggregated results.
 groupshared uint2 PackedRowResultCache[16][8]; // 16bit float valueSum, squared valueSum

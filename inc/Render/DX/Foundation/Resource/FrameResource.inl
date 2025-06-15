@@ -80,6 +80,15 @@ void Render::DX::Foundation::Resource::FrameResource::CopyRayGenCB(const Constan
 	mRayGenCB.CopyData(0, data);
 }
 
+// RaySortingCB
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::RaySortingCBAddress() const {
+	return mRaySortingCB.Resource()->GetGPUVirtualAddress();
+}
+
+void Render::DX::Foundation::Resource::FrameResource::CopyRaySortingCB(const ConstantBuffers::RaySortingCB& data) {
+	mRaySortingCB.CopyData(0, data);
+}
+
 // CrossBilateralFilterCB
 void Render::DX::Foundation::Resource::FrameResource::CopyCrossBilateralFilterCB(const ConstantBuffers::SVGF::CrossBilateralFilterCB& data) {
 	mCrossBilateralFilterCB.CopyData(0, data);

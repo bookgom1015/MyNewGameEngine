@@ -242,6 +242,8 @@ BOOL SSAO::SSAOClass::DrawAO(
 		CmdList->SetComputeRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::SSAO::RootConstant::Default::Count, consts.data(), 0);
 
 		mAOMaps[0]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mAOMaps[0].get());
+
 		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		mRandomVectorMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

@@ -26,7 +26,7 @@ LampShade::LampShade(
 }
 
 BOOL LampShade::OnInitialzing() {
-	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("lampshade", "./../../../../assets/Models/", "obj"));
+	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("lampshade", "./../../../assets/Models/", "obj"));
 
 	return TRUE;
 }

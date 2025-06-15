@@ -5,8 +5,8 @@
 #define _HLSL
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 
 ConstantBuffer<ConstantBuffers::PassCB>   cbPass   : register(b0);
 ConstantBuffer<ConstantBuffers::ObjectCB> cbObject : register(b1);

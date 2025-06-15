@@ -63,6 +63,7 @@ namespace Render {
 			namespace TAA { class TAAClass; }
 			namespace SSAO { class SSAOClass; }
 			namespace RTAO { class RTAOClass; }
+			namespace RayGen { class RayGenClass; }
 			namespace RaySorting { class RaySortingClass; }
 			namespace SVGF { class SVGFClass; }
 			namespace BlurFilter { class BlurFilterClass; }
@@ -105,6 +106,7 @@ namespace Render {
 			BOOL UpdateMaterialCB();
 			BOOL UpdateProjectToCubeCB();
 			BOOL UpdateAmbientOcclusionCB();
+			BOOL UpdateRayGenCB();
 			BOOL ResolvePendingLights();
 			BOOL PopulateRendableItems();
 
@@ -175,6 +177,7 @@ namespace Render {
 			std::unique_ptr<Shading::TAA::TAAClass> mTAA;
 			std::unique_ptr<Shading::SSAO::SSAOClass> mSSAO;
 			std::unique_ptr<Shading::RTAO::RTAOClass> mRTAO;
+			std::unique_ptr<Shading::RayGen::RayGenClass> mRayGen;
 			std::unique_ptr<Shading::RaySorting::RaySortingClass> mRaySorting;
 			std::unique_ptr<Shading::SVGF::SVGFClass> mSVGF;
 			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;

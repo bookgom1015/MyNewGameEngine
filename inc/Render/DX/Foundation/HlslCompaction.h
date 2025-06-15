@@ -2,15 +2,15 @@
 #define __HLSLCOMPACTION_H__
 
 #ifdef _HLSL
-	#include "./../../../../assets/Shaders/HLSL/HlslCompaction.hlsli"
-	#include "./../../../../assets/Shaders/HLSL/HardCodedCoordinates.hlsli"
-	#include "./../../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
-	#include "./../../../../assets/Shaders/HLSL/ShaderUtil.hlsli"
-	#include "./../../../../assets/Shaders/HLSL/Random.hlsli"
-	#include "./../../../../inc/Common/Foundation/Mesh/Vertex.h"
-	#include "./../../../../inc/Common/Foundation/Mesh/Material.h"
-	#include "./../../../../inc/Render/DX/Foundation/ShadingConvention.h"
-	#include "./../../../../inc/Render/DX/Foundation/ConstantBuffer.h"
+	#include "./../../../assets/Shaders/HLSL/HlslCompaction.hlsli"
+	#include "./../../../assets/Shaders/HLSL/HardCodedCoordinates.hlsli"
+	#include "./../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
+	#include "./../../../assets/Shaders/HLSL/ShaderUtil.hlsli"
+	#include "./../../../assets/Shaders/HLSL/Random.hlsli"
+	#include "./../../../inc/Common/Foundation/Mesh/Vertex.h"
+	#include "./../../../inc/Common/Foundation/Mesh/Material.h"
+	#include "./../../../inc/Render/DX/Foundation/ShadingConvention.h"
+	#include "./../../../inc/Render/DX/Foundation/ConstantBuffer.h"
 #else
 	#include <DirectXMath.h>
 	#include <dxgiformat.h>

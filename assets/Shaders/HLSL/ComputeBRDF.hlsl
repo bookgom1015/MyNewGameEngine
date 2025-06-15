@@ -9,10 +9,10 @@
 #define _FIT_TO_SCREEN_COORD
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
-#include "./../../../../assets/Shaders/HLSL/LightingUtil.hlsli"
-#include "./../../../../assets/Shaders/HLSL/Shadow.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/LightingUtil.hlsli"
+#include "./../../../assets/Shaders/HLSL/Shadow.hlsli"
 
 ConstantBuffer<ConstantBuffers::PassCB> cbPass : register(b0);
 ConstantBuffer<ConstantBuffers::LightCB> cbLight : register(b1);

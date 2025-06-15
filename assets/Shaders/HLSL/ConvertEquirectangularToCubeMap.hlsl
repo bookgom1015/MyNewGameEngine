@@ -9,10 +9,10 @@
 #define _CUBE_COORD
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 
-#include "./../../../../assets/Shaders/HLSL/EquirectangularConverter.hlsli"
+#include "./../../../assets/Shaders/HLSL/EquirectangularConverter.hlsli"
 
 ConstantBuffer<ConstantBuffers::ProjectToCubeCB> cbProjectToCube : register(b0);
 

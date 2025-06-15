@@ -6,8 +6,8 @@
 #ifndef __LIGHTINGUTIL_HLSLI__
 #define __LIGHTINGUTIL_HLSLI__
 
-#include "./../../../../inc/Render/DX/Foundation/Light.h"
-#include "./../../../../assets/Shaders/HLSL/BRDF.hlsli"
+#include "./../../../inc/Render/DX/Foundation/Light.h"
+#include "./../../../assets/Shaders/HLSL/BRDF.hlsli"
 
 static const float DEG2RAD = 3.14159265359f / 180.f;
 

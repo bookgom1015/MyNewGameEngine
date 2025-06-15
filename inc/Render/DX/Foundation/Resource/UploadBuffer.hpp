@@ -22,17 +22,19 @@ namespace Render::DX::Foundation {
 			virtual ~UploadBuffer();
 
 		public:
-			BOOL Initialize(
+			virtual BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
 				Core::Device* const pDevice, 
 				UINT elementCount, 
-				BOOL isConstantBuffer);
+				UINT instanceCount,
+				BOOL isConstantBuffer,
+				LPCWSTR name = nullptr);
 
-			ID3D12Resource* Resource() const;
+			__forceinline ID3D12Resource* Resource() const;
 
 			void CopyData(INT elementIndex, const T& data);
 
-		private:
+		protected:
 			Microsoft::WRL::ComPtr<ID3D12Resource> mUploadBuffer;
 			BYTE* mMappedData = nullptr;
 

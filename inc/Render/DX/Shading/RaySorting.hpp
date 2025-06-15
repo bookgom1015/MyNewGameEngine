@@ -6,9 +6,13 @@ namespace Render::DX::Shading {
 	namespace RaySorting {
 		namespace Shader {
 			enum Type {
-				CS_AORayGen = 0,
+				CS_CountingSort = 0,
 				Count
 			};
+		}
+
+		namespace RootSignature {
+
 		}
 
 		class RaySortingClass : public Foundation::ShadingObject {

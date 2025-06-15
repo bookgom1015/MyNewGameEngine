@@ -11,7 +11,7 @@
 using namespace Render::DX::Shading;
 
 namespace {
-	const WCHAR* const HLSL_AORayGen = L"AORayGen.hlsl";
+	const WCHAR* const HLSL_CountingSort_Rays_64x128 = L"CountingSort_Rays_64x128.hlsl";
 }
 
 RaySorting::InitDataPtr RaySorting::MakeInitData() {
@@ -38,8 +38,8 @@ BOOL RaySorting::RaySortingClass::Initialize(Common::Debug::LogFile* const pLogF
 }
 
 BOOL RaySorting::RaySortingClass::CompileShaders() {
-	const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_AORayGen, L"CS", L"cs_6_5");
-	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_AORayGen]));
+	//const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CountingSort_Rays_64x128, L"CS", L"cs_6_5");
+	//CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_CountingSort]));
 
 	return TRUE;
 }

@@ -52,7 +52,7 @@ BOOL ShadingObjectManager::CompileShaders(Shading::Util::ShaderManager* const pS
 BOOL ShadingObjectManager::BuildRootSignatures() {
 	const auto& staticSamplers = Shading::Util::SamplerUtil::GetStaticSamplers();
 
-	for (const auto object : mShadingObjects)
+	for (const auto object : mShadingObjects) 
 		CheckReturn(mpLogFile, object->BuildRootSignatures(staticSamplers));
 
 	return TRUE;
@@ -82,6 +82,13 @@ BOOL ShadingObjectManager::OnResize(UINT width, UINT height) {
 BOOL ShadingObjectManager::BuildShaderTables(UINT numRitems) {
 	for (const auto object : mShadingObjects)
 		CheckReturn(mpLogFile, object->BuildShaderTables(numRitems));
+
+	return TRUE;
+}
+
+BOOL ShadingObjectManager::Update() {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->Update());
 
 	return TRUE;
 }

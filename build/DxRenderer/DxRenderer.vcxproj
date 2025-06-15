@@ -13,6 +13,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\inc\Common\Foundation\Sampler\Sampler.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp" />
@@ -31,6 +32,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MaterialData.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\StructuredBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\Texture.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingConvention.h" />
@@ -41,6 +43,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\RayGen.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RaySorting.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RTAO.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp" />
@@ -69,6 +72,7 @@
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp" />
     <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
@@ -95,6 +99,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\RayGen.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RaySorting.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RTAO.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp" />
@@ -123,6 +128,7 @@
     <None Include="..\..\assets\Shaders\HLSL\Kernels.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\LightingUtil.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Random.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\RaySorting.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\RTAO.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ShaderConstants.hlsli" />
@@ -141,10 +147,12 @@
     <None Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.inl" />
+    <None Include="..\..\inc\Render\DX\Foundation\Resource\StructuredBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl" />
     <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
     <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\RayGen.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RTAO.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Shadow.inl" />
     <None Include="..\..\inc\Render\DX\Shading\SSAO.inl" />
@@ -265,7 +273,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\AORayGen.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\RayGen.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\CountingSort_Rays_64x128.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -304,12 +317,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\DxDebug\</OutDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\DxDebug\</OutDir>
     <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\DxRelease\</OutDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\DxRelease\</OutDir>
     <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -324,7 +337,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\DxDebug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\DxDebug</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -351,7 +364,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\MyNewGameEngine\$(Platform)\DxRelease</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\DxRelease</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>

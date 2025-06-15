@@ -35,10 +35,21 @@ namespace Common::Render {
 
 		struct RTAOArguments {
 			FLOAT OcclusionRadius = 10.f;
+
 			FLOAT OcclusionFadeStart = 0.f;
+
 			FLOAT OcclusionFadeEnd = 10.f;
+
 			FLOAT SurfaceEpsilon = 0.0001f;
-			UINT SampleCount = 2;
+
+			UINT SampleCount = 1;
+			const UINT MaxSampleCount = 128;
+			const UINT MinSampleCount = 1;
+
+			UINT SampleSetSize = 8;
+			const UINT MaxSampleSetSize = 8;
+			const UINT MinSampleSetSize = 1;
+
 			BOOL RaySortingEnabled = FALSE;
 		};
 

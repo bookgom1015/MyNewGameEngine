@@ -9,10 +9,12 @@ Render::DX::Foundation::Resource::UploadBuffer<T>::~UploadBuffer() {
 
 template <typename T>
 BOOL Render::DX::Foundation::Resource::UploadBuffer<T>::Initialize(
-	Common::Debug::LogFile* const pLogFile,
-	Core::Device* const pDevice,
-	UINT elementCount,
-	BOOL isConstantBuffer) {
+		Common::Debug::LogFile* const pLogFile,
+		Core::Device* const pDevice,
+		UINT elementCount,
+		UINT instanceCount,
+		BOOL isConstantBuffer,
+		LPCWSTR name) {
 	mIsConstantBuffer = isConstantBuffer;
 	mElementByteSize = sizeof(T);
 
@@ -26,7 +28,9 @@ BOOL Render::DX::Foundation::Resource::UploadBuffer<T>::Initialize(
 	if (isConstantBuffer)
 		mElementByteSize = Util::D3D12Util::CalcConstantBufferByteSize(sizeof(T));
 
-	CheckReturn(pLogFile, Util::D3D12Util::CreateUploadBuffer(pDevice, mElementByteSize * elementCount, IID_PPV_ARGS(&mUploadBuffer)));
+	CheckReturn(pLogFile, Util::D3D12Util::CreateUploadBuffer(pDevice, mElementByteSize * elementCount * instanceCount, IID_PPV_ARGS(&mUploadBuffer)));
+
+	if (name != nullptr) CheckHRESULT(pLogFile, mUploadBuffer->SetName(name));
 
 	if (FAILED(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedData))))
 		ReturnFalse(pLogFile, L"Failed mapping upload buffer");

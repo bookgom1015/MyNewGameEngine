@@ -372,9 +372,25 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 					ImGui::Text("(Ray sorting enabled)");
 				else
 					ImGui::Text("(Ray sorting disabled)");
-				if(ImGui::SliderInt("Sample Count", reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount), 1, 4)) {
-					if (pArgSet->RTAO.SampleCount > 1) pArgSet->RTAO.RaySortingEnabled = FALSE;
-					else pArgSet->RTAO.RaySortingEnabled = TRUE;
+				if(ImGui::SliderInt(
+						"Sample Count", 
+						reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount), 
+						static_cast<int>(pArgSet->RTAO.MinSampleCount), 
+						static_cast<int>(pArgSet->RTAO.MaxSampleCount))) {
+					if (pArgSet->RTAO.SampleCount > 1) {
+						pArgSet->RTAO.RaySortingEnabled = FALSE;
+						pArgSet->RTAO.SampleSetSize = 1;
+					}
+					else {
+						pArgSet->RTAO.RaySortingEnabled = TRUE;
+					}
+				}
+				if (ImGui::SliderInt(
+						"Sample Set Size",
+						reinterpret_cast<int*>(&pArgSet->RTAO.SampleSetSize),
+						static_cast<int>(pArgSet->RTAO.MinSampleSetSize),
+						pArgSet->RTAO.SampleCount > 1 ? 1 : static_cast<int>(pArgSet->RTAO.MaxSampleSetSize))) {
+					if (pArgSet->RTAO.SampleCount > 1) pArgSet->RTAO.SampleSetSize = 1;
 				}
 			}
 			else {

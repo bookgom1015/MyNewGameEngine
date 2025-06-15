@@ -16,18 +16,18 @@
 #define _HLSL
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
-#include "./../../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
-#include "./../../../../assets/Shaders/HLSL/Random.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
+#include "./../../../assets/Shaders/HLSL/Random.hlsli"
 
 ConstantBuffer<ConstantBuffers::RayGenCB> cbRayGen : register(b0);
 
-Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>                gi_NormalDepthMap : register(t0);
-Texture2D<ShadingConvention::GBuffer::PositionMapFormat>                   gi_PositionMap    : register(t1);
-StructuredBuffer<ShadingConvention::RaySorting::AlignedHemisphereSample3D> gi_SampleSets     : register(t2);
+StructuredBuffer<ShadingConvention::RayGen::AlignedHemisphereSample3D>     gi_SampleSets                 : register(t0);
+Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>                gi_NormalDepthMap             : register(t1);
+Texture2D<ShadingConvention::GBuffer::PositionMapFormat>                   gi_PositionMap                : register(t2);
 
-RWTexture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> go_RayDirectionOriginDepth : register(u0);
+RWTexture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>              go_RayDirectionOriginDepthMap : register(u0);
 
 float3 GetRandomRayDirection(in uint2 srcRayIndex, in float3 surfaceNormal, in uint2 textureDim, in uint raySampleIndexOffset) {
     // Calculate coordinate system for the hemisphere.
@@ -74,33 +74,33 @@ float3 GetRandomRayDirection(in uint2 srcRayIndex, in float3 surfaceNormal, in u
     // Load a pregenerated random sample from the sample set.
     const float3 Sample = gi_SampleSets[sampleSetJump + (sampleJump % cbRayGen.NumSamplesPerSet)].Value;
     const float3 RayDirection = normalize(Sample.x * u + Sample.y * v + Sample.z * w);
-
+    
     return RayDirection;
 }
 
 [numthreads(
-    ShadingConvention::RaySorting::ThreadGroup::Default::Width, 
-    ShadingConvention::RaySorting::ThreadGroup::Default::Height, 
-    ShadingConvention::RaySorting::ThreadGroup::Default::Depth)]
+    ShadingConvention::RayGen::ThreadGroup::Default::Width, 
+    ShadingConvention::RayGen::ThreadGroup::Default::Height, 
+    ShadingConvention::RayGen::ThreadGroup::Default::Depth)]
 void CS(in uint2 DTid : SV_DispatchThreadID, in uint2 GTid : SV_GroupThreadID) {
     uint2 DTidFullRes = DTid;
-
+    
     if (cbRayGen.CheckerboardRayGenEnabled) {
         const uint PixelStepX = 2;
         const bool IsEvenPixelY = (DTid.y & 1) == 0;
         const uint PixelOffsetX = IsEvenPixelY != cbRayGen.CheckerboardGenerateRaysForEvenPixels;
         DTidFullRes.x = DTid.x * PixelStepX + PixelOffsetX;
     }
-
+    
     float3 surfaceNormal;
     float rayOriginDepth;
     ValuePackaging::DecodeNormalDepth(gi_NormalDepthMap[DTidFullRes], surfaceNormal, rayOriginDepth);
-
+    
     float3 rayDirection = 0;
     if (rayOriginDepth != ShadingConvention::GBuffer::InvalidNormalDepthValue) 
         rayDirection = GetRandomRayDirection(DTid, surfaceNormal, cbRayGen.TextureDim, 0);
-
-    go_RayDirectionOriginDepth[DTid] = ValuePackaging::EncodeNormalDepth(rayDirection, rayOriginDepth);
+    
+    go_RayDirectionOriginDepthMap[DTid] = ValuePackaging::EncodeNormalDepth(rayDirection, rayOriginDepth);
 }
 
 #endif // __AORAYGEN_HLSL__

@@ -9,9 +9,9 @@
 #define _FIT_TO_SCREEN_COORD
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
-#include "./../../../../assets/Shaders/HLSL/SSAO.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/SSAO.hlsli"
 
 ConstantBuffer<ConstantBuffers::AmbientOcclusionCB> cbAO : register(b0);
 

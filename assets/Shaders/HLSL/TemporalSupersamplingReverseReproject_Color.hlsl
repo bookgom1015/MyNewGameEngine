@@ -10,11 +10,11 @@
 #define _HLSL
 #endif
 
-#include "./../../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../../assets/Shaders/HLSL/Samplers.hlsli"
-#include "./../../../../assets/Shaders/HLSL/SVGF.hlsli"
-#include "./../../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
-#include "./../../../../assets/Shaders/HLSL/CrossBilateralWeights.hlsli"
+#include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/SVGF.hlsli"
+#include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
+#include "./../../../assets/Shaders/HLSL/CrossBilateralWeights.hlsli"
 
 ConstantBuffer<ConstantBuffers::SVGF::CrossBilateralFilterCB> cbReproject : register(b0);
 
@@ -35,7 +35,7 @@ RWTexture2D<ShadingConvention::SVGF::ValueMapFormat_Color>                   go_
 RWTexture2D<ShadingConvention::SVGF::ValueSquaredMeanMapFormat_Color>        go_CachedSquaredMean       : register(u2);
 RWTexture2D<ShadingConvention::SVGF::TSPPSquaredMeanRayHitDistanceMapFormat> go_ReprojectedCachedValues : register(u3);
 
-#include "./../../../../assets/Shaders/HLSL/TemporalSupersamplingReverseReproject.hlsli"
+#include "./../../../assets/Shaders/HLSL/TemporalSupersamplingReverseReproject.hlsli"
 
 [numthreads(
     ShadingConvention::SVGF::ThreadGroup::Default::Width, 

@@ -22,3 +22,5 @@ BOOL ShadingObject::BuildDescriptors(Core::DescriptorHeap* const pDescHeap) { re
 BOOL ShadingObject::OnResize(UINT width, UINT height) { return TRUE;  }
 
 BOOL ShadingObject::BuildShaderTables(UINT numRitems) { return TRUE; }
+
+BOOL ShadingObject::Update() { return TRUE; }

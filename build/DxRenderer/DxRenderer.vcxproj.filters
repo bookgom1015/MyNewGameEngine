@@ -136,8 +136,14 @@
     <Filter Include="Shader Files\SVGF\Temporal">
       <UniqueIdentifier>{a04d805d-d8b0-4287-b88d-c469135323ed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader Files\SVGF\Ray Sorting">
+    <Filter Include="Common Files\Foundation\Sampler">
+      <UniqueIdentifier>{858c0c8a-11d5-4cab-9e8b-6ad090e81270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\SVGF\RayGen">
       <UniqueIdentifier>{d54da8df-af5e-413b-96a9-3949da9cad05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\SVGF\RaySorting">
+      <UniqueIdentifier>{94dfaf95-2cbc-4817-abdb-c898a60b076d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -266,6 +272,15 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\RaySorting.hpp">
       <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\RayGen.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\StructuredBuffer.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Sampler\Sampler.hpp">
+      <Filter>Common Files\Foundation\Sampler</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -424,6 +439,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\RaySorting.cpp">
       <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\RayGen.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -623,8 +644,20 @@
     <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Contrast.hlsl">
       <Filter>Shader Files\SVGF\Denoising</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\AORayGen.hlsl">
-      <Filter>Shader Files\SVGF\Ray Sorting</Filter>
+    <None Include="..\..\assets\Shaders\HLSL\RayGen.hlsl">
+      <Filter>Shader Files\SVGF\RayGen</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Resource\StructuredBuffer.inl">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CountingSort_Rays_64x128.hlsl">
+      <Filter>Shader Files\SVGF\RaySorting</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\RaySorting.hlsli">
+      <Filter>Shader Files\SVGF\RaySorting</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\RayGen.inl">
+      <Filter>Header Files\Shading Files</Filter>
     </None>
   </ItemGroup>
 </Project>

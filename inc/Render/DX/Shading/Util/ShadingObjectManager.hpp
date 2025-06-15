@@ -52,6 +52,7 @@ namespace Render::DX {
 				BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap);
 				BOOL OnResize(UINT width, UINT height);
 				BOOL BuildShaderTables(UINT numRitems);
+				BOOL Update();
 
 			private:
 				Common::Debug::LogFile* mpLogFile = nullptr;

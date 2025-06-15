@@ -26,7 +26,7 @@ MetalSphere::MetalSphere(
 }
 
 BOOL MetalSphere::OnInitialzing() {
-	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("metal_sphere", "./../../../../assets/Models/", "obj"));
+	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("metal_sphere", "./../../../assets/Models/", "obj"));
 
 	return TRUE;
 }

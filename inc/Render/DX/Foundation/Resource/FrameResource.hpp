@@ -59,6 +59,9 @@ namespace Render::DX::Foundation {
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS RayGenCBAddress() const;
 			UINT RayGenCBByteSize() const;
 
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS RaySortingCBAddress() const;
+			UINT RaySortingCBByteSize() const;
+
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS CrossBilateralFilterCBAddress() const;
 			UINT CrossBilateralFilterCBByteSize() const;
 
@@ -85,6 +88,7 @@ namespace Render::DX::Foundation {
 			__forceinline void CopyProjectToCubeCB(const ConstantBuffers::ProjectToCubeCB& data);
 			__forceinline void CopyAmbientOcclusionCB(const ConstantBuffers::AmbientOcclusionCB& data);
 			__forceinline void CopyRayGenCB(const ConstantBuffers::RayGenCB& data);
+			__forceinline void CopyRaySortingCB(const ConstantBuffers::RaySortingCB& data);
 			__forceinline void CopyCrossBilateralFilterCB(const ConstantBuffers::SVGF::CrossBilateralFilterCB& data);
 			__forceinline void CopyCalcLocalMeanVarianceCB(const ConstantBuffers::SVGF::CalcLocalMeanVarianceCB& data);
 
@@ -113,6 +117,7 @@ namespace Render::DX::Foundation {
 			UploadBuffer<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
 			UploadBuffer<ConstantBuffers::AmbientOcclusionCB> mAmbientOcclusionCB;
 			UploadBuffer<ConstantBuffers::RayGenCB> mRayGenCB;
+			UploadBuffer<ConstantBuffers::RaySortingCB> mRaySortingCB;
 			UploadBuffer<ConstantBuffers::SVGF::CrossBilateralFilterCB> mCrossBilateralFilterCB;
 			UploadBuffer<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> mCalcLocalMeanVarianceCB;
 		};

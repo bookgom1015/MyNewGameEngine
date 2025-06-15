@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef _HLSL
-	#include "./../../../../inc/Render/DX/Foundation/Light.h"
+	#include "./../../../inc/Render/DX/Foundation/Light.h"
 #else
 	#include "Render/DX/Foundation/Light.h"
 #endif
@@ -87,6 +87,10 @@ namespace ConstantBuffers {
 		UINT				FrameCount;
 		FLOAT				OcclusionStrength;
 		FLOAT				__ConstantPad0__;
+
+		DirectX::XMFLOAT2	TextureDim;
+		BOOL				CheckerboardRayGenEnabled;
+		BOOL				EvenPixelsActivated;
 	};
 
 	struct RayGenCB {
@@ -98,6 +102,13 @@ namespace ConstantBuffers {
 		UINT				NumSamplesPerSet;
 		UINT				NumPixelsPerDimPerSet;
 		UINT				Seed;
+	};
+
+	struct RaySortingCB {
+		DirectX::XMUINT2 TextureDim;
+		BOOL UseOctahedralRayDirectionQuantization;
+		// Depth for a bin within which to sort further based on direction.
+		FLOAT BinDepthSize;
 	};
 
 	namespace SVGF {

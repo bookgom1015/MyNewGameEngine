@@ -484,7 +484,12 @@ namespace ShadingConvention{
 #endif
 	}
 
-	namespace RaySorting {
+	namespace RayGen {
+		struct AlignedUnitSquareSample2D {
+			DirectX::XMFLOAT2	Value;
+			DirectX::XMUINT2	padding;  // Padding to 16B
+		};
+
 		struct AlignedHemisphereSample3D {
 			DirectX::XMFLOAT3	Value;
 			UINT				__Padding__;  // Padding to 16B
@@ -500,6 +505,36 @@ namespace ShadingConvention{
 				};
 			}
 		}
+	}
+
+	namespace RaySorting {
+		namespace ThreadGroup {
+			enum { 
+				Width	= 64, 
+				Height	= 16, 
+				Depth	= 1,
+				Size	= Width * Height * Depth
+			};
+		}
+
+		namespace RayGroup {
+			enum { 
+				NumElementPairsPerThread	= 4, 
+				Width						= ThreadGroup::Width, 
+				Height						= NumElementPairsPerThread * 2 * ThreadGroup::Height, 
+				Size						= Width * Height 
+			};
+		}
+
+#ifdef _HLSL
+		
+#else
+		static_assert(
+			RayGroup::Width <= 64 &&
+			RayGroup::Height <= 128 &&
+			RayGroup::Size <= 8192,
+			"Ray group dimensions are outside the supported limits set by the Counting Sort shader.");
+#endif
 	}
 
 	namespace SVGF {

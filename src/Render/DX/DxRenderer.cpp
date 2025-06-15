@@ -34,6 +34,7 @@
 #include "Render/DX/Shading/TAA.hpp"
 #include "Render/DX/Shading/SSAO.hpp"
 #include "Render/DX/Shading/RTAO.hpp"
+#include "Render/DX/Shading/RayGen.hpp"
 #include "Render/DX/Shading/RaySorting.hpp"
 #include "Render/DX/Shading/SVGF.hpp"
 #include "Render/DX/Shading/BlurFilter.hpp"
@@ -68,6 +69,7 @@ DxRenderer::DxRenderer() {
 	mTAA = std::make_unique<Shading::TAA::TAAClass>();
 	mSSAO= std::make_unique<Shading::SSAO::SSAOClass>();
 	mRTAO = std::make_unique<Shading::RTAO::RTAOClass>();
+	mRayGen = std::make_unique<Shading::RayGen::RayGenClass>();
 	mRaySorting = std::make_unique<Shading::RaySorting::RaySortingClass>();
 	mSVGF = std::make_unique<Shading::SVGF::SVGFClass>();
 	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
@@ -83,6 +85,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mTAA.get());
 	mShadingObjectManager->AddShadingObject(mSSAO.get());
 	mShadingObjectManager->AddShadingObject(mRTAO.get());
+	mShadingObjectManager->AddShadingObject(mRayGen.get());
 	mShadingObjectManager->AddShadingObject(mRaySorting.get());
 	mShadingObjectManager->AddShadingObject(mSVGF.get());
 	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
@@ -104,6 +107,7 @@ BOOL DxRenderer::Initialize(
 		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
+
 	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 	mbInitialized = TRUE;
 
@@ -115,7 +119,7 @@ BOOL DxRenderer::Initialize(
 
 	CheckReturn(mpLogFile, mAccelerationStructureManager->Initialize(mpLogFile, mDevice.get(), mCommandObject.get()));
 
-	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
+	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
@@ -173,6 +177,8 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 			}
 		}
 	}
+
+	CheckReturn(mpLogFile, mShadingObjectManager->Update());
 
 	return TRUE;
 }
@@ -371,6 +377,7 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 	CheckReturn(mpLogFile, UpdateMaterialCB());
 	CheckReturn(mpLogFile, UpdateProjectToCubeCB());
 	CheckReturn(mpLogFile, UpdateAmbientOcclusionCB());
+	CheckReturn(mpLogFile, UpdateRayGenCB());
 
 	return TRUE;
 }
@@ -700,6 +707,7 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 		aoCB.OcclusionFadeEnd = mpArgumentSet->RTAO.OcclusionFadeEnd;
 		aoCB.SurfaceEpsilon = mpArgumentSet->RTAO.SurfaceEpsilon;
 		aoCB.SampleCount = mpArgumentSet->RTAO.SampleCount;
+		aoCB.TextureDim = { static_cast<FLOAT>(mClientWidth), static_cast<FLOAT>(mClientHeight)};
 	}
 	else {
 		aoCB.OcclusionRadius = mpArgumentSet->SSAO.OcclusionRadius;
@@ -713,6 +721,22 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 	aoCB.FrameCount = static_cast<UINT>(mpCurrentFrameResource->mFence);
 
 	mpCurrentFrameResource->CopyAmbientOcclusionCB(aoCB);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateRayGenCB() {
+	ConstantBuffers::RayGenCB rayGenCB;
+
+	rayGenCB.TextureDim = { static_cast<FLOAT>(mClientWidth), static_cast<FLOAT>(mClientHeight) };
+	rayGenCB.NumSamplesPerSet = mRayGen->NumSamples();
+	rayGenCB.NumSampleSets = mRayGen->NumSampleSets();
+	rayGenCB.NumPixelsPerDimPerSet = mpArgumentSet->RTAO.SampleSetSize;
+	rayGenCB.CheckerboardRayGenEnabled = FALSE;
+	rayGenCB.CheckerboardGenerateRaysForEvenPixels = FALSE;
+	rayGenCB.Seed = 1879;
+
+	mpCurrentFrameResource->CopyRayGenCB(rayGenCB);
 
 	return TRUE;
 }
@@ -1039,6 +1063,21 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mRTAO->Initialize(mpLogFile, initData.get()));
 	}
+	// RayGen
+	{
+		auto initData = Shading::RayGen::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		initData->SamplesPerPixel = &mpArgumentSet->RTAO.SampleCount;
+		initData->MaxSamplesPerPixel = mpArgumentSet->RTAO.MaxSampleCount;
+		initData->SampleSetDistributedAcrossPixels= &mpArgumentSet->RTAO.SampleSetSize;
+		initData->MaxSampleSetDistributedAcrossPixels = mpArgumentSet->RTAO.MaxSampleSetSize;
+		CheckReturn(mpLogFile, mRayGen->Initialize(mpLogFile, initData.get()));
+	}
 	// RaySorting
 	{
 		auto initData = Shading::RaySorting::MakeInitData();
@@ -1176,7 +1215,7 @@ BOOL DxRenderer::BuildScene() {
 		mpCurrentFrameResource,
 		mMipmapGenerator.get(), 
 		mEquirectangularConverter.get(), 
-		L"forest_hdr", L"./../../../../assets/textures/"));
+		L"forest_hdr", L"./../../../assets/textures/"));
 
 	return TRUE;
 }
@@ -1214,15 +1253,23 @@ BOOL DxRenderer::DrawImGui() {
 
 BOOL DxRenderer::DrawAO() {
 	if (mpArgumentSet->RaytracingEnabled) {
+		CheckReturn(mpLogFile, mRayGen->GenerateRays(
+			mpCurrentFrameResource, 
+			mGBuffer->NormalDepthMap(),
+			mGBuffer->NormalDepthMapSrv(), 
+			mGBuffer->PositionMap(),
+			mGBuffer->PositionMapSrv(),
+			mCurrentFrameResourceIndex));
+
 		CheckReturn(mpLogFile, mRTAO->DrawAO(
 			mpCurrentFrameResource,
 			mAccelerationStructureManager->AccelerationStructure(),
 			mGBuffer->PositionMap(),
 			mGBuffer->PositionMapSrv(),
-			mGBuffer->NormalMap(),
-			mGBuffer->NormalMapSrv(),
-			mDepthStencilBuffer->GetDepthStencilBuffer(),
-			mDepthStencilBuffer->DepthStencilBufferSrv()));
+			mGBuffer->NormalDepthMap(),
+			mGBuffer->NormalDepthMapSrv(),
+			mRayGen->RayDirectionOriginDepthMap(),
+			mRayGen->RayDirectionOriginDepthMapSrv()));
 
 		CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
 			mpCurrentFrameResource,
