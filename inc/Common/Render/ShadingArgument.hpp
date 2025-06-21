@@ -53,12 +53,19 @@ namespace Common::Render {
 			BOOL RaySortingEnabled = FALSE;
 		};
 
+		struct RaySortingArguments {
+			FLOAT DepthBinSizeMultiplier = 0.1f;
+			const FLOAT MinDepthBinSizeMultiplier = 0.01f;
+			const FLOAT MaxDepthBinSizeMultiplier = 10.f;
+		};
+
 		struct ShadingArgumentSet {
 			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
 			TAAArguments TAA;
 			SSAOArguments SSAO;
 			RTAOArguments RTAO;
+			RaySortingArguments RaySorting;
 
 			BOOL ShadowEnabled = TRUE;
 			BOOL AOEnabled = TRUE;

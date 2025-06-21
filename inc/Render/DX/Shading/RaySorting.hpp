@@ -12,7 +12,14 @@ namespace Render::DX::Shading {
 		}
 
 		namespace RootSignature {
-
+			namespace Default {
+				enum {
+					CB_RaySorting = 0,
+					SI_NormalDepthMap,
+					UO_RayIndexOffsetMap,
+					Count
+				};
+			}
 		}
 
 		class RaySortingClass : public Foundation::ShadingObject {
@@ -44,6 +51,16 @@ namespace Render::DX::Shading {
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 			virtual BOOL OnResize(UINT width, UINT height) override;
 
+		public:
+			BOOL CalcRayIndexOffset(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Foundation::Resource::GpuResource* const pNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap);
+
+		private:
+			BOOL BuildResources();
+			BOOL BuildDescriptors();
+
 		private:
 			InitData mInitData;
 
@@ -51,6 +68,12 @@ namespace Render::DX::Shading {
 			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
 
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mRayIndexOffsetMap;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapCpuUav;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapGpuUav;
 		};
 
 		using InitDataPtr = std::unique_ptr<RaySortingClass::InitData>;

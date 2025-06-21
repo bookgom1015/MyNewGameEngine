@@ -17,8 +17,8 @@
 //  while adding a substantial perf overhead to the ray sorting (~20% for 2 bit depth hash key).
 #define DEPTH_HASH_KEY_BITS 0 
 #define INDEX_HASH_KEY_BITS 0  // (4 - DEPTH_HASH_KEY_BITS) 
-#define NUM_RAYS RaySorting::RayGroup::Size
-#define NUM_THREADS RaySorting::ThreadGroup::Size
+#define NUM_RAYS ShadingConvention::RaySorting::RayGroup::Size
+#define NUM_THREADS ShadingConvention::RaySorting::ThreadGroup::Size
 #define MIN_VALID_RAY_DEPTH FLT_10BIT_MIN
 #define MAX_RAYS 8192
 

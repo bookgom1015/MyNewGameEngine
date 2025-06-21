@@ -205,7 +205,7 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMapSrv(),
 		rendableOpaques));
 
-	if (mpArgumentSet->AOEnabled)
+	if (mpShadingArgumentSet->AOEnabled)
 		CheckReturn(mpLogFile, DrawAO());
 
 	CheckReturn(mpLogFile, mBRDF->ComputeBRDF(
@@ -228,7 +228,7 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMapSrv(),
 		mShadow->ShadowMap(),
 		mShadow->ShadowMapSrv(),
-		mpArgumentSet->ShadowEnabled));
+		mpShadingArgumentSet->ShadowEnabled));
 
 	CheckReturn(mpLogFile, IntegrateIrradiance());
 
@@ -242,7 +242,7 @@ BOOL DxRenderer::Draw() {
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		skySphere));
 
-	if (mpArgumentSet->TAA.Enabled) {
+	if (mpShadingArgumentSet->TAA.Enabled) {
 		CheckReturn(mpLogFile, mTAA->ApplyTAA(
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
@@ -253,7 +253,7 @@ BOOL DxRenderer::Draw() {
 			mToneMapping->InterMediateCopyMapSrv(),
 			mGBuffer->VelocityMap(),
 			mGBuffer->VelocityMapSrv(),
-			mpArgumentSet->TAA.ModulationFactor));
+			mpShadingArgumentSet->TAA.ModulationFactor));
 	}
 
 	CheckReturn(mpLogFile, mToneMapping->Resolve(
@@ -262,7 +262,7 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->ScissorRect(),
 		mSwapChain->BackBuffer(),
 		mSwapChain->BackBufferRtv(),
-		mpArgumentSet->ToneMapping.Exposure));
+		mpShadingArgumentSet->ToneMapping.Exposure));
 
 	CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
 		mpCurrentFrameResource,
@@ -272,7 +272,7 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->BackBufferRtv(),
 		mSwapChain->BackBufferCopy(),
 		mSwapChain->BackBufferCopySrv(),
-		mpArgumentSet->GammaCorrection.Gamma));
+		mpShadingArgumentSet->GammaCorrection.Gamma));
 
 	CheckReturn(mpLogFile, DrawImGui());		
 	CheckReturn(mpLogFile, PresentAndSignal());
@@ -378,6 +378,7 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 	CheckReturn(mpLogFile, UpdateProjectToCubeCB());
 	CheckReturn(mpLogFile, UpdateAmbientOcclusionCB());
 	CheckReturn(mpLogFile, UpdateRayGenCB());
+	CheckReturn(mpLogFile, UpdateRaySortingCB());
 
 	return TRUE;
 }
@@ -411,7 +412,7 @@ BOOL DxRenderer::UpdateMainPassCB() {
 	XMStoreFloat4x4(&mMainPassCB->ViewProjTex, XMMatrixTranspose(viewProjTex));
 	XMStoreFloat3(&mMainPassCB->EyePosW, mpCamera->Position());
 
-	if (mpArgumentSet->TAA.Enabled) {
+	if (mpShadingArgumentSet->TAA.Enabled) {
 		const auto OffsetIndex = static_cast<UINT>(mCommandObject->CurrentFence() % mTAA->HaltonSequenceSize());
 		mMainPassCB->JitteredOffset = mTAA->HaltonSequence(OffsetIndex);
 	}
@@ -701,21 +702,21 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 
 	mSSAO->GetOffsetVectors(aoCB.OffsetVectors);
 
-	if (mpArgumentSet->RaytracingEnabled) {
-		aoCB.OcclusionRadius = mpArgumentSet->RTAO.OcclusionRadius;
-		aoCB.OcclusionFadeStart = mpArgumentSet->RTAO.OcclusionFadeStart;
-		aoCB.OcclusionFadeEnd = mpArgumentSet->RTAO.OcclusionFadeEnd;
-		aoCB.SurfaceEpsilon = mpArgumentSet->RTAO.SurfaceEpsilon;
-		aoCB.SampleCount = mpArgumentSet->RTAO.SampleCount;
+	if (mpShadingArgumentSet->RaytracingEnabled) {
+		aoCB.OcclusionRadius = mpShadingArgumentSet->RTAO.OcclusionRadius;
+		aoCB.OcclusionFadeStart = mpShadingArgumentSet->RTAO.OcclusionFadeStart;
+		aoCB.OcclusionFadeEnd = mpShadingArgumentSet->RTAO.OcclusionFadeEnd;
+		aoCB.SurfaceEpsilon = mpShadingArgumentSet->RTAO.SurfaceEpsilon;
+		aoCB.SampleCount = mpShadingArgumentSet->RTAO.SampleCount;
 		aoCB.TextureDim = { static_cast<FLOAT>(mClientWidth), static_cast<FLOAT>(mClientHeight)};
 	}
 	else {
-		aoCB.OcclusionRadius = mpArgumentSet->SSAO.OcclusionRadius;
-		aoCB.OcclusionFadeStart = mpArgumentSet->SSAO.OcclusionFadeStart;
-		aoCB.OcclusionFadeEnd = mpArgumentSet->SSAO.OcclusionFadeEnd;
-		aoCB.OcclusionStrength = mpArgumentSet->SSAO.OcclusionStrength;
-		aoCB.SurfaceEpsilon = mpArgumentSet->SSAO.SurfaceEpsilon;
-		aoCB.SampleCount = mpArgumentSet->SSAO.SampleCount;
+		aoCB.OcclusionRadius = mpShadingArgumentSet->SSAO.OcclusionRadius;
+		aoCB.OcclusionFadeStart = mpShadingArgumentSet->SSAO.OcclusionFadeStart;
+		aoCB.OcclusionFadeEnd = mpShadingArgumentSet->SSAO.OcclusionFadeEnd;
+		aoCB.OcclusionStrength = mpShadingArgumentSet->SSAO.OcclusionStrength;
+		aoCB.SurfaceEpsilon = mpShadingArgumentSet->SSAO.SurfaceEpsilon;
+		aoCB.SampleCount = mpShadingArgumentSet->SSAO.SampleCount;
 	}
 
 	aoCB.FrameCount = static_cast<UINT>(mpCurrentFrameResource->mFence);
@@ -731,12 +732,24 @@ BOOL DxRenderer::UpdateRayGenCB() {
 	rayGenCB.TextureDim = { static_cast<FLOAT>(mClientWidth), static_cast<FLOAT>(mClientHeight) };
 	rayGenCB.NumSamplesPerSet = mRayGen->NumSamples();
 	rayGenCB.NumSampleSets = mRayGen->NumSampleSets();
-	rayGenCB.NumPixelsPerDimPerSet = mpArgumentSet->RTAO.SampleSetSize;
+	rayGenCB.NumPixelsPerDimPerSet = mpShadingArgumentSet->RTAO.SampleSetSize;
 	rayGenCB.CheckerboardRayGenEnabled = FALSE;
 	rayGenCB.CheckerboardGenerateRaysForEvenPixels = FALSE;
 	rayGenCB.Seed = 1879;
 
 	mpCurrentFrameResource->CopyRayGenCB(rayGenCB);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateRaySortingCB() {
+	ConstantBuffers::RaySortingCB raySortingCB;
+
+	raySortingCB.TextureDim = { mClientWidth, mClientHeight };
+	raySortingCB.BinDepthSize = mpShadingArgumentSet->RTAO.OcclusionRadius * mpShadingArgumentSet->RaySorting.DepthBinSizeMultiplier;
+	raySortingCB.UseOctahedralRayDirectionQuantization = TRUE;
+
+	mpCurrentFrameResource->CopyRaySortingCB(raySortingCB);
 
 	return TRUE;
 }
@@ -1072,10 +1085,10 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		initData->SamplesPerPixel = &mpArgumentSet->RTAO.SampleCount;
-		initData->MaxSamplesPerPixel = mpArgumentSet->RTAO.MaxSampleCount;
-		initData->SampleSetDistributedAcrossPixels= &mpArgumentSet->RTAO.SampleSetSize;
-		initData->MaxSampleSetDistributedAcrossPixels = mpArgumentSet->RTAO.MaxSampleSetSize;
+		initData->SamplesPerPixel = &mpShadingArgumentSet->RTAO.SampleCount;
+		initData->MaxSamplesPerPixel = mpShadingArgumentSet->RTAO.MaxSampleCount;
+		initData->SampleSetDistributedAcrossPixels= &mpShadingArgumentSet->RTAO.SampleSetSize;
+		initData->MaxSampleSetDistributedAcrossPixels = mpShadingArgumentSet->RTAO.MaxSampleSetSize;
 		CheckReturn(mpLogFile, mRayGen->Initialize(mpLogFile, initData.get()));
 	}
 	// RaySorting
@@ -1238,7 +1251,7 @@ BOOL DxRenderer::DrawImGui() {
 
 	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
 		CmdList, 
-		mpArgumentSet, 
+		mpShadingArgumentSet, 
 		mShadow->Lights(),
 		mShadow->LightCount(),
 		mPendingLights,
@@ -1252,7 +1265,7 @@ BOOL DxRenderer::DrawImGui() {
 }
 
 BOOL DxRenderer::DrawAO() {
-	if (mpArgumentSet->RaytracingEnabled) {
+	if (mpShadingArgumentSet->RaytracingEnabled) {
 		CheckReturn(mpLogFile, mRayGen->GenerateRays(
 			mpCurrentFrameResource, 
 			mGBuffer->NormalDepthMap(),
@@ -1284,7 +1297,7 @@ BOOL DxRenderer::DrawAO() {
 			mGBuffer->PositionMap(),
 			mGBuffer->PositionMapSrv()));
 
-		for (UINT i = 0, end = mpArgumentSet->SSAO.BlurCount; i < end; ++i) {
+		for (UINT i = 0, end = mpShadingArgumentSet->SSAO.BlurCount; i < end; ++i) {
 			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
 				mpCurrentFrameResource,
 				Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
@@ -1309,8 +1322,8 @@ BOOL DxRenderer::DrawAO() {
 }
 
 BOOL DxRenderer::IntegrateIrradiance() {
-	const auto ao = mpArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMap() : mSSAO->AOMap(0);
-	const auto aoSrv = mpArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMapSrv() : mSSAO->AOMapSrv(0);
+	const auto ao = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMap() : mSSAO->AOMap(0);
+	const auto aoSrv = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMapSrv() : mSSAO->AOMapSrv(0);
 
 	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
 		mpCurrentFrameResource,
@@ -1340,7 +1353,7 @@ BOOL DxRenderer::IntegrateIrradiance() {
 		mEnvironmentMap->BrdfLutMapSrv(),
 		mEnvironmentMap->PrefilteredEnvironmentCubeMap(),
 		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv(),
-		mpArgumentSet->AOEnabled));
+		mpShadingArgumentSet->AOEnabled));
 
 	return TRUE;
 }

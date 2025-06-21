@@ -236,10 +236,13 @@ BOOL SSAO::SSAOClass::DrawAO(
 		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mTexWidth);
 		rc.gInvTexDim.y = 1.f / static_cast<FLOAT>(mTexHeight);
 
-		std::array<std::uint32_t, ShadingConvention::SSAO::RootConstant::Default::Count> consts;
-		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::SSAO::RootConstant::Default::Struct));
-
-		CmdList->SetComputeRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::SSAO::RootConstant::Default::Count, consts.data(), 0);
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SSAO::RootConstant::Default::Struct>(
+			RootSignature::Default::RC_Consts,
+			ShadingConvention::SSAO::RootConstant::Default::Count,
+			&rc,
+			0,
+			CmdList,
+			TRUE);
 
 		mAOMaps[0]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mAOMaps[0].get());
@@ -281,15 +284,14 @@ BOOL SSAO::SSAOClass::BuildRandomVectorMapResource() {
 	texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	mRandomVectorMap->Initialize(
+	CheckReturn(mpLogFile, mRandomVectorMap->Initialize(
 		mInitData.Device,
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&texDesc,
 		D3D12_RESOURCE_STATE_COMMON,
 		nullptr,
-		L"SSAO_RandomVectorMap"
-	);
+		L"SSAO_RandomVectorMap"));
 
 	return TRUE;
 }

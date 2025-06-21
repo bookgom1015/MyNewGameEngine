@@ -503,7 +503,13 @@ BOOL GBuffer::GBufferClass::DrawRenderItems(
 			std::array<std::uint32_t, ShadingConvention::GBuffer::RootConstant::Default::Count> consts;
 			std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::GBuffer::RootConstant::Default::Struct));
 
-			pCmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::GBuffer::RootConstant::Default::Count, consts.data(), 0);
+			Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::GBuffer::RootConstant::Default::Struct>(
+				RootSignature::Default::RC_Consts, 
+				ShadingConvention::GBuffer::RootConstant::Default::Count, 
+				consts.data(), 
+				0,
+				pCmdList,
+				FALSE);
 
 			const UINT PrimCount = rc.gIndexCount / 3;
 

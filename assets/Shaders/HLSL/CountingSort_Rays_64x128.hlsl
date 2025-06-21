@@ -83,12 +83,12 @@
 #endif
 
 #include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
-#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 #include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
 #include "./../../../assets/Shaders/HLSL/Random.hlsli"
+#include "./../../../assets/Shaders/HLSL/RaySorting.hlsli"
 
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> gi_RayDirectionOriginDepthMap : register(t0); // R11G11B10 texture. Note that this format doesn't store negative values.
-
+                                                                                                                                                
 // Source ray index offset for a given sorted ray index offset within a ray group.
 // This is essentially a sorted source ray index offsets buffer within a ray group.
 // Inactive rays have a valid index but have INACTIVE_RAY_INDEX_BIT_Y bit set in the y coordinate to 1.
@@ -96,30 +96,7 @@ RWTexture2D<uint2> go_SortedToSourceRayIndexOffsetMap : register(u0);
 
 ConstantBuffer<ConstantBuffers::RaySortingCB> cbRaySorting : register(b0);
 
-#if MAX_RAYS > 8192 || NUM_KEYS > 4096
-The shader supports up to 8192 input rays and 4096 num keys.
-#endif
-
 //********************************************************************
-// Hash Key
-//  - a hash calculated from ray direction and origin depth
-//  - max values:
-//      12 bits(4096) for 8K rays.
-//      13 bits(8192) for 4K rays.
-// The 15th and 16th bits are reserved:
-// - 15th bit == (1) - invalid ray. These rays will get sorted to the end.
-// - 16th bit == (1) - invalid key. To handle when a key is replaced by Source Ray index in SMEM.
-
-#if (KEY_NUM_BITS > 13) || (KEY_NUM_BITS > 12 && MAX_RAYS > 4096)
-Key bit size is out of supported limits.
-#endif
-#if (RAY_DIRECTION_HASH_KEY_BITS_1D > 4)
-Ray direction hash key can only go up to 8 bits for both direction axes since
-its stored in 8bit format.
-#endif
-
-//********************************************************************
-
 
 //********************************************************************
 // Ray Count SMem cache.
@@ -132,7 +109,7 @@ its stored in 8bit format.
 // - Hi bits: odd ping-pong buffer ID
 // - Lo bits: even ping-pong buffer ID
 //********************************************************************
-
+                                                                                                                                                
 //********************************************************************
 // SMEM stores 16 bit values, two 16bit values per 32bit entry:
 // - Hi bits: odd indices
@@ -158,7 +135,6 @@ its stored in 8bit format.
 #define SMCACHE_SIZE 8192
 groupshared uint SMEM[SMCACHE_SIZE];
 //********************************************************************
-
 
 //********************************************************************
 // Store a 16 bit value in the Shared Memory.
@@ -305,11 +281,11 @@ void InitializeSharedMemory(in uint GI) {
 // Create a hash key from a ray direction. 
 uint CreateRayDirectionHashKey(in float2 encodedRayDirection) {
     float2 rayDirectionKey;
-    if (cbRaySorting.useOctahedralRayDirectionQuantization) {
+    if (cbRaySorting.UseOctahedralRayDirectionQuantization) {
         rayDirectionKey = encodedRayDirection;
     }
     else { // Spherical coordinates.
-        float3 rayDirection = DecodeNormal(encodedRayDirection.xy);
+        float3 rayDirection = ValuePackaging::DecodeNormal(encodedRayDirection.xy);
 
         // Convert the vector from cartesian to spherical coordinates.
         float azimuthAngle = atan2(rayDirection.y, rayDirection.x);
@@ -340,8 +316,12 @@ uint CreateDepthHashKey(in float rayOriginDepth, in float2 rayGroupMinMaxDepth) 
     const uint DepthHashKeyBins = 1 << DEPTH_HASH_KEY_BITS;
     const uint MaxDepthHashKeyBinValue = DepthHashKeyBins - 1;
     
+    //   ( RayOriginDepth - RayGroupMinDepth ) * MaxDepthHashKeyBinValue
+    // ------------------------------------------------------------------- = [ 0, MaxDepthHashKeyBinValue ]
+    //             ( RayGroupMaxDepth - RayGroupMinDepth )
+    //
     // Simple linear quantization within the min/max range.
-    float binDepthSize = max(rayGroupDepthRange / MaxDepthHashKeyBinValue, cbRaySorting.binDepthSize);
+    float binDepthSize = max(rayGroupDepthRange / MaxDepthHashKeyBinValue, cbRaySorting.BinDepthSize);
     uint depthHashKey = min(relativeDepth / binDepthSize, MaxDepthHashKeyBinValue);
 
     return depthHashKey;
@@ -353,7 +333,7 @@ uint CreateIndexHashKey(in uint2 rayIndex) {
 
     const uint IndexHashKeyBins = 1 << INDEX_HASH_KEY_BITS;
     const uint MaxIndexHashKeyBinValue = IndexHashKeyBins - 1;
-    uint2 RayGroupDim = uint2(SortRays::RayGroup::Width, SortRays::RayGroup::Height);
+    uint2 RayGroupDim = uint2(ShadingConvention::RaySorting::RayGroup::Width, ShadingConvention::RaySorting::RayGroup::Height);
 #if INDEX_HASH_KEY_BITS == 12
     uint indexHashKey = ((rayIndex.y * RayGroupDim.x) + rayIndex.x) / 2;
 #elif 0
@@ -396,12 +376,12 @@ uint CreateRayHashKey(in uint2 rayIndex, in float2 encodedRayDirection, in float
 
 // Calculate ray direction hash keys and cache depths.
 void CalculatePartialRayDirectionHashKeyAndCacheDepth(in uint2 Gid, in uint GI) {
-    uint2 RayGroupDim = uint2(SortRays::RayGroup::Width, SortRays::RayGroup::Height);
+    uint2 RayGroupDim = uint2(ShadingConvention::RaySorting::RayGroup::Width, ShadingConvention::RaySorting::RayGroup::Height);
     uint2 GroupStart = Gid * RayGroupDim;
     uint2 NextGroupStart = GroupStart + RayGroupDim;
 
-    // Trim the Ray Group Dim to valid dims.
-    RayGroupDim = min(NextGroupStart, cbRaySorting.dim) - GroupStart;
+    // Trim the Ray Group TextureDim to valid dims.
+    RayGroupDim = min(NextGroupStart, cbRaySorting.TextureDim) - GroupStart;
     uint NumRays = RayGroupDim.y * RayGroupDim.x;
 
     for (uint ray = GI; ray < NumRays; ray += NUM_THREADS) {
@@ -410,7 +390,7 @@ void CalculatePartialRayDirectionHashKeyAndCacheDepth(in uint2 Gid, in uint GI) 
 
         float2 encodedRayDirection;
         float rayOriginDepth;
-        UnpackEncodedNormalDepth(gi_RayDirectionOriginDepth[pixel], encodedRayDirection, rayOriginDepth);
+        ValuePackaging::UnpackEncodedNormalDepth(gi_RayDirectionOriginDepthMap[pixel], encodedRayDirection, rayOriginDepth);
         bool isRayValid = rayOriginDepth != INVALID_RAY_ORIGIN_DEPTH;
 
         // The ray direction hash key doesn't need to store if the ray value is valid for now, 
@@ -437,12 +417,12 @@ void CalculatePartialRayDirectionHashKeyAndCacheDepth(in uint2 Gid, in uint GI) 
 float2 CalculateRayGroupMinMaxDepth(in uint GI, uint2 Gid) {
     if (DEPTH_HASH_KEY_BITS == 0) return 0;
 
-    uint2 RayGroupDim = uint2(SortRays::RayGroup::Width, SortRays::RayGroup::Height);
+    uint2 RayGroupDim = uint2(ShadingConvention::RaySorting::RayGroup::Width, ShadingConvention::RaySorting::RayGroup::Height);
     uint2 GroupStart = Gid * RayGroupDim;
     uint2 NextGroupStart = GroupStart + RayGroupDim;
 
-    // Trim the Ray Group Dim to valid dims.
-    RayGroupDim = min(NextGroupStart, cbRaySorting.dim) - GroupStart;
+    // Trim the Ray Group TextureDim to valid dims.
+    RayGroupDim = min(NextGroupStart, cbRaySorting.TextureDim) - GroupStart;
     uint NumRays = RayGroupDim.y * RayGroupDim.x;
 
     // Optimization
@@ -487,12 +467,12 @@ void FinalizeHashKeyAndCalculateKeyHistogram(in uint GI, in uint2 Gid, in float2
     
     GroupMemoryBarrierWithGroupSync();
 
-    uint2 RayGroupDim = uint2(SortRays::RayGroup::Width, SortRays::RayGroup::Height);
+    uint2 RayGroupDim = uint2(ShadingConvention::RaySorting::RayGroup::Width, ShadingConvention::RaySorting::RayGroup::Height);
     uint2 GroupStart = Gid * RayGroupDim;
     uint2 NextGroupStart = GroupStart + RayGroupDim;
 
-    // Trim the Ray Group Dim to valid dims.
-    RayGroupDim = min(NextGroupStart, cbRaySorting.dim) - GroupStart;
+    // Trim the Ray Group TextureDim to valid dims.
+    RayGroupDim = min(NextGroupStart, cbRaySorting.TextureDim) - GroupStart;
     uint NumRays = RayGroupDim.y * RayGroupDim.x;
 
     for (uint ray = GI; ray < NumRays; ray += NUM_THREADS) {
@@ -502,7 +482,7 @@ void FinalizeHashKeyAndCalculateKeyHistogram(in uint GI, in uint2 Gid, in float2
 
         if (isRayValid) {
             uint rayDirectionHashKey = Load8bitUintFromLow16bitSMem(ray, SMem::Offset::Key8b);
-            uint2 rayIndex = uint2(ray % SortRays::RayGroup::Width, ray / SortRays::RayGroup::Width);
+            uint2 rayIndex = uint2(ray % ShadingConvention::RaySorting::RayGroup::Width, ray / ShadingConvention::RaySorting::RayGroup::Width);
             hashKey = CreateRayHashKey(rayIndex, rayDirectionHashKey, rayOriginDepth, rayGroupMinMaxDepth);
         }
 
@@ -584,12 +564,12 @@ uint2 UnflattenRayIndex(in uint index) {
 // Write the sorted indices to shared memory to avoid costly scatter writes to VRAM.
 // Later, these are linearly spilled from shared memory to VRAM.
 void ScatterWriteSortedIndicesToSharedMemory(in uint2 Gid, in uint GI, in float2 rayGroupMinMaxDepth) {
-    uint2 RayGroupDim = uint2(SortRays::RayGroup::Width, SortRays::RayGroup::Height);
+    uint2 RayGroupDim = uint2(ShadingConvention::RaySorting::RayGroup::Width, ShadingConvention::RaySorting::RayGroup::Height);
     uint2 GroupStart = Gid * RayGroupDim;
     uint2 NextGroupStart = GroupStart + RayGroupDim;
 
-    // Trim the Ray Group Dim to valid dims.
-    RayGroupDim = min(NextGroupStart, cbRaySorting.dim) - GroupStart;
+    // Trim the Ray Group TextureDim to valid dims.
+    RayGroupDim = min(NextGroupStart, cbRaySorting.TextureDim) - GroupStart;
     uint NumRays = RayGroupDim.y * RayGroupDim.x;
 
     for (uint ray = GI; ray < NumRays; ray += NUM_THREADS) {
@@ -611,7 +591,7 @@ void ScatterWriteSortedIndicesToSharedMemory(in uint2 Gid, in uint GI, in float2
         else { // The cached key has been already replaced with the ray's source index. Regenerate the key.
             float2 encodedRayDirection;
             float rayOriginDepth;
-            UnpackEncodedNormalDepth(gi_RayDirectionOriginDepthMap[pixel], encodedRayDirection, rayOriginDepth);
+            ValuePackaging::UnpackEncodedNormalDepth(gi_RayDirectionOriginDepthMap[pixel], encodedRayDirection, rayOriginDepth);
             isRayValid = rayOriginDepth != INVALID_RAY_ORIGIN_DEPTH;
 
             if (isRayValid) key = CreateRayHashKey(rayIndex, encodedRayDirection, rayOriginDepth, rayGroupMinMaxDepth);
@@ -636,12 +616,12 @@ void ScatterWriteSortedIndicesToSharedMemory(in uint2 Gid, in uint GI, in float2
 // instead of doing expensive scatter write after ray tracing, the subsequent pass
 // reading ray tracing results will do gather read.
 void SpillCachedIndicesToVRAMAndCacheInvertedSortedIndices(in uint2 Gid, in uint GI) {
-    uint2 RayGroupDim = uint2(SortRays::RayGroup::Width, SortRays::RayGroup::Height);
+    uint2 RayGroupDim = uint2(ShadingConvention::RaySorting::RayGroup::Width, ShadingConvention::RaySorting::RayGroup::Height);
     uint2 GroupStart = Gid * RayGroupDim;
     uint2 NextGroupStart = GroupStart + RayGroupDim;
-
-    // Trim the Ray Group Dim to valid dims.
-    RayGroupDim = min(NextGroupStart, cbRaySorting.dim) - GroupStart;
+ 
+    // Trim the Ray Group TextureDim to valid dims. 
+    RayGroupDim = min(NextGroupStart, cbRaySorting.TextureDim) - GroupStart;
     uint NumRays = RayGroupDim.y * RayGroupDim.x;
 
     // Sequentially spill cached source indices into VRAM.
@@ -663,7 +643,7 @@ void SpillCachedIndicesToVRAMAndCacheInvertedSortedIndices(in uint2 Gid, in uint
     ShadingConvention::RaySorting::ThreadGroup::Width, 
     ShadingConvention::RaySorting::ThreadGroup::Height, 
     ShadingConvention::RaySorting::ThreadGroup::Depth)]
-void main(in uint2 Gid : SV_GroupID, in uint2 GTid : SV_GroupThreadID, in uint GI : SV_GroupIndex) {
+void CS(in uint2 Gid : SV_GroupID, in uint2 GTid : SV_GroupThreadID, in uint GI : SV_GroupIndex) {
     InitializeSharedMemory(GI);
 
     float2 rayGroupMinMaxDepth;

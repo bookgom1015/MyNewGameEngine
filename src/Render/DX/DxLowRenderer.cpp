@@ -37,11 +37,11 @@ BOOL DxLowRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile,
 		Common::Foundation::Core::WindowsManager* const pWndManager, 
 		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
-		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pShadingArgSet,
 		UINT width, UINT height) {
 	mpLogFile = pLogFile;
 	mpWindowsManager = pWndManager;
-	mpArgumentSet = pArgSet;
+	mpShadingArgumentSet = pShadingArgSet;
 
 	mpImGuiManager = dynamic_cast<ImGuiManager::DX::DxImGuiManager*>(pImGuiManager);
 

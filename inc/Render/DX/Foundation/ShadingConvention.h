@@ -522,7 +522,8 @@ namespace ShadingConvention{
 				NumElementPairsPerThread	= 4, 
 				Width						= ThreadGroup::Width, 
 				Height						= NumElementPairsPerThread * 2 * ThreadGroup::Height, 
-				Size						= Width * Height 
+				Depth						= 1,
+				Size						= Width * Height * Depth
 			};
 		}
 

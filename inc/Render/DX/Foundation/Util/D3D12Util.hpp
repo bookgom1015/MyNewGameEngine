@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif // WIN32_LEAN_AND_MEAN
@@ -176,6 +178,15 @@ namespace Render::DX::Foundation {
 				DirectX::ScratchImage& result,
 				D3D12_RESOURCE_STATES beforeState = D3D12_RESOURCE_STATE_RENDER_TARGET,
 				D3D12_RESOURCE_STATES afterState = D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+			template <typename T>
+			static void SetRoot32BitConstants(
+				UINT RootParameterIndex,
+				UINT Num32BitValuesToSet,
+				const void* pSrcData,
+				UINT DestOffsetIn32BitValues,
+				ID3D12GraphicsCommandList6* const pCmdList,
+				BOOL isCompute);
 
 		private:
 			static Common::Debug::LogFile* mpLogFile;
