@@ -1,10 +1,20 @@
 #pragma once
 
+#include <random>
+
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Render/DX/Foundation/Resource/StructuredBuffer.hpp"
 
-namespace Common::Foundation {
-	class MultiJittered;
+namespace Common {
+	namespace Foundation{
+		class MultiJittered;
+	}
+
+	namespace Render {
+		namespace ShadingArgument {
+			struct ShadingArgumentSet;
+		}
+	}
 }
 
 namespace Render::DX::Shading {
@@ -24,6 +34,7 @@ namespace Render::DX::Shading {
 					SI_NormalDepthMap,
 					SI_PositionMap,
 					UO_RayDirectionOriginDepthMap,
+					UO_DebugMap,
 					Count
 				};
 			}
@@ -32,6 +43,7 @@ namespace Render::DX::Shading {
 		class RayGenClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
+				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet = nullptr;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
@@ -42,6 +54,7 @@ namespace Render::DX::Shading {
 				UINT* SamplesPerPixel;
 				UINT MaxSampleSetDistributedAcrossPixels;
 				UINT* SampleSetDistributedAcrossPixels;
+				UINT* CurrentFrameIndex;
 			};
 		public:
 			RayGenClass();
@@ -69,6 +82,7 @@ namespace Render::DX::Shading {
 		public:
 			UINT NumSampleSets() const;
 			UINT NumSamples() const;
+			UINT Seed();
 
 		public:
 			BOOL GenerateRays(
@@ -76,11 +90,11 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pNormalDepthMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
 				Foundation::Resource::GpuResource* const pPositionMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
-				UINT currFrameResourceIndex);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap);
 
 		private:
 			void BuildSamples();
+			void UpdateStructuredBuffers();
 
 			BOOL BuildResources();
 			BOOL BuildDescriptors();
@@ -89,6 +103,7 @@ namespace Render::DX::Shading {
 			InitData mInitData;
 
 			std::unique_ptr<Common::Foundation::MultiJittered> mRandomSampler;
+			std::mt19937 mGeneratorURNG;
 
 			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
 			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
@@ -103,6 +118,10 @@ namespace Render::DX::Shading {
 			D3D12_GPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapGpuSrv;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapCpuUav;
 			D3D12_GPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapGpuUav;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav;
 		};
 
 		using InitDataPtr = std::unique_ptr<RayGenClass::InitData>;

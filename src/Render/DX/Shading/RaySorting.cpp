@@ -1,5 +1,6 @@
 #include "Render/DX/Shading/RaySorting.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
@@ -137,8 +138,13 @@ BOOL RaySorting::RaySortingClass::CalcRayIndexOffset(
 		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_NormalDepthMap, si_normalDepthMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_RayIndexOffsetMap, mhRayIndexOffsetMapGpuUav);
 		
+		const UINT ActvieWidth =
+			mInitData.ShadingArgumentSet->RTAO.CheckboardRayGeneration ?
+			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, 2)
+			: mInitData.ClientWidth;
+
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::RaySorting::RayGroup::Width),
+			Foundation::Util::D3D12Util::CeilDivide(ActvieWidth, ShadingConvention::RaySorting::RayGroup::Width),
 			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::RaySorting::RayGroup::Height),
 			ShadingConvention::RaySorting::RayGroup::Depth);
 		
@@ -154,7 +160,7 @@ BOOL RaySorting::RaySortingClass::BuildResources() {
 	D3D12_RESOURCE_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
 	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	texDesc.Format = ShadingConvention::GBuffer::NormalDepthMapFormat;
+	texDesc.Format = ShadingConvention::RaySorting::RayIndexOffsetMapFormat;
 	texDesc.Width = mInitData.ClientWidth;
 	texDesc.Height = mInitData.ClientHeight;
 	texDesc.Alignment = 0;
@@ -181,13 +187,13 @@ BOOL RaySorting::RaySortingClass::BuildDescriptors() {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Format = ShadingConvention::GBuffer::NormalDepthMapFormat;
+	srvDesc.Format = ShadingConvention::RaySorting::RayIndexOffsetMapFormat;
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = 1;
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	uavDesc.Format = ShadingConvention::GBuffer::NormalDepthMapFormat;
+	uavDesc.Format = ShadingConvention::RaySorting::RayIndexOffsetMapFormat;
 	uavDesc.Texture2D.MipSlice = 0;
 	uavDesc.Texture2D.PlaneSlice = 0;
 

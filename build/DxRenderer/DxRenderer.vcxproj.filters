@@ -145,6 +145,12 @@
     <Filter Include="Shader Files\SVGF\RaySorting">
       <UniqueIdentifier>{94dfaf95-2cbc-4817-abdb-c898a60b076d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\SVGF\Denoising\Filtering">
+      <UniqueIdentifier>{23686341-c1a6-4e90-800d-2c81e70ecdd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\SVGF\Denoising\Temporal">
+      <UniqueIdentifier>{54845f0b-1adf-4e66-a57d-faf3ad6fcdda}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -614,9 +620,6 @@
     <None Include="..\..\assets\Shaders\HLSL\Kernels.hlsli">
       <Filter>Shader Files\SVGF\Denoising</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli">
-      <Filter>Shader Files\SVGF\Denoising</Filter>
-    </None>
     <None Include="..\..\assets\Shaders\HLSL\ValuePackaging.hlsli">
       <Filter>Shader Files\SVGF</Filter>
     </None>
@@ -635,15 +638,6 @@
     <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsli">
       <Filter>Shader Files\SVGF\Temporal</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Color.hlsl">
-      <Filter>Shader Files\SVGF\Denoising</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance.hlsli">
-      <Filter>Shader Files\SVGF\Denoising</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Contrast.hlsl">
-      <Filter>Shader Files\SVGF\Denoising</Filter>
-    </None>
     <None Include="..\..\assets\Shaders\HLSL\RayGen.hlsl">
       <Filter>Shader Files\SVGF\RayGen</Filter>
     </None>
@@ -658,6 +652,18 @@
     </None>
     <None Include="..\..\inc\Render\DX\Shading\RayGen.inl">
       <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\RaySorting.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli">
+      <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance.hlsl">
+      <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\FillInCheckerboard_CrossBox4TapFilter.hlsl">
+      <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
     </None>
   </ItemGroup>
 </Project>

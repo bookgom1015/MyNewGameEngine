@@ -1,6 +1,7 @@
 #include "Render/DX/Shading/RTAO.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
@@ -36,12 +37,15 @@ RTAO::RTAOClass::RTAOClass() {
 			mTemporalCaches[frame][resource] = std::make_unique<Foundation::Resource::GpuResource>();
 		}
 	}
+
+	mDebugMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
 UINT RTAO::RTAOClass::CbvSrvUavDescCount() const { return 0
 	+ Descriptor::AO::Count
 	+ Descriptor::TemporalCache::Count // Frame 0
 	+ Descriptor::TemporalCache::Count // Frame 1
+	+ 1 // DebugMap
 	; 
 }
 
@@ -68,13 +72,14 @@ BOOL RTAO::RTAOClass::CompileShaders() {
 }
 
 BOOL RTAO::RTAOClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
-	CD3DX12_DESCRIPTOR_RANGE texTables[6] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[7] = {}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1);
+	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 2);
 
 	index = 0;
 
@@ -84,9 +89,10 @@ BOOL RTAO::RTAOClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	slotRootParameter[RootSignature::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::SI_NormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::SI_RayDirectionOriginDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
-	slotRootParameter[RootSignature::SI_TexAOSortedToSourceRayIndexOffsetMap].InitAsDescriptorTable(1, &texTables[index++]);
+	slotRootParameter[RootSignature::SI_RayIndexOffsetMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::UO_AOCoefficientMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::UO_RayHitDistanceMap].InitAsDescriptorTable(1, &texTables[index++]);
+	slotRootParameter[RootSignature::UO_DebugMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 		_countof(slotRootParameter), slotRootParameter,
@@ -180,6 +186,9 @@ BOOL RTAO::RTAOClass::BuildDescriptors(Foundation::Core::DescriptorHeap* const p
 		mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_AOCoefficient] = pDescHeap->CbvSrvUavCpuOffset(1);
 		mhTemporalCacheGpus[frame][Descriptor::TemporalCache::EU_AOCoefficient] = pDescHeap->CbvSrvUavGpuOffset(1);
 	}
+	// DebugMap
+	mhDebugMapCpuUav = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhDebugMapGpuUav = pDescHeap->CbvSrvUavGpuOffset(1);
 
 	CheckReturn(mpLogFile, BuildDescriptors());
 
@@ -208,16 +217,13 @@ BOOL RTAO::RTAOClass::BuildShaderTables(UINT numRitems) {
 		// RayGenShaderTable
 		{
 			void* const rayGenShaderIdentifier = mStateObjectProp->GetShaderIdentifier(RTAO_RayGenName);
-			void* const rayGenRaySortedShaderIdentifier = mStateObjectProp->GetShaderIdentifier(RTAO_RayGenRaySortedName);
 
 			Util::ShaderTable rayGenShaderTable(mpLogFile, mInitData.Device, 2, ShaderIdentifierSize);
 			CheckReturn(mpLogFile, rayGenShaderTable.Initialze());
 			rayGenShaderTable.push_back(Util::ShaderRecord(rayGenShaderIdentifier, ShaderIdentifierSize));
-			rayGenShaderTable.push_back(Util::ShaderRecord(rayGenRaySortedShaderIdentifier, ShaderIdentifierSize));
 
 #ifdef _DEBUG
 			shaderIdToStringMap[rayGenShaderIdentifier] = RTAO_RayGenName;
-			shaderIdToStringMap[rayGenRaySortedShaderIdentifier] = RTAO_RayGenRaySortedName;
 
 			WLogln(mpLogFile, L"RTAO - Ray Gen");
 			rayGenShaderTable.DebugPrint(shaderIdToStringMap);
@@ -225,6 +231,24 @@ BOOL RTAO::RTAOClass::BuildShaderTables(UINT numRitems) {
 #endif
 
 			mShaderTables[ShaderTable::E_RayGenShader] = rayGenShaderTable.GetResource();
+		}
+		// SortedRayGenShaderTable
+		{
+			void* const rayGenRaySortedShaderIdentifier = mStateObjectProp->GetShaderIdentifier(RTAO_RayGenRaySortedName);
+
+			Util::ShaderTable rayGenShaderTable(mpLogFile, mInitData.Device, 2, ShaderIdentifierSize);
+			CheckReturn(mpLogFile, rayGenShaderTable.Initialze());
+			rayGenShaderTable.push_back(Util::ShaderRecord(rayGenRaySortedShaderIdentifier, ShaderIdentifierSize));
+
+#ifdef _DEBUG
+			shaderIdToStringMap[rayGenRaySortedShaderIdentifier] = RTAO_RayGenRaySortedName;
+
+			WLogln(mpLogFile, L"RTAO - Sorted Ray Gen");
+			rayGenShaderTable.DebugPrint(shaderIdToStringMap);
+			WLogln(mpLogFile, L"");
+#endif
+
+			mShaderTables[ShaderTable::E_SortedRayGenShader] = rayGenShaderTable.GetResource();
 		}
 		// MissShaderTable
 		{
@@ -380,6 +404,19 @@ BOOL RTAO::RTAOClass::BuildResources() {
 				name.str().c_str()));
 		}
 	}
+	// DebugMap
+	{
+		texDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+		CheckReturn(mpLogFile, mDebugMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&texDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			L"RTAO_AOCoefficientMap"));
+	}
 
 	return TRUE;
 }
@@ -456,6 +493,13 @@ BOOL RTAO::RTAOClass::BuildDescriptors() {
 			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_AOCoefficient]);
 		}
 	}
+	// DebugMap
+	{
+		uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+		const auto resource = mDebugMap->Resource();
+		Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhDebugMapCpuUav);
+	}
 
 	return TRUE;
 }
@@ -468,7 +512,10 @@ BOOL RTAO::RTAOClass::DrawAO(
 		Foundation::Resource::GpuResource* const pNormalDepthMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
 		Foundation::Resource::GpuResource* const pRayDirectionOriginDepthMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_rayDirectionOriginDepthMap) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_rayDirectionOriginDepthMap,
+		Foundation::Resource::GpuResource* const pRayInexOffsetMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_rayIndexOffsetMap,
+		BOOL bRaySortingEnabled) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -489,6 +536,10 @@ BOOL RTAO::RTAOClass::DrawAO(
 		rayHitDist->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, rayHitDist);
 
+		const auto& debugMap = mDebugMap.get();
+		debugMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, debugMap);
+
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pRayDirectionOriginDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -498,11 +549,13 @@ BOOL RTAO::RTAOClass::DrawAO(
 		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_PositionMap, si_positionMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_NormalDepthMap, si_normalDepthMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_RayDirectionOriginDepthMap, si_rayDirectionOriginDepthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_RayIndexOffsetMap, si_rayIndexOffsetMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::UO_AOCoefficientMap, mhAOResourceGpus[RTAO::Descriptor::AO::EU_AOCoefficient]);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::UO_RayHitDistanceMap, mhAOResourceGpus[RTAO::Descriptor::AO::EU_RayHitDistance]);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::UO_DebugMap, mhDebugMapGpuUav);
 
 		D3D12_DISPATCH_RAYS_DESC dispatchDesc = {};
-		const auto& rayGen = mShaderTables[ShaderTable::E_RayGenShader];
+		const auto& rayGen = mShaderTables[bRaySortingEnabled ? ShaderTable::E_SortedRayGenShader : ShaderTable::E_RayGenShader];
 		const auto& miss = mShaderTables[ShaderTable::E_MissShader];
 		const auto& hitGroup = mShaderTables[ShaderTable::E_HitGroupShader];
 
@@ -514,9 +567,22 @@ BOOL RTAO::RTAOClass::DrawAO(
 		dispatchDesc.HitGroupTable.StartAddress = hitGroup->GetGPUVirtualAddress();
 		dispatchDesc.HitGroupTable.SizeInBytes = hitGroup->GetDesc().Width;
 		dispatchDesc.HitGroupTable.StrideInBytes = mHitGroupShaderTableStrideInBytes;
-		dispatchDesc.Width = mInitData.ClientWidth;
-		dispatchDesc.Height = mInitData.ClientHeight;
-		dispatchDesc.Depth = 1;
+		
+		if (bRaySortingEnabled) {
+			const UINT ActvieWidth =
+				mInitData.ShadingArgumentSet->RTAO.CheckboardRayGeneration ?
+				Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, 2)
+				: mInitData.ClientWidth;
+
+			dispatchDesc.Width = ActvieWidth * mInitData.ClientHeight;
+			dispatchDesc.Height = 1;
+			dispatchDesc.Depth = 1;
+		}
+		else {
+			dispatchDesc.Width = mInitData.ClientWidth;
+			dispatchDesc.Height = mInitData.ClientHeight;
+			dispatchDesc.Depth = 1;
+		}
 		
 		CmdList->DispatchRays(&dispatchDesc);
 	}

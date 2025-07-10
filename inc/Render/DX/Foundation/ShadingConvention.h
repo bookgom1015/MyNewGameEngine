@@ -9,6 +9,10 @@
 	#ifndef SDR_FORMAT
 	#define SDR_FORMAT float4
 	#endif
+
+	#ifndef AOMAP_FORMAT
+	#define AOMAP_FORMAT float
+	#endif
 #else
 	#ifndef HDR_FORMAT
 	#define HDR_FORMAT DXGI_FORMAT_R16G16B16A16_FLOAT
@@ -16,6 +20,10 @@
 
 	#ifndef SDR_FORMAT
 	#define SDR_FORMAT DXGI_FORMAT_R8G8B8A8_UNORM
+	#endif
+
+	#ifndef AOMAP_FORMAT
+	#define AOMAP_FORMAT DXGI_FORMAT_R16_FLOAT
 	#endif
 #endif
 
@@ -459,14 +467,14 @@ namespace ShadingConvention{
 		}
 
 #ifdef _HLSL
-		typedef float	AOMapFormat;
-		typedef float3	RandomVectorMapFormat;
+		typedef AOMAP_FORMAT	AOMapFormat;
+		typedef float3			RandomVectorMapFormat;
 
 #ifndef SSAO_Default_RootConstants
 #define SSAO_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_Default_RCSTRUCT
 #endif
 #else
-		const DXGI_FORMAT AOMapFormat = DXGI_FORMAT_R16_UNORM;
+		const DXGI_FORMAT AOMapFormat = AOMAP_FORMAT;
 		const DXGI_FORMAT RandomVectorMapFormat = DXGI_FORMAT_R8G8B8A8_SNORM;
 
 		const FLOAT AOMapClearValues[4] = { 1.f, 0.f, 0.f, 0.f };
@@ -528,13 +536,15 @@ namespace ShadingConvention{
 		}
 
 #ifdef _HLSL
-		
+		typedef uint2 RayIndexOffsetMapFormat;
 #else
 		static_assert(
 			RayGroup::Width <= 64 &&
 			RayGroup::Height <= 128 &&
 			RayGroup::Size <= 8192,
 			"Ray group dimensions are outside the supported limits set by the Counting Sort shader.");
+
+		const DXGI_FORMAT RayIndexOffsetMapFormat = DXGI_FORMAT_R8G8_UINT;
 #endif
 	}
 
@@ -588,10 +598,6 @@ namespace ShadingConvention{
 
 		static const float InvalidContrastValue = -1.f;
 		static const float InvalidColorValueW = -1.f;
-
-		bool IsValidColorValue(float4 val) {
-			return val.w != InvalidColorValueW;
-		}
 
 #ifndef SVGF_TemporalSupersamplingReverseReproject_RootConstants
 #define SVGF_TemporalSupersamplingReverseReproject_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
@@ -659,10 +665,10 @@ namespace ShadingConvention{
 
 	namespace RTAO {
 #ifdef _HLSL
-		typedef float	AOCoefficientMapFormat;
-		typedef uint	TSPPMapFormat;
-		typedef float	AOCoefficientSquaredMeanMapFormat;
-		typedef float	RayHitDistanceFormat;
+		typedef AOMAP_FORMAT	AOCoefficientMapFormat;
+		typedef uint			TSPPMapFormat;
+		typedef float			AOCoefficientSquaredMeanMapFormat;
+		typedef float			RayHitDistanceFormat;
 
 		static const float RayHitDistanceOnMiss = 0.f;
 		static const float InvalidAOCoefficientValue = SVGF::InvalidContrastValue;
@@ -671,7 +677,7 @@ namespace ShadingConvention{
 			return tHit != RayHitDistanceOnMiss;
 		}
 #else
-		const DXGI_FORMAT AOCoefficientMapFormat			= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT AOCoefficientMapFormat			= AOMAP_FORMAT;
 		const DXGI_FORMAT TSPPMapFormat						= DXGI_FORMAT_R8_UINT;
 		const DXGI_FORMAT AOCoefficientSquaredMeanMapFormat	= DXGI_FORMAT_R16_FLOAT;
 		const DXGI_FORMAT RayHitDistanceFormat				= DXGI_FORMAT_R16_FLOAT;

@@ -176,6 +176,8 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 				mbMeshGeometryAdded = FALSE;
 			}
 		}
+
+		mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels = !mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
 	}
 
 	CheckReturn(mpLogFile, mShadingObjectManager->Update());
@@ -703,12 +705,18 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 	mSSAO->GetOffsetVectors(aoCB.OffsetVectors);
 
 	if (mpShadingArgumentSet->RaytracingEnabled) {
+		const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
+		const UINT PixelStepX = CheckboardRayGeneration ? 2 : 1;
+
+		aoCB.TextureDim = { Foundation::Util::D3D12Util::CeilDivide(mClientWidth, PixelStepX), mClientHeight };
+
 		aoCB.OcclusionRadius = mpShadingArgumentSet->RTAO.OcclusionRadius;
 		aoCB.OcclusionFadeStart = mpShadingArgumentSet->RTAO.OcclusionFadeStart;
 		aoCB.OcclusionFadeEnd = mpShadingArgumentSet->RTAO.OcclusionFadeEnd;
 		aoCB.SurfaceEpsilon = mpShadingArgumentSet->RTAO.SurfaceEpsilon;
 		aoCB.SampleCount = mpShadingArgumentSet->RTAO.SampleCount;
-		aoCB.TextureDim = { static_cast<FLOAT>(mClientWidth), static_cast<FLOAT>(mClientHeight)};
+		aoCB.CheckerboardRayGenEnabled = CheckboardRayGeneration;
+		aoCB.EvenPixelsActivated = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
 	}
 	else {
 		aoCB.OcclusionRadius = mpShadingArgumentSet->SSAO.OcclusionRadius;
@@ -729,13 +737,16 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 BOOL DxRenderer::UpdateRayGenCB() {
 	ConstantBuffers::RayGenCB rayGenCB;
 
-	rayGenCB.TextureDim = { static_cast<FLOAT>(mClientWidth), static_cast<FLOAT>(mClientHeight) };
+	const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
+	const UINT PixelStepX = CheckboardRayGeneration ? 2 : 1;
+
+	rayGenCB.TextureDim = { Foundation::Util::D3D12Util::CeilDivide(mClientWidth, PixelStepX), mClientHeight };
 	rayGenCB.NumSamplesPerSet = mRayGen->NumSamples();
 	rayGenCB.NumSampleSets = mRayGen->NumSampleSets();
 	rayGenCB.NumPixelsPerDimPerSet = mpShadingArgumentSet->RTAO.SampleSetSize;
-	rayGenCB.CheckerboardRayGenEnabled = FALSE;
-	rayGenCB.CheckerboardGenerateRaysForEvenPixels = FALSE;
-	rayGenCB.Seed = 1879;
+	rayGenCB.CheckerboardRayGenEnabled = CheckboardRayGeneration;
+	rayGenCB.CheckerboardGenerateRaysForEvenPixels = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
+	rayGenCB.Seed = mpShadingArgumentSet->RTAO.RandomFrameSeed ? mRayGen->Seed() : 1879;
 
 	mpCurrentFrameResource->CopyRayGenCB(rayGenCB);
 
@@ -745,9 +756,14 @@ BOOL DxRenderer::UpdateRayGenCB() {
 BOOL DxRenderer::UpdateRaySortingCB() {
 	ConstantBuffers::RaySortingCB raySortingCB;
 
-	raySortingCB.TextureDim = { mClientWidth, mClientHeight };
+	const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
+	const UINT PixelStepX = CheckboardRayGeneration ? 2 : 1;
+
+	raySortingCB.TextureDim = { Foundation::Util::D3D12Util::CeilDivide(mClientWidth, PixelStepX), mClientHeight };
 	raySortingCB.BinDepthSize = mpShadingArgumentSet->RTAO.OcclusionRadius * mpShadingArgumentSet->RaySorting.DepthBinSizeMultiplier;
 	raySortingCB.UseOctahedralRayDirectionQuantization = TRUE;
+	raySortingCB.CheckerboardRayGenEnabled = CheckboardRayGeneration;
+	raySortingCB.CheckerboardGenerateRaysForEvenPixels = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
 
 	mpCurrentFrameResource->CopyRaySortingCB(raySortingCB);
 
@@ -1067,6 +1083,7 @@ BOOL DxRenderer::InitShadingObjects() {
 	// RTAO
 	{
 		auto initData = Shading::RTAO::MakeInitData();
+		initData->ShadingArgumentSet = mpShadingArgumentSet;
 		initData->RaytracingSupported = mbRaytracingSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
@@ -1079,6 +1096,7 @@ BOOL DxRenderer::InitShadingObjects() {
 	// RayGen
 	{
 		auto initData = Shading::RayGen::MakeInitData();
+		initData->ShadingArgumentSet = mpShadingArgumentSet;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
@@ -1089,11 +1107,13 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->MaxSamplesPerPixel = mpShadingArgumentSet->RTAO.MaxSampleCount;
 		initData->SampleSetDistributedAcrossPixels= &mpShadingArgumentSet->RTAO.SampleSetSize;
 		initData->MaxSampleSetDistributedAcrossPixels = mpShadingArgumentSet->RTAO.MaxSampleSetSize;
+		initData->CurrentFrameIndex = &mCurrentFrameResourceIndex;
 		CheckReturn(mpLogFile, mRayGen->Initialize(mpLogFile, initData.get()));
 	}
 	// RaySorting
 	{
 		auto initData = Shading::RaySorting::MakeInitData();
+		initData->ShadingArgumentSet = mpShadingArgumentSet;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
@@ -1265,14 +1285,20 @@ BOOL DxRenderer::DrawImGui() {
 }
 
 BOOL DxRenderer::DrawAO() {
-	if (mpShadingArgumentSet->RaytracingEnabled) {
-		CheckReturn(mpLogFile, mRayGen->GenerateRays(
-			mpCurrentFrameResource, 
-			mGBuffer->NormalDepthMap(),
-			mGBuffer->NormalDepthMapSrv(), 
-			mGBuffer->PositionMap(),
-			mGBuffer->PositionMapSrv(),
-			mCurrentFrameResourceIndex));
+	if (mpShadingArgumentSet->RaytracingEnabled) {		
+		if (mpShadingArgumentSet->RTAO.RaySortingEnabled) {
+			CheckReturn(mpLogFile, mRayGen->GenerateRays(
+				mpCurrentFrameResource,
+				mGBuffer->NormalDepthMap(),
+				mGBuffer->NormalDepthMapSrv(),
+				mGBuffer->PositionMap(),
+				mGBuffer->PositionMapSrv()));
+
+			CheckReturn(mpLogFile, mRaySorting->CalcRayIndexOffset(
+				mpCurrentFrameResource,
+				mGBuffer->NormalDepthMap(),
+				mGBuffer->NormalDepthMapSrv()));
+		}
 
 		CheckReturn(mpLogFile, mRTAO->DrawAO(
 			mpCurrentFrameResource,
@@ -1282,8 +1308,11 @@ BOOL DxRenderer::DrawAO() {
 			mGBuffer->NormalDepthMap(),
 			mGBuffer->NormalDepthMapSrv(),
 			mRayGen->RayDirectionOriginDepthMap(),
-			mRayGen->RayDirectionOriginDepthMapSrv()));
-
+			mRayGen->RayDirectionOriginDepthMapSrv(),
+			mRaySorting->RayIndexOffsetMap(),
+			mRaySorting->RayIndexOffsetMapSrv(),
+			mpShadingArgumentSet->RTAO.RaySortingEnabled));
+		
 		CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
 			mpCurrentFrameResource,
 			mDepthStencilBuffer->GetDepthStencilBuffer(),

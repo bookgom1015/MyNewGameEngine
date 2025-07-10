@@ -2,6 +2,10 @@
 
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
+namespace Common::Render::ShadingArgument {
+	struct ShadingArgumentSet;
+}
+
 namespace Render::DX::Shading {
 	namespace RTAO {
 		namespace Shader {
@@ -18,9 +22,10 @@ namespace Render::DX::Shading {
 				SI_PositionMap,
 				SI_NormalDepthMap,
 				SI_RayDirectionOriginDepthMap,
-				SI_TexAOSortedToSourceRayIndexOffsetMap,
+				SI_RayIndexOffsetMap,
 				UO_AOCoefficientMap,
 				UO_RayHitDistanceMap,
+				UO_DebugMap,
 				Count
 			};
 		}
@@ -74,6 +79,7 @@ namespace Render::DX::Shading {
 		namespace ShaderTable {
 			enum Type {
 				E_RayGenShader = 0,
+				E_SortedRayGenShader,
 				E_MissShader,
 				E_HitGroupShader,
 				Count
@@ -83,6 +89,7 @@ namespace Render::DX::Shading {
 		class RTAOClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
+				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet = nullptr;
 				BOOL RaytracingSupported = FALSE;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
@@ -124,8 +131,11 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pNormalDepthMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
 				Foundation::Resource::GpuResource* const pRayDirectionOriginDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_rayDirectionOriginDepthMap);
-
+				D3D12_GPU_DESCRIPTOR_HANDLE si_rayDirectionOriginDepthMap,
+				Foundation::Resource::GpuResource* const pRayInexOffsetMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_rayIndexOffsetMap,
+				BOOL bRaySortingEnabled);
+			
 		private:
 			BOOL BuildResources();
 			BOOL BuildDescriptors();
@@ -148,6 +158,10 @@ namespace Render::DX::Shading {
 			std::array<std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::TemporalCache::Count>, 2> mTemporalCaches;
 			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheCpus;
 			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheGpus;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav;
 
 			UINT mHitGroupShaderTableStrideInBytes = 0;
 		};

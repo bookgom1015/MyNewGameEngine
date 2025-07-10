@@ -50,7 +50,10 @@ namespace Common::Render {
 			const UINT MaxSampleSetSize = 8;
 			const UINT MinSampleSetSize = 1;
 
-			BOOL RaySortingEnabled = FALSE;
+			BOOL RaySortingEnabled = TRUE;
+			BOOL CheckerboardGenerateRaysForEvenPixels = FALSE;
+			BOOL CheckboardRayGeneration = TRUE;
+			BOOL RandomFrameSeed = TRUE;
 		};
 
 		struct RaySortingArguments {

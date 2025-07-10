@@ -367,11 +367,32 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 				ImGui::Text("RTAO");
 				ImGui::SliderFloat("Occlusion Radius", &pArgSet->RTAO.OcclusionRadius, 0.01f, 32.f);
 				ImGui::SliderFloat("Occlusion Fade Start", &pArgSet->RTAO.OcclusionFadeStart, 0.f, 32.f);
-				ImGui::SliderFloat("Occlusion Fade End", &pArgSet->RTAO.OcclusionFadeEnd, 0.f, 32.f);
-				if (pArgSet->RTAO.RaySortingEnabled)
-					ImGui::Text("(Ray sorting enabled)");
-				else
-					ImGui::Text("(Ray sorting disabled)");
+				ImGui::SliderFloat("Occlusion Fade End", &pArgSet->RTAO.OcclusionFadeEnd, 0.f, 32.f);				
+
+				const BOOL RaySortingDisabled = pArgSet->RTAO.SampleCount > 1;
+				{
+					if (RaySortingDisabled) ImGui::BeginDisabled();
+
+					if (ImGui::Checkbox("Ray Sorting", reinterpret_cast<bool*>(&pArgSet->RTAO.RaySortingEnabled))) {
+						pArgSet->RTAO.RandomFrameSeed = FALSE;
+						pArgSet->RTAO.CheckboardRayGeneration = FALSE;
+					}
+					if (RaySortingDisabled) ImGui::SetItemTooltip("Enabled only when sample count is 1");
+
+					{
+						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::BeginDisabled();
+
+						ImGui::Checkbox("Random Frame Seed", reinterpret_cast<bool*>(&pArgSet->RTAO.RandomFrameSeed));
+						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::SetItemTooltip("Enabled only when ray sorting is enabled");
+						ImGui::Checkbox("Checkboard Ray Generation", reinterpret_cast<bool*>(&pArgSet->RTAO.CheckboardRayGeneration));
+						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::SetItemTooltip("Enabled only when ray sorting is enabled");
+
+						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::EndDisabled();
+					}
+
+					if (RaySortingDisabled) ImGui::EndDisabled();
+				}
+
 				if(ImGui::SliderInt(
 						"Sample Count", 
 						reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount), 
@@ -379,10 +400,8 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 						static_cast<int>(pArgSet->RTAO.MaxSampleCount))) {
 					if (pArgSet->RTAO.SampleCount > 1) {
 						pArgSet->RTAO.RaySortingEnabled = FALSE;
+						pArgSet->RTAO.CheckboardRayGeneration = FALSE;
 						pArgSet->RTAO.SampleSetSize = 1;
-					}
-					else {
-						pArgSet->RTAO.RaySortingEnabled = TRUE;
 					}
 				}
 				if (ImGui::SliderInt(

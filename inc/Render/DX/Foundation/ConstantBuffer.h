@@ -88,13 +88,13 @@ namespace ConstantBuffers {
 		FLOAT				OcclusionStrength;
 		FLOAT				__ConstantPad0__;
 
-		DirectX::XMFLOAT2	TextureDim;
+		DirectX::XMUINT2	TextureDim;
 		BOOL				CheckerboardRayGenEnabled;
 		BOOL				EvenPixelsActivated;
 	};
 
 	struct RayGenCB {
-		DirectX::XMFLOAT2	TextureDim;
+		DirectX::XMUINT2	TextureDim;
 		BOOL				CheckerboardRayGenEnabled;
 		BOOL				CheckerboardGenerateRaysForEvenPixels;
 
@@ -105,10 +105,15 @@ namespace ConstantBuffers {
 	};
 
 	struct RaySortingCB {
-		DirectX::XMUINT2 TextureDim;
-		BOOL UseOctahedralRayDirectionQuantization;
+		DirectX::XMUINT2	TextureDim;
+		BOOL				UseOctahedralRayDirectionQuantization;
 		// Depth for a bin within which to sort further based on direction.
-		FLOAT BinDepthSize;
+		FLOAT				BinDepthSize;
+
+		BOOL				CheckerboardRayGenEnabled;
+		BOOL				CheckerboardGenerateRaysForEvenPixels;
+		FLOAT				__ConstantPad0__;
+		FLOAT				__ConstantPad1__;
 	};
 
 	namespace SVGF {

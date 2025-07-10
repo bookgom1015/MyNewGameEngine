@@ -1,6 +1,7 @@
 #include "Render/DX/Shading/RayGen.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Sampler/Sampler.hpp"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
@@ -26,9 +27,16 @@ RayGen::InitDataPtr RayGen::MakeInitData() {
 RayGen::RayGenClass::RayGenClass() {
 	mRandomSampler = std::make_unique<Common::Foundation::MultiJittered>();
 	mRayDirectionOriginDepthMap = std::make_unique<Render::DX::Foundation::Resource::GpuResource>();
+	mDebugMap = std::make_unique<Render::DX::Foundation::Resource::GpuResource>();
+
+	mGeneratorURNG.seed(1729);
 }
 
-UINT RayGen::RayGenClass::CbvSrvUavDescCount() const { return 1; }
+UINT RayGen::RayGenClass::CbvSrvUavDescCount() const { return 0 
+	+ 1 // RayDirectionOriginDepthMap
+	+ 1 // DebugMap
+	; 
+}
 
 UINT RayGen::RayGenClass::RtvDescCount() const { return 0; }
 
@@ -47,14 +55,14 @@ BOOL RayGen::RayGenClass::Initialize(Common::Debug::LogFile* const pLogFile, voi
 		mpLogFile, 
 		mInitData.Device, 
 		MaxSamplesPerSet * gcNumSampleSets, 
-		Foundation::Core::SwapChain::SwapChainBufferCount, 
+		Foundation::Resource::FrameResource::Count,
 		FALSE,
 		L"RayGen_SB_SamplesGpuBuffer"));
 	CheckReturn(mpLogFile, mHemisphereSamplesGPUBuffer.Initialize(
 		mpLogFile, 
 		mInitData.Device, 
 		MaxSamplesPerSet * gcNumSampleSets, 
-		Foundation::Core::SwapChain::SwapChainBufferCount, 
+		Foundation::Resource::FrameResource::Count,
 		FALSE,
 		L"RayGen_SB_HemisamplesGpuBuffer"));
 
@@ -71,10 +79,11 @@ BOOL RayGen::RayGenClass::CompileShaders() {
 }
 
 BOOL RayGen::RayGenClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
-	CD3DX12_DESCRIPTOR_RANGE texTables[3] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
 
 	index = 0;
 
@@ -84,6 +93,7 @@ BOOL RayGen::RayGenClass::BuildRootSignatures(const Render::DX::Shading::Util::S
 	slotRootParameter[RootSignature::Default::SI_NormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::Default::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::Default::UO_RayDirectionOriginDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
+	slotRootParameter[RootSignature::Default::UO_DebugMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
@@ -120,10 +130,18 @@ BOOL RayGen::RayGenClass::BuildPipelineStates() {
 }
 
 BOOL RayGen::RayGenClass::BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) {
-	mhRayDirectionOriginDepthMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
-	mhRayDirectionOriginDepthMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
-	mhRayDirectionOriginDepthMapCpuUav = pDescHeap->CbvSrvUavCpuOffset(1);
-	mhRayDirectionOriginDepthMapGpuUav = pDescHeap->CbvSrvUavGpuOffset(1);
+	// RayDirectionOriginDepthMap
+	{
+		mhRayDirectionOriginDepthMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+		mhRayDirectionOriginDepthMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+		mhRayDirectionOriginDepthMapCpuUav = pDescHeap->CbvSrvUavCpuOffset(1);
+		mhRayDirectionOriginDepthMapGpuUav = pDescHeap->CbvSrvUavGpuOffset(1);
+	}
+	// DebugMap
+	{
+		mhDebugMapCpuUav = pDescHeap->CbvSrvUavCpuOffset(1);
+		mhDebugMapGpuUav = pDescHeap->CbvSrvUavGpuOffset(1);
+	}
 
 	CheckReturn(mpLogFile, BuildDescriptors());
 
@@ -142,6 +160,7 @@ BOOL RayGen::RayGenClass::OnResize(UINT width, UINT height) {
 
 BOOL RayGen::RayGenClass::Update() {
 	BuildSamples();
+	UpdateStructuredBuffers();
 
 	return TRUE;
 }
@@ -154,13 +173,18 @@ UINT Render::DX::Shading::RayGen::RayGenClass::NumSamples() const {
 	return mRandomSampler->NumSamples();
 }
 
+UINT RayGen::RayGenClass::Seed() {
+	std::uniform_int_distribution<UINT> seedDistribution(0, UINT_MAX);
+
+	return seedDistribution(mGeneratorURNG);
+}
+
 BOOL RayGen::RayGenClass::GenerateRays(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		Foundation::Resource::GpuResource* const pNormalDepthMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
 		Foundation::Resource::GpuResource* const pPositionMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
-		UINT currFrameResourceIndex) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -179,20 +203,28 @@ BOOL RayGen::RayGenClass::GenerateRays(
 	
 		mRayDirectionOriginDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mRayDirectionOriginDepthMap.get());
+
+		mDebugMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mDebugMap.get());		
 	
 		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_NormalDepthMap, si_normalDepthMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_PositionMap, si_positionMap);
-		CmdList->SetComputeRootShaderResourceView(RootSignature::Default::SB_SampleSets, mSamplesGPUBuffer.GpuVirtualAddress(0, currFrameResourceIndex));
+		CmdList->SetComputeRootShaderResourceView(RootSignature::Default::SB_SampleSets, mHemisphereSamplesGPUBuffer.GpuVirtualAddress(0, 0));
 		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_RayDirectionOriginDepthMap, mhRayDirectionOriginDepthMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_DebugMap, mhDebugMapGpuUav);
+
+		const UINT ActvieWidth = 
+			mInitData.ShadingArgumentSet->RTAO.CheckboardRayGeneration ? 
+			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, 2) 
+			: mInitData.ClientWidth;
 	
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::RayGen::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::CeilDivide(ActvieWidth, ShadingConvention::RayGen::ThreadGroup::Default::Width),
 			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::RayGen::ThreadGroup::Default::Height),
 			ShadingConvention::RayGen::ThreadGroup::Default::Depth);
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
-
 
 	return TRUE;
 }
@@ -206,7 +238,7 @@ void RayGen::RayGenClass::BuildSamples() {
 
 	if (prevSampleSetDistributedAcrossPixels != currSampleSetDistributedAcrossPixels || prevSamplesPerPixel != currSamplesPerPixel) {
 		prevSampleSetDistributedAcrossPixels = currSampleSetDistributedAcrossPixels;
-		prevSamplesPerPixel= currSamplesPerPixel;
+		prevSamplesPerPixel = currSamplesPerPixel;
 	}
 	else {
 		return;
@@ -223,6 +255,11 @@ void RayGen::RayGenClass::BuildSamples() {
 		mSamplesGPUBuffer[i].Value = XMFLOAT2(P.x * 0.5f + 0.5f, P.y * 0.5f + 0.5f);
 		mHemisphereSamplesGPUBuffer[i].Value = P;
 	}
+}
+
+void RayGen::RayGenClass::UpdateStructuredBuffers() {
+	mSamplesGPUBuffer.CopyStagingToGpu(0);
+	mHemisphereSamplesGPUBuffer.CopyStagingToGpu(0);
 }
 
 BOOL RayGen::RayGenClass::BuildResources() {
@@ -252,6 +289,19 @@ BOOL RayGen::RayGenClass::BuildResources() {
 			nullptr,
 			L"RayGen_RayDirectionOriginDepthMap"));
 	}
+	// DebugMap
+	{
+		texDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+		CheckReturn(mpLogFile, mDebugMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&texDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			L"RayGen_DebugMap"));
+	}
 
 	return TRUE;
 }
@@ -277,6 +327,13 @@ BOOL RayGen::RayGenClass::BuildDescriptors() {
 		const auto resource = mRayDirectionOriginDepthMap->Resource();
 		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhRayDirectionOriginDepthMapCpuSrv);
 		Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhRayDirectionOriginDepthMapCpuUav);
+	}
+	// DebugMap
+	{
+		uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+		const auto resource = mDebugMap->Resource();
+		Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhDebugMapCpuUav);
 	}
 
 	return TRUE;

@@ -30,13 +30,16 @@ RaytracingAccelerationStructure gBVH : register(t0);
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap                          : register(t1);
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_NormalDepthMap                       : register(t2);
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_RayDirectionOriginDepthMap           : register(t3);
-Texture2D<uint2>                                                    gi_TexAOSortedToSourceRayIndexOffsetMap : register(t4);
+Texture2D<ShadingConvention::RaySorting::RayIndexOffsetMapFormat>   gi_TexAOSortedToSourceRayIndexOffsetMap : register(t4);
 
-RWTexture2D<float> go_AOCoefficientMap  : register(u0);
-RWTexture2D<float> go_RayHitDistanceMap : register(u1);
+RWTexture2D<ShadingConvention::RTAO::AOCoefficientMapFormat> go_AOCoefficientMap  : register(u0);
+RWTexture2D<ShadingConvention::RTAO::RayHitDistanceFormat>   go_RayHitDistanceMap : register(u1);
+RWTexture2D<float4>                                          go_DebugMap          : register(u2);
+
+static const uint PixelStepX = 2;
 
 bool TraceAORayAndReportIfHit(out float tHit, in Ray aoRay, in float TMax, in float3 surfaceNormal) {
-    RayDesc ray;
+    RayDesc ray;    
 	// Nudge the origin along the surface normal a bit to avoid starting from
 	//  behind the surface due to float calculations imprecision.
     ray.Origin = aoRay.Origin + 0.1 * surfaceNormal;
@@ -104,7 +107,7 @@ void RTAO_RayGen() {
         }
 
         occlusionSum /= cbAO.SampleCount;
-        aoCoefficient = 1 - occlusionSum;
+        aoCoefficient = 1.f - occlusionSum;
     }
 
     go_AOCoefficientMap[LaunchIndex] = aoCoefficient;
@@ -160,7 +163,6 @@ void RTAO_RayGen_RaySorted() {
 
     uint2 srcRayIndexFullRes = srcRayIndex;
     if (cbAO.CheckerboardRayGenEnabled) {
-        const uint PixelStepX = 2;
         const bool IsEvenPixelY = (srcRayIndex.y & 1) == 0;
         const uint PixelOffsetX = IsEvenPixelY != cbAO.EvenPixelsActivated;
         srcRayIndexFullRes.x = srcRayIndex.x * PixelStepX + PixelOffsetX;
@@ -172,19 +174,22 @@ void RTAO_RayGen_RaySorted() {
         float dummy;
         float3 rayDirection;
         ValuePackaging::DecodeNormalDepth(gi_RayDirectionOriginDepthMap[srcRayIndex], rayDirection, dummy);
-        
+                
+        go_DebugMap[srcRayIndexFullRes] = float4(rayDirection, dummy);
+                
         float3 surfaceNormal;
         float depth;
         ValuePackaging::DecodeNormalDepth(gi_NormalDepthMap[srcRayIndexFullRes], surfaceNormal, depth);
-
+            
         const float3 HitPosition = gi_PositionMap[srcRayIndexFullRes].xyz;
         
         Ray AORay = { HitPosition, rayDirection };
-        aoCoefficient = CalculateAO(tHit, srcRayIndexFullRes, AORay, surfaceNormal);
+        aoCoefficient = CalculateAO(tHit, srcRayIndexFullRes, AORay, surfaceNormal);        
+        aoCoefficient = 1.f - aoCoefficient;
     }
 
     const uint2 OutPixel = srcRayIndexFullRes;
-
+    
     go_AOCoefficientMap[OutPixel] = aoCoefficient;
     go_RayHitDistanceMap[OutPixel] = ShadingConvention::RTAO::HasAORayHitAnyGeometry(tHit) ? tHit : cbAO.OcclusionRadius;
 }

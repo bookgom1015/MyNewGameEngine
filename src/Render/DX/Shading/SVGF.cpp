@@ -15,8 +15,7 @@ namespace {
 	const WCHAR* const HLSL_CalcPartialDepthDerivative = L"CalcPartialDepthDerivative.hlsl";
 	const WCHAR* const HLSL_TemporalSupersamplingReverseReproject_Contrast = L"TemporalSupersamplingReverseReproject_Contrast.hlsl";
 	const WCHAR* const HLSL_TemporalSupersamplingReverseReproject_Color = L"TemporalSupersamplingReverseReproject_Color.hlsl";
-	const WCHAR* const HLSL_CalcLocalMeanVariance_Contrast = L"CalcLocalMeanVariance_Contrast.hlsl";
-	const WCHAR* const HLSL_CalcLocalMeanVariance_Color = L"CalcLocalMeanVariance_Color.hlsl";
+	const WCHAR* const HLSL_CalcLocalMeanVariance = L"CalcLocalMeanVariance.hlsl";
 
 }
 
@@ -64,12 +63,20 @@ BOOL SVGF::SVGFClass::CompileShaders() {
 	}
 	// CalcLocalMeanVariance_Contrast
 	{
-		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CalcLocalMeanVariance_Contrast, L"CS", L"cs_6_5");
+		DxcDefine defines[] = {
+			{ L"ValueType_Contrast", L"1" },
+			{ L"InvalidValue", L"0.f" }
+		};
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CalcLocalMeanVariance, L"CS", L"cs_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_CalcLocalMeanVariance_Contrast]));
 	}
 	// CalcLocalMeanVariance_Color
 	{
-		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CalcLocalMeanVariance_Color, L"CS", L"cs_6_5");
+		DxcDefine defines[] = {
+			{ L"ValueType_Color", L"1" },
+			{ L"InvalidValue", L"(float4)0.f" }
+		};
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CalcLocalMeanVariance, L"CS", L"cs_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_CalcLocalMeanVariance_Color]));
 	}
 

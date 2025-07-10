@@ -2,6 +2,10 @@
 
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
+namespace Common::Render::ShadingArgument {
+	struct ShadingArgumentSet;
+}
+
 namespace Render::DX::Shading {
 	namespace RaySorting {
 		namespace Shader {
@@ -25,6 +29,7 @@ namespace Render::DX::Shading {
 		class RaySortingClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
+				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet = nullptr;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
@@ -36,6 +41,11 @@ namespace Render::DX::Shading {
 		public:
 			RaySortingClass();
 			virtual ~RaySortingClass() = default;
+
+		public:
+			__forceinline Foundation::Resource::GpuResource* RayIndexOffsetMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE RayIndexOffsetMapSrv() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE RayIndexOffsetMapUav() const;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -82,3 +92,5 @@ namespace Render::DX::Shading {
 
 	}
 }
+
+#include "RaySorting.inl"

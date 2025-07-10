@@ -118,7 +118,6 @@
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\BlinnPhong.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\BRDF.hlsli" />
-    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\CookTorrance.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli" />
@@ -153,6 +152,7 @@
     <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
     <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RayGen.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\RaySorting.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RTAO.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Shadow.inl" />
     <None Include="..\..\inc\Render\DX\Shading\SSAO.inl" />
@@ -263,12 +263,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Color.hlsl">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance_Contrast.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\CalcLocalMeanVariance.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -279,6 +274,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\CountingSort_Rays_64x128.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\FillInCheckerboard_CrossBox4TapFilter.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

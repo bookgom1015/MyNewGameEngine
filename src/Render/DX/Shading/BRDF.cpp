@@ -49,7 +49,7 @@ BOOL BRDF::BRDFClass::CompileShaders() {
 		{
 			DxcDefine defines[] = {
 				{ L"BLINN_PHONG", L"1" }
-			};			
+			};
 
 			const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ComputeBRDF, L"PS", L"ps_6_5", defines, _countof(defines));
 			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_ComputeBRDF_BlinnPhong]));

@@ -38,36 +38,4 @@
 #define IsActiveRay(RayGroupRayIndexOffset) (!(RayGroupRayIndexOffset.y & INACTIVE_RAY_INDEX_BIT_Y))
 #define GetRawRayIndexOffset(RayGroupRayIndexOffset) uint2(RayGroupRayIndexOffset.x, RayGroupRayIndexOffset.y & ~(INACTIVE_RAY_INDEX_BIT_Y))
 
-#define MIN_WAVE_LANE_COUNT 16
-#define MAX_WAVES ((MAX_RAYS + MIN_WAVE_LANE_COUNT - 1) / MIN_WAVE_LANE_COUNT)
-
-namespace HashKey {
-	enum {
-		RayDirectionKeyBits1D = 4,
-		RayOriginDepthKeyBits = 2,
-		NumBits               = 2 * RayDirectionKeyBits1D + RayOriginDepthKeyBits  // <= 12
-	};
-}
-
-namespace SMem {
-    namespace Size {
-        enum {
-            Histogram = NUM_KEYS,               // <= 4096
-        };
-    }
-
-    // 32bit element offset
-    namespace Offset {
-        enum {
-            Histogram    = 0,
-            Key8b        = Size::Histogram,
-            Key16b       = 8192,
-            Depth16b     = 8192,
-            WaveDepthMin = 0,
-            WaveDepthMax = MAX_WAVES,           // <= 512
-            RayIndex     = Size::Histogram,
-        };
-    }
-}
-
 #endif // __RAYSORTING_HLSLI__

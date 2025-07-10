@@ -88,15 +88,69 @@
 #include "./../../../assets/Shaders/HLSL/RaySorting.hlsli"
 
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> gi_RayDirectionOriginDepthMap : register(t0); // R11G11B10 texture. Note that this format doesn't store negative values.
-                                                                                                                                                
+
 // Source ray index offset for a given sorted ray index offset within a ray group.
 // This is essentially a sorted source ray index offsets buffer within a ray group.
 // Inactive rays have a valid index but have INACTIVE_RAY_INDEX_BIT_Y bit set in the y coordinate to 1.
-RWTexture2D<uint2> go_SortedToSourceRayIndexOffsetMap : register(u0);
+RWTexture2D<ShadingConvention::RaySorting::RayIndexOffsetMapFormat> go_SortedToSourceRayIndexOffsetMap : register(u0);
 
 ConstantBuffer<ConstantBuffers::RaySortingCB> cbRaySorting : register(b0);
 
+static const uint PixelStepX = 2;
+
+#define MIN_WAVE_LANE_COUNT 16
+#define MAX_WAVES ((MAX_RAYS + MIN_WAVE_LANE_COUNT - 1) / MIN_WAVE_LANE_COUNT)
+
+namespace HashKey {
+	enum {
+		RayDirectionKeyBits1D = 4,
+		RayOriginDepthKeyBits = 2,
+		NumBits               = 2 * RayDirectionKeyBits1D + RayOriginDepthKeyBits  // <= 12
+	};
+}
+
+namespace SMem {
+    namespace Size {
+        enum {
+            Histogram = NUM_KEYS,               // <= 4096
+        };
+    }
+
+    // 32bit element offset
+    namespace Offset {
+        enum {
+            Histogram    = 0,
+            Key8b        = Size::Histogram,
+            Key16b       = 8192,
+            Depth16b     = 8192,
+            WaveDepthMin = 0,
+            WaveDepthMax = MAX_WAVES,           // <= 512
+            RayIndex     = Size::Histogram,
+        };
+    }
+}
+
+#if MAX_RAYS > 8192 || NUM_KEYS > 4096
+The shader supports up to 8192 input rays and 4096 num keys.
+#endif
+
 //********************************************************************
+// Hash Key
+//  - a hash calculated from ray direction and origin depth
+//  - max values:
+//      12 bits(4096) for 8K rays.
+//      13 bits(8192) for 4K rays.
+// The 15th and 16th bits are reserved:
+// - 15th bit == (1) - invalid ray. These rays will get sorted to the end.
+// - 16th bit == (1) - invalid key. To handle when a key is replaced by Source Ray index in SMEM.
+
+#if (KEY_NUM_BITS > 13) || (KEY_NUM_BITS > 12 && MAX_RAYS > 4096)
+Key bit size is out of supported limits.
+#endif
+#if (RAY_DIRECTION_HASH_KEY_BITS_1D > 4)
+Ray direction hash key can only go up to 8 bits for both direction axes since
+its stored in 8bit format.
+#endif
 
 //********************************************************************
 // Ray Count SMem cache.
@@ -109,7 +163,7 @@ ConstantBuffer<ConstantBuffers::RaySortingCB> cbRaySorting : register(b0);
 // - Hi bits: odd ping-pong buffer ID
 // - Lo bits: even ping-pong buffer ID
 //********************************************************************
-                                                                                                                                                
+
 //********************************************************************
 // SMEM stores 16 bit values, two 16bit values per 32bit entry:
 // - Hi bits: odd indices
@@ -388,9 +442,16 @@ void CalculatePartialRayDirectionHashKeyAndCacheDepth(in uint2 Gid, in uint GI) 
         uint2 rayIndex = uint2(ray % RayGroupDim.x, ray / RayGroupDim.x);
         uint2 pixel = GroupStart + rayIndex;
 
+        uint2 pixelFullRes = pixel;
+        if (cbRaySorting.CheckerboardRayGenEnabled) {
+            const bool IsEvenPixelY = (pixelFullRes.y & 1) == 0;
+            const uint PixelOffsetX = IsEvenPixelY != cbRaySorting.CheckerboardGenerateRaysForEvenPixels;
+            pixelFullRes.x = pixelFullRes.x * PixelStepX + PixelOffsetX;
+        }
+        
         float2 encodedRayDirection;
         float rayOriginDepth;
-        ValuePackaging::UnpackEncodedNormalDepth(gi_RayDirectionOriginDepthMap[pixel], encodedRayDirection, rayOriginDepth);
+        ValuePackaging::UnpackEncodedNormalDepth(gi_RayDirectionOriginDepthMap[pixelFullRes], encodedRayDirection, rayOriginDepth);
         bool isRayValid = rayOriginDepth != INVALID_RAY_ORIGIN_DEPTH;
 
         // The ray direction hash key doesn't need to store if the ray value is valid for now, 
@@ -576,6 +637,13 @@ void ScatterWriteSortedIndicesToSharedMemory(in uint2 Gid, in uint GI, in float2
         uint2 rayIndex = uint2(ray % RayGroupDim.x, ray / RayGroupDim.x);
         uint2 pixel = GroupStart + rayIndex;
 
+        uint2 pixelFullRes = pixel;
+        if (cbRaySorting.CheckerboardRayGenEnabled) {
+            const bool IsEvenPixelY = (pixelFullRes.y & 1) == 0;
+            const uint PixelOffsetX = IsEvenPixelY != cbRaySorting.CheckerboardGenerateRaysForEvenPixels;
+            pixelFullRes.x = pixelFullRes.x * PixelStepX + PixelOffsetX;
+        }
+        
         // Get the key for the corresponding pixel.
         uint key;
         bool isRayValid;
@@ -591,7 +659,7 @@ void ScatterWriteSortedIndicesToSharedMemory(in uint2 Gid, in uint GI, in float2
         else { // The cached key has been already replaced with the ray's source index. Regenerate the key.
             float2 encodedRayDirection;
             float rayOriginDepth;
-            ValuePackaging::UnpackEncodedNormalDepth(gi_RayDirectionOriginDepthMap[pixel], encodedRayDirection, rayOriginDepth);
+            ValuePackaging::UnpackEncodedNormalDepth(gi_RayDirectionOriginDepthMap[pixelFullRes], encodedRayDirection, rayOriginDepth);
             isRayValid = rayOriginDepth != INVALID_RAY_ORIGIN_DEPTH;
 
             if (isRayValid) key = CreateRayHashKey(rayIndex, encodedRayDirection, rayOriginDepth, rayGroupMinMaxDepth);

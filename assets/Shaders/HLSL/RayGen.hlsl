@@ -28,6 +28,9 @@ Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>                gi_No
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>                   gi_PositionMap                : register(t2);
 
 RWTexture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>              go_RayDirectionOriginDepthMap : register(u0);
+RWTexture2D<float4>                                                        go_DebugMap                   : register(u1);
+
+static const uint PixelStepX = 2;
 
 float3 GetRandomRayDirection(in uint2 srcRayIndex, in float3 surfaceNormal, in uint2 textureDim, in uint raySampleIndexOffset) {
     // Calculate coordinate system for the hemisphere.
@@ -55,7 +58,10 @@ float3 GetRandomRayDirection(in uint2 srcRayIndex, in float3 surfaceNormal, in u
         // This breaks noise correlation on camera movement which otherwise results 
         // in noise pattern swimming across the screen on camera movement.
         const uint2 PixelZeroId = SampleSetId * cbRayGen.NumPixelsPerDimPerSet;
-        const float3 PixelZeroHitPosition = gi_PositionMap[PixelZeroId].xyz;
+        uint2 PixelZeroIdFullRes = PixelZeroId;
+        if (cbRayGen.CheckerboardRayGenEnabled) PixelZeroIdFullRes.x = PixelZeroIdFullRes.x * PixelStepX;
+        
+        const float3 PixelZeroHitPosition = gi_PositionMap[PixelZeroIdFullRes].xyz;        
         const uint SampleSetSeed = (SampleSetId.y * NumSampleSetsInX + SampleSetId.x) * ShaderUtil::Hash(PixelZeroHitPosition) + cbRayGen.Seed;
         uint randomState = Random::SeedThread(SampleSetSeed);
 
@@ -86,7 +92,6 @@ void CS(in uint2 DTid : SV_DispatchThreadID, in uint2 GTid : SV_GroupThreadID) {
     uint2 DTidFullRes = DTid;
     
     if (cbRayGen.CheckerboardRayGenEnabled) {
-        const uint PixelStepX = 2;
         const bool IsEvenPixelY = (DTid.y & 1) == 0;
         const uint PixelOffsetX = IsEvenPixelY != cbRayGen.CheckerboardGenerateRaysForEvenPixels;
         DTidFullRes.x = DTid.x * PixelStepX + PixelOffsetX;
@@ -101,6 +106,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID, in uint2 GTid : SV_GroupThreadID) {
         rayDirection = GetRandomRayDirection(DTid, surfaceNormal, cbRayGen.TextureDim, 0);
     
     go_RayDirectionOriginDepthMap[DTid] = ValuePackaging::EncodeNormalDepth(rayDirection, rayOriginDepth);
+    go_DebugMap[DTid] = float4(rayDirection, 0.f);
 }
 
 #endif // __AORAYGEN_HLSL__
