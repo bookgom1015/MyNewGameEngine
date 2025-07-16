@@ -13,7 +13,7 @@ namespace Render::DX::Shading {
 				CS_CalcParticalDepthDerivative,
 				CS_CalcLocalMeanVariance_Contrast,
 				CS_CalcLocalMeanVariance_Color,
-				CS_FillinCheckerBoard,
+				CS_FillinCheckerboard,
 				CS_EdgeStoppingFilterGaussian3x3,
 				CS_DisocclusionBlur3x3,
 				Count
@@ -279,7 +279,12 @@ namespace Render::DX::Shading {
 			BOOL CalculateLocalMeanVariance(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				Foundation::Resource::GpuResource* const pValueMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_valueMap);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_valueMap,
+				Value::Type type,
+				BOOL bCheckerboardSamplingEnabled);
+			BOOL FillInCheckerboard(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				BOOL bCheckerboardSamplingEnabled);
 
 			BOOL ReverseReprojectPreviousFrame(
 				Foundation::Resource::FrameResource* const pFrameResource,
@@ -293,12 +298,12 @@ namespace Render::DX::Shading {
 				D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap,
 				Foundation::Resource::GpuResource* const pCachedValueMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedValueMap,
-				Foundation::Resource::GpuResource* const pCachedTSPPMap0,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedTSPPMap,
 				Foundation::Resource::GpuResource* const pCachedValueSquaredMeanMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedValueSquaredMeanMap,
 				Foundation::Resource::GpuResource* const pCachedRayHitDistMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedRayHitDistMap,
+				Foundation::Resource::GpuResource* const pCachedTSPPMap0,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_cachedTSPPMap,
 				Foundation::Resource::GpuResource* const pCachedTSPPMap1,
 				D3D12_GPU_DESCRIPTOR_HANDLE uo_cachedTSPPMap,
 				Value::Type type);

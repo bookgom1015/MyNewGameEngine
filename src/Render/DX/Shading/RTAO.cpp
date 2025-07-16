@@ -591,3 +591,13 @@ BOOL RTAO::RTAOClass::DrawAO(
 
 	return TRUE;
 }
+
+UINT RTAO::RTAOClass::MoveToNextTemporalCacheFrame() {
+	mCurrentTemporalCacheFrameIndex = (mCurrentTemporalCacheFrameIndex + 1) % 2;
+	return mCurrentTemporalCacheFrameIndex;
+}
+
+UINT RTAO::RTAOClass::MoveToNextAOResourceFrame() {
+	mCurrentAOResourceFrameIndex = (mCurrentAOResourceFrameIndex + 1) % 2;
+	return mCurrentAOResourceFrameIndex;
+}

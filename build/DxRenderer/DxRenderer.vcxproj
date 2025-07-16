@@ -135,7 +135,6 @@
     <None Include="..\..\assets\Shaders\HLSL\Shadow.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\SSAO.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\SVGF.hlsli" />
-    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ValuePackaging.hlsli" />
     <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
@@ -250,10 +249,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Color.hlsl">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Contrast.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

@@ -63,6 +63,12 @@ namespace Render::DX::Shading {
 			__forceinline Foundation::Resource::GpuResource* NormalDepthMap() const;
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE NormalDepthMapSrv() const;
 
+			__forceinline Foundation::Resource::GpuResource* ReprojectedNormalDepthMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ReprojectedNormalDepthMapSrv() const;
+
+			__forceinline Foundation::Resource::GpuResource* CachedNormalDepthMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE CachedNormalDepthMapSrv() const;
+
 			__forceinline Foundation::Resource::GpuResource* SpecularMap() const;
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE SpecularMapSrv() const;
 
@@ -108,6 +114,7 @@ namespace Render::DX::Shading {
 				Foundation::Resource::FrameResource* const pFrameResource,
 				ID3D12GraphicsCommandList6* const pCmdList,
 				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
+			BOOL CacheNormalDepth(ID3D12GraphicsCommandList6* const pCmdList);
 
 		private:
 			InitData mInitData;
@@ -131,6 +138,15 @@ namespace Render::DX::Shading {
 			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalDepthMapCpuSrv;
 			D3D12_GPU_DESCRIPTOR_HANDLE mhNormalDepthMapGpuSrv;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalDepthMapCpuRtv;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mReprojNormalDepthMap;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhReprojNormalDepthMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhReprojNormalDepthMapGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhReprojNormalDepthMapCpuRtv;
+
+			std::unique_ptr<Foundation::Resource::GpuResource> mCachedNormalDepthMap;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhCachedNormalDepthMapCpuSrv;
+			D3D12_GPU_DESCRIPTOR_HANDLE mhCachedNormalDepthMapGpuSrv;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mSpecularMap;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuSrv;

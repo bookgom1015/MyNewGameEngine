@@ -25,17 +25,52 @@ Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_Reproject
 Texture2D<ShadingConvention::GBuffer::VelocityMapFormat>            gi_Velocity                : register(t2);
 Texture2D<ShadingConvention::SVGF::DepthPartialDerivativeMapFormat> gi_DepthPartialDerivative  : register(t3);
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_CachedNormalDepth       : register(t4);
-Texture2D<ShadingConvention::SVGF::ValueMapFormat_Color>            gi_CachedValue             : register(t5);
-Texture2D<ShadingConvention::SVGF::ValueSquaredMeanMapFormat_Color> gi_CachedValueSquaredMean  : register(t6);
+Texture2D<ValueType>                                                gi_CachedValue             : register(t5);
+Texture2D<ValueSquaredMeanType>                                     gi_CachedValueSquaredMean  : register(t6);
 Texture2D<ShadingConvention::SVGF::TSPPMapFormat>                   gi_CachedTspp              : register(t7);
 Texture2D<ShadingConvention::SVGF::RayHitDistanceFormat>            gi_CachedRayHitDistance    : register(t8);
 
 RWTexture2D<ShadingConvention::SVGF::TSPPMapFormat>                          go_CachedTspp              : register(u0);
-RWTexture2D<ShadingConvention::SVGF::ValueMapFormat_Color>                   go_CachedValue             : register(u1);
-RWTexture2D<ShadingConvention::SVGF::ValueSquaredMeanMapFormat_Color>        go_CachedSquaredMean       : register(u2);
+RWTexture2D<ValueType>                                                       go_CachedValue             : register(u1);
+RWTexture2D<ValueSquaredMeanType>                                            go_CachedSquaredMean       : register(u2);
 RWTexture2D<ShadingConvention::SVGF::TSPPSquaredMeanRayHitDistanceMapFormat> go_ReprojectedCachedValues : register(u3);
 
-#include "./../../../assets/Shaders/HLSL/TemporalSupersamplingReverseReproject.hlsli"
+float4 BilateralResampleWeights(
+		in float targetDepth,
+		in float3 targetNormal,
+		in float4 sampleDepths,
+		in float3 sampleNormals[4],
+		in float2 targetOffset,
+		in uint2 targetIndex,
+		in int2 cacheIndices[4],
+		in float2 ddxy) {
+        const bool4 IsWithinBounds = bool4(
+		SVGF::IsWithinBounds(cacheIndices[0], gTexDim),
+		SVGF::IsWithinBounds(cacheIndices[1], gTexDim),
+		SVGF::IsWithinBounds(cacheIndices[2], gTexDim),
+		SVGF::IsWithinBounds(cacheIndices[3], gTexDim)
+	);
+
+        CrossBilateral::BilinearDepthNormal::Parameters params;
+        params.Depth.Sigma = cbReproject.DepthSigma;
+        params.Depth.WeightCutoff = 0.5f;
+        params.Depth.NumMantissaBits = cbReproject.DepthNumMantissaBits;
+        params.Normal.Sigma = 1.1f; // Bump the sigma a bit to add tolerance for slight geometry misalignments and/or format precision limitations.
+        params.Normal.SigmaExponent = 32;
+
+        const float4 BilinearDepthNormalWeights = CrossBilateral::BilinearDepthNormal::GetWeights(
+		targetDepth,
+		targetNormal,
+		targetOffset,
+		ddxy,
+		sampleDepths,
+		sampleNormals,
+		params);
+
+        const float4 Weights = IsWithinBounds * BilinearDepthNormalWeights;
+
+        return Weights;
+    }
 
 [numthreads(
     ShadingConvention::SVGF::ThreadGroup::Default::Width, 
@@ -88,7 +123,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 
     const float2 Ddxy = gi_DepthPartialDerivative.SampleLevel(gsamPointClamp, TexC, 0);
 
-    float4 weights = TemporalSupersamplingReverseReproject::BilateralResampleWeights(reprojDepth, reprojNormal, cacheDepths, cacheNormals, CachePixelOffset, DTid, CacheIndices, Ddxy);
+    float4 weights = BilateralResampleWeights(reprojDepth, reprojNormal, cacheDepths, cacheNormals, CachePixelOffset, DTid, CacheIndices, Ddxy);
 
     uint2 Size;
     gi_CachedValue.GetDimensions(Size.x, Size.y);
@@ -96,7 +131,8 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     const float Dx = 1.0 / Size.x;
     const float Dy = 1.0 / Size.y;
 
-	// Invalidate weights for invalid values in the cache.
+#ifdef ValueType_Color
+    // Invalidate weights for invalid values in the cache.
     float4 vCacheValues[4];
     vCacheValues[0] = gi_CachedValue.SampleLevel(gsamPointClamp, AdjustedCacheTex, 0);
     vCacheValues[1] = gi_CachedValue.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(Dx, 0), 0);
@@ -111,11 +147,14 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         weights.z = 0;
     if (vCacheValues[3].a > 0)
         weights.w = 0;
+#else
+    float4 vCacheValues = gi_CachedValue.GatherRed(gsamPointClamp, AdjustedCacheTex).wzxy;
+#endif
 
     const float WeightSum = dot(1, weights);
 
-    float4 cachedValue = 0;
-    float4 cachedValueSquaredMean = 0;
+    ValueType cachedValue = 0;
+    ValueSquaredMeanType cachedValueSquaredMean = 0;
     float cachedRayHitDist = 0;
 
     uint tspp;
@@ -142,11 +181,12 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         tspp = round(CachedTspp);
 
         if (tspp > 0) {
-			[unroll]
+        #ifdef ValueType_Color
+            [unroll]
             for (int i = 0; i < 4; ++i)
                 cachedValue += nWeights[i] * vCacheValues[i];
 
-            float4 vCachedValueSquaredMeans[4];
+            ValueSquaredMeanType vCachedValueSquaredMeans[4];
             vCachedValueSquaredMeans[0] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, AdjustedCacheTex, 0);
             vCachedValueSquaredMeans[1] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(Dx, 0), 0);
             vCachedValueSquaredMeans[2] = gi_CachedValueSquaredMean.SampleLevel(gsamPointClamp, AdjustedCacheTex + float2(0, Dy), 0);
@@ -155,7 +195,12 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
             [unroll]
             for (int i = 0; i < 4; ++i)
                 cachedValueSquaredMean += nWeights[i] * vCachedValueSquaredMeans[i];
+        #else
+            cachedValue = dot(nWeights, vCacheValues);
 
+            const float4 vCachedValueSquaredMean = gi_CachedValueSquaredMean.GatherRed(gsamPointClamp, AdjustedCacheTex).wzxy;
+            cachedValueSquaredMean = dot(nWeights, vCachedValueSquaredMean);
+        #endif
             const float4 vCachedRayHitDist = gi_CachedRayHitDistance.GatherRed(gsamPointClamp, AdjustedCacheTex).wzxy;
             cachedRayHitDist = dot(nWeights, vCachedRayHitDist);
         }

@@ -108,6 +108,7 @@ namespace Render {
 			BOOL UpdateAmbientOcclusionCB();
 			BOOL UpdateRayGenCB();
 			BOOL UpdateRaySortingCB();
+			BOOL UpdateCalcLocalMeanVarianceCB();
 			BOOL ResolvePendingLights();
 			BOOL PopulateRendableItems();
 

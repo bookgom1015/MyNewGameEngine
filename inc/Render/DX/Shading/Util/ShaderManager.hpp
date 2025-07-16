@@ -84,6 +84,10 @@ namespace std {
 			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.FileName));
 			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.EntryPoint));
 			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.TargetProfile));
+			for (UINT i = 0, end = static_cast<UINT>(info.DefineCount); i < end; ++i) {
+				hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.Defines[i].Name));
+				hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCWSTR>()(info.Defines[i].Value));
+			}
 			hash = Common::Util::HashUtil::HashCombine(hash, static_cast<UINT>(info.DefineCount));
 			return hash;
 		}

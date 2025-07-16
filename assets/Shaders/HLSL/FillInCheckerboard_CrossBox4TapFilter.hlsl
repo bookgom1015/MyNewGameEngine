@@ -22,46 +22,38 @@
 
 #include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
 
-RWTexture2D<float2> g_inOutValues : register(u0);
+RWTexture2D<float2> gio_Values : register(u0);
 
-RWTexture2D<float4> g_outDebug1 : register(u3);
-RWTexture2D<float4> g_outDebug2 : register(u4);
-
-ConstantBuffer<CalculateMeanVarianceConstantBuffer> cb: register(b0);
+ConstantBuffer<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> cbLocalMeanVar : register(b0);
 
 // Adjust an index in Y coordinate to a same/next pixel that has an invalid value generated for it.
-int2 GetInactivePixelIndex(int2 pixel)
-{
-    bool isEvenPixel = ((pixel.x + pixel.y) & 1) == 0;
-    return
-        cb.areEvenPixelsActive == isEvenPixel
-        ? pixel + int2(0, 1)
-        : pixel;
+int2 GetInactivePixelIndex(int2 pixel) {
+    const bool IsEvenPixel = ((pixel.x + pixel.y) & 1) == 0;
+    return cbLocalMeanVar.EvenPixelActivated == IsEvenPixel ? pixel + int2(0, 1) : pixel;
 }
 
-[numthreads(DefaultComputeShaderParams::ThreadGroup::Width, DefaultComputeShaderParams::ThreadGroup::Height, 1)]
-void main(uint2 DTid : SV_DispatchThreadID)
-{
-    int2 pixel = GetInactivePixelIndex(int2(DTid.x, DTid.y * 2));
+[numthreads(
+    ShadingConvention::SVGF::ThreadGroup::Default::Width,
+    ShadingConvention::SVGF::ThreadGroup::Default::Height,
+    ShadingConvention::SVGF::ThreadGroup::Default::Depth)]
+void CS(uint2 DTid : SV_DispatchThreadID) {
+    const int2 Pixel = GetInactivePixelIndex(int2(DTid.x, DTid.y * 2));
 
     // Load 4 valid neighbors.
-    const int2 srcIndexOffsets[4] = { {-1, 0}, {0, -1}, {1, 0}, {0, 1} };
+    const int2 SrcIndexOffsets[4] = { {-1, 0}, {0, -1}, {1, 0}, {0, 1} };
     float4x2 inValues_4x2;
     {
         [unroll]
         for (uint i = 0; i < 4; i++)
-        {
-            inValues_4x2[i] = g_inOutValues[pixel + srcIndexOffsets[i]];
-        }
+            inValues_4x2[i] = gio_Values[Pixel + SrcIndexOffsets[i]];
     }
 
     // Average valid inputs.
-    float4 weights = inValues_4x2._11_21_31_41 != RTAO::InvalidAOCoefficientValue;
-    float weightSum = dot(1, weights);
-    float2 filteredValue =  weightSum > 1e-3 ? mul(weights, inValues_4x2) / weightSum : RTAO::InvalidAOCoefficientValue;
+    const float4 Weights = inValues_4x2._11_21_31_41 != ShadingConvention::RTAO::InvalidAOCoefficientValue;
+    const float WeightSum = dot(1, Weights);
+    const float2 FilteredValue =  WeightSum > 1e-3 ? mul(Weights, inValues_4x2) / WeightSum : ShadingConvention::RTAO::InvalidAOCoefficientValue;
 
-    g_inOutValues[pixel] = filteredValue;
+    gio_Values[Pixel] = FilteredValue;
 }
-
 
 #endif // __FILLINCHECKERBOARD_CROSSBOX4TAPFILTER_HLSL__

@@ -207,6 +207,11 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMapSrv(),
 		rendableOpaques));
 
+	CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
+		mpCurrentFrameResource,
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
+		mDepthStencilBuffer->DepthStencilBufferSrv()));
+
 	if (mpShadingArgumentSet->AOEnabled)
 		CheckReturn(mpLogFile, DrawAO());
 
@@ -381,6 +386,7 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 	CheckReturn(mpLogFile, UpdateAmbientOcclusionCB());
 	CheckReturn(mpLogFile, UpdateRayGenCB());
 	CheckReturn(mpLogFile, UpdateRaySortingCB());
+	CheckReturn(mpLogFile, UpdateCalcLocalMeanVarianceCB());
 
 	return TRUE;
 }
@@ -766,6 +772,24 @@ BOOL DxRenderer::UpdateRaySortingCB() {
 	raySortingCB.CheckerboardGenerateRaysForEvenPixels = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
 
 	mpCurrentFrameResource->CopyRaySortingCB(raySortingCB);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateCalcLocalMeanVarianceCB() {
+	ConstantBuffers::SVGF::CalcLocalMeanVarianceCB localMeanCB;
+
+	const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
+	const UINT PixelStepY = CheckboardRayGeneration ? 2 : 1;
+
+	localMeanCB.TextureDim = { mClientWidth, mClientHeight };
+	localMeanCB.KernelWidth = 9;
+	localMeanCB.KernelRadius = 9 >> 1;
+	localMeanCB.CheckerboardSamplingEnabled = CheckboardRayGeneration;
+	localMeanCB.EvenPixelActivated = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
+	localMeanCB.PixelStepY = PixelStepY;
+
+	mpCurrentFrameResource->CopyCalcLocalMeanVarianceCB(localMeanCB);
 
 	return TRUE;
 }
@@ -1312,11 +1336,60 @@ BOOL DxRenderer::DrawAO() {
 			mRaySorting->RayIndexOffsetMap(),
 			mRaySorting->RayIndexOffsetMapSrv(),
 			mpShadingArgumentSet->RTAO.RaySortingEnabled));
-		
-		CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
-			mpCurrentFrameResource,
-			mDepthStencilBuffer->GetDepthStencilBuffer(),
-			mDepthStencilBuffer->DepthStencilBufferSrv()));
+
+		// Denosing(Spatio - Temporal Variance Guided Filtering)
+		{
+			// Temporal supersampling 
+			{
+				// Stage 1: Reverse reprojection
+				{
+					const auto PrevTemporalCacheFrameIndex = mRTAO->CurrentTemporalCacheFrameIndex();
+					const auto CurrTemporalCacheFrameIndex = mRTAO->MoveToNextTemporalCacheFrame();
+
+					const auto PrevAOResourceFrameIndex = mRTAO->CurrentAOResourceFrameIndex();
+					const auto CurrAOResourceFrameIndex = mRTAO->MoveToNextAOResourceFrame();
+
+					// Retrieves values from previous frame via reverse reprojection.
+					CheckReturn(mpLogFile, mSVGF->ReverseReprojectPreviousFrame(
+						mpCurrentFrameResource,
+						mGBuffer->NormalDepthMap(),
+						mGBuffer->NormalDepthMapSrv(),
+						mGBuffer->ReprojectedNormalDepthMap(),
+						mGBuffer->ReprojectedNormalDepthMapSrv(),
+						mGBuffer->CachedNormalDepthMap(),
+						mGBuffer->CachedNormalDepthMapSrv(),
+						mGBuffer->VelocityMap(),
+						mGBuffer->VelocityMapSrv(),
+						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficient, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_AOCoefficient, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_RayHitDistance, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_TSPP, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+						Shading::SVGF::Value::E_Contrast));
+				}
+				// Stage 2: Blending current frame value with the reprojected cached value.
+				{
+					// Calculate local mean and variance for clamping during the blending operation.
+					CheckReturn(mpLogFile, mSVGF->CalculateLocalMeanVariance(
+						mpCurrentFrameResource,
+						mRTAO->AOCoefficientMap(),
+						mRTAO->AOCoefficientMapSrv(),
+						Shading::SVGF::Value::E_Contrast,
+						mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
+					// Interpolate the variance for the inactive cells from the valid checkerboard cells.
+					if (mpShadingArgumentSet->RTAO.CheckboardRayGeneration) {
+						CheckReturn(mpLogFile, mSVGF->FillInCheckerboard(
+							mpCurrentFrameResource,
+							mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
+					}
+				}
+			}
+		}
 	}
 	else {
 		CheckReturn(mpLogFile, mSSAO->DrawAO(

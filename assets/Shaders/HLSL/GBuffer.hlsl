@@ -23,23 +23,25 @@ Texture2D<float4> gi_Textures[ShadingConvention::GBuffer::MaxNumTextures] : regi
 VERTEX_IN
 
 struct VertexOut {
-    float4 PosH       : SV_Position;
-    float4 CurrPosH   : POSITION_CURR;
-    float4 PrevPosH   : POSITION_PREV;
-    float3 PosW       : POSITION_W;
-    float3 PosL       : POSITION_L;
-    float3 NormalW    : NORMAL_W;
-    float2 TexC       : TEXCOORD;
+    float4 PosH        : SV_Position;
+    float4 CurrPosH    : CURR_POSITION_H;
+    float4 PrevPosH    : PREV_POSITION_H;
+    float3 PosW        : POSITION_W;
+    float3 PosL        : POSITION_L;
+    float3 NormalW     : NORMAL_W;
+    float3 PrevNormalW : PrevNORMAL_W;
+    float2 TexC        : TEXCOORD;
 };
 
 struct PixelOut {
     ShadingConvention::GBuffer::AlbedoMapFormat             Color              : SV_TARGET0;
     ShadingConvention::GBuffer::NormalMapFormat             Normal             : SV_TARGET1;
     ShadingConvention::GBuffer::NormalDepthMapFormat        NormalDepth        : SV_TARGET2;
-    ShadingConvention::GBuffer::SpecularMapFormat           Specular           : SV_TARGET3;
-    ShadingConvention::GBuffer::RoughnessMetalnessMapFormat RoughnessMetalness : SV_TARGET4;
-    ShadingConvention::GBuffer::VelocityMapFormat           Velocity           : SV_TARGET5;
-    ShadingConvention::GBuffer::PositionMapFormat           Position           : SV_TARGET6;
+    ShadingConvention::GBuffer::NormalDepthMapFormat        PrevNormalDepth    : SV_TARGET3;
+    ShadingConvention::GBuffer::SpecularMapFormat           Specular           : SV_TARGET4;
+    ShadingConvention::GBuffer::RoughnessMetalnessMapFormat RoughnessMetalness : SV_TARGET5;
+    ShadingConvention::GBuffer::VelocityMapFormat           Velocity           : SV_TARGET6;
+    ShadingConvention::GBuffer::PositionMapFormat           Position           : SV_TARGET7;
 };
 
 VertexOut VS(in VertexIn vin) {
@@ -58,6 +60,7 @@ VertexOut VS(in VertexIn vin) {
     vout.PrevPosH = mul(PrevPosW, cbPass.PrevViewProj);
     
     vout.NormalW = mul(vin.NormalL, (float3x3)cbObject.World);
+    vout.PrevNormalW = mul(vin.NormalL, (float3x3)cbObject.PrevWorld);
     
     float4 TexC = mul(float4(vin.TexC, 0.f, 1.f), cbObject.TexTransform);
     vout.TexC = mul(TexC, cbMaterial.MatTransform).xy;
@@ -123,6 +126,7 @@ PixelOut PS(in VertexOut pin) {
     pout.Color = cbMaterial.Albedo;
     pout.Normal = float4(pin.NormalW, 1.f);
     pout.NormalDepth = ValuePackaging::EncodeNormalDepth(pin.NormalW, pin.CurrPosH.z);
+    pout.PrevNormalDepth = ValuePackaging::EncodeNormalDepth(pin.PrevNormalW, pin.PrevPosH.z);
     pout.Specular = float4(cbMaterial.Specular, 1.f);
     pout.RoughnessMetalness = float2(cbMaterial.Roughness, cbMaterial.Metalness);
     pout.Velocity = Velocity;

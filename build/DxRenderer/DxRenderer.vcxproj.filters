@@ -133,9 +133,6 @@
     <Filter Include="Shader Files\SVGF\Denoising">
       <UniqueIdentifier>{75215d84-61ab-40ca-b822-d9ae9eb1dbbb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader Files\SVGF\Temporal">
-      <UniqueIdentifier>{a04d805d-d8b0-4287-b88d-c469135323ed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common Files\Foundation\Sampler">
       <UniqueIdentifier>{858c0c8a-11d5-4cab-9e8b-6ad090e81270}</UniqueIdentifier>
     </Filter>
@@ -626,17 +623,8 @@
     <None Include="..\..\assets\Shaders\HLSL\FloatPrecision.hlsli">
       <Filter>Shader Files\SVGF</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Color.hlsl">
-      <Filter>Shader Files\SVGF\Temporal</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject_Contrast.hlsl">
-      <Filter>Shader Files\SVGF\Temporal</Filter>
-    </None>
     <None Include="..\..\assets\Shaders\HLSL\CalcPartialDepthDerivative.hlsl">
       <Filter>Shader Files\SVGF</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsli">
-      <Filter>Shader Files\SVGF\Temporal</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\RayGen.hlsl">
       <Filter>Shader Files\SVGF\RayGen</Filter>
@@ -664,6 +652,9 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\FillInCheckerboard_CrossBox4TapFilter.hlsl">
       <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsl">
+      <Filter>Shader Files\SVGF\Denoising\Temporal</Filter>
     </None>
   </ItemGroup>
 </Project>
