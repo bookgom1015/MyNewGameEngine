@@ -36,6 +36,7 @@ RTAO::RTAOClass::RTAOClass() {
 		for (UINT resource = 0; resource < Resource::TemporalCache::Count; ++resource) {
 			mTemporalCaches[frame][resource] = std::make_unique<Foundation::Resource::GpuResource>();
 		}
+		mTemporalAOResources[frame] = std::make_unique<Foundation::Resource::GpuResource>();
 	}
 
 	mDebugMap = std::make_unique<Foundation::Resource::GpuResource>();
@@ -180,11 +181,11 @@ BOOL RTAO::RTAOClass::BuildDescriptors(Foundation::Core::DescriptorHeap* const p
 		mhTemporalCacheGpus[frame][Descriptor::TemporalCache::ES_AOCoefficientSquaredMean] = pDescHeap->CbvSrvUavGpuOffset(1);
 		mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_AOCoefficientSquaredMean] = pDescHeap->CbvSrvUavCpuOffset(1);
 		mhTemporalCacheGpus[frame][Descriptor::TemporalCache::EU_AOCoefficientSquaredMean] = pDescHeap->CbvSrvUavGpuOffset(1);
-		// AOCoefficient
-		mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_AOCoefficient] = pDescHeap->CbvSrvUavCpuOffset(1);
-		mhTemporalCacheGpus[frame][Descriptor::TemporalCache::ES_AOCoefficient] = pDescHeap->CbvSrvUavGpuOffset(1);
-		mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_AOCoefficient] = pDescHeap->CbvSrvUavCpuOffset(1);
-		mhTemporalCacheGpus[frame][Descriptor::TemporalCache::EU_AOCoefficient] = pDescHeap->CbvSrvUavGpuOffset(1);
+		// TemporalAOResource
+		mhTemporalAOResourceCpus[frame][Descriptor::TemporalAO::E_Srv] = pDescHeap->CbvSrvUavCpuOffset(1);
+		mhTemporalAOResourceGpus[frame][Descriptor::TemporalAO::E_Srv] = pDescHeap->CbvSrvUavGpuOffset(1);
+		mhTemporalAOResourceCpus[frame][Descriptor::TemporalAO::E_Uav] = pDescHeap->CbvSrvUavCpuOffset(1);
+		mhTemporalAOResourceGpus[frame][Descriptor::TemporalAO::E_Uav] = pDescHeap->CbvSrvUavGpuOffset(1);
 	}
 	// DebugMap
 	mhDebugMapCpuUav = pDescHeap->CbvSrvUavCpuOffset(1);
@@ -325,7 +326,7 @@ BOOL RTAO::RTAOClass::BuildResources() {
 		}
 		// RayHitDistanceMap
 		{
-			texDesc.Format = ShadingConvention::RTAO::RayHitDistanceFormat;
+			texDesc.Format = ShadingConvention::RTAO::RayHitDistanceMapFormat;
 
 			CheckReturn(mpLogFile, mAOResources[Resource::AO::E_RayHitDistance]->Initialize(
 				mInitData.Device,
@@ -337,56 +338,58 @@ BOOL RTAO::RTAOClass::BuildResources() {
 				L"RTAO_RayHitDistanceMap"));
 		}
 	}
-	// TemporalCache
 	for (UINT frame = 0; frame < 2; ++frame) {
-		// TSPPMap
+		// TemporalCache
 		{
-			texDesc.Format = ShadingConvention::RTAO::TSPPMapFormat;
+			// TSPPMap
+			{
+				texDesc.Format = ShadingConvention::RTAO::TSPPMapFormat;
 
-			std::wstringstream name;
-			name << L"RTAO_TSPPMap_" << frame;
+				std::wstringstream name;
+				name << L"RTAO_TSPPMap_" << frame;
 
-			CheckReturn(mpLogFile, mTemporalCaches[frame][Resource::TemporalCache::E_TSPP]->Initialize(
-				mInitData.Device,
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_NONE,
-				&texDesc,
-				D3D12_RESOURCE_STATE_COMMON,
-				nullptr,
-				name.str().c_str()));
-		}
-		// TemporalRayHitDistanceMap
-		{
-			texDesc.Format = ShadingConvention::RTAO::RayHitDistanceFormat;
+				CheckReturn(mpLogFile, mTemporalCaches[frame][Resource::TemporalCache::E_TSPP]->Initialize(
+					mInitData.Device,
+					&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+					D3D12_HEAP_FLAG_NONE,
+					&texDesc,
+					D3D12_RESOURCE_STATE_COMMON,
+					nullptr,
+					name.str().c_str()));
+			}
+			// TemporalRayHitDistanceMap
+			{
+				texDesc.Format = ShadingConvention::RTAO::RayHitDistanceMapFormat;
 
-			std::wstringstream name;
-			name << L"RTAO_TemporalRayHitDistanceMap_" << frame;
+				std::wstringstream name;
+				name << L"RTAO_TemporalRayHitDistanceMap_" << frame;
 
-			CheckReturn(mpLogFile, mTemporalCaches[frame][Resource::TemporalCache::E_RayHitDistance]->Initialize(
-				mInitData.Device,
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_NONE,
-				&texDesc,
-				D3D12_RESOURCE_STATE_COMMON,
-				nullptr,
-				name.str().c_str()));
-		}
-		// TemporalAOCoefficientSquaredMeanMap
-		{
-			texDesc.Format = ShadingConvention::RTAO::AOCoefficientSquaredMeanMapFormat;
+				CheckReturn(mpLogFile, mTemporalCaches[frame][Resource::TemporalCache::E_RayHitDistance]->Initialize(
+					mInitData.Device,
+					&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+					D3D12_HEAP_FLAG_NONE,
+					&texDesc,
+					D3D12_RESOURCE_STATE_COMMON,
+					nullptr,
+					name.str().c_str()));
+			}
+			// TemporalAOCoefficientSquaredMeanMap
+			{
+				texDesc.Format = ShadingConvention::RTAO::AOCoefficientSquaredMeanMapFormat;
 
-			std::wstringstream name;
-			name << L"RTAO_TemporalAOCoefficientSquaredMeanMap_" << frame;
+				std::wstringstream name;
+				name << L"RTAO_TemporalAOCoefficientSquaredMeanMap_" << frame;
 
-			CheckReturn(mpLogFile, mTemporalCaches[frame][Resource::TemporalCache::E_AOCoefficientSquaredMean]->Initialize(
-				mInitData.Device,
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_NONE,
-				&texDesc,
-				D3D12_RESOURCE_STATE_COMMON,
-				nullptr,
-				name.str().c_str()));
-		}
+				CheckReturn(mpLogFile, mTemporalCaches[frame][Resource::TemporalCache::E_AOCoefficientSquaredMean]->Initialize(
+					mInitData.Device,
+					&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+					D3D12_HEAP_FLAG_NONE,
+					&texDesc,
+					D3D12_RESOURCE_STATE_COMMON,
+					nullptr,
+					name.str().c_str()));
+			}
+		}		
 		// TemporalAOCoefficientMap
 		{
 			texDesc.Format = ShadingConvention::RTAO::AOCoefficientMapFormat;
@@ -394,7 +397,7 @@ BOOL RTAO::RTAOClass::BuildResources() {
 			std::wstringstream name;
 			name << L"RTAO_TemporalAOCoefficientMap_" << frame;
 
-			CheckReturn(mpLogFile, mTemporalCaches[frame][Resource::TemporalCache::E_AOCoefficient]->Initialize(
+			CheckReturn(mpLogFile, mTemporalAOResources[frame]->Initialize(
 				mInitData.Device,
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 				D3D12_HEAP_FLAG_NONE,
@@ -435,7 +438,7 @@ BOOL RTAO::RTAOClass::BuildDescriptors() {
 
 	// AO
 	{
-		// AOCoefficient
+		// AOCoefficientMap
 		{
 			srvDesc.Format = ShadingConvention::RTAO::AOCoefficientMapFormat;
 			uavDesc.Format = ShadingConvention::RTAO::AOCoefficientMapFormat;
@@ -444,53 +447,55 @@ BOOL RTAO::RTAOClass::BuildDescriptors() {
 			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhAOResourceCpus[Descriptor::AO::ES_AOCoefficient]);
 			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhAOResourceCpus[Descriptor::AO::EU_AOCoefficient]);
 		}
-		// RayHitDistance
+		// RayHitDistanceMap
 		{
-			srvDesc.Format = ShadingConvention::RTAO::RayHitDistanceFormat;
-			uavDesc.Format = ShadingConvention::RTAO::RayHitDistanceFormat;
+			srvDesc.Format = ShadingConvention::RTAO::RayHitDistanceMapFormat;
+			uavDesc.Format = ShadingConvention::RTAO::RayHitDistanceMapFormat;
 
 			const auto resource = mAOResources[Resource::AO::E_RayHitDistance]->Resource();
 			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhAOResourceCpus[Descriptor::AO::ES_RayHitDistance]);
 			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr , &uavDesc, mhAOResourceCpus[Descriptor::AO::EU_RayHitDistance]);
 		}
 	}
-	// TemporalCache
 	for (UINT frame = 0; frame < 2; ++frame) {
-		// TSSP
+		// TemporalCache
 		{
-			srvDesc.Format = ShadingConvention::RTAO::TSPPMapFormat;
-			uavDesc.Format = ShadingConvention::RTAO::TSPPMapFormat;
+			// TSSPMap
+			{
+				srvDesc.Format = ShadingConvention::RTAO::TSPPMapFormat;
+				uavDesc.Format = ShadingConvention::RTAO::TSPPMapFormat;
 
-			const auto resource = mTemporalCaches[frame][Resource::TemporalCache::E_TSPP]->Resource();
-			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_TSPP]);
-			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_TSPP]);
-		}
-		// RayHitDistance
-		{
-			srvDesc.Format = ShadingConvention::RTAO::RayHitDistanceFormat;
-			uavDesc.Format = ShadingConvention::RTAO::RayHitDistanceFormat;
+				const auto resource = mTemporalCaches[frame][Resource::TemporalCache::E_TSPP]->Resource();
+				Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_TSPP]);
+				Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_TSPP]);
+			}
+			// RayHitDistanceMap
+			{
+				srvDesc.Format = ShadingConvention::RTAO::RayHitDistanceMapFormat;
+				uavDesc.Format = ShadingConvention::RTAO::RayHitDistanceMapFormat;
 
-			const auto resource = mTemporalCaches[frame][Resource::TemporalCache::E_RayHitDistance]->Resource();
-			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_RayHitDistance]);
-			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_RayHitDistance]);
-		}
-		// AOCoefficientSquaredMean
-		{
-			srvDesc.Format = ShadingConvention::RTAO::AOCoefficientSquaredMeanMapFormat;
-			uavDesc.Format = ShadingConvention::RTAO::AOCoefficientSquaredMeanMapFormat;
+				const auto resource = mTemporalCaches[frame][Resource::TemporalCache::E_RayHitDistance]->Resource();
+				Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_RayHitDistance]);
+				Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_RayHitDistance]);
+			}
+			// AOCoefficientSquaredMeanMap
+			{
+				srvDesc.Format = ShadingConvention::RTAO::AOCoefficientSquaredMeanMapFormat;
+				uavDesc.Format = ShadingConvention::RTAO::AOCoefficientSquaredMeanMapFormat;
 
-			const auto resource = mTemporalCaches[frame][Resource::TemporalCache::E_AOCoefficientSquaredMean]->Resource();
-			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_AOCoefficientSquaredMean]);
-			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_AOCoefficientSquaredMean]);
+				const auto resource = mTemporalCaches[frame][Resource::TemporalCache::E_AOCoefficientSquaredMean]->Resource();
+				Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_AOCoefficientSquaredMean]);
+				Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_AOCoefficientSquaredMean]);
+			}
 		}
-		// AOCoefficient
+		// TemporalAOCoefficientMap
 		{
 			srvDesc.Format = ShadingConvention::RTAO::AOCoefficientMapFormat;
 			uavDesc.Format = ShadingConvention::RTAO::AOCoefficientMapFormat;
 
-			const auto resource = mTemporalCaches[frame][Resource::TemporalCache::E_AOCoefficient]->Resource();
-			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::ES_AOCoefficient]);
-			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalCacheCpus[frame][Descriptor::TemporalCache::EU_AOCoefficient]);
+			const auto resource = mTemporalAOResources[frame]->Resource();
+			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, resource, &srvDesc, mhTemporalAOResourceCpus[frame][Descriptor::TemporalAO::E_Srv]);
+			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, resource, nullptr, &uavDesc, mhTemporalAOResourceCpus[frame][Descriptor::TemporalAO::E_Uav]);
 		}
 	}
 	// DebugMap
@@ -597,7 +602,7 @@ UINT RTAO::RTAOClass::MoveToNextTemporalCacheFrame() {
 	return mCurrentTemporalCacheFrameIndex;
 }
 
-UINT RTAO::RTAOClass::MoveToNextAOResourceFrame() {
-	mCurrentAOResourceFrameIndex = (mCurrentAOResourceFrameIndex + 1) % 2;
-	return mCurrentAOResourceFrameIndex;
+UINT RTAO::RTAOClass::MoveToNextTemporalAOFrame() {
+	mCurrentTemporalAOFrameIndex = (mCurrentTemporalAOFrameIndex + 1) % 2;
+	return mCurrentTemporalAOFrameIndex;
 }

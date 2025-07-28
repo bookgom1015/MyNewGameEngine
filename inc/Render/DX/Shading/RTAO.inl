@@ -1,20 +1,24 @@
 #ifndef __RTAO_INL__
 #define __RTAO_INL__
 
-Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::RTAO::RTAOClass::AOCoefficientMap() const {
-	return mAOResources[Resource::AO::E_AOCoefficient].get();
-}
-
-constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::RTAO::RTAOClass::AOCoefficientMapSrv() const {
-	return mhAOResourceGpus[Descriptor::AO::ES_AOCoefficient];
-}
-
-Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::RTAO::RTAOClass::AOResource(Resource::AO::Type type) const {
+Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::RTAO::RTAOClass::AOCoefficientResource(Resource::AO::Type type) const {
 	return mAOResources[type].get();
 }
 
-constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::RTAO::RTAOClass::AODescriptor(Descriptor::AO::Type type) const {
+constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::RTAO::RTAOClass::AOCoefficientDescriptor(Descriptor::AO::Type type) const {
 	return mhAOResourceGpus[type];
+}
+
+Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::RTAO::RTAOClass::TemporalAOCoefficientResource(UINT frame) const {
+	return mTemporalAOResources[frame].get();
+}
+
+constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::RTAO::RTAOClass::TemporalAOCoefficientSrv(UINT frame) const {
+	return mhTemporalAOResourceGpus[frame][Descriptor::TemporalAO::E_Srv];
+}
+
+constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::RTAO::RTAOClass::TemporalAOCoefficientUav(UINT frame) const {
+	return mhTemporalAOResourceGpus[frame][Descriptor::TemporalAO::E_Uav];
 }
 
 Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::RTAO::RTAOClass::TemporalCacheResource(Resource::TemporalCache::Type type, UINT frame) const {
@@ -29,8 +33,8 @@ constexpr UINT Render::DX::Shading::RTAO::RTAOClass::CurrentTemporalCacheFrameIn
 	return mCurrentTemporalCacheFrameIndex;
 }
 
-constexpr UINT Render::DX::Shading::RTAO::RTAOClass::CurrentAOResourceFrameIndex() const {
-	return mCurrentAOResourceFrameIndex;
+constexpr UINT Render::DX::Shading::RTAO::RTAOClass::CurrentTemporalAOFrameIndex() const {
+	return mCurrentTemporalAOFrameIndex;
 }
 
 #endif // __RTAO_INL__

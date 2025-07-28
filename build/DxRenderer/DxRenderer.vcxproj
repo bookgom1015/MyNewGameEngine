@@ -278,6 +278,24 @@
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingBlendWithCurrentFrame.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\AtrousWaveletTransformFilter.hlsli">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\DisocclusionBlur3x3.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\EdgeStoppingFilter_Gaussian3x3.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

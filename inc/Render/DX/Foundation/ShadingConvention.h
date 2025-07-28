@@ -11,7 +11,7 @@
 	#endif
 
 	#ifndef AOMAP_FORMAT
-	#define AOMAP_FORMAT float
+	#define AOMAP_FORMAT FLOAT
 	#endif
 #else
 	#ifndef HDR_FORMAT
@@ -49,7 +49,7 @@ namespace ShadingConvention{
 		static const UINT InvalidStencilValue = 0;
 
 #ifdef _HLSL
-		typedef float DepthBufferFormat;
+		typedef FLOAT DepthBufferFormat;
 #else
 		const DXGI_FORMAT DepthStencilBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		const DXGI_FORMAT DepthBufferFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
@@ -378,7 +378,7 @@ namespace ShadingConvention{
 #endif
 
 #ifdef _HLSL
-		typedef float	ZDepthMapFormat;
+		typedef FLOAT	ZDepthMapFormat;
 		typedef uint	ShadowMapFormat;
 		typedef float4	DebugMapFormat;
 
@@ -582,22 +582,39 @@ namespace ShadingConvention{
 	};
 #endif
 
+#ifndef SVGF_AtrousWaveletTransformFilter_RCSTRUCT
+#define SVGF_AtrousWaveletTransformFilter_RCSTRUCT {	\
+		FLOAT gRayHitDistanceToKernelWidthScale;		\
+		FLOAT gRayHitDistanceToKernelSizeScaleExponent;	\
+	};
+#endif
+
+#ifndef SVGF_DisocclusionBlur_RCSTRUCT
+#define SVGF_DisocclusionBlur_RCSTRUCT {	\
+		DirectX::XMUINT2	gTextureDim;	\
+		UINT				gStep;			\
+		UINT				gMaxStep;		\
+	};
+#endif
+
 #ifdef _HLSL
-		typedef float		ValueMapFormat_Contrast;
+		typedef FLOAT		ValueMapFormat_Contrast;
 		typedef HDR_FORMAT	ValueMapFormat_Color;
-		typedef float		ValueSquaredMeanMapFormat_Contrast;
+		typedef FLOAT		ValueSquaredMeanMapFormat_Contrast;
 		typedef HDR_FORMAT	ValueSquaredMeanMapFormat_Color;
 
 		typedef uint4	TSPPSquaredMeanRayHitDistanceMapFormat;
 		typedef float2	DepthPartialDerivativeMapFormat;
 		typedef float2	LocalMeanVarianceMapFormat;
-		typedef float	VarianceMapFormat;
-		typedef float	RayHitDistanceFormat;
+		typedef FLOAT	VarianceMapFormat;
+		typedef FLOAT	RayHitDistanceMapFormat;
 		typedef uint	TSPPMapFormat;
-		typedef float	DisocclusionBlurStrengthMapFormat;
+		typedef FLOAT	DisocclusionBlurStrengthMapFormat;
 
-		static const float InvalidContrastValue = -1.f;
-		static const float InvalidColorValueW = -1.f;
+		typedef float4 DebugMapFormat;
+
+		static const FLOAT InvalidContrastValue = -1.f;
+		static const FLOAT InvalidColorValueW = -1.f;
 
 #ifndef SVGF_TemporalSupersamplingReverseReproject_RootConstants
 #define SVGF_TemporalSupersamplingReverseReproject_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
@@ -605,6 +622,14 @@ namespace ShadingConvention{
 
 #ifndef SVGF_CalcDepthPartialDerivative_RootConstants
 #define SVGF_CalcDepthPartialDerivative_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_CalcDepthPartialDerivative_RCSTRUCT
+#endif
+
+#ifndef SVGF_AtrousWaveletTransformFilter_RootConstants
+#define SVGF_AtrousWaveletTransformFilter_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_AtrousWaveletTransformFilter_RCSTRUCT
+#endif
+
+#ifndef SVGF_DisocclusionBlur_RootConstants
+#define SVGF_DisocclusionBlur_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_DisocclusionBlur_RCSTRUCT
 #endif
 #else
 		const DXGI_FORMAT ValueMapFormat_Contrast = DXGI_FORMAT_R16_FLOAT;
@@ -616,16 +641,18 @@ namespace ShadingConvention{
 		const DXGI_FORMAT DepthPartialDerivativeMapFormat = DXGI_FORMAT_R16G16_FLOAT;
 		const DXGI_FORMAT LocalMeanVarianceMapFormat = DXGI_FORMAT_R32G32_FLOAT;
 		const DXGI_FORMAT VarianceMapFormat = DXGI_FORMAT_R16_FLOAT;
-		const DXGI_FORMAT RayHitDistanceFormat = DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT RayHitDistanceMapFormat = DXGI_FORMAT_R16_FLOAT;
 		const DXGI_FORMAT TSPPMapFormat = DXGI_FORMAT_R8_UINT;
 		const DXGI_FORMAT DisocclusionBlurStrengthMapFormat = DXGI_FORMAT_R8_UNORM;
+
+		const DXGI_FORMAT DebugMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 #endif
 
 
 		namespace RootConstant {
 			namespace TemporalSupersamplingReverseReproject {
 				struct Struct SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
-					enum {
+				enum {
 					E_TexDim_X = 0,
 					E_TexDim_Y,
 					E_InvTexDim_X,
@@ -636,7 +663,7 @@ namespace ShadingConvention{
 
 			namespace CalcDepthPartialDerivative {
 				struct Struct SVGF_CalcDepthPartialDerivative_RCSTRUCT
-					enum {
+				enum {
 					E_InvTexDim_X = 0,
 					E_InvTexDim_Y,
 					Count
@@ -644,6 +671,7 @@ namespace ShadingConvention{
 			}
 
 			namespace AtrousWaveletTransformFilter {
+				struct Struct SVGF_AtrousWaveletTransformFilter_RCSTRUCT
 				enum {
 					E_RayHitDistToKernelWidthScale = 0,
 					E_RayHitDistToKernelSizeScaleExp,
@@ -652,6 +680,7 @@ namespace ShadingConvention{
 			}
 
 			namespace DisocclusionBlur {
+				struct Struct SVGF_DisocclusionBlur_RCSTRUCT
 				enum {
 					E_TexDim_X = 0,
 					E_TexDim_Y,
@@ -667,20 +696,20 @@ namespace ShadingConvention{
 #ifdef _HLSL
 		typedef AOMAP_FORMAT	AOCoefficientMapFormat;
 		typedef uint			TSPPMapFormat;
-		typedef float			AOCoefficientSquaredMeanMapFormat;
-		typedef float			RayHitDistanceFormat;
+		typedef FLOAT			AOCoefficientSquaredMeanMapFormat;
+		typedef FLOAT			RayHitDistanceMapFormat;
 
-		static const float RayHitDistanceOnMiss = 0.f;
-		static const float InvalidAOCoefficientValue = SVGF::InvalidContrastValue;
+		static const FLOAT RayHitDistanceOnMiss = 0.f;
+		static const FLOAT InvalidAOCoefficientValue = SVGF::InvalidContrastValue;
 
-		bool HasAORayHitAnyGeometry(float tHit) {
+		bool HasAORayHitAnyGeometry(FLOAT tHit) {
 			return tHit != RayHitDistanceOnMiss;
 		}
 #else
 		const DXGI_FORMAT AOCoefficientMapFormat			= AOMAP_FORMAT;
 		const DXGI_FORMAT TSPPMapFormat						= DXGI_FORMAT_R8_UINT;
 		const DXGI_FORMAT AOCoefficientSquaredMeanMapFormat	= DXGI_FORMAT_R16_FLOAT;
-		const DXGI_FORMAT RayHitDistanceFormat				= DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT RayHitDistanceMapFormat			= DXGI_FORMAT_R16_FLOAT;
 #endif
 	}
 

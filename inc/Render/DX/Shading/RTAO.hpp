@@ -44,7 +44,6 @@ namespace Render::DX::Shading {
 					E_TSPP = 0,
 					E_RayHitDistance,
 					E_AOCoefficientSquaredMean,
-					E_AOCoefficient,
 					Count
 				};
 			}
@@ -69,8 +68,14 @@ namespace Render::DX::Shading {
 					EU_RayHitDistance,
 					ES_AOCoefficientSquaredMean,
 					EU_AOCoefficientSquaredMean,
-					ES_AOCoefficient,
-					EU_AOCoefficient,
+					Count
+				};
+			}
+
+			namespace TemporalAO {
+				enum Type {
+					E_Srv = 0,
+					E_Uav,
 					Count
 				};
 			}
@@ -104,17 +109,18 @@ namespace Render::DX::Shading {
 			virtual ~RTAOClass() = default;
 
 		public:
-			__forceinline Foundation::Resource::GpuResource* AOCoefficientMap() const;
-			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AOCoefficientMapSrv() const;
+			__forceinline Foundation::Resource::GpuResource* AOCoefficientResource(Resource::AO::Type type) const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AOCoefficientDescriptor(Descriptor::AO::Type type) const;
 
-			__forceinline Foundation::Resource::GpuResource* AOResource(Resource::AO::Type type) const;
-			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AODescriptor(Descriptor::AO::Type type) const;
+			__forceinline Foundation::Resource::GpuResource* TemporalAOCoefficientResource(UINT frame) const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE TemporalAOCoefficientSrv(UINT frame) const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE TemporalAOCoefficientUav(UINT frame) const;
 
 			__forceinline Foundation::Resource::GpuResource* TemporalCacheResource(Resource::TemporalCache::Type type, UINT frame) const;
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE TemporalCacheDescriptor(Descriptor::TemporalCache::Type type, UINT frame) const;
 
 			__forceinline constexpr UINT CurrentTemporalCacheFrameIndex() const;
-			__forceinline constexpr UINT CurrentAOResourceFrameIndex() const;
+			__forceinline constexpr UINT CurrentTemporalAOFrameIndex() const;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -146,7 +152,7 @@ namespace Render::DX::Shading {
 				BOOL bRaySortingEnabled);
 
 			UINT MoveToNextTemporalCacheFrame();
-			UINT MoveToNextAOResourceFrame();
+			UINT MoveToNextTemporalAOFrame();
 			
 		private:
 			BOOL BuildResources();
@@ -171,6 +177,10 @@ namespace Render::DX::Shading {
 			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheCpus;
 			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheGpus;
 
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mTemporalAOResources;
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceCpus;
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceGpus;
+
 			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
 			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav;
@@ -178,7 +188,7 @@ namespace Render::DX::Shading {
 			UINT mHitGroupShaderTableStrideInBytes = 0;
 
 			UINT mCurrentTemporalCacheFrameIndex = 0;
-			UINT mCurrentAOResourceFrameIndex = 0;
+			UINT mCurrentTemporalAOFrameIndex = 0;
 		};
 
 		using InitDataPtr = std::unique_ptr<RTAOClass::InitData>;

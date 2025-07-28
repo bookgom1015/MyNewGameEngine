@@ -68,6 +68,12 @@ namespace Render::DX::Foundation {
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS CalcLocalMeanVarianceCBAddress() const;
 			UINT CalcLocalMeanVarianceCBByteSize() const;
 
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS BlendWithCurrentFrameCBAddress() const;
+			UINT BlendWithCurrentFrameCBByteSize() const;
+
+			__forceinline D3D12_GPU_VIRTUAL_ADDRESS AtrousWaveletTransformFilterCBAddress() const;
+			UINT AtrousWaveletTransformFilterCBByteSize() const;
+
 		public:
 			BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
@@ -91,6 +97,8 @@ namespace Render::DX::Foundation {
 			__forceinline void CopyRaySortingCB(const ConstantBuffers::RaySortingCB& data);
 			__forceinline void CopyCrossBilateralFilterCB(const ConstantBuffers::SVGF::CrossBilateralFilterCB& data);
 			__forceinline void CopyCalcLocalMeanVarianceCB(const ConstantBuffers::SVGF::CalcLocalMeanVarianceCB& data);
+			__forceinline void CopyBlendWithCurrentFrameCB(const ConstantBuffers::SVGF::BlendWithCurrentFrameCB& data);
+			__forceinline void CopyAtrousWaveletTransformFilterCB(const ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB& data);
 
 		private:
 			BOOL CreateCommandListAllocators();
@@ -120,6 +128,8 @@ namespace Render::DX::Foundation {
 			UploadBuffer<ConstantBuffers::RaySortingCB> mRaySortingCB;
 			UploadBuffer<ConstantBuffers::SVGF::CrossBilateralFilterCB> mCrossBilateralFilterCB;
 			UploadBuffer<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> mCalcLocalMeanVarianceCB;
+			UploadBuffer<ConstantBuffers::SVGF::BlendWithCurrentFrameCB> mBlendWithCurrentFrameCB;
+			UploadBuffer<ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB> mAtrousWaveletTransformFilterCB;
 		};
 	}
 }

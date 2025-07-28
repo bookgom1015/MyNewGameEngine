@@ -107,4 +107,22 @@ D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::CalcL
 	return mCalcLocalMeanVarianceCB.Resource()->GetGPUVirtualAddress();
 }
 
+// BlendWithCurrentFrameCB
+void Render::DX::Foundation::Resource::FrameResource::CopyBlendWithCurrentFrameCB(const ConstantBuffers::SVGF::BlendWithCurrentFrameCB& data) {
+	mBlendWithCurrentFrameCB.CopyData(0, data);
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::BlendWithCurrentFrameCBAddress() const {
+	return mBlendWithCurrentFrameCB.Resource()->GetGPUVirtualAddress();
+}
+
+// AtrousWaveletTransformFilterCB
+void Render::DX::Foundation::Resource::FrameResource::CopyAtrousWaveletTransformFilterCB(const ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB& data) {
+	mAtrousWaveletTransformFilterCB.CopyData(0, data);
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Render::DX::Foundation::Resource::FrameResource::AtrousWaveletTransformFilterCBAddress() const {
+	return mAtrousWaveletTransformFilterCB.Resource()->GetGPUVirtualAddress();
+}
+
 #endif // __FRAMERESOURCE_INL__

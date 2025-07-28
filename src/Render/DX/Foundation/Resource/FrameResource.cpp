@@ -4,40 +4,27 @@
 
 using namespace Render::DX::Foundation::Resource;
 
-UINT FrameResource::MainPassCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::PassCB));
-}
+UINT FrameResource::MainPassCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::PassCB)); }
 
-UINT FrameResource::LightCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::LightCB));
-}
+UINT FrameResource::LightCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::LightCB)); }
 
-UINT FrameResource::ObjectCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ObjectCB));
-}
+UINT FrameResource::ObjectCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ObjectCB)); }
 
-UINT FrameResource::MaterialCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::MaterialCB));
-}
+UINT FrameResource::MaterialCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::MaterialCB)); }
 
-UINT FrameResource::ProjectToCubeCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ProjectToCubeCB));
-}
+UINT FrameResource::ProjectToCubeCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::ProjectToCubeCB)); }
 
-UINT FrameResource::AmbientOcclusionCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::AmbientOcclusionCB));
-}
+UINT FrameResource::AmbientOcclusionCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::AmbientOcclusionCB)); }
 
-UINT FrameResource::RayGenCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::RayGenCB));
-}
+UINT FrameResource::RayGenCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::RayGenCB)); }
 
-UINT FrameResource::CrossBilateralFilterCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::CrossBilateralFilterCB));
-}
-UINT FrameResource::CalcLocalMeanVarianceCBByteSize() const {
-	return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::CalcLocalMeanVarianceCB));
-}
+UINT FrameResource::CrossBilateralFilterCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::CrossBilateralFilterCB)); }
+
+UINT FrameResource::CalcLocalMeanVarianceCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::CalcLocalMeanVarianceCB)); }
+
+UINT FrameResource::BlendWithCurrentFrameCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::BlendWithCurrentFrameCB)); }
+
+UINT FrameResource::AtrousWaveletTransformFilterCBByteSize() const { return Util::D3D12Util::CalcConstantBufferByteSize(sizeof(ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB)); }
 
 BOOL FrameResource::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
@@ -87,6 +74,8 @@ BOOL FrameResource::BuildConstantBuffres(
 	CheckReturn(mpLogFile, mRaySortingCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
 	CheckReturn(mpLogFile, mCrossBilateralFilterCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
 	CheckReturn(mpLogFile, mCalcLocalMeanVarianceCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mBlendWithCurrentFrameCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, mAtrousWaveletTransformFilterCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
 
 	return TRUE;
 }

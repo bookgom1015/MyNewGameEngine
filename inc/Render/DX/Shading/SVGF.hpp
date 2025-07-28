@@ -14,8 +14,10 @@ namespace Render::DX::Shading {
 				CS_CalcLocalMeanVariance_Contrast,
 				CS_CalcLocalMeanVariance_Color,
 				CS_FillinCheckerboard,
-				CS_EdgeStoppingFilterGaussian3x3,
-				CS_DisocclusionBlur3x3,
+				CS_EdgeStoppingFilterGaussian3x3_Contrast,
+				CS_EdgeStoppingFilterGaussian3x3_Color,
+				CS_DisocclusionBlur3x3_Contrast,
+				CS_DisocclusionBlur3x3_Color,
 				Count
 			};
 		}
@@ -42,13 +44,15 @@ namespace Render::DX::Shading {
 					SI_DepthPartialDerivative,
 					SI_CachedNormalDepth,
 					SI_CachedValue,
-					SI_CachedTSPP,
 					SI_CachedValueSquaredMean,
+					SI_CachedTSPP,
 					SI_CachedRayHitDistance,
 					UO_CachedTSPP,
 					UO_CachedValue,
 					UO_CachedSquaredMean,
 					UO_TSPPSquaredMeanRayHitDistacne,
+					UO_DebugMap0,
+					UO_DebugMap1,
 					Count
 				};
 			}
@@ -62,10 +66,10 @@ namespace Render::DX::Shading {
 					SI_CachedValue,
 					SI_CachedSquaredMean,
 					SI_TSPPSquaredMeanRayHitDistance,
-					UIO_TemporalAOCoefficient,
-					UIO_TSPP,
-					UIO_AOCoefficientSquaredMean,
-					UIO_RayHitDistance,
+					UO_TemporalAOCoefficient,
+					UO_TSPP,
+					UO_AOCoefficientSquaredMean,
+					UO_RayHitDistance,
 					UO_VarianceMap,
 					UO_BlurStrength,
 					Count
@@ -102,13 +106,13 @@ namespace Render::DX::Shading {
 				enum {
 					CB_AtrousFilter = 0,
 					RC_Consts,
-					SI_TemporalAOCoefficient,
+					SI_TemporalValue,
 					SI_NormalDepth,
 					SI_Variance,
 					SI_HitDistance,
 					SI_DepthPartialDerivative,
 					SI_TSPP,
-					UO_TemporalAOCoefficient,
+					UO_TemporalValue,
 					Count
 				};
 			}
@@ -118,6 +122,7 @@ namespace Render::DX::Shading {
 					RC_Consts = 0,
 					SI_DepthMap,
 					SI_BlurStrength,
+					SI_RoughnessMetalnessMap,
 					UIO_AOCoefficient,
 					Count
 				};
@@ -134,8 +139,8 @@ namespace Render::DX::Shading {
 				E_CalcLocalMeanVariance_Contrast,
 				E_CalcLocalMeanVariance_Color,
 				E_FillInCheckerboard,
-				E_AtrousWaveletTransformFilter_Contrast,
-				E_AtrousWaveletTransformFilter_Color,
+				E_EdgeStoppingFilterGaussian3x3_Contrast,
+				E_EdgeStoppingFilterGaussian3x3_Color,
 				E_DisocclusionBlur_Contrast,
 				E_DisocclusionBlur_Color,
 				Count
@@ -307,6 +312,43 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pCachedTSPPMap1,
 				D3D12_GPU_DESCRIPTOR_HANDLE uo_cachedTSPPMap,
 				Value::Type type);
+			BOOL BlendWithCurrentFrame(
+				Foundation::Resource::FrameResource* const pFrameResource, 
+				Foundation::Resource::GpuResource* const pValueMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_valueMap,
+				Foundation::Resource::GpuResource* const pRayHitDistanceMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_rayHitDistanceMap,
+				Foundation::Resource::GpuResource* const pTemporalCacheValueMap, 
+				D3D12_GPU_DESCRIPTOR_HANDLE uo_temporalCacheValueMap,
+				Foundation::Resource::GpuResource* const pTemporalCacheValueSquaredMeanMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE uo_temporalCacheValueSquaredMeanMap,
+				Foundation::Resource::GpuResource* const pTemporalCacheRayHitDistanceMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE uo_temporalCacheRayHitDistanceMap,
+				Foundation::Resource::GpuResource* const pTemporalTSPPMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE uo_temporalCacheTSPPMap,
+				Value::Type type);
+			BOOL ApplyAtrousWaveletTransformFilter(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Foundation::Resource::GpuResource* const pNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
+				Foundation::Resource::GpuResource* const pTemporalCacheHitDistanceMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_temporalCachehitDistanceMap,
+				Foundation::Resource::GpuResource* const pTemporalCacheTSPPMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_temporalCacheTSPPMap,
+				Foundation::Resource::GpuResource* const pTemporalValueMap_Input,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_temporalValueMap, 
+				Foundation::Resource::GpuResource* const pTemporalValueMap_Output,
+				D3D12_GPU_DESCRIPTOR_HANDLE uo_TemporalValueMap,
+				Value::Type type);
+			BOOL BlurDisocclusion(
+				Foundation::Resource::FrameResource* const pFrameResource, 
+				Foundation::Resource::GpuResource* const pDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+				Foundation::Resource::GpuResource* const pRMSMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_rmsMap,
+				Foundation::Resource::GpuResource* const pTemporalValueMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE uio_temporalValueMap, 
+				Value::Type type);
 
 		private:
 			BOOL BuildResources();
@@ -323,11 +365,26 @@ namespace Render::DX::Shading {
 			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mResources;
 			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::Count> mhCpuDecs;
 			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::Count> mhGpuDecs;
+
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mDebugMaps;
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2> mhDebugMapCpuUavs;
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, 2> mhDebugMapGpuUavs;
 		};
 
 		using InitDataPtr = std::unique_ptr<SVGFClass::InitData>;
 
 		InitDataPtr MakeInitData();
+
+		__forceinline UINT NumMantissaBitsInFloatFormat(UINT floatFormatBitLength);
 	}
 }
 
+UINT Render::DX::Shading::SVGF::NumMantissaBitsInFloatFormat(UINT floatFormatBitLength) {
+	switch (floatFormatBitLength) {
+	case 32: return 23;
+	case 16: return 10;
+	case 11: return 6;
+	case 10: return 5;
+	}
+	return 0;
+}

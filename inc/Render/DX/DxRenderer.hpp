@@ -109,6 +109,9 @@ namespace Render {
 			BOOL UpdateRayGenCB();
 			BOOL UpdateRaySortingCB();
 			BOOL UpdateCalcLocalMeanVarianceCB();
+			BOOL UpdateBlendWithCurrentFrameCB();
+			BOOL UpdateCrossBilateralFilterCB();
+			BOOL UpdateAtrousWaveletTransformFilterCB();
 			BOOL ResolvePendingLights();
 			BOOL PopulateRendableItems();
 

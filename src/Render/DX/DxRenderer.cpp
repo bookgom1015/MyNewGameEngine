@@ -387,6 +387,9 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 	CheckReturn(mpLogFile, UpdateRayGenCB());
 	CheckReturn(mpLogFile, UpdateRaySortingCB());
 	CheckReturn(mpLogFile, UpdateCalcLocalMeanVarianceCB());
+	CheckReturn(mpLogFile, UpdateBlendWithCurrentFrameCB());
+	CheckReturn(mpLogFile, UpdateCrossBilateralFilterCB());
+	CheckReturn(mpLogFile, UpdateAtrousWaveletTransformFilterCB());
 
 	return TRUE;
 }
@@ -790,6 +793,74 @@ BOOL DxRenderer::UpdateCalcLocalMeanVarianceCB() {
 	localMeanCB.PixelStepY = PixelStepY;
 
 	mpCurrentFrameResource->CopyCalcLocalMeanVarianceCB(localMeanCB);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateBlendWithCurrentFrameCB() {
+	ConstantBuffers::SVGF::BlendWithCurrentFrameCB blendFrameCB;
+
+	blendFrameCB.StdDevGamma = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.StdDevGamma;
+	blendFrameCB.ClampCachedValues = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.UseClamping;
+	blendFrameCB.ClampingMinStdDevTolerance = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.MinStdDevTolerance;
+
+	blendFrameCB.ClampDifferenceToTsppScale = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.ClampDifferenceToTSPPScale;
+	blendFrameCB.ForceUseMinSmoothingFactor = FALSE;
+	blendFrameCB.MinSmoothingFactor = 1.f / mpShadingArgumentSet->RTAO.MaxTSPP;
+	blendFrameCB.MinTsppToUseTemporalVariance = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.MinTSPPToUseTemporalVariance;
+
+	blendFrameCB.BlurStrengthMaxTspp = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.LowTSPPMaxTSPP;
+	blendFrameCB.BlurDecayStrength = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.LowTSPPDecayConstant;
+	blendFrameCB.CheckerboardEnabled = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
+	blendFrameCB.CheckerboardEvenPixelActivated = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
+
+	mpCurrentFrameResource->CopyBlendWithCurrentFrameCB(blendFrameCB);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateCrossBilateralFilterCB() {
+	ConstantBuffers::SVGF::CrossBilateralFilterCB filterCB;
+
+	filterCB.DepthNumMantissaBits = Shading::SVGF::NumMantissaBitsInFloatFormat(16);
+	filterCB.DepthSigma = 1.f;
+
+	mpCurrentFrameResource->CopyCrossBilateralFilterCB(filterCB);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateAtrousWaveletTransformFilterCB() {
+	ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB filterCB;
+
+	filterCB.TextureDim = { mClientWidth, mClientHeight };
+	filterCB.DepthWeightCutoff = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.DepthWeightCutoff;
+	filterCB.UsingBilateralDownsamplingBuffers = FALSE;
+
+	// Adaptive kernel radius rotation.
+	FLOAT kernelRadiusLerfCoef = 0;
+	if (mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.KernelRadiusRotateKernelEnabled) {
+		static UINT frameID = 0;
+		UINT i = frameID++ % mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.KernelRadiusRotateKernelNumCycles;
+		kernelRadiusLerfCoef = i / static_cast<FLOAT>(mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.KernelRadiusRotateKernelNumCycles);
+	}
+
+	filterCB.UseAdaptiveKernelSize = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.UseAdaptiveKernelSize;
+	filterCB.KernelRadiusLerfCoef = kernelRadiusLerfCoef;
+	filterCB.MinKernelWidth = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.FilterMinKernelWidth;
+	filterCB.MaxKernelWidth = static_cast<UINT>((mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.FilterMaxKernelWidthPercentage / 100.f) * mClientWidth);
+
+	filterCB.PerspectiveCorrectDepthInterpolation = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.PerspectiveCorrectDepthInterpolation;
+	filterCB.MinVarianceToDenoise = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.MinVarianceToDenoise;
+
+	filterCB.ValueSigma = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.ValueSigma;
+	filterCB.DepthSigma = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.DepthSigma;
+	filterCB.NormalSigma = mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.NormalSigma;
+	filterCB.FovY = mpCamera->FovY();
+
+	filterCB.DepthNumMantissaBits = Shading::SVGF::NumMantissaBitsInFloatFormat(16);
+
+	mpCurrentFrameResource->CopyAtrousWaveletTransformFilterCB(filterCB);
 
 	return TRUE;
 }
@@ -1346,8 +1417,8 @@ BOOL DxRenderer::DrawAO() {
 					const auto PrevTemporalCacheFrameIndex = mRTAO->CurrentTemporalCacheFrameIndex();
 					const auto CurrTemporalCacheFrameIndex = mRTAO->MoveToNextTemporalCacheFrame();
 
-					const auto PrevAOResourceFrameIndex = mRTAO->CurrentAOResourceFrameIndex();
-					const auto CurrAOResourceFrameIndex = mRTAO->MoveToNextAOResourceFrame();
+					const auto PrevTemporalAOFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
+					const auto CurrTemporalAOFrameIndex = mRTAO->MoveToNextTemporalAOFrame();
 
 					// Retrieves values from previous frame via reverse reprojection.
 					CheckReturn(mpLogFile, mSVGF->ReverseReprojectPreviousFrame(
@@ -1360,8 +1431,8 @@ BOOL DxRenderer::DrawAO() {
 						mGBuffer->CachedNormalDepthMapSrv(),
 						mGBuffer->VelocityMap(),
 						mGBuffer->VelocityMapSrv(),
-						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficient, PrevTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_AOCoefficient, PrevTemporalCacheFrameIndex),
+						mRTAO->TemporalAOCoefficientResource(PrevTemporalAOFrameIndex),
+						mRTAO->TemporalAOCoefficientSrv(PrevTemporalAOFrameIndex),
 						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
 						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
 						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, PrevTemporalCacheFrameIndex),
@@ -1377,8 +1448,8 @@ BOOL DxRenderer::DrawAO() {
 					// Calculate local mean and variance for clamping during the blending operation.
 					CheckReturn(mpLogFile, mSVGF->CalculateLocalMeanVariance(
 						mpCurrentFrameResource,
-						mRTAO->AOCoefficientMap(),
-						mRTAO->AOCoefficientMapSrv(),
+						mRTAO->AOCoefficientResource(Shading::RTAO::Resource::AO::E_AOCoefficient),
+						mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_AOCoefficient),
 						Shading::SVGF::Value::E_Contrast,
 						mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 					// Interpolate the variance for the inactive cells from the valid checkerboard cells.
@@ -1387,6 +1458,65 @@ BOOL DxRenderer::DrawAO() {
 							mpCurrentFrameResource,
 							mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 					}
+					// Blends reprojected values with current frame values.
+					// Inactive pixels are filtered from active neighbors on checkerboard sampling before the blending operation.
+					{
+						const auto CurrTemporalCacheFrameIndex = mRTAO->MoveToNextTemporalCacheFrame();
+						const auto CurrAOResourceFrameIndex = mRTAO->MoveToNextTemporalAOFrame();
+
+						CheckReturn(mpLogFile, mSVGF->BlendWithCurrentFrame(
+							mpCurrentFrameResource,
+							mRTAO->AOCoefficientResource(Shading::RTAO::Resource::AO::E_AOCoefficient),
+							mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_AOCoefficient),
+							mRTAO->AOCoefficientResource(Shading::RTAO::Resource::AO::E_RayHitDistance),
+							mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_RayHitDistance),
+							mRTAO->TemporalAOCoefficientResource(CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalAOCoefficientUav(CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_RayHitDistance, CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+							Shading::SVGF::Value::E_Contrast));
+					}
+				}
+			}
+			// Filtering
+			{
+				// Stage 1: Applies a single pass of a Atrous wavelet transform filter.
+				{
+					const auto CurrTemporalCacheFrameIndex = mRTAO->CurrentTemporalCacheFrameIndex();
+					const auto InputAOResourceFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
+					const auto OutputAOResourceFrameIndex = mRTAO->MoveToNextTemporalAOFrame();
+				
+					CheckReturn(mpLogFile, mSVGF->ApplyAtrousWaveletTransformFilter(
+						mpCurrentFrameResource,
+						mGBuffer->NormalDepthMap(),
+						mGBuffer->NormalDepthMapSrv(),
+						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_RayHitDistance, CurrTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_TSPP, CurrTemporalCacheFrameIndex),
+						mRTAO->TemporalAOCoefficientResource(InputAOResourceFrameIndex),
+						mRTAO->TemporalAOCoefficientSrv(InputAOResourceFrameIndex),
+						mRTAO->TemporalAOCoefficientResource(OutputAOResourceFrameIndex),
+						mRTAO->TemporalAOCoefficientSrv(OutputAOResourceFrameIndex),
+						Shading::SVGF::Value::E_Contrast));
+				}
+				// Stage 2: 3x3 multi-pass disocclusion blur (with more relaxed depth-aware constraints for such pixels).
+				{
+					const auto CurrAOResourceFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
+
+					CheckReturn(mpLogFile, mSVGF->BlurDisocclusion(
+						mpCurrentFrameResource,
+						mDepthStencilBuffer->GetDepthStencilBuffer(),
+						mDepthStencilBuffer->DepthStencilBufferSrv(),
+						mGBuffer->RoughnessMetalnessMap(),
+						mGBuffer->RoughnessMetalnessMapSrv(),
+						mRTAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+						mRTAO->TemporalAOCoefficientSrv(CurrAOResourceFrameIndex),
+						Shading::SVGF::Value::E_Contrast));
 				}
 			}
 		}
@@ -1424,8 +1554,9 @@ BOOL DxRenderer::DrawAO() {
 }
 
 BOOL DxRenderer::IntegrateIrradiance() {
-	const auto ao = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMap() : mSSAO->AOMap(0);
-	const auto aoSrv = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->AOCoefficientMapSrv() : mSSAO->AOMapSrv(0);
+	const auto CurrTemporalAOFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
+	const auto AOMap = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->TemporalAOCoefficientResource(CurrTemporalAOFrameIndex) : mSSAO->AOMap(0);
+	const auto AOSrv = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->TemporalAOCoefficientSrv(CurrTemporalAOFrameIndex) : mSSAO->AOMapSrv(0);
 
 	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
 		mpCurrentFrameResource,
@@ -1447,8 +1578,8 @@ BOOL DxRenderer::IntegrateIrradiance() {
 		mGBuffer->RoughnessMetalnessMapSrv(),
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
-		ao,
-		aoSrv,
+		AOMap,
+		AOSrv,
 		mEnvironmentMap->DiffuseIrradianceCubeMap(),
 		mEnvironmentMap->DiffuseIrradianceCubeMapSrv(),
 		mEnvironmentMap->BrdfLutMap(),

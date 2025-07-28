@@ -32,9 +32,9 @@ Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_NormalDep
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>         gi_RayDirectionOriginDepthMap           : register(t3);
 Texture2D<ShadingConvention::RaySorting::RayIndexOffsetMapFormat>   gi_TexAOSortedToSourceRayIndexOffsetMap : register(t4);
 
-RWTexture2D<ShadingConvention::RTAO::AOCoefficientMapFormat> go_AOCoefficientMap  : register(u0);
-RWTexture2D<ShadingConvention::RTAO::RayHitDistanceFormat>   go_RayHitDistanceMap : register(u1);
-RWTexture2D<float4>                                          go_DebugMap          : register(u2);
+RWTexture2D<ShadingConvention::RTAO::AOCoefficientMapFormat>  go_AOCoefficientMap  : register(u0);
+RWTexture2D<ShadingConvention::RTAO::RayHitDistanceMapFormat> go_RayHitDistanceMap : register(u1);
+RWTexture2D<float4>                                           go_DebugMap          : register(u2);
 
 static const uint PixelStepX = 2;
 

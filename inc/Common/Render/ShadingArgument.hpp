@@ -33,13 +33,43 @@ namespace Common::Render {
 			UINT BlurCount = 3;
 		};
 
+		struct BlendWithCurrentFrameArguments {
+			BOOL UseClamping = TRUE;
+			FLOAT DepthSigma = 1.f;
+			FLOAT StdDevGamma = 0.6f;
+			FLOAT MinStdDevTolerance = 0.05f;
+
+			FLOAT ClampDifferenceToTSPPScale = 4.f;
+			UINT MinTSPPToUseTemporalVariance = 4;
+			UINT LowTSPPMaxTSPP = 12;
+			FLOAT LowTSPPDecayConstant = 1.f;
+		};
+
+		struct AtrousWaveletTransformFilterArguments {
+			FLOAT ValueSigma = 1.f;
+			FLOAT NormalSigma = 64.f;
+			FLOAT DepthSigma = 1.f;
+			FLOAT DepthWeightCutoff = 0.2f;
+
+			FLOAT MinVarianceToDenoise = 0.f;
+
+			BOOL UseSmoothedVariance = FALSE;
+
+			BOOL PerspectiveCorrectDepthInterpolation = TRUE;
+
+			BOOL UseAdaptiveKernelSize = TRUE;
+			BOOL KernelRadiusRotateKernelEnabled = TRUE;
+			INT KernelRadiusRotateKernelNumCycles = 3;
+			INT FilterMinKernelWidth = 3;
+			FLOAT FilterMaxKernelWidthPercentage = 1.5f;
+			FLOAT AdaptiveKernelSizeRayHitDistanceScaleFactor = 0.02f;
+			FLOAT AdaptiveKernelSizeRayHitDistanceScaleExponent = 2.f;
+		};
+
 		struct RTAOArguments {
 			FLOAT OcclusionRadius = 10.f;
-
 			FLOAT OcclusionFadeStart = 0.f;
-
 			FLOAT OcclusionFadeEnd = 10.f;
-
 			FLOAT SurfaceEpsilon = 0.0001f;
 
 			UINT SampleCount = 1;
@@ -50,10 +80,17 @@ namespace Common::Render {
 			const UINT MaxSampleSetSize = 8;
 			const UINT MinSampleSetSize = 1;
 
+			// RaySorting
 			BOOL RaySortingEnabled = TRUE;
 			BOOL CheckerboardGenerateRaysForEvenPixels = FALSE;
 			BOOL CheckboardRayGeneration = TRUE;
 			BOOL RandomFrameSeed = TRUE;
+
+			BlendWithCurrentFrameArguments BlendWithCurrentFrame;
+			AtrousWaveletTransformFilterArguments AtrousWaveletTransformFilter;
+
+			//
+			UINT MaxTSPP = 33;
 		};
 
 		struct RaySortingArguments {

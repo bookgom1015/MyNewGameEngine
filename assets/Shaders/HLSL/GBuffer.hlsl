@@ -106,7 +106,8 @@ void MS(
             const float4 PrevPosW = mul(float4(vin.Position, 1), cbObject.PrevWorld);
             vout.PrevPosH = mul(PrevPosW, cbPass.PrevViewProj);
             
-            vout.NormalW = mul(vin.Normal, (float3x3) cbObject.World);
+            vout.NormalW = mul(vin.Normal, (float3x3)cbObject.World);
+            vout.PrevNormalW = mul(vin.Normal, (float3x3)cbObject.PrevWorld);
     
             float4 TexC = mul(float4(vin.TexCoord, 0.f, 1.f), cbObject.TexTransform);
             vout.TexC = TexC.xy;

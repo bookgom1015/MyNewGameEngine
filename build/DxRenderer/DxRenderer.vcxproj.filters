@@ -656,5 +656,17 @@
     <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingReverseReproject.hlsl">
       <Filter>Shader Files\SVGF\Denoising\Temporal</Filter>
     </None>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSupersamplingBlendWithCurrentFrame.hlsl">
+      <Filter>Shader Files\SVGF\Denoising\Temporal</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\AtrousWaveletTransformFilter.hlsli">
+      <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\DisocclusionBlur3x3.hlsl">
+      <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\EdgeStoppingFilter_Gaussian3x3.hlsl">
+      <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
+    </None>
   </ItemGroup>
 </Project>
