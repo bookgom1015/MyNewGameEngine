@@ -939,7 +939,9 @@ BOOL SVGF::SVGFClass::ApplyAtrousWaveletTransformFilter(
 		D3D12_GPU_DESCRIPTOR_HANDLE si_temporalValueMap,
 		Foundation::Resource::GpuResource* const pTemporalValueMap_Output,
 		D3D12_GPU_DESCRIPTOR_HANDLE uo_TemporalValueMap,
-		Value::Type type) {
+		Value::Type type,
+		FLOAT rayHitDistToKernelWidthScale,
+		FLOAT rayHitDistToKernelSizeScaleExp) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -961,6 +963,18 @@ BOOL SVGF::SVGFClass::ApplyAtrousWaveletTransformFilter(
 		pTemporalValueMap_Output->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, pTemporalValueMap_Output);
 
+		ShadingConvention::SVGF::RootConstant::AtrousWaveletTransformFilter::Struct rc;
+		rc.gRayHitDistanceToKernelWidthScale = rayHitDistToKernelWidthScale;
+		rc.gRayHitDistanceToKernelSizeScaleExponent = rayHitDistToKernelSizeScaleExp;
+
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SVGF::RootConstant::AtrousWaveletTransformFilter::Struct>(
+			RootSignature::AtrousWaveletTransformFilter::RC_Consts,
+			ShadingConvention::SVGF::RootConstant::AtrousWaveletTransformFilter::Count,
+			&rc,
+			0,
+			CmdList,
+			TRUE);
+		
 		CmdList->SetComputeRootConstantBufferView(RootSignature::AtrousWaveletTransformFilter::CB_AtrousFilter, pFrameResource->AtrousWaveletTransformFilterCBAddress());
 		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::SI_TemporalValue, si_temporalValueMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::SI_NormalDepth, si_normalDepthMap);
@@ -984,11 +998,12 @@ BOOL SVGF::SVGFClass::BlurDisocclusion(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		Foundation::Resource::GpuResource* const pDepthMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-		Foundation::Resource::GpuResource* const pRMSMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_rmsMap,
+		Foundation::Resource::GpuResource* const pRoughnessMetalnessMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
 		Foundation::Resource::GpuResource* const pTemporalValueMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE uio_temporalValueMap,
-		Value::Type type) {
+		Value::Type type,
+		UINT numLowTSPPBlurPasses) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -1000,7 +1015,49 @@ BOOL SVGF::SVGFClass::BlurDisocclusion(
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_DisocclusionBlur].Get());
 
+		pDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pRoughnessMetalnessMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		pTemporalValueMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, pTemporalValueMap);
+		
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::SI_DepthMap, si_depthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::SI_RoughnessMetalnessMap, si_roughnessMetalnessMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::SI_BlurStrength, mhGpuDecs[Descriptor::ES_DisocclusionBlurStrength]);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::UIO_AOCoefficient, uio_temporalValueMap);
+
+		ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Struct rc;
+		rc.gTextureDim.x = mInitData.ClientWidth;
+		rc.gTextureDim.y = mInitData.ClientHeight;
+		rc.gMaxStep = numLowTSPPBlurPasses;
+
+		const UINT ThreadGroupX = ShadingConvention::SVGF::ThreadGroup::Default::Width;
+		const UINT ThreadGroupY = ShadingConvention::SVGF::ThreadGroup::Default::Height;
+		UINT filterStep = 1;
+		for (UINT i = 0; i < numLowTSPPBlurPasses; ++i) {
+			rc.gStep = i;
+
+			Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Struct>(
+				RootSignature::DisocclusionBlur::RC_Consts,
+				ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Count,
+				&rc,
+				0,
+				CmdList,
+				TRUE);
+
+			// Account for interleaved Group execution
+			const UINT WidthCS = filterStep * ThreadGroupX * Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, filterStep * ThreadGroupX);
+			const UINT HeightCS = filterStep * ThreadGroupY * Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, filterStep * ThreadGroupY);
+
+			CmdList->Dispatch(
+				Foundation::Util::D3D12Util::D3D12Util::CeilDivide(WidthCS, ThreadGroupX),
+				Foundation::Util::D3D12Util::D3D12Util::CeilDivide(HeightCS, ThreadGroupY),
+				ShadingConvention::SVGF::ThreadGroup::Default::Depth);
+
+			filterStep *= 2;
+		}
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

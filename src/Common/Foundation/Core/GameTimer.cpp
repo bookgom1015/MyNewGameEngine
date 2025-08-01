@@ -82,10 +82,10 @@ void GameTimer::Stop() {
 	}
 }
 
-void GameTimer::Tick() {
+BOOL GameTimer::Tick() {
 	if (mStopped) {
 		mDeltaTime = 0.;
-		return;
+		return FALSE;
 	}
 
 	INT64 currTime;
@@ -94,18 +94,24 @@ void GameTimer::Tick() {
 
 	const DOUBLE delta = (mCurrTime - mPrevTime) * mSecondsPerCount;
 
-	if (delta >= FrameTimeLimit()) {
-		// Time difference between this frame and the previous.
-		mDeltaTime = delta;
+	// Time difference between this frame and the previous.
+	mDeltaTime = delta;
 
+	BOOL status = FALSE;
+
+	if (delta >= FrameTimeLimit()) {
 		// Prepare for next frame.
 		mPrevTime = mCurrTime;
+
+		status = TRUE;
 	}
 
 	// Force nonnegative.  The DXSDK's CDXUTTimer mentions that if the 
 	// processor goes into a power save mode or we get shuffled to another
 	// processor, then mDeltaTime can be negative.
 	if (delta < 0.) mDeltaTime = 0.;
+
+	return status;
 }
 
 constexpr FLOAT GameTimer::FrameTimeLimit() const {

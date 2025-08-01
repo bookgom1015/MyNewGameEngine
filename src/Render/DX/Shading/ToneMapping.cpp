@@ -166,33 +166,35 @@ BOOL ToneMapping::ToneMappingClass::Resolve(
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
-	CmdList->SetGraphicsRootSignature(mRootSignature.Get());
+	{
+		CmdList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	CmdList->RSSetViewports(1, &viewport);
-	CmdList->RSSetScissorRects(1, &scissorRect);
+		CmdList->RSSetViewports(1, &viewport);
+		CmdList->RSSetScissorRects(1, &scissorRect);
 
-	pBackBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	mIntermediateMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pBackBuffer->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mIntermediateMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
+		CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
 
-	ShadingConvention::ToneMapping::RootConstant::Default::Struct rc;
-	rc.gExposure = exposure;
+		ShadingConvention::ToneMapping::RootConstant::Default::Struct rc;
+		rc.gExposure = exposure;
 
-	std::array<std::uint32_t, ShadingConvention::ToneMapping::RootConstant::Default::Count> consts;
-	std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::ToneMapping::RootConstant::Default::Struct));
+		std::array<std::uint32_t, ShadingConvention::ToneMapping::RootConstant::Default::Count> consts;
+		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::ToneMapping::RootConstant::Default::Struct));
 
-	CmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Cosnts, ShadingConvention::ToneMapping::RootConstant::Default::Count, consts.data(), 0);
-	CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_Intermediate, mhIntermediateMapGpuSrv);
+		CmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Cosnts, ShadingConvention::ToneMapping::RootConstant::Default::Count, consts.data(), 0);
+		CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_Intermediate, mhIntermediateMapGpuSrv);
 
-	if (mInitData.MeshShaderSupported) {
-		CmdList->DispatchMesh(1, 1, 1);
-	}
-	else {
-		CmdList->IASetVertexBuffers(0, 0, nullptr);
-		CmdList->IASetIndexBuffer(nullptr);
-		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		CmdList->DrawInstanced(6, 1, 0, 0);
+		if (mInitData.MeshShaderSupported) {
+			CmdList->DispatchMesh(1, 1, 1);
+		}
+		else {
+			CmdList->IASetVertexBuffers(0, 0, nullptr);
+			CmdList->IASetIndexBuffer(nullptr);
+			CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			CmdList->DrawInstanced(6, 1, 0, 0);
+		}
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

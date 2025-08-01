@@ -1,8 +1,17 @@
 #ifndef __D3D12UTIL_INL__
 #define __D3D12UTIL_INL__
 
-UINT Render::DX::Foundation::Util::D3D12Util::CeilDivide(UINT value, UINT divisor) {
-	return (value + divisor - 1) / divisor;
+UINT Render::DX::Foundation::Util::D3D12Util::CeilDivide(UINT value, UINT divisor) { return (value + divisor - 1) / divisor; }
+
+FLOAT Render::DX::Foundation::Util::D3D12Util::Lerp(FLOAT a, FLOAT b, FLOAT t) { return a + t * (b - a); }
+
+FLOAT Render::DX::Foundation::Util::D3D12Util::Clamp(FLOAT a, FLOAT _min, FLOAT _max) {
+	return std::max(_min, std::min(_max, a));
+}
+
+FLOAT Render::DX::Foundation::Util::D3D12Util::RelativeCoef(FLOAT a, FLOAT _min, FLOAT _max) {
+	FLOAT _a = Clamp(a, _min, _max);
+	return (_a - _min) / (_max - _min);
 }
 
 template <typename T>

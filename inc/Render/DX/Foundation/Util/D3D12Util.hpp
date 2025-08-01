@@ -64,6 +64,10 @@ namespace Render::DX::Foundation {
 		public:
 			__forceinline static UINT CeilDivide(UINT value, UINT divisor);
 
+			__forceinline static FLOAT Lerp(FLOAT a, FLOAT b, FLOAT t);
+			__forceinline static FLOAT Clamp(FLOAT a, FLOAT _min, FLOAT _max);
+			__forceinline static FLOAT RelativeCoef(FLOAT a, FLOAT _min, FLOAT _max);
+
 		public:
 			static BOOL CreateSwapChain(
 				Core::Factory* const pFactory,

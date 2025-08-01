@@ -35,13 +35,12 @@ BOOL FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 	mForwardSpeed = 0.f;
 	mStrapeSpeed = 0.f;
 
-	float speed = 1.f;
-	if (pInput->Keyboard.KeyValue(VK_LSHIFT)) speed *= 0.1f;
+	mActualWalkSpeed = pInput->Keyboard.KeyValue(VK_LSHIFT) ? mWalkSpeed * 0.1f : mWalkSpeed;
 
-	if (pInput->Keyboard.KeyValue(VK_W)) mForwardSpeed += speed;
-	if (pInput->Keyboard.KeyValue(VK_S)) mForwardSpeed += -speed;
-	if (pInput->Keyboard.KeyValue(VK_A)) mStrapeSpeed += -speed;
-	if (pInput->Keyboard.KeyValue(VK_D)) mStrapeSpeed += speed;
+	if (pInput->Keyboard.KeyValue(VK_W)) mForwardSpeed += 1.f;
+	if (pInput->Keyboard.KeyValue(VK_S)) mForwardSpeed += -1.f;
+	if (pInput->Keyboard.KeyValue(VK_A)) mStrapeSpeed += -1.f;
+	if (pInput->Keyboard.KeyValue(VK_D)) mStrapeSpeed += 1.f;
 
 	mLookUpSpeed = 0.f;
 	mTurnSpeed = 0.f;
@@ -66,14 +65,15 @@ BOOL FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 }
 
 BOOL FreeLookActor::UpdateActor(FLOAT delta) {
-	XMVECTOR strape = mpCameraComp->RightVector() * mStrapeSpeed;
-	XMVECTOR forward = mpCameraComp->ForwardVector() * mForwardSpeed;
-	XMVECTOR disp = strape + forward;
+	const XMVECTOR Strape = mpCameraComp->RightVector() * mStrapeSpeed;
+	const XMVECTOR Forward = mpCameraComp->ForwardVector() * mForwardSpeed;
+	const XMVECTOR Direction = Strape + Forward;
+	const XMVECTOR Normalized = XMVector3Normalize(Direction);
 
 	FLOAT yaw = mTurnSpeed * mLookSensitivity;
 	FLOAT pitch = mLookUpSpeed * mTurnSensitivity;
 
-	AddPosition(disp * mWalkSpeed * delta);
+	AddPosition(Normalized * mActualWalkSpeed * delta);
 	AddRotationYaw(yaw);
 
 	mpCameraComp->Yaw(yaw);

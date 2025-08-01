@@ -271,15 +271,17 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->BackBufferRtv(),
 		mpShadingArgumentSet->ToneMapping.Exposure));
 
-	CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
-		mpCurrentFrameResource,
-		mSwapChain->ScreenViewport(),
-		mSwapChain->ScissorRect(),
-		mSwapChain->BackBuffer(),
-		mSwapChain->BackBufferRtv(),
-		mSwapChain->BackBufferCopy(),
-		mSwapChain->BackBufferCopySrv(),
-		mpShadingArgumentSet->GammaCorrection.Gamma));
+	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
+		CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
+			mpCurrentFrameResource,
+			mSwapChain->ScreenViewport(),
+			mSwapChain->ScissorRect(),
+			mSwapChain->BackBuffer(),
+			mSwapChain->BackBufferRtv(),
+			mSwapChain->BackBufferCopy(),
+			mSwapChain->BackBufferCopySrv(),
+			mpShadingArgumentSet->GammaCorrection.Gamma));
+	}
 
 	CheckReturn(mpLogFile, DrawImGui());		
 	CheckReturn(mpLogFile, PresentAndSignal());
@@ -1470,8 +1472,8 @@ BOOL DxRenderer::DrawAO() {
 							mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_AOCoefficient),
 							mRTAO->AOCoefficientResource(Shading::RTAO::Resource::AO::E_RayHitDistance),
 							mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_RayHitDistance),
-							mRTAO->TemporalAOCoefficientResource(CurrTemporalCacheFrameIndex),
-							mRTAO->TemporalAOCoefficientUav(CurrTemporalCacheFrameIndex),
+							mRTAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+							mRTAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
 							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
 							mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
 							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
@@ -1485,11 +1487,18 @@ BOOL DxRenderer::DrawAO() {
 			// Filtering
 			{
 				// Stage 1: Applies a single pass of a Atrous wavelet transform filter.
-				{
+				if (mpShadingArgumentSet->RTAO.Denoiser.FullscreenBlurEnabaled) {
 					const auto CurrTemporalCacheFrameIndex = mRTAO->CurrentTemporalCacheFrameIndex();
 					const auto InputAOResourceFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
 					const auto OutputAOResourceFrameIndex = mRTAO->MoveToNextTemporalAOFrame();
 				
+					const FLOAT RayHitDistToKernelWidthScale = 22 / mpShadingArgumentSet->RTAO.OcclusionRadius *
+						mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleFactor;
+					const FLOAT RayHitDistToKernelSizeScaleExp = Foundation::Util::D3D12Util::Lerp(
+						1,
+						mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleExponent,
+						Foundation::Util::D3D12Util::RelativeCoef(mpShadingArgumentSet->RTAO.OcclusionRadius, 4, 22));
+
 					CheckReturn(mpLogFile, mSVGF->ApplyAtrousWaveletTransformFilter(
 						mpCurrentFrameResource,
 						mGBuffer->NormalDepthMap(),
@@ -1502,10 +1511,12 @@ BOOL DxRenderer::DrawAO() {
 						mRTAO->TemporalAOCoefficientSrv(InputAOResourceFrameIndex),
 						mRTAO->TemporalAOCoefficientResource(OutputAOResourceFrameIndex),
 						mRTAO->TemporalAOCoefficientSrv(OutputAOResourceFrameIndex),
-						Shading::SVGF::Value::E_Contrast));
+						Shading::SVGF::Value::E_Contrast,
+						RayHitDistToKernelWidthScale,
+						RayHitDistToKernelSizeScaleExp));
 				}
 				// Stage 2: 3x3 multi-pass disocclusion blur (with more relaxed depth-aware constraints for such pixels).
-				{
+				if (mpShadingArgumentSet->RTAO.Denoiser.DisocclusionBlurEnabled) {
 					const auto CurrAOResourceFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
 
 					CheckReturn(mpLogFile, mSVGF->BlurDisocclusion(
@@ -1515,8 +1526,9 @@ BOOL DxRenderer::DrawAO() {
 						mGBuffer->RoughnessMetalnessMap(),
 						mGBuffer->RoughnessMetalnessMapSrv(),
 						mRTAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
-						mRTAO->TemporalAOCoefficientSrv(CurrAOResourceFrameIndex),
-						Shading::SVGF::Value::E_Contrast));
+						mRTAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
+						Shading::SVGF::Value::E_Contrast,
+						mpShadingArgumentSet->RTAO.Denoiser.LowTsppBlurPassCount));
 				}
 			}
 		}

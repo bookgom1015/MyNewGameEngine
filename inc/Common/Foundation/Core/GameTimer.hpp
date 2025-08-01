@@ -32,7 +32,7 @@ namespace Common::Foundation::Core {
 		void Reset(); // Call before message loop.
 		void Start(); // Call when unpaused.
 		void Stop();  // Call when paused.
-		void Tick();  // Call every frame.
+		BOOL Tick();  // Call every frame.
 
 		constexpr FLOAT FrameTimeLimit() const;
 		void SetFrameTimeLimit(FrameTimeLimits limit);

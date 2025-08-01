@@ -65,8 +65,11 @@ namespace ImGuiManager {
 				Render::DX::Foundation::Light* lights[],
 				UINT numLights,
 				std::queue<std::shared_ptr<Render::DX::Foundation::Light>>& pendingLights);
+
 			void ShadingObjectHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void ShadowTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void GammaCorrectionTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void ToneMappingTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void TAATree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void AOTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 

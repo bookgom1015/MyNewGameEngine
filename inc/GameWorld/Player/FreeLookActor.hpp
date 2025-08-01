@@ -40,6 +40,7 @@ namespace GameWorld {
 			FLOAT mStrapeSpeed = 0.f;
 
 			FLOAT mWalkSpeed = 4.f;
+			FLOAT mActualWalkSpeed = 4.f;
 
 			FLOAT mLookUpSpeed = 0.f;
 			FLOAT mTurnSpeed = 0.f;

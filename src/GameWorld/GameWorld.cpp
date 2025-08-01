@@ -90,11 +90,8 @@ BOOL GameWorldClass::RunLoop() {
 		}
 		// Otherwise, do animation/game stuff
 		else {
-			mGameTimer->Tick();
-
 			if (mStage == ProcessingStage::E_DrawFinished) {
-				currTime = mGameTimer->TotalTime();
-				if (currTime - prevTime < mGameTimer->FrameTimeLimit()) continue;
+				if (!mGameTimer->Tick()) continue;
 
 				{
 					std::lock_guard<std::mutex> lock(mStageMutex);
@@ -115,8 +112,6 @@ BOOL GameWorldClass::RunLoop() {
 					mStage = ProcessingStage::E_DrawReady;
 				}
 				mDrawCV.notify_one();
-
-				prevTime = mGameTimer->TotalTime();
 			}
 		}
 	}
@@ -273,6 +268,7 @@ BOOL GameWorldClass::Update() {
 		if (mWindowsManager->Destroyed()) break;
 
 		const auto dt = mGameTimer->DeltaTime();
+		//std::cout << dt << std::endl;
 
 		CheckReturn(mpLogFile, mActorManager->Update(dt));
 		CheckReturn(mpLogFile, mRenderer->Update(dt));

@@ -339,16 +339,19 @@ namespace Render::DX::Shading {
 				D3D12_GPU_DESCRIPTOR_HANDLE si_temporalValueMap, 
 				Foundation::Resource::GpuResource* const pTemporalValueMap_Output,
 				D3D12_GPU_DESCRIPTOR_HANDLE uo_TemporalValueMap,
-				Value::Type type);
+				Value::Type type,
+				FLOAT rayHitDistToKernelWidthScale,
+				FLOAT rayHitDistToKernelSizeScaleExp);
 			BOOL BlurDisocclusion(
 				Foundation::Resource::FrameResource* const pFrameResource, 
 				Foundation::Resource::GpuResource* const pDepthMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-				Foundation::Resource::GpuResource* const pRMSMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_rmsMap,
+				Foundation::Resource::GpuResource* const pRoughnessMetalnessMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_roughnessMetalnessMap,
 				Foundation::Resource::GpuResource* const pTemporalValueMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE uio_temporalValueMap, 
-				Value::Type type);
+				Value::Type type,
+				UINT numLowTSPPBlurPasses);
 
 		private:
 			BOOL BuildResources();

@@ -68,12 +68,23 @@ BOOL DxImGuiManager::DrawImGui(
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	// ControlPanel
+	const auto Width = static_cast<FLOAT>(clientWidth);
+	const auto Height = static_cast<FLOAT>(clientHeight);
+
+	// Setup window properties
 	{
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<FLOAT>(clientWidth) * 0.5f, static_cast<FLOAT>(clientHeight)), ImGuiCond_Always);
+
+		const ImVec2 MinSize(300.f, Height);
+		const ImVec2 MaxSize(std::max(Width, 300.f), Height);
+		ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
+
+		//ImGui::SetNextWindowSize(ImVec2(450.f, static_cast<FLOAT>(clientHeight)), ImGuiCond_Always);
 		ImGui::SetNextWindowCollapsed(TRUE, ImGuiCond_Once);
-		ImGui::Begin("Control Panel", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	}
+	// Create new window
+	{
+		ImGui::Begin("Control Panel", nullptr, ImGuiWindowFlags_NoMove); // ImGuiWindowFlags_NoResize
 
 		// Framerate text
 		FrameRateText(clientWidth, clientHeight);
@@ -82,8 +93,8 @@ BOOL DxImGuiManager::DrawImGui(
 		LightHeader(pArgSet, lights, numLights, pendingLights);
 		// Shading objects
 		ShadingObjectHeader(pArgSet);
-	
-		ImGui::End();
+
+		ImGui::End(); 
 	}
 
 	ImGui::Render();
@@ -337,6 +348,10 @@ void DxImGuiManager::ShadingObjectHeader(Common::Render::ShadingArgument::Shadin
 		ShadowTree(pArgSet);
 		// TAA
 		TAATree(pArgSet);
+		// GammaCorrection
+		GammaCorrectionTree(pArgSet);
+		//ToneMapping
+		ToneMappingTree(pArgSet);
 		// AO
 		AOTree(pArgSet);
 	}
@@ -350,10 +365,42 @@ void DxImGuiManager::ShadowTree(Common::Render::ShadingArgument::ShadingArgument
 	}
 }
 
+void DxImGuiManager::GammaCorrectionTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("Gamma Correction")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->GammaCorrection.Enabled));
+		
+		if (pArgSet->GammaCorrection.Enabled) {
+			ImGui::Indent();
+			{
+				ImGui::SliderFloat("Gamma", reinterpret_cast<float*>(&pArgSet->GammaCorrection.Gamma), pArgSet->GammaCorrection.MinGamma, pArgSet->GammaCorrection.MaxGamma);
+			}
+			ImGui::Unindent();
+		}
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::ToneMappingTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("Tone Mapping")) {
+		ImGui::SliderFloat("Exposure", reinterpret_cast<float*>(&pArgSet->ToneMapping.Exposure), pArgSet->ToneMapping.MinExposure, pArgSet->ToneMapping.MaxExposure);
+
+		ImGui::TreePop();
+	}
+}
+
 void DxImGuiManager::TAATree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("TAA")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->TAA.Enabled));
-		ImGui::SliderFloat("Modulation Factor", &pArgSet->TAA.ModulationFactor, 0.f, 1.f);
+		
+		if (pArgSet->TAA.Enabled) {
+			ImGui::Indent();
+			{
+				ImGui::Text("Modulation Factor");
+				ImGui::SliderFloat("##Modulation Factor", &pArgSet->TAA.ModulationFactor, 0.f, 1.f);
+			}
+			ImGui::Unindent();
+		}
 
 		ImGui::TreePop();
 	}
@@ -362,66 +409,117 @@ void DxImGuiManager::TAATree(Common::Render::ShadingArgument::ShadingArgumentSet
 void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("AO")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->AOEnabled));
+
+		ImGui::SameLine();
+		ImGui::Text(pArgSet->RaytracingEnabled ? "(RTAO)" : "(SSAO)");
+
+		ImGui::Indent();
 		if (pArgSet->AOEnabled) {
 			if (pArgSet->RaytracingEnabled) {
-				ImGui::Text("RTAO");
-				ImGui::SliderFloat("Occlusion Radius", &pArgSet->RTAO.OcclusionRadius, 0.01f, 32.f);
-				ImGui::SliderFloat("Occlusion Fade Start", &pArgSet->RTAO.OcclusionFadeStart, 0.f, 32.f);
-				ImGui::SliderFloat("Occlusion Fade End", &pArgSet->RTAO.OcclusionFadeEnd, 0.f, 32.f);				
-
-				const BOOL RaySortingDisabled = pArgSet->RTAO.SampleCount > 1;
+				// Ray Sorting
 				{
-					if (RaySortingDisabled) ImGui::BeginDisabled();
-
-					if (ImGui::Checkbox("Ray Sorting", reinterpret_cast<bool*>(&pArgSet->RTAO.RaySortingEnabled))) {
-						pArgSet->RTAO.RandomFrameSeed = FALSE;
-						pArgSet->RTAO.CheckboardRayGeneration = FALSE;
-					}
-					if (RaySortingDisabled) ImGui::SetItemTooltip("Enabled only when sample count is 1");
-
+					ImGui::Text("Ray Sorting");
+					
+					ImGui::Indent();
 					{
-						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::BeginDisabled();
+						const BOOL RaySortingDisabled = pArgSet->RTAO.SampleCount > 1;
+						{
+							if (RaySortingDisabled) ImGui::BeginDisabled();
 
-						ImGui::Checkbox("Random Frame Seed", reinterpret_cast<bool*>(&pArgSet->RTAO.RandomFrameSeed));
-						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::SetItemTooltip("Enabled only when ray sorting is enabled");
-						ImGui::Checkbox("Checkboard Ray Generation", reinterpret_cast<bool*>(&pArgSet->RTAO.CheckboardRayGeneration));
-						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::SetItemTooltip("Enabled only when ray sorting is enabled");
+							if (ImGui::Checkbox("Ray Sorting", reinterpret_cast<bool*>(&pArgSet->RTAO.RaySortingEnabled))) {
+								pArgSet->RTAO.RandomFrameSeed = FALSE;
+								pArgSet->RTAO.CheckboardRayGeneration = FALSE;
+							}
+							if (RaySortingDisabled) ImGui::SetItemTooltip("Enabled only when sample count is 1");
 
-						if (!pArgSet->RTAO.RaySortingEnabled) ImGui::EndDisabled();
+							{
+								if (!pArgSet->RTAO.RaySortingEnabled) ImGui::BeginDisabled();
+
+								ImGui::Checkbox("Random Frame Seed", reinterpret_cast<bool*>(&pArgSet->RTAO.RandomFrameSeed));
+								if (!pArgSet->RTAO.RaySortingEnabled) ImGui::SetItemTooltip("Enabled only when ray sorting is enabled");
+								ImGui::Checkbox("Checkboard Ray Generation", reinterpret_cast<bool*>(&pArgSet->RTAO.CheckboardRayGeneration));
+								if (!pArgSet->RTAO.RaySortingEnabled) ImGui::SetItemTooltip("Enabled only when ray sorting is enabled");
+
+								if (!pArgSet->RTAO.RaySortingEnabled) ImGui::EndDisabled();
+							}
+
+							if (RaySortingDisabled) ImGui::EndDisabled();
+						}
+
+						ImGui::Text("Sample Set Size");
+						if (ImGui::SliderInt(
+							"##Sample Set Size",
+							reinterpret_cast<int*>(&pArgSet->RTAO.SampleSetSize),
+							static_cast<int>(pArgSet->RTAO.MinSampleSetSize),
+							pArgSet->RTAO.SampleCount > 1 ? 1 : static_cast<int>(pArgSet->RTAO.MaxSampleSetSize))) {
+							if (pArgSet->RTAO.SampleCount > 1) pArgSet->RTAO.SampleSetSize = 1;
+						}
 					}
-
-					if (RaySortingDisabled) ImGui::EndDisabled();
+					ImGui::Unindent();
 				}
-
-				if(ImGui::SliderInt(
-						"Sample Count", 
-						reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount), 
-						static_cast<int>(pArgSet->RTAO.MinSampleCount), 
-						static_cast<int>(pArgSet->RTAO.MaxSampleCount))) {
-					if (pArgSet->RTAO.SampleCount > 1) {
-						pArgSet->RTAO.RaySortingEnabled = FALSE;
-						pArgSet->RTAO.CheckboardRayGeneration = FALSE;
-						pArgSet->RTAO.SampleSetSize = 1;
+				// Denoiser
+				{
+					ImGui::Text("Denoiser");
+					
+					ImGui::Indent();
+					{
+						ImGui::Checkbox("Fullscreen Blur", reinterpret_cast<bool*>(&pArgSet->RTAO.Denoiser.FullscreenBlurEnabaled));
+						ImGui::Checkbox("Low TSPP Blur", reinterpret_cast<bool*>(&pArgSet->RTAO.Denoiser.DisocclusionBlurEnabled));
 					}
+					ImGui::Unindent();
 				}
-				if (ImGui::SliderInt(
-						"Sample Set Size",
-						reinterpret_cast<int*>(&pArgSet->RTAO.SampleSetSize),
-						static_cast<int>(pArgSet->RTAO.MinSampleSetSize),
-						pArgSet->RTAO.SampleCount > 1 ? 1 : static_cast<int>(pArgSet->RTAO.MaxSampleSetSize))) {
-					if (pArgSet->RTAO.SampleCount > 1) pArgSet->RTAO.SampleSetSize = 1;
+				// AO
+				{
+					ImGui::Text("AO Ray");
+
+					ImGui::Indent();
+					{
+						ImGui::Text("Occlusion Radius");
+						ImGui::SliderFloat("##Occlusion Radius", &pArgSet->RTAO.OcclusionRadius, 0.01f, 32.f);
+
+						ImGui::Text("Occlusion Fade Start");
+						ImGui::SliderFloat("##Occlusion Fade Start", &pArgSet->RTAO.OcclusionFadeStart, 0.f, 32.f);
+
+						ImGui::Text("Occlusion Fade End");
+						ImGui::SliderFloat("##Occlusion Fade End", &pArgSet->RTAO.OcclusionFadeEnd, 0.f, 32.f);
+
+						ImGui::Text("Sample Count");
+						if (ImGui::SliderInt(
+							"##Sample Count",
+							reinterpret_cast<int*>(&pArgSet->RTAO.SampleCount),
+							static_cast<int>(pArgSet->RTAO.MinSampleCount),
+							static_cast<int>(pArgSet->RTAO.MaxSampleCount))) {
+							if (pArgSet->RTAO.SampleCount > 1) {
+								pArgSet->RTAO.RaySortingEnabled = FALSE;
+								pArgSet->RTAO.CheckboardRayGeneration = FALSE;
+								pArgSet->RTAO.SampleSetSize = 1;
+							}
+						}
+					}
+					ImGui::Unindent();
 				}
 			}
 			else {
-				ImGui::Text("SSAO");
-				ImGui::SliderFloat("Occlusion Radius", &pArgSet->SSAO.OcclusionRadius, 0.01f, 1.f);
-				ImGui::SliderFloat("Occlusion Fade Start", &pArgSet->SSAO.OcclusionFadeStart, 0.f, 10.f);
-				ImGui::SliderFloat("Occlusion Fade End", &pArgSet->SSAO.OcclusionFadeEnd, 0.f, 10.f);
-				ImGui::SliderFloat("Occlusion Strength", &pArgSet->SSAO.OcclusionStrength, 1.f, 10.f);
-				ImGui::SliderInt("Sample Count", reinterpret_cast<int*>(&pArgSet->SSAO.SampleCount), 1, 16);
-				ImGui::SliderInt("Blur Count", reinterpret_cast<int*>(&pArgSet->SSAO.BlurCount), 0, 10);
+				ImGui::Text("Occlusion Radius");
+				ImGui::SliderFloat("##Occlusion Radius", &pArgSet->SSAO.OcclusionRadius, 0.01f, 1.f);
+
+				ImGui::Text("Occlusion Fade Start");
+				ImGui::SliderFloat("##Occlusion Fade Start", &pArgSet->SSAO.OcclusionFadeStart, 0.f, 10.f);
+
+				ImGui::Text("Occlusion Fade End");
+				ImGui::SliderFloat("##Occlusion Fade End", &pArgSet->SSAO.OcclusionFadeEnd, 0.f, 10.f);
+
+				ImGui::Text("Occlusion Strength");
+				ImGui::SliderFloat("##Occlusion Strength", &pArgSet->SSAO.OcclusionStrength, 1.f, 10.f);
+
+				ImGui::Text("Sample Count");
+				ImGui::SliderInt("##Sample Count", reinterpret_cast<int*>(&pArgSet->SSAO.SampleCount), 1, 16);
+
+				ImGui::Text("Blur Count");
+				ImGui::SliderInt("##Blur Count", reinterpret_cast<int*>(&pArgSet->SSAO.BlurCount), 0, 10);
 			}
 		}
+		ImGui::Unindent();
 
 		ImGui::TreePop();
 	}

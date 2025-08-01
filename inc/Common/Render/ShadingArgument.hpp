@@ -11,10 +11,15 @@
 namespace Common::Render {
 	namespace ShadingArgument {
 		struct GammaCorrectionArguments {
+			BOOL Enabled = TRUE;
+			const FLOAT MaxGamma = 3.f;
+			const FLOAT MinGamma = 0.5f;
 			FLOAT Gamma = 2.2f;
 		};
 
 		struct ToneMappingArguments {
+			const FLOAT MaxExposure = 8.f;
+			const FLOAT MinExposure = 0.01f;
 			FLOAT Exposure = 1.4f;
 		};
 
@@ -66,6 +71,13 @@ namespace Common::Render {
 			FLOAT AdaptiveKernelSizeRayHitDistanceScaleExponent = 2.f;
 		};
 
+		struct DenoiserArguments {
+			BOOL DisocclusionBlurEnabled = TRUE;
+			BOOL FullscreenBlurEnabaled = TRUE;
+			BOOL UseSmoothingVariance = TRUE;
+			UINT LowTsppBlurPassCount = 3;
+		};
+
 		struct RTAOArguments {
 			FLOAT OcclusionRadius = 10.f;
 			FLOAT OcclusionFadeStart = 0.f;
@@ -88,6 +100,7 @@ namespace Common::Render {
 
 			BlendWithCurrentFrameArguments BlendWithCurrentFrame;
 			AtrousWaveletTransformFilterArguments AtrousWaveletTransformFilter;
+			DenoiserArguments Denoiser;
 
 			//
 			UINT MaxTSPP = 33;
