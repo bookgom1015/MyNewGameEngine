@@ -112,6 +112,23 @@ namespace Common::Render {
 			const FLOAT MaxDepthBinSizeMultiplier = 10.f;
 		};
 
+		struct VolumetricLightArguments {
+			BOOL Enabled = TRUE;
+			FLOAT DepthExponent = 4.f;
+
+			const FLOAT MinAnisotropicCoefficient = -0.5f;
+			const FLOAT MaxAnisotropicCoefficient = 0.5f;
+			FLOAT AnisotropicCoefficient = 0.f;
+
+			const FLOAT MaxUniformDensity = 1.f;
+			const FLOAT MinUniformDensity = 0.f;
+			FLOAT UniformDensity = 0.1f;
+
+			const FLOAT MaxDensityScale = 1.f;
+			const FLOAT MinDensityScale = 0.f;
+			FLOAT DensityScale = 0.01f;
+		};
+
 		struct ShadingArgumentSet {
 			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
@@ -119,6 +136,7 @@ namespace Common::Render {
 			SSAOArguments SSAO;
 			RTAOArguments RTAO;
 			RaySortingArguments RaySorting;
+			VolumetricLightArguments VolumetricLight;
 
 			BOOL ShadowEnabled = TRUE;
 			BOOL AOEnabled = TRUE;

@@ -31,12 +31,12 @@ VertexOut VS(in VertexIn vin) {
     // Use local vertex position as cubemap lookup vector.
     vout.PosL = vin.PosL;
     
-    float4 posW = mul(float4(vout.PosL, 1.f), cbObject.World);
+    float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);
     // Always center sky about camera.
-    posW.xyz += cbPass.EyePosW;
+    PosW.xyz += cbPass.EyePosW;
     
     // Set z = w so that z/w = 1 (i.e., skydome always on far plane).
-    vout.PosH = mul(posW, cbPass.ViewProj).xyww;
+    vout.PosH = mul(PosW, cbPass.ViewProj).xyww;
     
     return vout;
 }
@@ -69,11 +69,11 @@ void MS(
             VertexOut vout = (VertexOut) 0;
             vout.PosL = vin.Position;
             
-            float4 posW = mul(float4(vout.PosL, 1.f), cbObject.World);
+            float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);
             // Always center sky about camera.
-            posW.xyz += cbPass.EyePosW;
+            PosW.xyz += cbPass.EyePosW;
             
-            vout.PosH = mul(posW, cbPass.ViewProj).xyww;
+            vout.PosH = mul(PosW, cbPass.ViewProj).xyww;
          
             verts[VertexBase + i] = vout;
         }

@@ -24,13 +24,13 @@ namespace Render::DX::Shading {
 
 		namespace RootSignature {
 			enum Type {
-				E_TemporalSupersamplingReverseReproject = 0,
-				E_TemporalSupersamplingBlendWithCurrentFrame,
-				E_CalcDepthPartialDerivative,
-				E_CalcLocalMeanVariance,
-				E_FillInCheckerboard,
-				E_AtrousWaveletTransformFilter,
-				E_DisocclusionBlur,
+				GR_TemporalSupersamplingReverseReproject = 0,
+				GR_TemporalSupersamplingBlendWithCurrentFrame,
+				GR_CalcDepthPartialDerivative,
+				GR_CalcLocalMeanVariance,
+				GR_FillInCheckerboard,
+				GR_AtrousWaveletTransformFilter,
+				GR_DisocclusionBlur,
 				Count
 			};
 
@@ -131,18 +131,18 @@ namespace Render::DX::Shading {
 
 		namespace PipelineState {
 			enum Type {
-				E_TemporalSupersamplingReverseReproject_Contrast = 0,
-				E_TemporalSupersamplingReverseReproject_Color,
-				E_TemporalSupersamplingBlendWithCurrentFrame_Contrast,
-				E_TemporalSupersamplingBlendWithCurrentFrame_Color,
-				E_CalcDepthPartialDerivative,
-				E_CalcLocalMeanVariance_Contrast,
-				E_CalcLocalMeanVariance_Color,
-				E_FillInCheckerboard,
-				E_EdgeStoppingFilterGaussian3x3_Contrast,
-				E_EdgeStoppingFilterGaussian3x3_Color,
-				E_DisocclusionBlur_Contrast,
-				E_DisocclusionBlur_Color,
+				CP_TemporalSupersamplingReverseReproject_Contrast = 0,
+				CP_TemporalSupersamplingReverseReproject_Color,
+				CP_TemporalSupersamplingBlendWithCurrentFrame_Contrast,
+				CP_TemporalSupersamplingBlendWithCurrentFrame_Color,
+				CP_CalcDepthPartialDerivative,
+				CP_CalcLocalMeanVariance_Contrast,
+				CP_CalcLocalMeanVariance_Color,
+				CP_FillInCheckerboard,
+				CP_EdgeStoppingFilterGaussian3x3_Contrast,
+				CP_EdgeStoppingFilterGaussian3x3_Color,
+				CP_DisocclusionBlur_Contrast,
+				CP_DisocclusionBlur_Color,
 				Count
 			};
 		}

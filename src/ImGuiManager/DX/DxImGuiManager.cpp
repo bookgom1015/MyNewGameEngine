@@ -354,6 +354,8 @@ void DxImGuiManager::ShadingObjectHeader(Common::Render::ShadingArgument::Shadin
 		ToneMappingTree(pArgSet);
 		// AO
 		AOTree(pArgSet);
+		// VolumetricLight
+		VolumetricLightTree(pArgSet);
 	}
 }
 
@@ -520,6 +522,25 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 			}
 		}
 		ImGui::Unindent();
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::VolumetricLightTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("Volumetric Light")) {
+		ImGui::Text("Anisotropic Coefficient");
+		ImGui::SliderFloat(
+			"##Anisotropic Coefficient", 
+			&pArgSet->VolumetricLight.AnisotropicCoefficient, 
+			pArgSet->VolumetricLight.MinAnisotropicCoefficient, 
+			pArgSet->VolumetricLight.MaxAnisotropicCoefficient);
+
+		ImGui::Text("Uniform Density");
+		ImGui::SliderFloat("##Uniform Density", &pArgSet->VolumetricLight.UniformDensity, pArgSet->VolumetricLight.MinUniformDensity, pArgSet->VolumetricLight.MaxUniformDensity);
+
+		ImGui::Text("Density Scale");
+		ImGui::SliderFloat("##Density Scale", &pArgSet->VolumetricLight.DensityScale, pArgSet->VolumetricLight.MinDensityScale, pArgSet->VolumetricLight.MaxDensityScale);
 
 		ImGui::TreePop();
 	}

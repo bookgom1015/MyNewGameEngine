@@ -17,4 +17,8 @@ constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::Shadow::ShadowClass::
 	return mhShadowMapGpuSrv;
 }
 
+constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::Shadow::ShadowClass::ZDepthMapSrv() const {
+	return mhZDepthMapGpuSrvs[0];
+}
+
 #endif // __SHADOW_INL__

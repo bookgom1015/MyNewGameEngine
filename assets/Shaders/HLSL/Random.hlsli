@@ -12,7 +12,30 @@
 #ifndef __RANDOM_HLSLI__
 #define __RANDOM_HLSLI__
 
+#ifndef MAX_HALTON_SEQUENCE
+#define MAX_HALTON_SEQUENCE 16
+#endif 
+
 namespace Random {
+    static const float3 HaltonSequence[MAX_HALTON_SEQUENCE] = {
+	    float3(0.5f,     0.333333f, 0.2f),
+	    float3(0.25f,    0.666667f, 0.4f),
+	    float3(0.75f,    0.111111f, 0.6f),
+	    float3(0.125f,   0.444444f, 0.8f),
+	    float3(0.625f,   0.777778f, 0.04f),
+	    float3(0.375f,   0.222222f, 0.24f),
+	    float3(0.875f,   0.555556f, 0.44f) ,
+	    float3(0.0625f,  0.888889f, 0.64f),
+	    float3(0.5625f,  0.037037f, 0.84f),
+	    float3(0.3125f,  0.37037f,  0.08f),
+	    float3(0.8125f,  0.703704f, 0.28f),
+	    float3(0.1875f,  0.148148f, 0.48f),
+	    float3(0.6875f,  0.481482f, 0.68f),
+	    float3(0.4375f,  0.814815f, 0.88f),
+	    float3(0.9375f,  0.259259f, 0.12f),
+	    float3(0.03125f, 0.592593f, 0.32f)
+    };
+
     // Generates a seed for a random number generator from 2 inputs plus a backoff
     uint InitRand(uint val0, uint val1, uint backoff = 16) {
         uint v0 = val0;

@@ -148,6 +148,9 @@
     <Filter Include="Shader Files\SVGF\Denoising\Temporal">
       <UniqueIdentifier>{54845f0b-1adf-4e66-a57d-faf3ad6fcdda}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\VolumetricLight">
+      <UniqueIdentifier>{31f6b630-1d36-4a54-845d-08c500df156e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -284,6 +287,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Sampler\Sampler.hpp">
       <Filter>Common Files\Foundation\Sampler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\VolumetricLight.hpp">
+      <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -449,6 +455,9 @@
     <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\VolumetricLight.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -599,9 +608,6 @@
     <None Include="..\..\assets\Shaders\HLSL\RTAO.hlsl">
       <Filter>Shader Files\RTAO</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\RTAO.hlsli">
-      <Filter>Shader Files\RTAO</Filter>
-    </None>
     <None Include="..\..\inc\Render\DX\Shading\Util\ShaderTable.inl">
       <Filter>Header Files\Shading Files\Util</Filter>
     </None>
@@ -667,6 +673,18 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\EdgeStoppingFilter_Gaussian3x3.hlsl">
       <Filter>Shader Files\SVGF\Denoising\Filtering</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\VolumetricLight.hlsli">
+      <Filter>Shader Files\VolumetricLight</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CalculateScatteringAndDensity.hlsl">
+      <Filter>Shader Files\VolumetricLight</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\AccumulateSacttering.hlsl">
+      <Filter>Shader Files\VolumetricLight</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ApplyFog.hlsl">
+      <Filter>Shader Files\VolumetricLight</Filter>
     </None>
   </ItemGroup>
 </Project>

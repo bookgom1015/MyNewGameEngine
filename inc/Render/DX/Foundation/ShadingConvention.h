@@ -399,8 +399,6 @@ namespace ShadingConvention{
 		const DXGI_FORMAT ZDepthMapFormat = DXGI_FORMAT_D32_FLOAT;
 		const DXGI_FORMAT ShadowMapFormat = DXGI_FORMAT_R16_UINT;
 		const DXGI_FORMAT DebugMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-
-		const FLOAT FaceIdCubeMapClearValues[4] = { 255.f, 0.f, 0.f, 0.f };
 #endif 
 		namespace RootConstant {
 			namespace DrawZDepth {
@@ -750,6 +748,88 @@ namespace ShadingConvention{
 			}
 		}
 #endif
+	}
+
+	namespace VolumetricLight {
+		namespace ThreadGroup {
+			namespace CalculateScatteringAndDensity {
+				enum {
+					Width	= 8,
+					Height	= 8,
+					Depth	= 8,
+					Size	= Width * Height * Depth
+				};
+			}
+
+			namespace AccumulateScattering {
+				enum {
+					Width	= 8,
+					Height	= 8,
+					Depth	= 1,
+					Size	= Width * Height * Depth
+				};
+			}
+		}
+
+#ifndef VolumetricLight_CalculateScatteringAndDensity_RCSTRUCT
+#define VolumetricLight_CalculateScatteringAndDensity_RCSTRUCT {\
+		FLOAT gNearZ;											\
+		FLOAT gFarZ;											\
+		FLOAT gDepthExponent;									\
+		FLOAT gUniformDensity;									\
+		FLOAT gAnisotropicCoefficient;							\
+		UINT  gFrameCount;										\
+	};
+#endif
+
+#ifndef VolumetricLight_AccumulateScattering_RCSTRUCT 
+#define VolumetricLight_AccumulateScattering_RCSTRUCT {	\
+		FLOAT gNearZ;									\
+		FLOAT gFarZ;									\
+		FLOAT gDepthExponent;							\
+		FLOAT gDensityScale;							\
+	};
+#endif
+
+#ifdef _HLSL
+		typedef float4 FrustumVolumeMapFormat;
+
+#ifndef VolumetricLight_CalculateScatteringAndDensity_RootConstants
+#define VolumetricLight_CalculateScatteringAndDensity_RootConstants(reg) cbuffer cbRootConstants : register (reg) VolumetricLight_CalculateScatteringAndDensity_RCSTRUCT
+#endif
+
+#ifndef VolumetricLight_AccumulateScattering_RootConstants
+#define VolumetricLight_AccumulateScattering_RootConstants(reg) cbuffer cbRootConstants : register (reg) VolumetricLight_AccumulateScattering_RCSTRUCT
+#endif
+#else
+		const DXGI_FORMAT FrustumVolumeMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+#endif
+
+		namespace RootConstant {
+			namespace CalculateScatteringAndDensity {
+				struct Struct VolumetricLight_CalculateScatteringAndDensity_RCSTRUCT
+				enum {
+					E_NearPlane = 0,
+					E_FarPlane,
+					E_DepthExponent,
+					E_UniformDensity,
+					E_AnisotropicCoefficient,
+					E_FrameCount,
+					Count
+				};
+			}
+
+			namespace AccumulateScattering {
+				struct Struct VolumetricLight_AccumulateScattering_RCSTRUCT
+				enum {
+					E_NearPlane = 0,
+					E_FarPlane,
+					E_DepthExponent,
+					E_DensityScale,
+					Count
+				};
+			}
+		}
 	}
 }
 

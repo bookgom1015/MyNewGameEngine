@@ -17,8 +17,6 @@ namespace {
 	const WCHAR* const HLSL_DrawZDepth = L"DrawZDepth.hlsl";
 	const WCHAR* const HLSL_DrawShadow = L"DrawShadow.hlsl";
 
-	std::vector<Render::DX::Foundation::Light*> gLights;
-
 	BOOL RequiresCubeMap(const Render::DX::Foundation::Light* const light) {
 		return light->Type == Common::Render::LightType::E_Point || light->Type == Common::Render::LightType::E_Tube;
 	}
@@ -34,13 +32,14 @@ Shadow::ShadowClass::ShadowClass() {
 	mShadowMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
-Render::DX::Foundation::Light** Shadow::ShadowClass::Lights() {
-	gLights.clear();
+void Shadow::ShadowClass::Lights(std::vector<Render::DX::Foundation::Light*>& lights) {
+	for (UINT i = 0; i < mLightCount; ++i)
+		lights.push_back(mLights[i].get());
+}
 
-	for (const auto& light : mLights) 
-		gLights.push_back(light.get());
-
-	return gLights.data();
+void Shadow::ShadowClass::ZDepthMaps(std::vector<Render::DX::Foundation::Resource::GpuResource*>& maps) {
+	for (UINT i = 0; i < mLightCount; ++i)
+		maps.push_back(mZDepthMaps[i].get());
 }
 
 UINT Shadow::ShadowClass::CbvSrvUavDescCount() const { return 0

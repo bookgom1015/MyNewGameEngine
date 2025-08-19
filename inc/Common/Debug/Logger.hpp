@@ -131,11 +131,14 @@
 #endif // CheckLastError
 
 #ifndef NullCheck
-#define NullCheck(__logfile, __object) {								\
-	if (__object == nullptr) {											\
-		Common::Debug::Logger::LogFn(__logfile, L"Null check failed");	\
-		return FALSE;													\
-	}																	\
+#define NullCheck(__logfile, __object) {							\
+	if (__object == nullptr) {										\
+		std::wstringstream _wsstream;								\
+		_wsstream << L"Null check failed; "							\
+			<< __FILE__ << L"; line: " << __LINE__ << L"; \n";		\
+		Common::Debug::Logger::LogFn(__logfile, _wsstream.str());	\
+		return FALSE;												\
+	}																\
 }
 #endif
 

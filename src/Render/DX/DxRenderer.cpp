@@ -38,6 +38,7 @@
 #include "Render/DX/Shading/RaySorting.hpp"
 #include "Render/DX/Shading/SVGF.hpp"
 #include "Render/DX/Shading/BlurFilter.hpp"
+#include "Render/DX/Shading/VolumetricLight.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -73,6 +74,7 @@ DxRenderer::DxRenderer() {
 	mRaySorting = std::make_unique<Shading::RaySorting::RaySortingClass>();
 	mSVGF = std::make_unique<Shading::SVGF::SVGFClass>();
 	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
+	mVolumetricLight = std::make_unique<Shading::VolumetricLight::VolumetricLightClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -89,6 +91,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mRaySorting.get());
 	mShadingObjectManager->AddShadingObject(mSVGF.get());
 	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
+	mShadingObjectManager->AddShadingObject(mVolumetricLight.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -248,6 +251,8 @@ BOOL DxRenderer::Draw() {
 		mDepthStencilBuffer->GetDepthStencilBuffer(), 
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		skySphere));
+
+	CheckReturn(mpLogFile, ApplyVolumetricLight());
 
 	if (mpShadingArgumentSet->TAA.Enabled) {
 		CheckReturn(mpLogFile, mTAA->ApplyTAA(
@@ -1239,6 +1244,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		CheckReturn(mpLogFile, mBlurFilter->Initialize(mpLogFile, initData.get()));
 	}
+	// VolumetricLight
+	{
+		auto initData = Shading::VolumetricLight::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->TextureWidth = 160;
+		initData->TextureHeight = 90;
+		initData->TextureDepth = 128;
+		CheckReturn(mpLogFile, mVolumetricLight->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -1366,10 +1383,13 @@ BOOL DxRenderer::DrawImGui() {
 
 	CmdList->OMSetRenderTargets(1, &mSwapChain->BackBufferRtv(), TRUE, nullptr);
 
+	std::vector<Foundation::Light*> lights;
+	mShadow->Lights(lights);
+
 	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
 		CmdList, 
 		mpShadingArgumentSet, 
-		mShadow->Lights(),
+		lights.data(),
 		mShadow->LightCount(),
 		mPendingLights,
 		mClientWidth, 
@@ -1599,6 +1619,38 @@ BOOL DxRenderer::IntegrateIrradiance() {
 		mEnvironmentMap->PrefilteredEnvironmentCubeMap(),
 		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv(),
 		mpShadingArgumentSet->AOEnabled));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::ApplyVolumetricLight() {
+	std::vector<Foundation::Light*> lights;
+	std::vector<Foundation::Resource::GpuResource*> depthMaps;
+
+	mShadow->Lights(lights);
+	mShadow->ZDepthMaps(depthMaps);
+
+	CheckReturn(mpLogFile, mVolumetricLight->BuildFog(
+		mpCurrentFrameResource,
+		depthMaps.data(),
+		mShadow->ZDepthMapSrv(),
+		mpCamera->NearZ(),
+		mpCamera->FarZ(),
+		mpShadingArgumentSet->VolumetricLight.DepthExponent,
+		mpShadingArgumentSet->VolumetricLight.UniformDensity,
+		mpShadingArgumentSet->VolumetricLight.DensityScale,
+		mpShadingArgumentSet->VolumetricLight.AnisotropicCoefficient,
+		lights.data(),
+		mShadow->LightCount()));
+
+	CheckReturn(mpLogFile, mVolumetricLight->ApplyFog(
+		mpCurrentFrameResource,
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv(),
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect()));
 
 	return TRUE;
 }

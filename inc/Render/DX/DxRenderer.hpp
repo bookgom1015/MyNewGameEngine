@@ -67,6 +67,7 @@ namespace Render {
 			namespace RaySorting { class RaySortingClass; }
 			namespace SVGF { class SVGFClass; }
 			namespace BlurFilter { class BlurFilterClass; }
+			namespace VolumetricLight { class VolumetricLightClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -148,6 +149,7 @@ namespace Render {
 
 			BOOL DrawAO();
 			BOOL IntegrateIrradiance();
+			BOOL ApplyVolumetricLight();
 			BOOL PresentAndSignal();
 
 		private:
@@ -186,6 +188,7 @@ namespace Render {
 			std::unique_ptr<Shading::RaySorting::RaySortingClass> mRaySorting;
 			std::unique_ptr<Shading::SVGF::SVGFClass> mSVGF;
 			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;
+			std::unique_ptr<Shading::VolumetricLight::VolumetricLightClass> mVolumetricLight;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

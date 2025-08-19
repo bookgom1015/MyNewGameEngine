@@ -223,7 +223,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
 			rootSignatureDesc, 
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_TemporalSupersamplingReverseReproject]), 
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_TemporalSupersamplingReverseReproject]), 
 			L"SVGF_GR_TemporalSupersamplingReverseReproject"));
 	}
 	// TemporalSupersamplingBlendWithCurrentFrame
@@ -266,7 +266,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
 			rootSignatureDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_TemporalSupersamplingBlendWithCurrentFrame]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_TemporalSupersamplingBlendWithCurrentFrame]),
 			L"SVGF_GR_TemporalSupersamplingBlendWithCurrentFrame"));
 	}
 	// CalculateDepthPartialDerivative
@@ -289,7 +289,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
 			rootSignatureDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_CalcDepthPartialDerivative]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_CalcDepthPartialDerivative]),
 			L"SVGF_GR_CalcDepthPartialDerivative"));
 	}
 	// CalculateMeanVariance
@@ -312,7 +312,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
 			rootSignatureDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_CalcLocalMeanVariance]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_CalcLocalMeanVariance]),
 			L"SVGF_GR_CalcLocalMeanVariance"));
 	}
 	// FillInCheckerboard
@@ -333,7 +333,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
 			rootSignatureDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_FillInCheckerboard]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_FillInCheckerboard]),
 			L"SVGF_GR_FillInCheckerboard"));
 	}
 	// Atrous Wavelet transform filter
@@ -367,7 +367,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
 			rootSignatureDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_AtrousWaveletTransformFilter]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_AtrousWaveletTransformFilter]),
 			L"SVGF_GR_AtrousWaveletTransformFilter"));
 	}
 	// Disocclusion blur
@@ -394,7 +394,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
 			rootSignatureDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::E_DisocclusionBlur]),
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_DisocclusionBlur]),
 			L"SVGF_GR_DisocclusionBlur"));
 	}
 
@@ -405,183 +405,196 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	// CalcDepthPartialDerivative
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_CalcDepthPartialDerivative].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalcDepthPartialDerivative].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcParticalDepthDerivative]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcParticalDepthDerivative]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_CalcDepthPartialDerivative]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_CalcDepthPartialDerivative]),
 			L"SVGF_CP_CalcDepthPartialDerivative"));
 	}
 	// CalcLocalMeanVariance_Contrast
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_CalcLocalMeanVariance].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalcLocalMeanVariance].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcLocalMeanVariance_Contrast]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcLocalMeanVariance_Contrast]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_CalcLocalMeanVariance_Contrast]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_CalcLocalMeanVariance_Contrast]),
 			L"SVGF_CP_CalcLocalMeanVariance_Contrast"));
 	}
 	// CalcLocalMeanVariance_Color
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_CalcLocalMeanVariance].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalcLocalMeanVariance].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcLocalMeanVariance_Color]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcLocalMeanVariance_Color]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_CalcLocalMeanVariance_Color]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_CalcLocalMeanVariance_Color]),
 			L"SVGF_CP_CalcLocalMeanVariance_Color"));
 	}
 	// FillinCheckerboard
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_FillInCheckerboard].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_FillInCheckerboard].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_FillinCheckerboard]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_FillinCheckerboard]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_FillInCheckerboard]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_FillInCheckerboard]),
 			L"SVGF_CP_FillInCheckerboard"));
 	}
 	// TemporalSupersamplingReverseReproject_Contrast
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_TemporalSupersamplingReverseReproject].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_TemporalSupersamplingReverseReproject].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingReverseReproject_Contrast]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingReverseReproject_Contrast]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_TemporalSupersamplingReverseReproject_Contrast]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_TemporalSupersamplingReverseReproject_Contrast]),
 			L"SVGF_CP_TemporalSupersamplingReverseReproject_Contrast"));
 	}
 	// TemporalSupersamplingReverseReproject_Color
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_TemporalSupersamplingReverseReproject].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_TemporalSupersamplingReverseReproject].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingReverseReproject_Color]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingReverseReproject_Color]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_TemporalSupersamplingReverseReproject_Color]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_TemporalSupersamplingReverseReproject_Color]),
 			L"SVGF_CP_TemporalSupersamplingReverseReproject_Color"));
 	}
 	// TemporalSupersamplingBlendWithCurrentFrame_Contrast
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_TemporalSupersamplingBlendWithCurrentFrame].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_TemporalSupersamplingBlendWithCurrentFrame].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingBlendWithCurrentFrame_Contrast]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingBlendWithCurrentFrame_Contrast]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_TemporalSupersamplingBlendWithCurrentFrame_Contrast]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_TemporalSupersamplingBlendWithCurrentFrame_Contrast]),
 			L"SVGF_CP_TemporalSupersamplingBlendWithCurrentFrame_Contrast"));
 	}
 	// TemporalSupersamplingBlendWithCurrentFrame_Color
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_TemporalSupersamplingBlendWithCurrentFrame].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_TemporalSupersamplingBlendWithCurrentFrame].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingBlendWithCurrentFrame_Color]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_TemporalSupersamplingBlendWithCurrentFrame_Color]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_TemporalSupersamplingBlendWithCurrentFrame_Color]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_TemporalSupersamplingBlendWithCurrentFrame_Color]),
 			L"SVGF_CP_TemporalSupersamplingBlendWithCurrentFrame_Color"));
 	}
 	// E_EdgeStoppingFilterGaussian3x3_Contrast
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_AtrousWaveletTransformFilter].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_AtrousWaveletTransformFilter].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_EdgeStoppingFilterGaussian3x3_Contrast]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_EdgeStoppingFilterGaussian3x3_Contrast]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_EdgeStoppingFilterGaussian3x3_Contrast]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_EdgeStoppingFilterGaussian3x3_Contrast]),
 			L"SVGF_CP_EdgeStoppingFilterGaussian3x3_Color"));
 	}
 	// E_EdgeStoppingFilterGaussian3x3_Color
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_AtrousWaveletTransformFilter].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_AtrousWaveletTransformFilter].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_EdgeStoppingFilterGaussian3x3_Color]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_EdgeStoppingFilterGaussian3x3_Color]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_EdgeStoppingFilterGaussian3x3_Color]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_EdgeStoppingFilterGaussian3x3_Color]),
 			L"SVGF_CP_EdgeStoppingFilterGaussian3x3_Color"));
 	}
 	// DisocclusionBlur3x3_Contrast
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_DisocclusionBlur].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DisocclusionBlur].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_DisocclusionBlur3x3_Contrast]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_DisocclusionBlur3x3_Contrast]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_DisocclusionBlur_Contrast]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_DisocclusionBlur_Contrast]),
 			L"SVGF_CP_DisocclusionBlur3x3_Color"));
 	}
 	// DisocclusionBlur3x3_Color
 	{
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.pRootSignature = mRootSignatures[RootSignature::E_DisocclusionBlur].Get();
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DisocclusionBlur].Get();
 		{
-			const auto cs = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_DisocclusionBlur3x3_Color]);
-			psoDesc.CS = { reinterpret_cast<BYTE*>(cs->GetBufferPointer()), cs->GetBufferSize() };
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_DisocclusionBlur3x3_Color]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateComputePipelineState(
 			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::E_DisocclusionBlur_Color]),
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_DisocclusionBlur_Color]),
 			L"SVGF_CP_DisocclusionBlur3x3_Color"));
 	}
+	
 	return TRUE;
 }
 
@@ -618,13 +631,13 @@ BOOL SVGF::SVGFClass::CalculateDepthParticalDerivative(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[PipelineState::E_CalcDepthPartialDerivative].Get()));
+		mPipelineStates[PipelineState::CP_CalcDepthPartialDerivative].Get()));
 	
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 	
 	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_CalcDepthPartialDerivative].Get());
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_CalcDepthPartialDerivative].Get());
 	
 		const auto DepthPartialDerivative = mResources[Resource::E_DepthPartialDerivative].get();
 	
@@ -663,14 +676,14 @@ BOOL SVGF::SVGFClass::CalculateLocalMeanVariance(
 		pFrameResource->CommandAllocator(0),
 		0,
 		mPipelineStates[type == Value::Type::E_Contrast ?
-		PipelineState::E_CalcLocalMeanVariance_Contrast:
-		PipelineState::E_CalcLocalMeanVariance_Color].Get()));
+		PipelineState::CP_CalcLocalMeanVariance_Contrast:
+		PipelineState::CP_CalcLocalMeanVariance_Color].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_CalcLocalMeanVariance].Get());
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_CalcLocalMeanVariance].Get());
 	
 		const auto RawLocalMeanVariance = mResources[SVGF::Resource::LocalMeanVariance::E_Raw].get();
 		RawLocalMeanVariance->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -700,13 +713,13 @@ BOOL SVGF::SVGFClass::FillInCheckerboard(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[PipelineState::E_FillInCheckerboard].Get()));
+		mPipelineStates[PipelineState::CP_FillInCheckerboard].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_FillInCheckerboard].Get());
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_FillInCheckerboard].Get());
 
 		const auto pLocalMeanVarMap = mResources[Resource::LocalMeanVariance::E_Raw].get();
 		pLocalMeanVarMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -752,14 +765,14 @@ BOOL SVGF::SVGFClass::ReverseReprojectPreviousFrame(
 		pFrameResource->CommandAllocator(0),
 		0,
 		mPipelineStates[type == Value::Type::E_Contrast ? 
-		PipelineState::E_TemporalSupersamplingReverseReproject_Contrast : 
-		PipelineState::E_TemporalSupersamplingReverseReproject_Color].Get()));
+		PipelineState::CP_TemporalSupersamplingReverseReproject_Contrast : 
+		PipelineState::CP_TemporalSupersamplingReverseReproject_Color].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_TemporalSupersamplingReverseReproject].Get());
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_TemporalSupersamplingReverseReproject].Get());
 
 		pNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pReprojNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -867,14 +880,14 @@ BOOL SVGF::SVGFClass::BlendWithCurrentFrame(
 		pFrameResource->CommandAllocator(0),
 		0,
 		mPipelineStates[type == Value::Type::E_Contrast ?
-		PipelineState::E_TemporalSupersamplingBlendWithCurrentFrame_Contrast:
-		PipelineState::E_TemporalSupersamplingBlendWithCurrentFrame_Color].Get()));
+		PipelineState::CP_TemporalSupersamplingBlendWithCurrentFrame_Contrast:
+		PipelineState::CP_TemporalSupersamplingBlendWithCurrentFrame_Color].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_TemporalSupersamplingBlendWithCurrentFrame].Get());
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_TemporalSupersamplingBlendWithCurrentFrame].Get());
 
 		pValueMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pRayHitDistanceMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -946,14 +959,14 @@ BOOL SVGF::SVGFClass::ApplyAtrousWaveletTransformFilter(
 		pFrameResource->CommandAllocator(0),
 		0,
 		mPipelineStates[type == Value::Type::E_Contrast ?
-		PipelineState::E_EdgeStoppingFilterGaussian3x3_Contrast:
-		PipelineState::E_EdgeStoppingFilterGaussian3x3_Color].Get()));
+		PipelineState::CP_EdgeStoppingFilterGaussian3x3_Contrast:
+		PipelineState::CP_EdgeStoppingFilterGaussian3x3_Color].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_AtrousWaveletTransformFilter].Get());
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_AtrousWaveletTransformFilter].Get());
 
 		pNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pTemporalCacheHitDistanceMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -1008,14 +1021,14 @@ BOOL SVGF::SVGFClass::BlurDisocclusion(
 		pFrameResource->CommandAllocator(0),
 		0,
 		mPipelineStates[type == Value::Type::E_Contrast ?
-		PipelineState::E_DisocclusionBlur_Contrast:
-		PipelineState::E_DisocclusionBlur_Color].Get()));
+		PipelineState::CP_DisocclusionBlur_Contrast:
+		PipelineState::CP_DisocclusionBlur_Color].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::E_DisocclusionBlur].Get());
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_DisocclusionBlur].Get());
 
 		pDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pRoughnessMetalnessMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

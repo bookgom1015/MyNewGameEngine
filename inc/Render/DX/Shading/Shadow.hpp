@@ -75,12 +75,15 @@ namespace Render::DX::Shading {
 			virtual ~ShadowClass() = default;
 
 		public:
-			Foundation::Light** Lights();
+			void Lights(std::vector<Render::DX::Foundation::Light*>& lights);
 			__forceinline Foundation::Light* Light(UINT index) const;
 			__forceinline constexpr UINT LightCount() const;
 
 			__forceinline Foundation::Resource::GpuResource* ShadowMap() const;
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ShadowMapSrv() const;
+
+			void ZDepthMaps(std::vector<Render::DX::Foundation::Resource::GpuResource*>& maps);
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ZDepthMapSrv() const;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

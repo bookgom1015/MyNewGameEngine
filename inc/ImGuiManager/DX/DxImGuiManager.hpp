@@ -72,6 +72,7 @@ namespace ImGuiManager {
 			void ToneMappingTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void TAATree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void AOTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void VolumetricLightTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
 			BOOL mbIsD3D12Initialized = FALSE;

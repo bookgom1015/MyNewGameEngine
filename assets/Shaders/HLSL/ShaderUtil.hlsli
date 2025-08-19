@@ -189,6 +189,30 @@ namespace ShaderUtil {
         p *= 17.0;
         return frac(p.x * p.y * p.z * (p.x + p.y + p.z));
     }
+    
+    
+    float3 ThreadIdToNdc(in uint3 DTid, in uint3 dims) {
+    	float3 ndc = DTid;
+    	ndc += 0.5f;
+    	ndc *= float3(2.f / dims.x, -2.f / dims.y, 1.f / dims.z);
+    	ndc += float3(-1.f, 1.f, 0.f);
+    	return ndc;
+    }
+    
+    float3 NdcToWorldPosition(in float3 ndc, in float depthV, in float4x4 invView, in float4x4 invProj) {
+    	float4 rayV = mul(float4(ndc, 1.f), invProj);
+    	rayV /= rayV.w;
+    	rayV /= rayV.z; // So as to set the z depth value to 1.
+    
+    	const float4 PosW = mul(float4(rayV.xyz * depthV, 1.f), invView);
+    	return PosW.xyz;
+    }
+    
+    float3 ThreadIdToWorldPosition(in uint3 DTid, in uint3 dims, in float z_exp, in float near, in float far, in float4x4 invView, in float4x4 invProj) {
+    	const float3 Ndc = ThreadIdToNdc(DTid, dims);
+    	const float DepthVS = NdcDepthToExpViewDepth(Ndc.z, z_exp, near, far);
+    	return NdcToWorldPosition(Ndc, DepthVS, invView, invProj);
+    }
 }
 
 #endif // __SHADERUITL_HLSLI__
