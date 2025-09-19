@@ -65,8 +65,19 @@ BOOL VolumetricLight::VolumetricLightClass::CompileShaders() {
 		const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ApplyFog, L"VS", L"vs_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(VS, mShaderHashes[Shader::VS_ApplyFog]));
 
-		const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ApplyFog, L"PS", L"ps_6_5");
-		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_ApplyFog]));
+		// Default
+		{
+			const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ApplyFog, L"PS", L"ps_6_5");
+			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_ApplyFog]));
+		}
+		// Tricubic Sampling
+		{
+			DxcDefine defines[] = {
+				{ L"TriCubicSampling", L"1" },
+			};
+			const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ApplyFog, L"PS", L"ps_6_5", defines, _countof(defines));
+			CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_ApplyFog_Tricubic]));
+		}
 	}
 
 	return TRUE;
@@ -135,6 +146,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyFog::Count] = {};
 		slotRootParameter[RootSignature::ApplyFog::CB_Pass].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::ApplyFog::RC_Consts].InitAsConstants(ShadingConvention::VolumetricLight::RootConstant::ApplyFog::Count, 1);
 		slotRootParameter[RootSignature::ApplyFog::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::ApplyFog::SI_FrustumVolumeMap].InitAsDescriptorTable(1, &texTables[index++]);
 
@@ -195,10 +207,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildPipelineStates() {
 		{
 			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ApplyFog]);
 			NullCheck(mpLogFile, VS);
-			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ApplyFog]);
-			NullCheck(mpLogFile, PS);
 			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 		}
 		psoDesc.NumRenderTargets = 2;
 		psoDesc.RTVFormats[0] = HDR_FORMAT;
@@ -218,11 +227,32 @@ BOOL VolumetricLight::VolumetricLightClass::BuildPipelineStates() {
 		psoDesc.BlendState.RenderTarget[0] = blendDesc;
 		//psoDesc.BlendState.RenderTarget[1] = blendDesc;
 
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device,
-			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ApplyFog]),
-			L"VolumetricLight_GP_ApplyFog"));
+		// Default
+		{
+			{
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ApplyFog]);
+				NullCheck(mpLogFile, PS);
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ApplyFog]),
+				L"VolumetricLight_GP_ApplyFog"));
+		}
+		// Tricubic Sampling
+		{
+			{
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ApplyFog_Tricubic]);
+				NullCheck(mpLogFile, PS);
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ApplyFog_Tricubic]),
+				L"VolumetricLight_GP_ApplyFog_Tricubic"));
+		}
 	}
 
 	return TRUE;
@@ -265,11 +295,13 @@ BOOL VolumetricLight::VolumetricLightClass::ApplyFog(
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 		Foundation::Resource::GpuResource* pPositionMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
-		D3D12_VIEWPORT viewport, D3D12_RECT scissorRect) {
+		D3D12_VIEWPORT viewport, D3D12_RECT scissorRect,
+		FLOAT nearZ, FLOAT farZ, FLOAT depth_exp,
+		BOOL tricubicSamplingEnabled) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[PipelineState::GP_ApplyFog].Get()));
+		mPipelineStates[tricubicSamplingEnabled ? PipelineState::GP_ApplyFog_Tricubic : PipelineState::GP_ApplyFog].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -288,6 +320,19 @@ BOOL VolumetricLight::VolumetricLightClass::ApplyFog(
 		CmdList->SetGraphicsRootConstantBufferView(RootSignature::ApplyFog::CB_Pass, pFrameResource->MainPassCBAddress());
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::ApplyFog::SI_PositionMap, si_positionMap);
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::ApplyFog::SI_FrustumVolumeMap, mhFrustumVolumeMapGpus[Descriptor::E_Srv][mCurrentFrame]);
+
+		ShadingConvention::VolumetricLight::RootConstant::ApplyFog::Struct rc;
+		rc.gNearZ = nearZ;
+		rc.gFarZ = farZ;
+		rc.gDepthExponent = depth_exp;
+
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::VolumetricLight::RootConstant::ApplyFog::Struct>(
+			RootSignature::ApplyFog::RC_Consts,
+			ShadingConvention::VolumetricLight::RootConstant::ApplyFog::Count,
+			&rc,
+			0,
+			CmdList,
+			FALSE);
 
 		CmdList->IASetVertexBuffers(0, 0, nullptr);
 		CmdList->IASetIndexBuffer(nullptr);
@@ -428,7 +473,7 @@ BOOL VolumetricLight::VolumetricLightClass::AccumulateScattering(
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
-
+	
 	{
 		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_AccumulateScattering].Get());
 

@@ -47,10 +47,10 @@ float4 BilateralResampleWeights(
 		in int2 cacheIndices[4],
 		in float2 ddxy) {
     const bool4 IsWithinBounds = bool4(
-		SVGF::IsWithinBounds(cacheIndices[0], gTexDim),
-		SVGF::IsWithinBounds(cacheIndices[1], gTexDim),
-		SVGF::IsWithinBounds(cacheIndices[2], gTexDim),
-		SVGF::IsWithinBounds(cacheIndices[3], gTexDim));
+		ShaderUtil::IsWithinBounds(cacheIndices[0], gTexDim),
+		ShaderUtil::IsWithinBounds(cacheIndices[1], gTexDim),
+		ShaderUtil::IsWithinBounds(cacheIndices[2], gTexDim),
+		ShaderUtil::IsWithinBounds(cacheIndices[3], gTexDim));
 
     CrossBilateral::BilinearDepthNormal::Parameters params;
     params.Depth.Sigma = cbReproject.DepthSigma;
@@ -78,7 +78,7 @@ float4 BilateralResampleWeights(
     ShadingConvention::SVGF::ThreadGroup::Default::Height, 
     ShadingConvention::SVGF::ThreadGroup::Default::Depth)]
 void CS(in uint2 DTid : SV_DispatchThreadID) {
-    if (!SVGF::IsWithinBounds(DTid, gTexDim)) return;
+    if (!ShaderUtil::IsWithinBounds(DTid, gTexDim)) return;
     
     const uint ReprojNormalDepth = gi_ReprojectedNormalDepth[DTid];    
     

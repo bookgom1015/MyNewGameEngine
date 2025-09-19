@@ -15,7 +15,7 @@
 
 ConstantBuffer<ConstantBuffers::AmbientOcclusionCB> cbAO : register(b0);
 
-SSAO_Default_RootConstants(b1);
+SSAO_DrawAO_RootConstants(b1);
 
 Texture2D<ShadingConvention::GBuffer::NormalMapFormat>	            gi_NormalMap	   : register(t0);
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap     : register(t1);
@@ -32,43 +32,52 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     
     const float4 PosW = gi_PositionMap.SampleLevel(gsamPointClamp, TexC, 0);
     if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) {
-        go_AOMap[DTid] = 1.f;
+        go_AOMap[DTid] = ShadingConvention::SSAO::InvalidAOValue;
         return;
     }
+    	
+    const float3 NormalW = gi_NormalMap.SampleLevel(gsamPointClamp, TexC, 0).xyz;
     
-    const float3 PosV = mul(PosW, cbAO.View).xyz;
-	
-    const float3 NormalW = normalize(gi_NormalMap.SampleLevel(gsamPointClamp, TexC, 0).xyz);
-    const float3 NormalV = mul(NormalW, (float3x3)cbAO.View);
-
+    const uint TexCSeed_X = Random::InitRand(DTid.x + DTid.y * cbAO.TextureDim.x, 1);
+    const uint TexCSeed_Y = Random::InitRand(DTid.y + DTid.y * cbAO.TextureDim.x, 1);
+    
+    float2 randTexC;
+    randTexC.x = Random::Random01inclusive(TexCSeed_X);
+    randTexC.y = Random::Random01inclusive(TexCSeed_Y);
+    
 	// Extract random vector and map from [0,1] --> [-1, +1].
-    const float3 RandVec = 2.f * gi_RandomVectorMap.SampleLevel(gsamLinearWrap, 4.f * TexC, 0) - 1.f;
+    const float3 RandVec = 2.f * gi_RandomVectorMap.SampleLevel(gsamLinearWrap, 4.f * randTexC, 0) - 1.f;
 
     float occlusionSum = 0.f;
 
 	// Sample neighboring points about p in the hemisphere oriented by n.
 	[loop]
     for (uint i = 0; i < cbAO.SampleCount; ++i) {
+        const uint LoopSeed = Random::InitRand(DTid.x + DTid.y * cbAO.TextureDim.x * i, cbAO.FrameCount + i);        
+        const float3 Direction = Random::CosHemisphereSample(LoopSeed, NormalW);
+    
 		// Are offset vectors are fixed and uniformly distributed (so that our offset vectors
 		// do not clump in the same direction).  If we reflect them about a random vector
 		// then we get a random uniform distribution of offset vectors.
-        const float3 Offset = reflect(cbAO.OffsetVectors[i].xyz, RandVec);
+        const float3 Offset = reflect(Direction, RandVec);
 
 		// Flip offset vector if it is behind the plane defined by (p, n).
-        const float Flip = sign(dot(Offset, NormalV));
-
-		// Sample a point near PosV within the occlusion radius.
-        const float3 SamplePos = PosV + Flip * cbAO.OcclusionRadius * Offset;
+        const float Flip = sign(dot(Offset, NormalW));
+        
+        const float Radius = Random::Random01inclusive(LoopSeed) * cbAO.OcclusionRadius;
+        
+		// Sample a point near Pos within the occlusion radius.
+        const float3 SamplePos = PosW.xyz + Flip * Radius * Offset;
+        
+        const float4 SamplePosV = mul(float4(SamplePos, 1.f), cbAO.View);
 
 		// Project SamplePos and generate projective tex-coords.  
-        float4 projPos = mul(float4(SamplePos, 1), cbAO.ProjTex);
+        float4 projPos = mul(SamplePosV, cbAO.ProjTex);
         projPos /= projPos.w;
                 
         const float4 PosW_ = gi_PositionMap.SampleLevel(gsamPointClamp, projPos.xy, 0);
         if (!ShadingConvention::GBuffer::IsValidPosition(PosW_)) continue;
-        
-        const float3 PosV_ = mul(PosW_, cbAO.View).xyz;
-		
+        		
         //
 		// Test whether r occludes p.
 		//   * The product dot(n, normalize(r - p)) measures how much in front
@@ -79,11 +88,11 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 		//   * The weight of the occlusion is scaled based on how far the occluder is from
 		//     the point we are computing the occlusion of.  If the occluder r is far away
 		//     from p, then it does not occlude it.
-		// 
-        const float DistZ = PosV.z - PosV_.z;
-        const float DotP = max(dot(NormalV, normalize(PosV_ - PosV)), 0.f);
+		//
+        const float Dist = distance(PosW.xyz, PosW_.xyz);
+        const float DotP = max(dot(NormalW, normalize(PosW_.xyz - PosW.xyz)), 0.f);
 
-        const float Occlusion = DotP * SSAO::OcclusionFunction(DistZ, cbAO.SurfaceEpsilon, cbAO.OcclusionFadeStart, cbAO.OcclusionFadeEnd);
+        const float Occlusion = DotP * SSAO::OcclusionFunction(Dist, cbAO.SurfaceEpsilon, cbAO.OcclusionFadeStart, cbAO.OcclusionFadeEnd);
 
         occlusionSum += Occlusion;
     }

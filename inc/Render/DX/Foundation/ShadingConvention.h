@@ -345,7 +345,7 @@ namespace ShadingConvention{
 			namespace IntegrateIrradiance {
 				struct Struct BRDF_IntegrateIrradiance_RCSTRUCT
 					enum {
-					E_SsaoEnabled = 0,
+					E_SSAOEnabled = 0,
 					Count
 				};
 			}
@@ -447,9 +447,16 @@ namespace ShadingConvention{
 	}
 
 	namespace SSAO {
-#ifndef SSAO_Default_RCSTRUCT
-#define SSAO_Default_RCSTRUCT {			\
+#ifndef SSAO_DrawAO_RCSTRUCT
+#define SSAO_DrawAO_RCSTRUCT {			\
 		DirectX::XMFLOAT2 gInvTexDim;	\
+	};
+#endif
+
+#ifndef SSAO_DenoiseAO_RCSTRUCT
+#define SSAO_DenoiseAO_RCSTRUCT {		\
+		DirectX::XMUINT2 gTextureDim;	\
+		UINT gStep;						\
 	};
 #endif
 
@@ -467,22 +474,40 @@ namespace ShadingConvention{
 #ifdef _HLSL
 		typedef AOMAP_FORMAT	AOMapFormat;
 		typedef float3			RandomVectorMapFormat;
+		typedef float4			DebugMapFormat;
 
-#ifndef SSAO_Default_RootConstants
-#define SSAO_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_Default_RCSTRUCT
+		static const float InvalidAOValue = -1.f;
+
+#ifndef SSAO_DrawAO_RootConstants
+#define SSAO_DrawAO_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_DrawAO_RCSTRUCT
+#endif
+
+#ifndef SSAO_DenoiseAO_RootConstants
+#define SSAO_DenoiseAO_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_DenoiseAO_RCSTRUCT
 #endif
 #else
-		const DXGI_FORMAT AOMapFormat = AOMAP_FORMAT;
-		const DXGI_FORMAT RandomVectorMapFormat = DXGI_FORMAT_R8G8B8A8_SNORM;
+		const DXGI_FORMAT AOMapFormat			= AOMAP_FORMAT;
+		const DXGI_FORMAT RandomVectorMapFormat	= DXGI_FORMAT_R8G8B8A8_SNORM;
+		const DXGI_FORMAT DebugMapFormat		= DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		const FLOAT AOMapClearValues[4] = { 1.f, 0.f, 0.f, 0.f };
 
 		namespace RootConstant {
-			namespace Default {
-				struct Struct SSAO_Default_RCSTRUCT
-					enum {
+			namespace DrawAO {
+				struct Struct SSAO_DrawAO_RCSTRUCT
+				enum {
 					E_InvTexDimX = 0,
 					E_InvTexDimY,
+					Count
+				};
+			}
+
+			namespace DenoiseAO {
+				struct Struct SSAO_DenoiseAO_RCSTRUCT
+				enum {
+					E_TexDimX = 0,
+					E_TexDimY,
+					E_Step,
 					Count
 				};
 			}
@@ -791,6 +816,14 @@ namespace ShadingConvention{
 	};
 #endif
 
+#ifndef VolumetricLight_ApplyFog_RCSTRUCT 
+#define VolumetricLight_ApplyFog_RCSTRUCT {	\
+		FLOAT gNearZ;						\
+		FLOAT gFarZ;						\
+		FLOAT gDepthExponent;				\
+	};
+#endif
+
 #ifdef _HLSL
 		typedef float4 FrustumVolumeMapFormat;
 
@@ -800,6 +833,10 @@ namespace ShadingConvention{
 
 #ifndef VolumetricLight_AccumulateScattering_RootConstants
 #define VolumetricLight_AccumulateScattering_RootConstants(reg) cbuffer cbRootConstants : register (reg) VolumetricLight_AccumulateScattering_RCSTRUCT
+#endif
+
+#ifndef VolumetricLight_ApplyFog_RootConstants
+#define VolumetricLight_ApplyFog_RootConstants(reg) cbuffer cbRootConstants : register (reg) VolumetricLight_ApplyFog_RCSTRUCT
 #endif
 #else
 		const DXGI_FORMAT FrustumVolumeMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -826,6 +863,16 @@ namespace ShadingConvention{
 					E_FarPlane,
 					E_DepthExponent,
 					E_DensityScale,
+					Count
+				};
+			}
+
+			namespace ApplyFog {
+				struct Struct VolumetricLight_ApplyFog_RCSTRUCT
+					enum {
+					E_NearPlane = 0,
+					E_FarPlane,
+					E_DepthExponent,
 					Count
 				};
 			}

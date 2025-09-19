@@ -72,7 +72,7 @@ void AddFilterContribution(
 	pixelOffset = int2(row - FilterKernel::Radius, col - FilterKernel::Radius) * kernelStep;
 	int2 id = int2(DTid) + pixelOffset;
 
-	if (!SVGF::IsWithinBounds(id, cbAtrous.TextureDim)) return;
+	if (!ShaderUtil::IsWithinBounds(id, cbAtrous.TextureDim)) return;
 
 	float iDepth;
 	float3 iNormal;
@@ -135,7 +135,7 @@ void AddFilterContribution(
     ShadingConvention::SVGF::ThreadGroup::Atrous::Height, 
     ShadingConvention::SVGF::ThreadGroup::Atrous::Depth)]
 void CS(uint2 DTid : SV_DispatchThreadID) {
-	if (!SVGF::IsWithinBounds(DTid, cbAtrous.TextureDim)) return;
+	if (!ShaderUtil::IsWithinBounds(DTid, cbAtrous.TextureDim)) return;
 
 	// Initialize values to the current pixel / center filter kernel value.
 	ValueType value = gi_Value[DTid];

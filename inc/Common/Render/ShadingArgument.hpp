@@ -29,12 +29,29 @@ namespace Common::Render {
 		};
 
 		struct SSAOArguments {
+			const FLOAT MinOcclusionRadius = 0.1f;
+			const FLOAT MaxOcclusionRadius = 10.f;
 			FLOAT OcclusionRadius = 1.f;
-			FLOAT OcclusionFadeStart = 0.f;
-			FLOAT OcclusionFadeEnd = 1.f;
+
+			const FLOAT MinOcclusionFadeStart = 0.f;
+			FLOAT OcclusionFadeStart = 1.f;
+
+			const FLOAT MaxOcclusionFadeEnd = 10.f;
+			FLOAT OcclusionFadeEnd = 8.f;
+
+			const FLOAT MinOcclusionStrength = 1.f;
+			const FLOAT MaxOcclusionStrength = 10.f;
 			FLOAT OcclusionStrength = 4.f;
+
+			const FLOAT MinSurfaceEpsilon = 0.001f;
+			const FLOAT MaxSurfaceEpsilon = 0.1f;
 			FLOAT SurfaceEpsilon = 0.05f;
+
+			const UINT MaxSampleCount = 14;
+			const UINT MinSampleCount = 1;
 			UINT SampleCount = 6;
+
+
 			UINT BlurCount = 3;
 		};
 
@@ -127,6 +144,8 @@ namespace Common::Render {
 			const FLOAT MaxDensityScale = 1.f;
 			const FLOAT MinDensityScale = 0.f;
 			FLOAT DensityScale = 0.01f;
+
+			BOOL TricubicSamplingEnabled = TRUE;
 		};
 
 		struct ShadingArgumentSet {

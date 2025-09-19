@@ -151,6 +151,9 @@
     <Filter Include="Shader Files\VolumetricLight">
       <UniqueIdentifier>{31f6b630-1d36-4a54-845d-08c500df156e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Shading Files\Blur">
+      <UniqueIdentifier>{7ae2cc5e-b4b2-48d4-98d7-753e33b2bbed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -261,9 +264,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\SSAO.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Shading\BlurFilter.hpp">
-      <Filter>Header Files\Shading Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\RTAO.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
@@ -290,6 +290,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\VolumetricLight.hpp">
       <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\BlurFilter.hpp">
+      <Filter>Header Files\Shading Files\Blur</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -685,6 +688,12 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\ApplyFog.hlsl">
       <Filter>Shader Files\VolumetricLight</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\DenoiseAO.hlsl">
+      <Filter>Shader Files\SSAO</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\BlurFilter.inl">
+      <Filter>Header Files\Shading Files\Blur</Filter>
     </None>
   </ItemGroup>
 </Project>

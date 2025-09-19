@@ -11,8 +11,11 @@
 
 #include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
 #include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/VolumetricLight.hlsli"
 
 ConstantBuffer<ConstantBuffers::PassCB> cbPass : register(b0);
+
+VolumetricLight_ApplyFog_RootConstants(b1)
 
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>				gi_PositionMap		: register(t0);
 Texture3D<ShadingConvention::VolumetricLight::FrustumVolumeMapFormat>	gi_FrustumVolumeMap	: register(t1);
@@ -40,9 +43,14 @@ PixelOut PS(VertexOut pin) {
 	float4 posV = mul(PosW, cbPass.View);
 	if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) posV.z = dims.z - 1;
 	
-	const float3 TexC = float3(pin.TexC, min(posV.z / dims.z, 1.f));
+	const float NdcDepth = ShaderUtil::ViewDepthToNdcDepth(posV.z, gDepthExponent, gNearZ, gFarZ);	
+	const float3 TexC = float3(pin.TexC, NdcDepth);
 
+#ifdef TriCubicSampling
+	const float4 ScatteringAndTransmittance = VolumetricLight::Tex3DTricubic(gi_FrustumVolumeMap, gsamLinearClamp, TexC, dims);
+#else
 	const float4 ScatteringAndTransmittance = gi_FrustumVolumeMap.SampleLevel(gsamLinearClamp, TexC, 0);
+#endif
 	const float3 ScatteringColor = ScatteringAndTransmittance.rgb;
 
 	PixelOut pout = (PixelOut)0;

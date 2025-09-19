@@ -1048,28 +1048,32 @@ BOOL SVGF::SVGFClass::BlurDisocclusion(
 
 		const UINT ThreadGroupX = ShadingConvention::SVGF::ThreadGroup::Default::Width;
 		const UINT ThreadGroupY = ShadingConvention::SVGF::ThreadGroup::Default::Height;
+
 		UINT filterStep = 1;
 		for (UINT i = 0; i < numLowTSPPBlurPasses; ++i) {
-			rc.gStep = i;
+			rc.gStep = filterStep;
 
-			Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Struct>(
-				RootSignature::DisocclusionBlur::RC_Consts,
-				ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Count,
-				&rc,
-				0,
-				CmdList,
-				TRUE);
+			Foundation::Util::D3D12Util::SetRoot32BitConstants
+				<ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Struct>(
+					RootSignature::DisocclusionBlur::RC_Consts,
+					ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Count,
+					&rc,
+					0,
+					CmdList,
+					TRUE);
 
 			// Account for interleaved Group execution
-			const UINT WidthCS = filterStep * ThreadGroupX * Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, filterStep * ThreadGroupX);
-			const UINT HeightCS = filterStep * ThreadGroupY * Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, filterStep * ThreadGroupY);
+			const UINT WidthCS = filterStep * ThreadGroupX * 
+				Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, filterStep * ThreadGroupX);
+			const UINT HeightCS = filterStep * ThreadGroupY * 
+				Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, filterStep * ThreadGroupY);
 
 			CmdList->Dispatch(
 				Foundation::Util::D3D12Util::D3D12Util::CeilDivide(WidthCS, ThreadGroupX),
 				Foundation::Util::D3D12Util::D3D12Util::CeilDivide(HeightCS, ThreadGroupY),
 				ShadingConvention::SVGF::ThreadGroup::Default::Depth);
 
-			filterStep *= 2;
+			filterStep = filterStep << 1;
 		}
 	}
 

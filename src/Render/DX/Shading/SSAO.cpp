@@ -17,6 +17,7 @@ using namespace DirectX::PackedVector;
 
 namespace {
 	const WCHAR* const HLSL_SSAO = L"SSAO.hlsl";
+	const WCHAR* const HLSL_AccumulateAO = L"DenoiseAO.hlsl";
 }
 
 SSAO::InitDataPtr SSAO::MakeInitData() {
@@ -26,14 +27,18 @@ SSAO::InitDataPtr SSAO::MakeInitData() {
 SSAO::SSAOClass::SSAOClass() {
 	mRandomVectorMap = std::make_unique<Foundation::Resource::GpuResource>();
 	mRandomVectorMapUploadBuffer = std::make_unique<Foundation::Resource::GpuResource>();
+
 	for (UINT i = 0; i < 2; ++i) 
 		mAOMaps[i] = std::make_unique<Foundation::Resource::GpuResource>();
+
+	mDebugMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
 UINT SSAO::SSAOClass::CbvSrvUavDescCount() const { return 0
 	+ 2 // AOMapSrvs
 	+ 2 // AOMapUavs
 	+ 1 // RandomVectorMap
+	+ 1 // DebugMapUav
 	; 
 }
 
@@ -54,7 +59,7 @@ BOOL SSAO::SSAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 	mScissorRect = { 0, 0, static_cast<INT>(mTexWidth), static_cast<INT>(mTexHeight) };
 
 	CheckReturn(mpLogFile, BuildRandomVectorMapResource());
-	CheckReturn(mpLogFile, BuildAOMapResources());
+	CheckReturn(mpLogFile, BuildResources());
 
 	BuildOffsetVecotrs();
 
@@ -62,59 +67,124 @@ BOOL SSAO::SSAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 BOOL SSAO::SSAOClass::CompileShaders() {
-	const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_SSAO, L"CS", L"cs_6_5");
-	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_SSAO]));
+	// SSAO
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_SSAO, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_SSAO]));
+	}
+	// DenoiseAO
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_AccumulateAO, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_AccumulateAO]));
+	}
 
 	return TRUE;
 }
 
 BOOL SSAO::SSAOClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
-	CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+	// DrawAO
+	{
+		CD3DX12_DESCRIPTOR_RANGE texTables[5] = {}; UINT index = 0;
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
 
-	index = 0;
+		index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
-	slotRootParameter[RootSignature::Default::CB_AO].InitAsConstantBufferView(0);
-	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(ShadingConvention::SSAO::RootConstant::Default::Count, 1);
-	slotRootParameter[RootSignature::Default::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
-	slotRootParameter[RootSignature::Default::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
-	slotRootParameter[RootSignature::Default::SI_RandomVectorMap].InitAsDescriptorTable(1, &texTables[index++]);
-	slotRootParameter[RootSignature::Default::UO_AOMap].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawAO::Count] = {};
+		slotRootParameter[RootSignature::DrawAO::CB_AO].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::DrawAO::RC_Consts].InitAsConstants(
+			ShadingConvention::SSAO::RootConstant::DrawAO::Count, 1);
+		slotRootParameter[RootSignature::DrawAO::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DrawAO::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DrawAO::SI_RandomVectorMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DrawAO::UO_AOMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DrawAO::UO_DebugMap].InitAsDescriptorTable(1, &texTables[index++]);
 
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
-		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
-	);
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
+			_countof(slotRootParameter), slotRootParameter,
+			static_cast<UINT>(samplers.size()), samplers.data(),
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
-		mInitData.Device,
-		rootSigDesc,
-		IID_PPV_ARGS(&mRootSignature),
-		L"SSAO_GR_Default"));
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
+			mInitData.Device,
+			rootSigDesc,
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_DrawAO]),
+			L"SSAO_GR_DrawAO"));
+	}
+	// DenoiseAO
+	{
+		CD3DX12_DESCRIPTOR_RANGE texTables[5] = {}; UINT index = 0;
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+
+		index = 0;
+
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DenoiseAO::Count] = {};
+		slotRootParameter[RootSignature::DenoiseAO::CB_AO].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::DenoiseAO::RC_Consts].InitAsConstants(
+			ShadingConvention::SSAO::RootConstant::DenoiseAO::Count, 1);
+		slotRootParameter[RootSignature::DenoiseAO::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DenoiseAO::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DenoiseAO::SI_VelocityMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DenoiseAO::SI_InputAOMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DenoiseAO::UIO_OutputAOMap].InitAsDescriptorTable(1, &texTables[index++]);
+
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
+			_countof(slotRootParameter), slotRootParameter,
+			static_cast<UINT>(samplers.size()), samplers.data(),
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
+			mInitData.Device,
+			rootSigDesc,
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_DenoiseAO]),
+			L"SSAO_GR_DenoiseAO"));
+	}
 
 	return TRUE;
 }
 
 BOOL SSAO::SSAOClass::BuildPipelineStates() {
-	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-	psoDesc.pRootSignature = mRootSignature.Get();
-	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	// DrawAO
 	{
-		const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_SSAO]);
-		NullCheck(mpLogFile, CS);
-		psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
-	}
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawAO].Get();
+		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+		{
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_SSAO]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
+		}
 
-	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateComputePipelineState(
-		mInitData.Device,
-		psoDesc,
-		IID_PPV_ARGS(&mPipelineState),
-		L"SSAO_CP_Default"));
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateComputePipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CS_DrawAO]),
+			L"SSAO_CP_DrawAO"));
+	}
+	// DenoiseAO
+	{
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DenoiseAO].Get();
+		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+		{
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_AccumulateAO]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
+		}
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateComputePipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CS_DenoiseAO]),
+			L"SSAO_CP_DenoiseAO"));
+	}
 
 	return TRUE;
 }
@@ -130,8 +200,11 @@ BOOL SSAO::SSAOClass::BuildDescriptors(Foundation::Core::DescriptorHeap* const p
 		mhAOMapGpuUavs[i] = pDescHeap->CbvSrvUavGpuOffset(1);
 	}
 
+	mhDebugMapCpuUav = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhDebugMapGpuUav = pDescHeap->CbvSrvUavGpuOffset(1);
+
 	CheckReturn(mpLogFile, BuildRandomVectorMapDescriptor());
-	CheckReturn(mpLogFile, BuildAOMapDescriptors());
+	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
 }
@@ -146,8 +219,8 @@ BOOL SSAO::SSAOClass::OnResize(UINT width, UINT height) {
 	mViewport = { 0.0f, 0.0f, static_cast<FLOAT>(mTexWidth), static_cast<FLOAT>(mTexHeight), 0.0f, 1.0f };
 	mScissorRect = { 0, 0, static_cast<INT>(mTexWidth), static_cast<INT>(mTexHeight) };
 
-	CheckReturn(mpLogFile, BuildAOMapResources());
-	CheckReturn(mpLogFile, BuildAOMapDescriptors());
+	CheckReturn(mpLogFile, BuildResources());
+	CheckReturn(mpLogFile, BuildDescriptors());
 
 	return TRUE;
 }
@@ -213,58 +286,27 @@ BOOL SSAO::SSAOClass::BuildRandomVectorTexture() {
 	return TRUE;
 }
 
-BOOL SSAO::SSAOClass::DrawAO(
+BOOL SSAO::SSAOClass::Run(
 		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
 		Foundation::Resource::GpuResource* const pNormalMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
 		Foundation::Resource::GpuResource* const pPositionMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
-		pFrameResource->CommandAllocator(0),
-		0,
-		mPipelineState.Get()));
+		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+		Foundation::Resource::GpuResource* const pVelocityMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap) {
+	CheckReturn(mpLogFile, Draw(pFrameResource, pNormalMap, si_normalMap, pPositionMap, si_positionMap));
+	CheckReturn(mpLogFile, Accumulate(
+		pFrameResource, 
+		pDepthMap, 
+		si_depthMap, 
+		pNormalMap,
+		si_normalMap,
+		pVelocityMap, 
+		si_velocityMap));
 
-	const auto CmdList = mInitData.CommandObject->CommandList(0);
-	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
-
-	{
-		CmdList->SetComputeRootSignature(mRootSignature.Get());
-
-		CmdList->SetComputeRootConstantBufferView(RootSignature::Default::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
-
-		ShadingConvention::SSAO::RootConstant::Default::Struct rc;
-		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mTexWidth);
-		rc.gInvTexDim.y = 1.f / static_cast<FLOAT>(mTexHeight);
-
-		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SSAO::RootConstant::Default::Struct>(
-			RootSignature::Default::RC_Consts,
-			ShadingConvention::SSAO::RootConstant::Default::Count,
-			&rc,
-			0,
-			CmdList,
-			TRUE);
-
-		mAOMaps[0]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		Foundation::Util::D3D12Util::UavBarrier(CmdList, mAOMaps[0].get());
-
-		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		mRandomVectorMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_NormalMap, si_normalMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_PositionMap, si_positionMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_RandomVectorMap, mhRandomVectorMapGpuSrv);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_AOMap, mhAOMapGpuUavs[0]);
-
-		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(mTexWidth, ShadingConvention::SSAO::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::CeilDivide(mTexHeight, ShadingConvention::SSAO::ThreadGroup::Default::Height),
-			ShadingConvention::SSAO::ThreadGroup::Default::Depth);
-
-		Foundation::Util::D3D12Util::UavBarrier(CmdList, mAOMaps[0].get());
-	}
-
-	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+	mCurrentAOMapIndex = (mCurrentAOMapIndex + 1) % 2;
 
 	return TRUE;
 }
@@ -312,7 +354,7 @@ BOOL SSAO::SSAOClass::BuildRandomVectorMapDescriptor() {
 	return TRUE;
 }
 
-BOOL SSAO::SSAOClass::BuildAOMapResources() {
+BOOL SSAO::SSAOClass::BuildResources() {
 	D3D12_RESOURCE_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
 	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -341,33 +383,53 @@ BOOL SSAO::SSAOClass::BuildAOMapResources() {
 			nullptr,
 			wsstream.str().c_str()));
 	}
+	// DebugMap
+	{
+		CheckReturn(mpLogFile, mDebugMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&texDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			L"SSAO_DebugMap"));
+	}
 
 	return TRUE;
 }
 
-BOOL SSAO::SSAOClass::BuildAOMapDescriptors() {
-	// Srv
-	{
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Format = ShadingConvention::SSAO::AOMapFormat;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.MipLevels = 1;
+BOOL SSAO::SSAOClass::BuildDescriptors() {
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = 1;
 
-		for (UINT i = 0; i < 2; ++i)
-			Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mAOMaps[i]->Resource(), &srvDesc, mhAOMapCpuSrvs[i]);
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	uavDesc.Texture2D.MipSlice = 0;
+	uavDesc.Texture2D.PlaneSlice = 0;
+
+	// AOMaps
+	{
+		// Srv
+		{
+			srvDesc.Format = ShadingConvention::SSAO::AOMapFormat;
+
+			for (UINT i = 0; i < 2; ++i)
+				Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mAOMaps[i]->Resource(), &srvDesc, mhAOMapCpuSrvs[i]);
+		}
+		// Uav
+		{
+			uavDesc.Format = ShadingConvention::SSAO::AOMapFormat;			
+
+			for (UINT i = 0; i < 2; ++i)
+				Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, mAOMaps[i]->Resource(), nullptr, &uavDesc, mhAOMapCpuUavs[i]);
+		}
 	}
-	// Uav
+	// DebugMap
 	{
-		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-		uavDesc.Format = ShadingConvention::SSAO::AOMapFormat;
-		uavDesc.Texture2D.MipSlice = 0;
-		uavDesc.Texture2D.PlaneSlice = 0;
-
-		for (UINT i = 0; i < 2; ++i) 
-			Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, mAOMaps[i]->Resource(), nullptr, &uavDesc, mhAOMapCpuUavs[i]);
+		Foundation::Util::D3D12Util::CreateUnorderedAccessView(mInitData.Device, mDebugMap->Resource(), nullptr, &uavDesc, mhDebugMapCpuUav);
 	}
 
 	return TRUE;
@@ -409,4 +471,137 @@ void SSAO::SSAOClass::BuildOffsetVecotrs() {
 
 		XMStoreFloat4(&mOffsets[i], v);
 	}
+}
+
+BOOL SSAO::SSAOClass::Draw(
+	Foundation::Resource::FrameResource* const pFrameResource,
+	Foundation::Resource::GpuResource* const pNormalMap,
+	D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+	Foundation::Resource::GpuResource* const pPositionMap,
+	D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0,
+		mPipelineStates[PipelineState::CS_DrawAO].Get()));
+
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+
+	{
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_DrawAO].Get());
+
+		CmdList->SetComputeRootConstantBufferView(RootSignature::DrawAO::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
+
+		ShadingConvention::SSAO::RootConstant::DrawAO::Struct rc;
+		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mTexWidth);
+		rc.gInvTexDim.y = 1.f / static_cast<FLOAT>(mTexHeight);
+
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SSAO::RootConstant::DrawAO::Struct>(
+			RootSignature::DrawAO::RC_Consts,
+			ShadingConvention::SSAO::RootConstant::DrawAO::Count,
+			&rc,
+			0,
+			CmdList,
+			TRUE);
+
+		mAOMaps[mCurrentAOMapIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mAOMaps[mCurrentAOMapIndex].get());
+
+		mDebugMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mDebugMap.get());
+
+		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		mRandomVectorMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::SI_NormalMap, si_normalMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::SI_PositionMap, si_positionMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::SI_RandomVectorMap, mhRandomVectorMapGpuSrv);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::UO_AOMap, mhAOMapGpuUavs[mCurrentAOMapIndex]);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::UO_DebugMap, mhDebugMapGpuUav);
+
+		CmdList->Dispatch(
+			Foundation::Util::D3D12Util::CeilDivide(mTexWidth, ShadingConvention::SSAO::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::CeilDivide(mTexHeight, ShadingConvention::SSAO::ThreadGroup::Default::Height),
+			ShadingConvention::SSAO::ThreadGroup::Default::Depth);
+	}
+
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL SSAO::SSAOClass::Accumulate(
+		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+		Foundation::Resource::GpuResource* const pNormalMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+		Foundation::Resource::GpuResource* const pVelocityMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0,
+		mPipelineStates[PipelineState::CS_DenoiseAO].Get()));
+
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+
+	{
+		const auto PrevAOMapIndex = (mCurrentAOMapIndex + 1) % 2;
+
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_DenoiseAO].Get());
+
+		CmdList->SetComputeRootConstantBufferView(RootSignature::DenoiseAO::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
+
+		pDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pVelocityMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		mAOMaps[PrevAOMapIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		mAOMaps[mCurrentAOMapIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mAOMaps[mCurrentAOMapIndex].get());
+
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_DepthMap, si_depthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_NormalMap, si_normalMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_VelocityMap, si_velocityMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_InputAOMap, mhAOMapGpuSrvs[PrevAOMapIndex]);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::UIO_OutputAOMap, mhAOMapGpuUavs[mCurrentAOMapIndex]);
+
+		ShadingConvention::SSAO::RootConstant::DenoiseAO::Struct rc;
+		rc.gTextureDim = { mTexWidth, mTexHeight };
+
+		const UINT ThreadGroupX = ShadingConvention::SSAO::ThreadGroup::Default::Width;
+		const UINT ThreadGroupY = ShadingConvention::SSAO::ThreadGroup::Default::Height;
+
+		UINT filterStep = 1;
+		for (UINT i = 0; i < 3; ++i) {
+			rc.gStep = filterStep;
+
+			Foundation::Util::D3D12Util::SetRoot32BitConstants<
+				ShadingConvention::SSAO::RootConstant::DenoiseAO::Struct>(
+					RootSignature::DenoiseAO::RC_Consts,
+					ShadingConvention::SSAO::RootConstant::DenoiseAO::Count,
+					&rc,
+					0,
+					CmdList,
+					TRUE);
+
+			const UINT WidthCS = filterStep * ThreadGroupX *
+				Foundation::Util::D3D12Util::CeilDivide(mTexWidth, filterStep * ThreadGroupX);
+			const UINT HeightCS = filterStep * ThreadGroupY *
+				Foundation::Util::D3D12Util::CeilDivide(mTexHeight, filterStep * ThreadGroupY);
+
+			CmdList->Dispatch(
+				Foundation::Util::D3D12Util::D3D12Util::CeilDivide(WidthCS, ThreadGroupX),
+				Foundation::Util::D3D12Util::D3D12Util::CeilDivide(HeightCS, ThreadGroupY),
+				ShadingConvention::SSAO::ThreadGroup::Default::Depth);
+
+			filterStep = filterStep << 1;
+		}
+	}
+
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+
+	return TRUE;
 }

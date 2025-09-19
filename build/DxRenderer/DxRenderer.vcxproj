@@ -150,6 +150,7 @@
     <None Include="..\..\inc\Render\DX\Foundation\Resource\StructuredBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\BlurFilter.inl" />
     <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
     <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RayGen.inl" />
@@ -308,6 +309,11 @@
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\ApplyFog.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\DenoiseAO.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

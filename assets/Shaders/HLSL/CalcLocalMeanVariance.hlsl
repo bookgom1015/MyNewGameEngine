@@ -76,7 +76,7 @@ void FilterHorizontally(uint2 Gid, uint GI) {
 
 		// The lane is out of bounds of the GroupDim * kernel, but could be within bounds of the input texture, so don't read it form the texture.
 		// However, we need to keep it as an active lane for a below split sum.
-        if (GTid4x16.x < NumValuesToLoadPerRowOrColumn && SVGF::IsWithinBounds(Pixel, cbLocalMeanVar.TextureDim))
+        if (GTid4x16.x < NumValuesToLoadPerRowOrColumn && ShaderUtil::IsWithinBounds(Pixel, cbLocalMeanVar.TextureDim))
             value = gi_Value[Pixel];
 
 		// Filter the values for the first GroupDim columns.

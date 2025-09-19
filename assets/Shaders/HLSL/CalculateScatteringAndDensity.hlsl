@@ -90,11 +90,14 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 	
 		float4 scattering = CurrScattering;
 		
-		//if (all(PrevFrameUV <= (float3)1.f) && all(PrevFrameUV >= (float3)0.f)) {
-		//	const float4 PrevScattering = gi_PrevFrustumVolumeMap.SampleLevel(gsamLinearClamp, PrevFrameUV, 0);
-		//
-		//	if (any(PrevScattering != 0.f)) scattering = lerp(PrevScattering, CurrScattering, 0.05f);
-		//}
+		if (all(PrevFrameUV <= (float3)1.f) && all(PrevFrameUV >= (float3)0.f)) {
+			const float4 PrevScattering = gi_PrevFrustumVolumeMap.SampleLevel(gsamLinearClamp, PrevFrameUV, 0);
+			
+			const float4 Diff = PrevScattering - CurrScattering;
+			const float DiffSquare = dot(Diff, Diff);
+		
+			if (DiffSquare < 1.f) scattering = lerp(PrevScattering, CurrScattering, 0.05f);
+		}
 		
 		go_FrustumVolumeMap[DTid] = scattering;
 	}

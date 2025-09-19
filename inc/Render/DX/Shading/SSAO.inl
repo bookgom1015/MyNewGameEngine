@@ -1,8 +1,16 @@
 #ifndef __SSAO_INL__
 #define __SSAO_INL__
 
+Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::SSAO::SSAOClass::AOMap() const {
+	return mAOMaps[mCurrentAOMapIndex].get();
+}
+
 Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::SSAO::SSAOClass::AOMap(UINT index) const {
 	return mAOMaps[index].get();
+}
+
+constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::SSAO::SSAOClass::AOMapSrv() const {
+	return mhAOMapGpuSrvs[mCurrentAOMapIndex];
 }
 
 constexpr D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::SSAO::SSAOClass::AOMapSrv(UINT index) const {

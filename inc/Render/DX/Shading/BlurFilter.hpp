@@ -4,6 +4,9 @@
 
 namespace Render::DX::Shading {
 	namespace BlurFilter {
+		__forceinline INT CalcDiameter(FLOAT sigma);
+		__forceinline BOOL CalcGaussWeights(FLOAT sigma, FLOAT weights[]);
+
 		namespace Shader {
 			enum Type {
 				CS_GaussianBlurFilter3x3CS = 0,
@@ -83,3 +86,5 @@ namespace Render::DX::Shading {
 		InitDataPtr MakeInitData();
 	}
 }
+
+#include "BlurFilter.inl"

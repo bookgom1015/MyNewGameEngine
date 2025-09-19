@@ -10,6 +10,7 @@ namespace Render::DX::Shading {
 				CS_AccumulateScattering,
 				VS_ApplyFog,
 				PS_ApplyFog,
+				PS_ApplyFog_Tricubic,
 				Count
 			};
 		}
@@ -46,6 +47,7 @@ namespace Render::DX::Shading {
 			namespace ApplyFog {
 				enum {
 					CB_Pass = 0,
+					RC_Consts,
 					SI_PositionMap,
 					SI_FrustumVolumeMap,
 					Count
@@ -58,6 +60,7 @@ namespace Render::DX::Shading {
 				CP_CalculateScatteringAndDensity = 0,
 				CP_AccumulateScattering,
 				GP_ApplyFog,
+				GP_ApplyFog_Tricubic,
 				Count
 			};
 		}
@@ -115,7 +118,9 @@ namespace Render::DX::Shading {
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 				Foundation::Resource::GpuResource* pPositionMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
-				D3D12_VIEWPORT viewport, D3D12_RECT scissorRect);
+				D3D12_VIEWPORT viewport, D3D12_RECT scissorRect,
+				FLOAT nearZ, FLOAT farZ, FLOAT depth_exp,
+				BOOL tricubicSamplingEnabled);
 
 		private:
 			BOOL BuildResources();

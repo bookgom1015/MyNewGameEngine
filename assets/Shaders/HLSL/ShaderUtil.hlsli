@@ -178,6 +178,10 @@ namespace ShaderUtil {
         return viewZ;
     }
     
+    float ViewDepthToNdcDepth(in float depthV, in float z_exp, in float near, in float far) {
+        return pow(saturate((depthV - near) / (far - near) ), 1.f / z_exp);
+    }
+    
     /***************************************************************/
     // 3D value noise
     // Ref: https://www.shadertoy.com/view/XsXfRH
@@ -212,6 +216,14 @@ namespace ShaderUtil {
     	const float3 Ndc = ThreadIdToNdc(DTid, dims);
     	const float DepthVS = NdcDepthToExpViewDepth(Ndc.z, z_exp, near, far);
     	return NdcToWorldPosition(Ndc, DepthVS, invView, invProj);
+    }
+    
+    bool IsWithinBounds(in int2 index, in int2 dimensions) {
+        return index.x >= 0 && index.y >= 0 && index.x < dimensions.x && index.y < dimensions.y;
+    }
+    
+    bool IsInRange(in float val, in float min, in float max) {
+        return (val >= min && val <= max);
     }
 }
 

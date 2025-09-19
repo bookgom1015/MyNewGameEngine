@@ -43,10 +43,6 @@ namespace SVGF {
         return index;
     }
 
-    bool IsWithinBounds(in int2 index, in int2 dimensions) {
-        return index.x >= 0 && index.y >= 0 && index.x < dimensions.x && index.y < dimensions.y;
-    }
-
     // [ Descriptions ]
     //  Remap partial depth derivatives at z0 from [1,1] pixel offset to a new pixel offset.
     float2 RemapDdxy(in float z0, in float2 ddxy, in float2 pixelOffset) {
@@ -61,10 +57,6 @@ namespace SVGF {
         const float2 z = (z0 + ddxy) / (1 + ((1 - pixelOffset) / z0) * ddxy);
     
         return sign(pixelOffset) * (z - z0);
-    }
-
-    bool IsInRange(in float val, in float min, in float max) {
-        return (val >= min && val <= max);
     }
 
     // [ Descriptions ]

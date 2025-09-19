@@ -503,19 +503,19 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 			}
 			else {
 				ImGui::Text("Occlusion Radius");
-				ImGui::SliderFloat("##Occlusion Radius", &pArgSet->SSAO.OcclusionRadius, 0.01f, 1.f);
+				ImGui::SliderFloat("##Occlusion Radius", &pArgSet->SSAO.OcclusionRadius, pArgSet->SSAO.MinOcclusionRadius, pArgSet->SSAO.MaxOcclusionRadius);
 
 				ImGui::Text("Occlusion Fade Start");
-				ImGui::SliderFloat("##Occlusion Fade Start", &pArgSet->SSAO.OcclusionFadeStart, 0.f, 10.f);
+				ImGui::SliderFloat("##Occlusion Fade Start", &pArgSet->SSAO.OcclusionFadeStart, pArgSet->SSAO.MinOcclusionFadeStart, pArgSet->SSAO.OcclusionFadeEnd);
 
 				ImGui::Text("Occlusion Fade End");
-				ImGui::SliderFloat("##Occlusion Fade End", &pArgSet->SSAO.OcclusionFadeEnd, 0.f, 10.f);
+				ImGui::SliderFloat("##Occlusion Fade End", &pArgSet->SSAO.OcclusionFadeEnd, pArgSet->SSAO.OcclusionFadeStart, pArgSet->SSAO.MaxOcclusionFadeEnd);
 
 				ImGui::Text("Occlusion Strength");
-				ImGui::SliderFloat("##Occlusion Strength", &pArgSet->SSAO.OcclusionStrength, 1.f, 10.f);
+				ImGui::SliderFloat("##Occlusion Strength", &pArgSet->SSAO.OcclusionStrength, pArgSet->SSAO.MinOcclusionStrength, pArgSet->SSAO.MaxOcclusionStrength);
 
 				ImGui::Text("Sample Count");
-				ImGui::SliderInt("##Sample Count", reinterpret_cast<int*>(&pArgSet->SSAO.SampleCount), 1, 16);
+				ImGui::SliderInt("##Sample Count", reinterpret_cast<int*>(&pArgSet->SSAO.SampleCount), pArgSet->SSAO.MinSampleCount, pArgSet->SSAO.MaxSampleCount);
 
 				ImGui::Text("Blur Count");
 				ImGui::SliderInt("##Blur Count", reinterpret_cast<int*>(&pArgSet->SSAO.BlurCount), 0, 10);
@@ -529,6 +529,8 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 
 void DxImGuiManager::VolumetricLightTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("Volumetric Light")) {
+		ImGui::Checkbox("Tricubic Sampling", reinterpret_cast<bool*>(&pArgSet->VolumetricLight.TricubicSamplingEnabled));
+
 		ImGui::Text("Anisotropic Coefficient");
 		ImGui::SliderFloat(
 			"##Anisotropic Coefficient", 
