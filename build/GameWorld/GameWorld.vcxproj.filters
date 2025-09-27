@@ -165,6 +165,9 @@
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
       <Filter>Common Files\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\PowerManager.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -230,6 +233,9 @@
     <ClCompile Include="..\..\src\GameWorld\Prefab\MetalSphere.cpp">
       <Filter>Source Files\Prefab</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl">
@@ -255,6 +261,9 @@
     </None>
     <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl">
       <Filter>Common Files\Foundation\Mesh</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Foundation\Core\PowerManager.inl">
+      <Filter>Common Files\Foundation\Core</Filter>
     </None>
   </ItemGroup>
 </Project>

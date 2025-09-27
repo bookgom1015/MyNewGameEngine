@@ -1,6 +1,7 @@
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Input/InputProcessor.hpp"
+#include "Common/Foundation/Core/PowerManager.hpp"
 
 #include <string>
 
@@ -132,6 +133,8 @@ WindowsManager* WindowsManager::sWindowsManager = nullptr;
 
 WindowsManager::WindowsManager() {
 	sWindowsManager = this;
+
+	mPowerManager = std::make_unique<PowerManager>();
 }
 
 INT WindowsManager::ToDLUsWidth(INT width) { return (width * 4) / LOWORD(DialogBaseUnits); }
@@ -148,10 +151,16 @@ LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 		// We pause the game when the window is deactivated and unpause it 
 		// when it becomes active.
 	case WM_ACTIVATE: {
+		BOOL sleepable = mPowerManager->IsSleepable();
+
 		if (LOWORD(wParam) == WA_INACTIVE) {
+			if (!sleepable) mPowerManager->SetMode(FALSE);
+
 			mbAppPaused = TRUE;
 		}
 		else {
+			if (sleepable) mPowerManager->SetMode(TRUE);
+
 			mbAppPaused = FALSE;
 		}
 		return 0;
@@ -161,12 +170,18 @@ LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 		// Save the new client area dimensions.
 		UINT width = LOWORD(lParam);
 		UINT height = HIWORD(lParam);
+
+		BOOL sleepable = mPowerManager->IsSleepable();
 		if (wParam == SIZE_MINIMIZED) {
+			if (!sleepable) mPowerManager->SetMode(FALSE);
+
 			mbAppPaused = TRUE;
 			mbMinimized = TRUE;
 			mbMaximized = FALSE;
 		}
 		else if (wParam == SIZE_MAXIMIZED) {
+			if (sleepable) mPowerManager->SetMode(FALSE);
+
 			mbAppPaused = FALSE;
 			mbMinimized = FALSE;
 			mbMaximized = TRUE;
@@ -175,6 +190,8 @@ LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 		else if (wParam == SIZE_RESTORED) {
 			// Restoring from minimized state?
 			if (mbMinimized) {
+				if (sleepable) mPowerManager->SetMode(FALSE);
+
 				mbAppPaused = FALSE;
 				mbMinimized = FALSE;
 				OnResize(width, height);
@@ -182,6 +199,8 @@ LRESULT CALLBACK WindowsManager::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 
 			// Restoring from maximized state?
 			else if (mbMaximized) {
+				if (sleepable) mPowerManager->SetMode(FALSE);
+
 				mbAppPaused = FALSE;
 				mbMaximized = FALSE;
 				OnResize(width, height);

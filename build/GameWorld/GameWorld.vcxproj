@@ -176,6 +176,7 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\GameTimer.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\PowerManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp" />
@@ -203,6 +204,7 @@
     <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\GameTimer.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Mesh.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
@@ -223,6 +225,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl" />
+    <None Include="..\..\inc\Common\Foundation\Core\PowerManager.inl" />
     <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl" />
     <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl" />
     <None Include="..\..\inc\Common\Util\MathUtil.inl" />

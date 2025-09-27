@@ -90,6 +90,9 @@
     <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
       <Filter>Common Files\Util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp">

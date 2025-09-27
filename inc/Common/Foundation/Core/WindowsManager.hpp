@@ -23,6 +23,8 @@ namespace Common {
 	}
 
 	namespace Foundation::Core {
+		class PowerManager;
+
 		class WindowsManager {
 		public:
 			struct SelectDialogInitData {
@@ -91,6 +93,8 @@ namespace Common {
 
 			Common::Input::InputProcessor* mpInputProcessor = nullptr;
 			BOOL mbInputProcessorRegistered = FALSE;
+
+			std::unique_ptr<PowerManager> mPowerManager;
 
 			HINSTANCE mhInst = NULL;
 			HWND mhMainWnd = NULL;

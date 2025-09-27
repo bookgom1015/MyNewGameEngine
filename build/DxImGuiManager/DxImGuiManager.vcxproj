@@ -34,6 +34,7 @@
     <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\ImGuiManager\ImGuiManager.cpp" />
     <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />

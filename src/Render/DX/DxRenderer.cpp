@@ -1558,10 +1558,12 @@ BOOL DxRenderer::DrawAO() {
 	else {
 		CheckReturn(mpLogFile, mSSAO->Run(
 			mpCurrentFrameResource,
-			mDepthStencilBuffer->GetDepthStencilBuffer(),
-			mDepthStencilBuffer->DepthStencilBufferSrv(),
-			mGBuffer->NormalMap(),
-			mGBuffer->NormalMapSrv(),
+			mGBuffer->NormalDepthMap(),
+			mGBuffer->NormalDepthMapSrv(),
+			mGBuffer->ReprojectedNormalDepthMap(),
+			mGBuffer->ReprojectedNormalDepthMapSrv(),
+			mGBuffer->CachedNormalDepthMap(),
+			mGBuffer->CachedNormalDepthMapSrv(),
 			mGBuffer->PositionMap(),
 			mGBuffer->PositionMapSrv(),
 			mGBuffer->VelocityMap(),

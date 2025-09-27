@@ -31,6 +31,12 @@
     <Filter Include="External Files\ImGui">
       <UniqueIdentifier>{044bb5bd-4280-4213-a6b0-facd91203821}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files\Foundation">
+      <UniqueIdentifier>{705f2e9c-e7f2-4e31-b90e-2721e9740e12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Core">
+      <UniqueIdentifier>{47bd66de-053d-489c-a1c9-966e348df82e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\ImGuiManager\VK\VkImGuiManager.hpp">
@@ -70,6 +76,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Common\ImGuiManager\ImGuiManager.cpp">
       <Filter>Common Files\ImGuiManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

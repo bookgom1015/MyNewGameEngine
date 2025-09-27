@@ -83,5 +83,8 @@
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
       <Filter>Common Files\Foundation\Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

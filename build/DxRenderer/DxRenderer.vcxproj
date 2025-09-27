@@ -71,6 +71,7 @@
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp" />

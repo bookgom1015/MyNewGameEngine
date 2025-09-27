@@ -23,7 +23,7 @@ namespace Render::DX::Shading {
 				enum {
 					CB_AO = 0,
 					RC_Consts,
-					SI_NormalMap,
+					SI_NormalDepthMap,
 					SI_PositionMap,
 					SI_RandomVectorMap,
 					UO_AOMap,
@@ -36,8 +36,9 @@ namespace Render::DX::Shading {
 				enum {
 					CB_AO = 0,
 					RC_Consts,
-					SI_DepthMap,
-					SI_NormalMap,
+					SI_NormalDepthMap,
+					SI_ReprojNormalDepthMap,
+					SI_CachedNormalDepthMap,
 					SI_VelocityMap,
 					SI_InputAOMap,
 					UIO_OutputAOMap,
@@ -100,10 +101,12 @@ namespace Render::DX::Shading {
 
 			BOOL Run(
 				Foundation::Resource::FrameResource* const pFrameResource,
-				Foundation::Resource::GpuResource* const pDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-				Foundation::Resource::GpuResource* const pNormalMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+				Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
+				Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
+				Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_CachedNormalDepthMap,
 				Foundation::Resource::GpuResource* const pPositionMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 				Foundation::Resource::GpuResource* const pVelocityMap,
@@ -120,16 +123,18 @@ namespace Render::DX::Shading {
 
 			BOOL Draw(
 				Foundation::Resource::FrameResource* const pFrameResource,
-				Foundation::Resource::GpuResource* const pNormalMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+				Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
 				Foundation::Resource::GpuResource* const pPositionMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap);
 			BOOL Accumulate(
 				Foundation::Resource::FrameResource* const pFrameResource,
-				Foundation::Resource::GpuResource* const pDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-				Foundation::Resource::GpuResource* const pNormalMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+				Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
+				Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
+				Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE si_CachedNormalDepthMap,
 				Foundation::Resource::GpuResource* const pVelocityMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap);
 

@@ -12,16 +12,17 @@
 #include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
 #include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 #include "./../../../assets/Shaders/HLSL/SSAO.hlsli"
+#include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
 
 ConstantBuffer<ConstantBuffers::AmbientOcclusionCB> cbAO : register(b0);
 
 SSAO_DrawAO_RootConstants(b1);
 
-Texture2D<ShadingConvention::GBuffer::NormalMapFormat>	            gi_NormalMap	   : register(t0);
-Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap     : register(t1);
-Texture2D<ShadingConvention::SSAO::RandomVectorMapFormat>           gi_RandomVectorMap : register(t2);
+Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> gi_NormalDepthMap  : register(t0);
+Texture2D<ShadingConvention::GBuffer::PositionMapFormat>    gi_PositionMap     : register(t1);
+Texture2D<ShadingConvention::SSAO::RandomVectorMapFormat>   gi_RandomVectorMap : register(t2);
 
-RWTexture2D<ShadingConvention::SSAO::AOMapFormat>                   go_AOMap           : register(u0);
+RWTexture2D<ShadingConvention::SSAO::AOMapFormat>           go_AOMap           : register(u0);
 
 [numthreads(
     ShadingConvention::SSAO::ThreadGroup::Default::Width,
@@ -35,8 +36,13 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         go_AOMap[DTid] = ShadingConvention::SSAO::InvalidAOValue;
         return;
     }
-    	
-    const float3 NormalW = gi_NormalMap.SampleLevel(gsamPointClamp, TexC, 0).xyz;
+    
+    const uint2 FullResDTid = DTid * 2;
+    const uint NormalDepth = gi_NormalDepthMap[FullResDTid];
+    
+    float3 normalW;
+    float dump;
+    ValuePackaging::DecodeNormalDepth(NormalDepth, normalW, dump);
     
     const uint TexCSeed_X = Random::InitRand(DTid.x + DTid.y * cbAO.TextureDim.x, 1);
     const uint TexCSeed_Y = Random::InitRand(DTid.y + DTid.y * cbAO.TextureDim.x, 1);
@@ -54,7 +60,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 	[loop]
     for (uint i = 0; i < cbAO.SampleCount; ++i) {
         const uint LoopSeed = Random::InitRand(DTid.x + DTid.y * cbAO.TextureDim.x * i, cbAO.FrameCount + i);        
-        const float3 Direction = Random::CosHemisphereSample(LoopSeed, NormalW);
+        const float3 Direction = Random::CosHemisphereSample(LoopSeed, normalW);
     
 		// Are offset vectors are fixed and uniformly distributed (so that our offset vectors
 		// do not clump in the same direction).  If we reflect them about a random vector
@@ -62,7 +68,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float3 Offset = reflect(Direction, RandVec);
 
 		// Flip offset vector if it is behind the plane defined by (p, n).
-        const float Flip = sign(dot(Offset, NormalW));
+        const float Flip = sign(dot(Offset, normalW));
         
         const float Radius = Random::Random01inclusive(LoopSeed) * cbAO.OcclusionRadius;
         
@@ -90,7 +96,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 		//     from p, then it does not occlude it.
 		//
         const float Dist = distance(PosW.xyz, PosW_.xyz);
-        const float DotP = max(dot(NormalW, normalize(PosW_.xyz - PosW.xyz)), 0.f);
+        const float DotP = max(dot(normalW, normalize(PosW_.xyz - PosW.xyz)), 0.f);
 
         const float Occlusion = DotP * SSAO::OcclusionFunction(Dist, cbAO.SurfaceEpsilon, cbAO.OcclusionFadeStart, cbAO.OcclusionFadeEnd);
 

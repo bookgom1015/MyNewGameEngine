@@ -15,12 +15,13 @@ ConstantBuffer<ConstantBuffers::AmbientOcclusionCB> cbAO : register(b0);
 
 SSAO_DenoiseAO_RootConstants(b1)
 
-Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat> gi_DepthMap     : register(t0);
-Texture2D<ShadingConvention::GBuffer::NormalMapFormat>              gi_NormalMap    : register(t1);
-Texture2D<ShadingConvention::GBuffer::VelocityMapFormat>            gi_VelocityMap  : register(t2);
-Texture2D<ShadingConvention::SSAO::AOMapFormat>                     gi_PrevAOMap    : register(t3);
+Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> gi_NormalDepthMap           : register(t0);
+Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> gi_ReprojNormalDpethMap     : register(t1);
+Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> gi_CachedNormalDpethMap     : register(t2);
+Texture2D<ShadingConvention::GBuffer::VelocityMapFormat>    gi_VelocityMap              : register(t3);
+Texture2D<ShadingConvention::SSAO::AOMapFormat>             gi_PrevAOMap                : register(t4);
 
-RWTexture2D<ShadingConvention::SSAO::AOMapFormat>                   gio_CurrAOMap   : register(u0);
+RWTexture2D<ShadingConvention::SSAO::AOMapFormat>           gio_CurrAOMap               : register(u0);
 
 static const uint NumValuesToLoadPerRowOrColumn = 
     ShadingConvention::SSAO::ThreadGroup::Default::Width + (FilterKernel::Width - 1);
@@ -57,7 +58,10 @@ void BlurHorizontally(in uint2 Gid, in uint GI) {
             value = gio_CurrAOMap[pixel];
             
             const uint2 FullResPixel = pixel * 2;
-            depth = gi_DepthMap[FullResPixel];
+            const uint NormalDepth = gi_NormalDepthMap[FullResPixel];
+            
+            float3 dump;
+            ValuePackaging::DecodeNormalDepth(NormalDepth, dump, depth);
         }
         
         if (ShaderUtil::IsInRange(GTid4x16.x, FilterKernel::Radius, FilterKernel::Radius + gGroupDim.x - 1)) {
@@ -177,6 +181,41 @@ void BlurVertically(in uint2 DTid, in uint2 GTid) {
     gio_CurrAOMap[DTid] = filteredValue;
 }
 
+void BlendWithPreviousFrame(in uint2 DTid) {
+    const uint2 FullResDTid = DTid * 2;
+        
+    const float CurrValue = gio_CurrAOMap[DTid];
+    if (CurrValue == ShadingConvention::SSAO::InvalidAOValue) return;
+    
+    uint packed;
+    
+    float3 reprojNormal;
+    float reprojDepth;
+    {
+        packed = gi_ReprojNormalDpethMap[FullResDTid];    
+        ValuePackaging::DecodeNormalDepth(packed, reprojNormal, reprojDepth);
+    }
+        
+    float3 cachedNormal;
+    float cachedDepth;
+    {
+        const float2 Velocity = gi_VelocityMap[FullResDTid];
+        const int2 DTidOffset = Velocity * FullResDTid;
+        
+        const int2 PrevFullResDTid = FullResDTid + DTidOffset;
+        if (!ShaderUtil::IsWithinBounds(PrevFullResDTid, gTextureDim * 2)) return;
+        
+        packed = gi_CachedNormalDpethMap[PrevFullResDTid];
+        ValuePackaging::DecodeNormalDepth(packed, reprojNormal, reprojDepth);
+    }
+         
+    const float PrevValue = gi_PrevAOMap[DTid];    
+    const float InterpolatedValue = lerp(PrevValue, CurrValue, 
+        PrevValue == ShadingConvention::SSAO::InvalidAOValue ? 1.f : 0.08f);
+    
+    gio_CurrAOMap[DTid] = InterpolatedValue;
+}
+
 [numthreads(
     ShadingConvention::SSAO::ThreadGroup::Default::Width,
     ShadingConvention::SSAO::ThreadGroup::Default::Height,
@@ -191,34 +230,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID, in uint2 Gid : SV_GroupID,
     BlurVertically(sDTid, GTid);
     GroupMemoryBarrierWithGroupSync();
     
-    const uint2 FullResDTid = DTid * 2;
-    
-    const float2 Velocity = gi_VelocityMap[FullResDTid];
-    const int2 DTidOffset = Velocity * FullResDTid;
-    
-    const int2 PrevFullResDTid = FullResDTid + DTidOffset;
-    if (!ShaderUtil::IsWithinBounds(PrevFullResDTid, gTextureDim * 2)) {
-        
-    }
-    
-    const float PrevDepth = gi_DepthMap[PrevFullResDTid];
-    const float3 PrevNormal = gi_NormalMap[PrevFullResDTid].xyz;
-    
-    const float CurrValue = gio_CurrAOMap[DTid];
-    if (CurrValue == ShadingConvention::SSAO::InvalidAOValue) {
-        gio_CurrAOMap[DTid] = ShadingConvention::SSAO::InvalidAOValue;
-        return;
-    }    
-    
-    const float PrevValue = gi_PrevAOMap[DTid];
-    if (PrevValue == ShadingConvention::SSAO::InvalidAOValue) {
-        gio_CurrAOMap[DTid] = CurrValue;
-        return;
-    }    
-    
-    const float InterpolatedValue = lerp(PrevValue, CurrValue, 0.08f);
-    
-    gio_CurrAOMap[DTid] = InterpolatedValue;
+    BlendWithPreviousFrame(DTid);
 }
 
 #endif // __DENOISEAO_HLSL__

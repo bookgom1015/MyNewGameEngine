@@ -97,7 +97,7 @@ BOOL SSAO::SSAOClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 		slotRootParameter[RootSignature::DrawAO::CB_AO].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DrawAO::RC_Consts].InitAsConstants(
 			ShadingConvention::SSAO::RootConstant::DrawAO::Count, 1);
-		slotRootParameter[RootSignature::DrawAO::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DrawAO::SI_NormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DrawAO::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DrawAO::SI_RandomVectorMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DrawAO::UO_AOMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -116,11 +116,12 @@ BOOL SSAO::SSAOClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	}
 	// DenoiseAO
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[5] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[6] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
@@ -129,8 +130,9 @@ BOOL SSAO::SSAOClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 		slotRootParameter[RootSignature::DenoiseAO::CB_AO].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DenoiseAO::RC_Consts].InitAsConstants(
 			ShadingConvention::SSAO::RootConstant::DenoiseAO::Count, 1);
-		slotRootParameter[RootSignature::DenoiseAO::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::DenoiseAO::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DenoiseAO::SI_NormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DenoiseAO::SI_ReprojNormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::DenoiseAO::SI_CachedNormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DenoiseAO::SI_VelocityMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DenoiseAO::SI_InputAOMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DenoiseAO::UIO_OutputAOMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -288,21 +290,25 @@ BOOL SSAO::SSAOClass::BuildRandomVectorTexture() {
 
 BOOL SSAO::SSAOClass::Run(
 		Foundation::Resource::FrameResource* const pFrameResource,
-		Foundation::Resource::GpuResource* const pDepthMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-		Foundation::Resource::GpuResource* const pNormalMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+		Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
+		Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
+		Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_CachedNormalDepthMap,
 		Foundation::Resource::GpuResource* const pPositionMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 		Foundation::Resource::GpuResource* const pVelocityMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap) {
-	CheckReturn(mpLogFile, Draw(pFrameResource, pNormalMap, si_normalMap, pPositionMap, si_positionMap));
+	CheckReturn(mpLogFile, Draw(pFrameResource, pCurrNormalDepthMap, si_currNormalDepthMap, pPositionMap, si_positionMap));
 	CheckReturn(mpLogFile, Accumulate(
 		pFrameResource, 
-		pDepthMap, 
-		si_depthMap, 
-		pNormalMap,
-		si_normalMap,
+		pCurrNormalDepthMap, 
+		si_currNormalDepthMap, 
+		pReprojNormalDepthMap,
+		si_reprojNormalDepthMap,
+		pCachedNormalDepthMap,
+		si_CachedNormalDepthMap,
 		pVelocityMap, 
 		si_velocityMap));
 
@@ -474,11 +480,11 @@ void SSAO::SSAOClass::BuildOffsetVecotrs() {
 }
 
 BOOL SSAO::SSAOClass::Draw(
-	Foundation::Resource::FrameResource* const pFrameResource,
-	Foundation::Resource::GpuResource* const pNormalMap,
-	D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
-	Foundation::Resource::GpuResource* const pPositionMap,
-	D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
+		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
+		Foundation::Resource::GpuResource* const pPositionMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -510,11 +516,11 @@ BOOL SSAO::SSAOClass::Draw(
 		mDebugMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mDebugMap.get());
 
-		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCurrNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		mRandomVectorMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::SI_NormalMap, si_normalMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::SI_NormalDepthMap, si_currNormalDepthMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::SI_PositionMap, si_positionMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::SI_RandomVectorMap, mhRandomVectorMapGpuSrv);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawAO::UO_AOMap, mhAOMapGpuUavs[mCurrentAOMapIndex]);
@@ -533,10 +539,12 @@ BOOL SSAO::SSAOClass::Draw(
 
 BOOL SSAO::SSAOClass::Accumulate(
 		Foundation::Resource::FrameResource* const pFrameResource,
-		Foundation::Resource::GpuResource* const pDepthMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-		Foundation::Resource::GpuResource* const pNormalMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
+		Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
+		Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
+		Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_cachedNormalDepthMap,
 		Foundation::Resource::GpuResource* const pVelocityMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
@@ -554,16 +562,18 @@ BOOL SSAO::SSAOClass::Accumulate(
 
 		CmdList->SetComputeRootConstantBufferView(RootSignature::DenoiseAO::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
 
-		pDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCurrNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pReprojNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pCachedNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pVelocityMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		mAOMaps[PrevAOMapIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 		mAOMaps[mCurrentAOMapIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mAOMaps[mCurrentAOMapIndex].get());
 
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_DepthMap, si_depthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_NormalMap, si_normalMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_NormalDepthMap, si_currNormalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_ReprojNormalDepthMap, si_reprojNormalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_CachedNormalDepthMap, si_cachedNormalDepthMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_VelocityMap, si_velocityMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::SI_InputAOMap, mhAOMapGpuSrvs[PrevAOMapIndex]);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::DenoiseAO::UIO_OutputAOMap, mhAOMapGpuUavs[mCurrentAOMapIndex]);

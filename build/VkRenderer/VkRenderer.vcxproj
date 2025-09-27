@@ -102,6 +102,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
     <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\CommandObject.cpp" />
