@@ -16,13 +16,15 @@
 
 ConstantBuffer<ConstantBuffers::AmbientOcclusionCB> cbAO : register(b0);
 
-SSAO_DrawAO_RootConstants(b1);
+SSAO_Default_RootConstants(b1);
 
-Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat> gi_NormalDepthMap  : register(t0);
-Texture2D<ShadingConvention::GBuffer::PositionMapFormat>    gi_PositionMap     : register(t1);
-Texture2D<ShadingConvention::SSAO::RandomVectorMapFormat>   gi_RandomVectorMap : register(t2);
+Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>     gi_NormalDepthMap  : register(t0);
+Texture2D<ShadingConvention::GBuffer::PositionMapFormat>        gi_PositionMap     : register(t1);
+Texture2D<ShadingConvention::SSAO::RandomVectorMapFormat>       gi_RandomVectorMap : register(t2);
 
-RWTexture2D<ShadingConvention::SSAO::AOMapFormat>           go_AOMap           : register(u0);
+RWTexture2D<ShadingConvention::SSAO::AOCoefficientMapFormat>    go_AOMap           : register(u0);
+RWTexture2D<ShadingConvention::SVGF::RayHitDistanceMapFormat>   go_RayHitDistMap   : register(u1);
+RWTexture2D<ShadingConvention::SSAO::DebugMapFormat>            go_DebugMap        : register(u2);
 
 [numthreads(
     ShadingConvention::SSAO::ThreadGroup::Default::Width,
@@ -55,6 +57,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     const float3 RandVec = 2.f * gi_RandomVectorMap.SampleLevel(gsamLinearWrap, 4.f * randTexC, 0) - 1.f;
 
     float occlusionSum = 0.f;
+    float distSum = 0.f;
 
 	// Sample neighboring points about p in the hemisphere oriented by n.
 	[loop]
@@ -101,14 +104,17 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float Occlusion = DotP * SSAO::OcclusionFunction(Dist, cbAO.SurfaceEpsilon, cbAO.OcclusionFadeStart, cbAO.OcclusionFadeEnd);
 
         occlusionSum += Occlusion;
+        distSum += Dist;
     }
 
     occlusionSum /= cbAO.SampleCount;
+    distSum /= cbAO.SampleCount;
 
     const float Access = 1.f - occlusionSum;
 
 	// Sharpen the contrast of the SSAO map to make the SSAO affect more dramatic.
     go_AOMap[DTid] = saturate(pow(Access, cbAO.OcclusionStrength));
+    go_RayHitDistMap[DTid] = distSum;
 }
 
 #endif // __SSAO_HLSL__

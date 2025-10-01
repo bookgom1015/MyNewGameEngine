@@ -46,6 +46,8 @@ UINT RTAO::RTAOClass::CbvSrvUavDescCount() const { return 0
 	+ Descriptor::AO::Count
 	+ Descriptor::TemporalCache::Count // Frame 0
 	+ Descriptor::TemporalCache::Count // Frame 1
+	+ Descriptor::TemporalAO::Count // Frame 0
+	+ Descriptor::TemporalAO::Count // Frame 1
 	+ 1 // DebugMap
 	; 
 }

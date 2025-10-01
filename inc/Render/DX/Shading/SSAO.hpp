@@ -7,52 +7,75 @@ namespace Render::DX::Shading {
 		namespace Shader {
 			enum Type {
 				CS_SSAO = 0,
-				CS_AccumulateAO,
 				Count
 			};
 		}
 
 		namespace RootSignature {
-			enum Type {
-				GR_DrawAO = 0,
-				GR_DenoiseAO,
-				Count
-			};
-
-			namespace DrawAO {
+			namespace Default {
 				enum {
 					CB_AO = 0,
 					RC_Consts,
 					SI_NormalDepthMap,
 					SI_PositionMap,
 					SI_RandomVectorMap,
-					UO_AOMap,
+					UO_AOCoefficientMap,
+					UO_RayHitDistMap,
 					UO_DebugMap,
-					Count
-				};
-			}
-
-			namespace DenoiseAO {
-				enum {
-					CB_AO = 0,
-					RC_Consts,
-					SI_NormalDepthMap,
-					SI_ReprojNormalDepthMap,
-					SI_CachedNormalDepthMap,
-					SI_VelocityMap,
-					SI_InputAOMap,
-					UIO_OutputAOMap,
 					Count
 				};
 			}
 		}
 
-		namespace PipelineState {
-			enum {
-				CS_DrawAO = 0,
-				CS_DenoiseAO,
-				Count
-			};
+		namespace Resource {
+			namespace AO {
+				enum Type {
+					E_AOCoefficient = 0,
+					E_RayHitDistance,
+					Count
+				};
+			}
+
+			namespace TemporalCache {
+				enum Type {
+					E_TSPP = 0,
+					E_RayHitDistance,
+					E_AOCoefficientSquaredMean,
+					Count
+				};
+			}
+		}
+
+		namespace Descriptor {
+			namespace AO {
+				enum Type {
+					ES_AOCoefficient = 0,
+					EU_AOCoefficient,
+					ES_RayHitDistance,
+					EU_RayHitDistance,
+					Count
+				};
+			}
+
+			namespace TemporalCache {
+				enum Type {
+					ES_TSPP = 0,
+					EU_TSPP,
+					ES_RayHitDistance,
+					EU_RayHitDistance,
+					ES_AOCoefficientSquaredMean,
+					EU_AOCoefficientSquaredMean,
+					Count
+				};
+			}
+
+			namespace TemporalAO {
+				enum Type {
+					E_Srv = 0,
+					E_Uav,
+					Count
+				};
+			}
 		}
 
 		class SSAOClass : public Foundation::ShadingObject {
@@ -71,11 +94,18 @@ namespace Render::DX::Shading {
 			virtual ~SSAOClass() = default;
 
 		public:
-			__forceinline Foundation::Resource::GpuResource* AOMap() const;
-			__forceinline Foundation::Resource::GpuResource* AOMap(UINT index) const;
-			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AOMapSrv() const;
-			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AOMapSrv(UINT index) const;
-			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AOMapUav(UINT index) const;
+			__forceinline Foundation::Resource::GpuResource* AOCoefficientResource(Resource::AO::Type type) const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE AOCoefficientDescriptor(Descriptor::AO::Type type) const;
+
+			__forceinline Foundation::Resource::GpuResource* TemporalAOCoefficientResource(UINT frame) const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE TemporalAOCoefficientSrv(UINT frame) const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE TemporalAOCoefficientUav(UINT frame) const;
+
+			__forceinline Foundation::Resource::GpuResource* TemporalCacheResource(Resource::TemporalCache::Type type, UINT frame) const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE TemporalCacheDescriptor(Descriptor::TemporalCache::Type type, UINT frame) const;
+
+			__forceinline constexpr UINT CurrentTemporalCacheFrameIndex() const;
+			__forceinline constexpr UINT CurrentTemporalAOFrameIndex() const;
 
 			__forceinline void GetOffsetVectors(DirectX::XMFLOAT4 offsets[14]);
 
@@ -99,18 +129,15 @@ namespace Render::DX::Shading {
 		public:
 			BOOL BuildRandomVectorTexture();
 
-			BOOL Run(
+			BOOL DrawAO(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
-				Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
-				Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_CachedNormalDepthMap,
 				Foundation::Resource::GpuResource* const pPositionMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
-				Foundation::Resource::GpuResource* const pVelocityMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap);
+
+			UINT MoveToNextTemporalCacheFrame();
+			UINT MoveToNextTemporalAOFrame();
 
 		private:
 			BOOL BuildRandomVectorMapResource();
@@ -121,23 +148,6 @@ namespace Render::DX::Shading {
 
 			void BuildOffsetVecotrs();
 
-			BOOL Draw(
-				Foundation::Resource::FrameResource* const pFrameResource,
-				Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
-				Foundation::Resource::GpuResource* const pPositionMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap);
-			BOOL Accumulate(
-				Foundation::Resource::FrameResource* const pFrameResource,
-				Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
-				Foundation::Resource::GpuResource* const pReprojNormalDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_reprojNormalDepthMap,
-				Foundation::Resource::GpuResource* const pCachedNormalDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_CachedNormalDepthMap,
-				Foundation::Resource::GpuResource* const pVelocityMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_velocityMap);
-
 		private:
 			InitData mInitData;
 
@@ -147,8 +157,8 @@ namespace Render::DX::Shading {
 			UINT mTexWidth = 0;
 			UINT mTexHeight = 0;
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
-			std::array< Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
+			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
 
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
 
@@ -157,11 +167,17 @@ namespace Render::DX::Shading {
 			D3D12_CPU_DESCRIPTOR_HANDLE mhRandomVectorMapCpuSrv;
 			D3D12_GPU_DESCRIPTOR_HANDLE mhRandomVectorMapGpuSrv;
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mAOMaps;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2> mhAOMapCpuSrvs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, 2> mhAOMapGpuSrvs;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2> mhAOMapCpuUavs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, 2> mhAOMapGpuUavs;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::AO::Count> mAOResources;
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceCpus;
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceGpus;
+
+			std::array<std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::TemporalCache::Count>, 2> mTemporalCaches;
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheCpus;
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheGpus;
+
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mTemporalAOResources;
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceCpus;
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceGpus;
 
 			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
 			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
@@ -169,7 +185,8 @@ namespace Render::DX::Shading {
 
 			DirectX::XMFLOAT4 mOffsets[14];
 
-			UINT mCurrentAOMapIndex = 0;
+			UINT mCurrentTemporalCacheFrameIndex = 0;
+			UINT mCurrentTemporalAOFrameIndex = 0;
 		};
 
 		using InitDataPtr = std::unique_ptr<SSAOClass::InitData>;

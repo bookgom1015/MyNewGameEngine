@@ -66,7 +66,7 @@ BOOL ShadingObjectManager::BuildPipelineStates() {
 }
 
 BOOL ShadingObjectManager::BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) {
-	for (const auto object : mShadingObjects)
+	for (const auto object : mShadingObjects) 
 		CheckReturn(mpLogFile, object->BuildDescriptors(pDescHeap));
 
 	return TRUE;

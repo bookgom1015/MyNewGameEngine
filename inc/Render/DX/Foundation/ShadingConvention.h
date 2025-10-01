@@ -447,16 +447,9 @@ namespace ShadingConvention{
 	}
 
 	namespace SSAO {
-#ifndef SSAO_DrawAO_RCSTRUCT
-#define SSAO_DrawAO_RCSTRUCT {			\
+#ifndef SSAO_Default_RCSTRUCT
+#define SSAO_Default_RCSTRUCT {			\
 		DirectX::XMFLOAT2 gInvTexDim;	\
-	};
-#endif
-
-#ifndef SSAO_DenoiseAO_RCSTRUCT
-#define SSAO_DenoiseAO_RCSTRUCT {		\
-		DirectX::XMUINT2 gTextureDim;	\
-		UINT gStep;						\
 	};
 #endif
 
@@ -472,42 +465,30 @@ namespace ShadingConvention{
 		}
 
 #ifdef _HLSL
-		typedef AOMAP_FORMAT	AOMapFormat;
+		typedef AOMAP_FORMAT	AOCoefficientMapFormat;
+		typedef FLOAT			AOCoefficientSquaredMeanMapFormat;
 		typedef float3			RandomVectorMapFormat;
 		typedef float4			DebugMapFormat;
 
 		static const float InvalidAOValue = -1.f;
 
-#ifndef SSAO_DrawAO_RootConstants
-#define SSAO_DrawAO_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_DrawAO_RCSTRUCT
-#endif
-
-#ifndef SSAO_DenoiseAO_RootConstants
-#define SSAO_DenoiseAO_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_DenoiseAO_RCSTRUCT
+#ifndef SSAO_Default_RootConstants
+#define SSAO_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_Default_RCSTRUCT
 #endif
 #else
-		const DXGI_FORMAT AOMapFormat			= AOMAP_FORMAT;
-		const DXGI_FORMAT RandomVectorMapFormat	= DXGI_FORMAT_R8G8B8A8_SNORM;
-		const DXGI_FORMAT DebugMapFormat		= DXGI_FORMAT_R16G16B16A16_FLOAT;
+		const DXGI_FORMAT AOCoefficientMapFormat	= AOMAP_FORMAT;
+		const DXGI_FORMAT AOCoefficientSquaredMeanMapFormat = DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT RandomVectorMapFormat		= DXGI_FORMAT_R8G8B8A8_SNORM;
+		const DXGI_FORMAT DebugMapFormat			= DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		const FLOAT AOMapClearValues[4] = { 1.f, 0.f, 0.f, 0.f };
 
 		namespace RootConstant {
-			namespace DrawAO {
-				struct Struct SSAO_DrawAO_RCSTRUCT
+			namespace Default {
+				struct Struct SSAO_Default_RCSTRUCT
 				enum {
 					E_InvTexDimX = 0,
 					E_InvTexDimY,
-					Count
-				};
-			}
-
-			namespace DenoiseAO {
-				struct Struct SSAO_DenoiseAO_RCSTRUCT
-				enum {
-					E_TexDimX = 0,
-					E_TexDimY,
-					E_Step,
 					Count
 				};
 			}
@@ -626,13 +607,13 @@ namespace ShadingConvention{
 		typedef FLOAT		ValueSquaredMeanMapFormat_Contrast;
 		typedef HDR_FORMAT	ValueSquaredMeanMapFormat_Color;
 
-		typedef uint4	TSPPSquaredMeanRayHitDistanceMapFormat;
-		typedef float2	DepthPartialDerivativeMapFormat;
-		typedef float2	LocalMeanVarianceMapFormat;
-		typedef FLOAT	VarianceMapFormat;
-		typedef FLOAT	RayHitDistanceMapFormat;
-		typedef uint	TSPPMapFormat;
-		typedef FLOAT	DisocclusionBlurStrengthMapFormat;
+		typedef uint4		TSPPSquaredMeanRayHitDistanceMapFormat;
+		typedef float2		DepthPartialDerivativeMapFormat;
+		typedef float2		LocalMeanVarianceMapFormat;
+		typedef FLOAT		VarianceMapFormat;
+		typedef FLOAT		RayHitDistanceMapFormat;
+		typedef uint		TSPPMapFormat;
+		typedef FLOAT		DisocclusionBlurStrengthMapFormat;
 
 		typedef float4 DebugMapFormat;
 

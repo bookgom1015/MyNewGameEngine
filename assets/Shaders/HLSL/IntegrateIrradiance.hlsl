@@ -24,7 +24,7 @@ Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat> gi_DepthMap 
 Texture2D<ShadingConvention::GBuffer::SpecularMapFormat>            gi_SpecularMap           : register(t4);
 Texture2D<ShadingConvention::GBuffer::RoughnessMetalnessMapFormat>  gi_RoughnessMetalnessMap : register(t5);
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap           : register(t6);
-Texture2D<ShadingConvention::SSAO::AOMapFormat>                     gi_AOMap                 : register(t7);
+Texture2D<ShadingConvention::SSAO::AOCoefficientMapFormat>          gi_AOMap                 : register(t7);
 Texture2D gi_ReflectionMap : register(t8);
 TextureCube<ShadingConvention::EnvironmentMap::DiffuseIrradianceCubeMapFormat>      gi_DiffuseIrradianceCubeEnv : register(t9);
 Texture2D<ShadingConvention::EnvironmentMap::BrdfLutMapFormat>                      gi_BrdfLutMap               : register(t10);

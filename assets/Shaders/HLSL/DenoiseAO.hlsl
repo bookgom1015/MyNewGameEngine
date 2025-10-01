@@ -206,14 +206,21 @@ void BlendWithPreviousFrame(in uint2 DTid) {
         if (!ShaderUtil::IsWithinBounds(PrevFullResDTid, gTextureDim * 2)) return;
         
         packed = gi_CachedNormalDpethMap[PrevFullResDTid];
-        ValuePackaging::DecodeNormalDepth(packed, reprojNormal, reprojDepth);
+        ValuePackaging::DecodeNormalDepth(packed, cachedNormal, cachedDepth);
     }
-         
-    const float PrevValue = gi_PrevAOMap[DTid];    
-    const float InterpolatedValue = lerp(PrevValue, CurrValue, 
-        PrevValue == ShadingConvention::SSAO::InvalidAOValue ? 1.f : 0.08f);
     
-    gio_CurrAOMap[DTid] = InterpolatedValue;
+    const float dDepth = reprojDepth - cachedDepth;
+    const float dDepth2 = dDepth * dDepth;    
+    const float dNormal = dot(reprojNormal, cachedNormal);
+    if (dDepth2 < 0.0001f && dNormal > 0.99f) {
+        const float PrevValue = gi_PrevAOMap[DTid];
+        const float ClampedPrevValue = clamp(PrevValue, CurrValue - 0.1f, CurrValue + 0.1f);
+        
+        const float InterpolatedValue = lerp(ClampedPrevValue, CurrValue, 
+            ClampedPrevValue == ShadingConvention::SSAO::InvalidAOValue ? 1.f : 0.08f);
+        
+        gio_CurrAOMap[DTid] = InterpolatedValue;
+    }    
 }
 
 [numthreads(

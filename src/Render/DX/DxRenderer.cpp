@@ -1556,18 +1556,135 @@ BOOL DxRenderer::DrawAO() {
 		}
 	}
 	else {
-		CheckReturn(mpLogFile, mSSAO->Run(
+		CheckReturn(mpLogFile, mSSAO->DrawAO(
 			mpCurrentFrameResource,
 			mGBuffer->NormalDepthMap(),
 			mGBuffer->NormalDepthMapSrv(),
-			mGBuffer->ReprojectedNormalDepthMap(),
-			mGBuffer->ReprojectedNormalDepthMapSrv(),
-			mGBuffer->CachedNormalDepthMap(),
-			mGBuffer->CachedNormalDepthMapSrv(),
 			mGBuffer->PositionMap(),
-			mGBuffer->PositionMapSrv(),
-			mGBuffer->VelocityMap(),
-			mGBuffer->VelocityMapSrv()));
+			mGBuffer->PositionMapSrv()));
+
+		// Denosing(Spatio - Temporal Variance Guided Filtering)
+		{
+			// Temporal supersampling 
+			{
+				// Stage 1: Reverse reprojection
+				{
+					const auto PrevTemporalCacheFrameIndex = mSSAO->CurrentTemporalCacheFrameIndex();
+					const auto CurrTemporalCacheFrameIndex = mSSAO->MoveToNextTemporalCacheFrame();
+
+					const auto PrevTemporalAOFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
+					const auto CurrTemporalAOFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
+
+					// Retrieves values from previous frame via reverse reprojection.
+					CheckReturn(mpLogFile, mSVGF->ReverseReprojectPreviousFrame(
+						mpCurrentFrameResource,
+						mGBuffer->NormalDepthMap(),
+						mGBuffer->NormalDepthMapSrv(),
+						mGBuffer->ReprojectedNormalDepthMap(),
+						mGBuffer->ReprojectedNormalDepthMapSrv(),
+						mGBuffer->CachedNormalDepthMap(),
+						mGBuffer->CachedNormalDepthMapSrv(),
+						mGBuffer->VelocityMap(),
+						mGBuffer->VelocityMapSrv(),
+						mSSAO->TemporalAOCoefficientResource(PrevTemporalAOFrameIndex),
+						mSSAO->TemporalAOCoefficientSrv(PrevTemporalAOFrameIndex),
+						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, PrevTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_RayHitDistance, PrevTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, PrevTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_TSPP, PrevTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+						Shading::SVGF::Value::E_Contrast));
+				}
+				// Stage 2: Blending current frame value with the reprojected cached value.
+				{
+					// Calculate local mean and variance for clamping during the blending operation.
+					CheckReturn(mpLogFile, mSVGF->CalculateLocalMeanVariance(
+						mpCurrentFrameResource,
+						mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
+						mSSAO->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_AOCoefficient),
+						Shading::SVGF::Value::E_Contrast,
+						mpShadingArgumentSet->SSAO.CheckboardRayGeneration));
+					// Interpolate the variance for the inactive cells from the valid checkerboard cells.
+					if (mpShadingArgumentSet->SSAO.CheckboardRayGeneration) {
+						CheckReturn(mpLogFile, mSVGF->FillInCheckerboard(
+							mpCurrentFrameResource,
+							mpShadingArgumentSet->SSAO.CheckboardRayGeneration));
+					}
+					// Blends reprojected values with current frame values.
+					// Inactive pixels are filtered from active neighbors on checkerboard sampling before the blending operation.
+					{
+						const auto CurrTemporalCacheFrameIndex = mSSAO->MoveToNextTemporalCacheFrame();
+						const auto CurrAOResourceFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
+
+						CheckReturn(mpLogFile, mSVGF->BlendWithCurrentFrame(
+							mpCurrentFrameResource,
+							mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
+							mSSAO->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_AOCoefficient),
+							mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_RayHitDistance),
+							mSSAO->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_RayHitDistance),
+							mSSAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+							mSSAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
+							mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+							mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_RayHitDistance, CurrTemporalCacheFrameIndex),
+							mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+							mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+							Shading::SVGF::Value::E_Contrast));
+					}
+				}
+			}
+			// Filtering
+			{
+				// Stage 1: Applies a single pass of a Atrous wavelet transform filter.
+				if (mpShadingArgumentSet->SSAO.Denoiser.FullscreenBlurEnabaled) {
+					const auto CurrTemporalCacheFrameIndex = mSSAO->CurrentTemporalCacheFrameIndex();
+					const auto InputAOResourceFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
+					const auto OutputAOResourceFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
+
+					const FLOAT RayHitDistToKernelWidthScale = 22 / mpShadingArgumentSet->SSAO.OcclusionRadius *
+						mpShadingArgumentSet->SSAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleFactor;
+					const FLOAT RayHitDistToKernelSizeScaleExp = Foundation::Util::D3D12Util::Lerp(
+						1,
+						mpShadingArgumentSet->SSAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleExponent,
+						Foundation::Util::D3D12Util::RelativeCoef(mpShadingArgumentSet->SSAO.OcclusionRadius, 4, 22));
+
+					CheckReturn(mpLogFile, mSVGF->ApplyAtrousWaveletTransformFilter(
+						mpCurrentFrameResource,
+						mGBuffer->NormalDepthMap(),
+						mGBuffer->NormalDepthMapSrv(),
+						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_RayHitDistance, CurrTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_TSPP, CurrTemporalCacheFrameIndex),
+						mSSAO->TemporalAOCoefficientResource(InputAOResourceFrameIndex),
+						mSSAO->TemporalAOCoefficientSrv(InputAOResourceFrameIndex),
+						mSSAO->TemporalAOCoefficientResource(OutputAOResourceFrameIndex),
+						mSSAO->TemporalAOCoefficientUav(OutputAOResourceFrameIndex),
+						Shading::SVGF::Value::E_Contrast,
+						RayHitDistToKernelWidthScale,
+						RayHitDistToKernelSizeScaleExp));
+				}
+				// Stage 2: 3x3 multi-pass disocclusion blur (with more relaxed depth-aware constraints for such pixels).
+				if (mpShadingArgumentSet->SSAO.Denoiser.DisocclusionBlurEnabled) {
+					const auto CurrAOResourceFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
+
+					CheckReturn(mpLogFile, mSVGF->BlurDisocclusion(
+						mpCurrentFrameResource,
+						mDepthStencilBuffer->GetDepthStencilBuffer(),
+						mDepthStencilBuffer->DepthStencilBufferSrv(),
+						mGBuffer->RoughnessMetalnessMap(),
+						mGBuffer->RoughnessMetalnessMapSrv(),
+						mSSAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+						mSSAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
+						Shading::SVGF::Value::E_Contrast,
+						mpShadingArgumentSet->SSAO.Denoiser.LowTsppBlurPassCount));
+				}
+			}
+		}
 	}
 
 	return TRUE;
@@ -1575,8 +1692,12 @@ BOOL DxRenderer::DrawAO() {
 
 BOOL DxRenderer::IntegrateIrradiance() {
 	const auto CurrTemporalAOFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
-	const auto AOMap = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->TemporalAOCoefficientResource(CurrTemporalAOFrameIndex) : mSSAO->AOMap();
-	const auto AOSrv = mpShadingArgumentSet->RaytracingEnabled ? mRTAO->TemporalAOCoefficientSrv(CurrTemporalAOFrameIndex) : mSSAO->AOMapSrv();
+	const auto AOMap = mpShadingArgumentSet->RaytracingEnabled 
+		? mRTAO->TemporalAOCoefficientResource(mRTAO->CurrentTemporalAOFrameIndex()) 
+		: mSSAO->TemporalAOCoefficientResource(mSSAO->CurrentTemporalAOFrameIndex());
+	const auto AOSrv = mpShadingArgumentSet->RaytracingEnabled 
+		? mRTAO->TemporalAOCoefficientSrv(mRTAO->CurrentTemporalAOFrameIndex()) 
+		: mSSAO->TemporalAOCoefficientSrv(mSSAO->CurrentTemporalAOFrameIndex());
 
 	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
 		mpCurrentFrameResource,
