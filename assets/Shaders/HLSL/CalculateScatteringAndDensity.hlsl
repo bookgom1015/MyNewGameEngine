@@ -17,8 +17,7 @@ ConstantBuffer<ConstantBuffers::LightCB> cbLight	: register(b1);
 
 VolumetricLight_CalculateScatteringAndDensity_RootConstants(b2)
 
-Texture3D<ShadingConvention::VolumetricLight::FrustumVolumeMapFormat>   gi_PrevFrustumVolumeMap			: register(t0);
-Texture2D<ShadingConvention::Shadow::ZDepthMapFormat>				    gi_ZDepthMaps[MaxLights]		: register(t1);
+Texture2D<ShadingConvention::Shadow::ZDepthMapFormat>				    gi_ZDepthMaps[MaxLights]		: register(t0);
 Texture2DArray<ShadingConvention::Shadow::ZDepthMapFormat>			    gi_ZDepthCubeMaps[MaxLights]	: register(t0, space1);
 
 RWTexture3D<ShadingConvention::VolumetricLight::FrustumVolumeMapFormat>	go_FrustumVolumeMap			    : register(u0);
@@ -83,24 +82,8 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 
 		Li += visibility * light.Color * light.Intensity * falloff * PhaseFunction;
 	}
-
-	{
-		const float4 CurrScattering = float4(Li * gUniformDensity, gUniformDensity);
-		const float3 PrevFrameUV = VolumetricLight::ConvertPositionToUV(NotJitteredPosW, cbPass.PrevViewProj);
 	
-		float4 scattering = CurrScattering;
-		
-		if (all(PrevFrameUV <= (float3)1.f) && all(PrevFrameUV >= (float3)0.f)) {
-			const float4 PrevScattering = gi_PrevFrustumVolumeMap.SampleLevel(gsamLinearClamp, PrevFrameUV, 0);
-			
-			const float4 Diff = PrevScattering - CurrScattering;
-			const float DiffSquare = dot(Diff, Diff);
-		
-			if (DiffSquare < 1.f) scattering = lerp(PrevScattering, CurrScattering, 0.05f);
-		}
-		
-		go_FrustumVolumeMap[DTid] = scattering;
-	}
+	go_FrustumVolumeMap[DTid] = float4(Li * gUniformDensity, gUniformDensity);
 }
 
 #endif // __CALCULATESCATTERINGANDDENSITY_HLSL__

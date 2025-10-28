@@ -6,18 +6,13 @@ namespace Render::DX::Shading {
 	namespace SVGF {
 		namespace Shader {
 			enum Type {
-				CS_TemporalSupersamplingReverseReproject_Contrast = 0,
-				CS_TemporalSupersamplingReverseReproject_Color,
-				CS_TemporalSupersamplingBlendWithCurrentFrame_Contrast,
-				CS_TemporalSupersamplingBlendWithCurrentFrame_Color,
+				CS_TemporalSupersamplingReverseReproject = 0,
+				CS_TemporalSupersamplingBlendWithCurrentFrame,
 				CS_CalcParticalDepthDerivative,
-				CS_CalcLocalMeanVariance_Contrast,
-				CS_CalcLocalMeanVariance_Color,
+				CS_CalcLocalMeanVariance,
 				CS_FillinCheckerboard,
-				CS_EdgeStoppingFilterGaussian3x3_Contrast,
-				CS_EdgeStoppingFilterGaussian3x3_Color,
-				CS_DisocclusionBlur3x3_Contrast,
-				CS_DisocclusionBlur3x3_Color,
+				CS_EdgeStoppingFilterGaussian3x3,
+				CS_DisocclusionBlur3x3,
 				Count
 			};
 		}
@@ -48,8 +43,6 @@ namespace Render::DX::Shading {
 					SI_CachedTSPP,
 					SI_CachedRayHitDistance,
 					UO_CachedTSPP,
-					UO_CachedValue,
-					UO_CachedSquaredMean,
 					UO_TSPPSquaredMeanRayHitDistacne,
 					UO_DebugMap0,
 					UO_DebugMap1,
@@ -63,8 +56,6 @@ namespace Render::DX::Shading {
 					SI_AOCoefficient,
 					SI_LocalMeanVaraince,
 					SI_RayHitDistance,
-					SI_CachedValue,
-					SI_CachedSquaredMean,
 					SI_TSPPSquaredMeanRayHitDistance,
 					UO_TemporalAOCoefficient,
 					UO_TSPP,
@@ -131,18 +122,13 @@ namespace Render::DX::Shading {
 
 		namespace PipelineState {
 			enum Type {
-				CP_TemporalSupersamplingReverseReproject_Contrast = 0,
-				CP_TemporalSupersamplingReverseReproject_Color,
-				CP_TemporalSupersamplingBlendWithCurrentFrame_Contrast,
-				CP_TemporalSupersamplingBlendWithCurrentFrame_Color,
+				CP_TemporalSupersamplingReverseReproject = 0,
+				CP_TemporalSupersamplingBlendWithCurrentFrame,
 				CP_CalcDepthPartialDerivative,
-				CP_CalcLocalMeanVariance_Contrast,
-				CP_CalcLocalMeanVariance_Color,
+				CP_CalcLocalMeanVariance,
 				CP_FillInCheckerboard,
-				CP_EdgeStoppingFilterGaussian3x3_Contrast,
-				CP_EdgeStoppingFilterGaussian3x3_Color,
-				CP_DisocclusionBlur_Contrast,
-				CP_DisocclusionBlur_Color,
+				CP_EdgeStoppingFilterGaussian3x3,
+				CP_DisocclusionBlur,
 				Count
 			};
 		}
@@ -164,24 +150,10 @@ namespace Render::DX::Shading {
 				};
 			}
 
-			namespace CachedValue {
-				enum {
-					E_Contrast = Variance::Count,
-					E_Color,
-					Count
-				};
-			}
-
-			namespace CachedSquaredMean {
-				enum {
-					E_Contrast = CachedValue::Count,
-					E_Color,
-					Count
-				};
-			}
-
 			enum {
-				E_DepthPartialDerivative = CachedSquaredMean::Count,
+				E_CachedValue = Variance::Count,
+				E_CachedSquaredMean,
+				E_DepthPartialDerivative,
 				E_DisocclusionBlurStrength,
 				E_TSPPSquaredMeanRayHitDistance,
 				Count
@@ -209,28 +181,8 @@ namespace Render::DX::Shading {
 				};
 			}
 
-			namespace CachedValue {
-				enum {
-					ES_Contrast = Variance::Count,
-					EU_Contrast,
-					ES_Color,
-					EU_Color,
-					Count
-				};
-			}
-
-			namespace CachedSquaredMean {
-				enum {
-					ES_Contrast = CachedValue::Count,
-					EU_Contrast,
-					ES_Color,
-					EU_Color,
-					Count
-				};
-			}
-
 			enum {
-				ES_DepthPartialDerivative = CachedSquaredMean::Count,
+				ES_DepthPartialDerivative = Variance::Count,
 				EU_DepthPartialDerivative,
 				ES_DisocclusionBlurStrength,
 				EU_DisocclusionBlurStrength,

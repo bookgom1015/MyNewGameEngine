@@ -61,12 +61,6 @@ BOOL SSAO::SSAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
-	mTexWidth = mInitData.ClientWidth / 2;
-	mTexHeight = mInitData.ClientHeight / 2;
-
-	mViewport = { 0.0f, 0.0f, static_cast<FLOAT>(mTexWidth), static_cast<FLOAT>(mTexHeight), 0.0f, 1.0f };
-	mScissorRect = { 0, 0, static_cast<INT>(mTexWidth), static_cast<INT>(mTexHeight) };
-
 	CheckReturn(mpLogFile, BuildRandomVectorMapResource());
 	CheckReturn(mpLogFile, BuildResources());
 
@@ -190,12 +184,6 @@ BOOL SSAO::SSAOClass::OnResize(UINT width, UINT height) {
 	mInitData.ClientWidth = width;
 	mInitData.ClientHeight = height;
 
-	mTexWidth = mInitData.ClientWidth / 2;
-	mTexHeight = mInitData.ClientHeight / 2;
-
-	mViewport = { 0.0f, 0.0f, static_cast<FLOAT>(mTexWidth), static_cast<FLOAT>(mTexHeight), 0.0f, 1.0f };
-	mScissorRect = { 0, 0, static_cast<INT>(mTexWidth), static_cast<INT>(mTexHeight) };
-
 	CheckReturn(mpLogFile, BuildResources());
 	CheckReturn(mpLogFile, BuildDescriptors());
 
@@ -283,8 +271,8 @@ BOOL SSAO::SSAOClass::DrawAO(
 		CmdList->SetComputeRootConstantBufferView(RootSignature::Default::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
 
 		ShadingConvention::SSAO::RootConstant::Default::Struct rc;
-		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mTexWidth);
-		rc.gInvTexDim.y = 1.f / static_cast<FLOAT>(mTexHeight);
+		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mInitData.ClientWidth);
+		rc.gInvTexDim.y = 1.f / static_cast<FLOAT>(mInitData.ClientHeight);
 
 		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SSAO::RootConstant::Default::Struct>(
 			RootSignature::Default::RC_Consts,
@@ -316,8 +304,8 @@ BOOL SSAO::SSAOClass::DrawAO(
 		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_DebugMap, mhDebugMapGpuUav);
 
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(mTexWidth, ShadingConvention::SSAO::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::CeilDivide(mTexHeight, ShadingConvention::SSAO::ThreadGroup::Default::Height),
+			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SSAO::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SSAO::ThreadGroup::Default::Height),
 			ShadingConvention::SSAO::ThreadGroup::Default::Depth);
 	}
 
@@ -384,8 +372,8 @@ BOOL SSAO::SSAOClass::BuildResources() {
 	ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
 	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	texDesc.Format = ShadingConvention::SSAO::AOCoefficientMapFormat;
-	texDesc.Width = mTexWidth;
-	texDesc.Height = mTexHeight;
+	texDesc.Width = mInitData.ClientWidth;
+	texDesc.Height = mInitData.ClientHeight;
 	texDesc.Alignment = 0;
 	texDesc.DepthOrArraySize = 1;
 	texDesc.MipLevels = 1;

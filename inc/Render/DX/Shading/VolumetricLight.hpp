@@ -8,6 +8,7 @@ namespace Render::DX::Shading {
 			enum Type {
 				CS_CalculateScatteringAndDensity = 0,
 				CS_AccumulateScattering,
+				CS_BlendScattering,
 				VS_ApplyFog,
 				PS_ApplyFog,
 				PS_ApplyFog_Tricubic,
@@ -19,6 +20,7 @@ namespace Render::DX::Shading {
 			enum Type {
 				GR_CalculateScatteringAndDensity = 0,
 				GR_AccumulateScattering,
+				GR_BlendScattering,
 				GR_ApplyFog,
 				Count
 			};
@@ -28,7 +30,6 @@ namespace Render::DX::Shading {
 					CB_Pass = 0,
 					CB_Light,
 					RC_Consts,
-					SI_PrevFrustumVolumeMap,
 					SI_ZDepthMaps,
 					SI_ZDepthCubeMaps,
 					UO_FrustumVolumeMap,
@@ -40,6 +41,14 @@ namespace Render::DX::Shading {
 				enum {
 					RC_Consts = 0,
 					UIO_FrustumVolumeMap,
+					Count
+				};
+			}
+
+			namespace BlendScattering {
+				enum {
+					SI_PreviousScattering = 0,
+					UIO_CurrentScattering,
 					Count
 				};
 			}
@@ -59,6 +68,7 @@ namespace Render::DX::Shading {
 			enum Type {
 				CP_CalculateScatteringAndDensity = 0,
 				CP_AccumulateScattering,
+				CP_BlendScattering,
 				GP_ApplyFog,
 				GP_ApplyFog_Tricubic,
 				Count
@@ -137,6 +147,7 @@ namespace Render::DX::Shading {
 			BOOL AccumulateScattering(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				FLOAT nearZ, FLOAT farZ, FLOAT depth_exp, FLOAT densityScale);
+			BOOL BlendScattering(Foundation::Resource::FrameResource* const pFrameResource);
 
 		private:
 			InitData mInitData;

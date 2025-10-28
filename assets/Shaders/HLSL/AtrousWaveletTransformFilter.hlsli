@@ -29,13 +29,13 @@ ConstantBuffer<ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB> cbAtrous :
 
 SVGF_AtrousWaveletTransformFilter_RootConstants(b1)
 
-Texture2D<ValueType>					                            gi_Value					: register(t0);
+Texture2D<ShadingConvention::SVGF::ValueMapFormat>	                gi_Value					: register(t0);
 Texture2D<ShadingConvention::GBuffer::NormalDepthMapFormat>			gi_NormalDepth				: register(t1);
 Texture2D<ShadingConvention::SVGF::VarianceMapFormat>				gi_Variance					: register(t2);
 Texture2D<ShadingConvention::SVGF::RayHitDistanceMapFormat>			gi_HitDistance				: register(t3);
 Texture2D<ShadingConvention::SVGF::DepthPartialDerivativeMapFormat>	gi_DepthPartialDerivative	: register(t4);
 
-RWTexture2D<ValueType> go_FilteredValue : register(u0);
+RWTexture2D<ShadingConvention::SVGF::ValueMapFormat>				go_FilteredValue			: register(u0);
 
 float DepthThreshold(float depth, float2 ddxy, float2 pixelOffset) {
 	float depthThreshold;
@@ -50,17 +50,17 @@ float DepthThreshold(float depth, float2 ddxy, float2 pixelOffset) {
 }
 
 void AddFilterContribution(
-		inout ValueType weightedValueSum,
+		inout float weightedValueSum,
 		inout float weightSum,
-		ValueType value,
-		float stdDeviation,
-		float depth,
-		float3 normal,
-		float2 ddxy,
-		uint row,
-		uint col,
-		uint2 kernelStep,
-		uint2 DTid) {
+		in float value,
+		in float stdDeviation,
+		in float depth,
+		in float3 normal,
+		in float2 ddxy,
+		in uint row,
+		in uint col,
+		in uint2 kernelStep,
+		in uint2 DTid) {
 	const float ValueSigma = cbAtrous.ValueSigma;
 	const float NormalSigma = cbAtrous.NormalSigma;
 	const float DepthSigma = cbAtrous.DepthSigma;
@@ -78,8 +78,8 @@ void AddFilterContribution(
 	float3 iNormal;
 	ValuePackaging::DecodeNormalDepth(gi_NormalDepth[id], iNormal, iDepth);
 
-	ValueType iValue = gi_Value[id];
-	bool isValidValue = any(iValue != InvalidValue);
+	float iValue = gi_Value[id];
+	bool isValidValue = iValue != ShadingConvention::SVGF::InvalidValue;
 	if (!isValidValue || iDepth == 0.f) return;
 
 	// Calculate a weight for the neighbor's contribution.
@@ -138,23 +138,23 @@ void CS(uint2 DTid : SV_DispatchThreadID) {
 	if (!ShaderUtil::IsWithinBounds(DTid, cbAtrous.TextureDim)) return;
 
 	// Initialize values to the current pixel / center filter kernel value.
-	ValueType value = gi_Value[DTid];
-
+	float value = gi_Value[DTid];
+	
 	float3 normal;
 	float depth;
 	ValuePackaging::DecodeNormalDepth(gi_NormalDepth[DTid], normal, depth);
 
-	bool isValidValue = any(value != InvalidValue);
-	ValueType filteredValue = value;
+	const bool IsValidValue = value != ShadingConvention::SVGF::InvalidValue;
+	float filteredValue = value;
 	float variance = gi_Variance[DTid];
 
 	if (depth != 0.f) {
 		float2 ddxy = gi_DepthPartialDerivative[DTid];		
-		float stdDeviation = 1;
-		float weightSum = 0;
-		ValueType weightedValueSum = 0;
+		float stdDeviation = 1.f;
+		float weightSum = 0.f;
+		float weightedValueSum = 0.f;
 
-		if (isValidValue) {
+		if (IsValidValue) {
 			float w = FilterKernel::Kernel[FilterKernel::Radius][FilterKernel::Radius];
 			weightSum = w;
 			weightedValueSum = weightSum * value;
@@ -166,7 +166,7 @@ void CS(uint2 DTid : SV_DispatchThreadID) {
 		// This helps filter out lower frequency noise, a.k.a biling artifacts.
 		// Ref: [RTGCH19]
 		uint2 kernelStep = 0;
-		if (cbAtrous.UseAdaptiveKernelSize && isValidValue) {
+		if (cbAtrous.UseAdaptiveKernelSize && IsValidValue) {
 			float avgRayHitDistance = gi_HitDistance[DTid];
 
 			float perPixelViewAngle = cbAtrous.FovY / cbAtrous.TextureDim.y;
@@ -194,9 +194,9 @@ void CS(uint2 DTid : SV_DispatchThreadID) {
 		if (variance >= cbAtrous.MinVarianceToDenoise) {
 			// Add contributions from the neighborhood.
 			[unroll]
-			for (UINT r = 0; r < FilterKernel::Width; ++r) {
+			for (uint r = 0; r < FilterKernel::Width; ++r) {
 				[unroll]
-				for (UINT c = 0; c < FilterKernel::Width; ++c) {
+				for (uint c = 0; c < FilterKernel::Width; ++c) {
 					if (r != FilterKernel::Radius || c != FilterKernel::Radius) {
 						AddFilterContribution(
 							weightedValueSum,
@@ -215,9 +215,9 @@ void CS(uint2 DTid : SV_DispatchThreadID) {
 			}
 		}
 
-		float smallValue = 0.000001;
+		float smallValue = 1e-6f;
 		if (weightSum > smallValue) filteredValue = weightedValueSum / weightSum;
-		else filteredValue = InvalidValue;
+		else filteredValue = ShadingConvention::SVGF::InvalidValue;
 	}
 
 	go_FilteredValue[DTid] = filteredValue;

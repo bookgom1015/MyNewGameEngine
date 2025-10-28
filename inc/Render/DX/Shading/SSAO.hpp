@@ -109,9 +109,6 @@ namespace Render::DX::Shading {
 
 			__forceinline void GetOffsetVectors(DirectX::XMFLOAT4 offsets[14]);
 
-			__forceinline constexpr UINT TexWidth() const;
-			__forceinline constexpr UINT TexHeight() const;
-
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
 			virtual UINT RtvDescCount() const override;
@@ -150,12 +147,6 @@ namespace Render::DX::Shading {
 
 		private:
 			InitData mInitData;
-
-			D3D12_VIEWPORT mViewport;
-			D3D12_RECT mScissorRect;
-
-			UINT mTexWidth = 0;
-			UINT mTexHeight = 0;
 
 			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
 			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;

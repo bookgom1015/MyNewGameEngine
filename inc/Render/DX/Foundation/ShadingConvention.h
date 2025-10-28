@@ -446,56 +446,6 @@ namespace ShadingConvention{
 #endif
 	}
 
-	namespace SSAO {
-#ifndef SSAO_Default_RCSTRUCT
-#define SSAO_Default_RCSTRUCT {			\
-		DirectX::XMFLOAT2 gInvTexDim;	\
-	};
-#endif
-
-		namespace ThreadGroup {
-			namespace Default {
-				enum {
-					Width = 8,
-					Height = 8,
-					Depth = 1,
-					Size = Width * Height * Depth
-				};
-			}
-		}
-
-#ifdef _HLSL
-		typedef AOMAP_FORMAT	AOCoefficientMapFormat;
-		typedef FLOAT			AOCoefficientSquaredMeanMapFormat;
-		typedef float3			RandomVectorMapFormat;
-		typedef float4			DebugMapFormat;
-
-		static const float InvalidAOValue = -1.f;
-
-#ifndef SSAO_Default_RootConstants
-#define SSAO_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_Default_RCSTRUCT
-#endif
-#else
-		const DXGI_FORMAT AOCoefficientMapFormat	= AOMAP_FORMAT;
-		const DXGI_FORMAT AOCoefficientSquaredMeanMapFormat = DXGI_FORMAT_R16_FLOAT;
-		const DXGI_FORMAT RandomVectorMapFormat		= DXGI_FORMAT_R8G8B8A8_SNORM;
-		const DXGI_FORMAT DebugMapFormat			= DXGI_FORMAT_R16G16B16A16_FLOAT;
-
-		const FLOAT AOMapClearValues[4] = { 1.f, 0.f, 0.f, 0.f };
-
-		namespace RootConstant {
-			namespace Default {
-				struct Struct SSAO_Default_RCSTRUCT
-				enum {
-					E_InvTexDimX = 0,
-					E_InvTexDimY,
-					Count
-				};
-			}
-		}
-#endif
-	}
-
 	namespace RayGen {
 		struct AlignedUnitSquareSample2D {
 			DirectX::XMFLOAT2	Value;
@@ -602,10 +552,8 @@ namespace ShadingConvention{
 #endif
 
 #ifdef _HLSL
-		typedef FLOAT		ValueMapFormat_Contrast;
-		typedef HDR_FORMAT	ValueMapFormat_Color;
-		typedef FLOAT		ValueSquaredMeanMapFormat_Contrast;
-		typedef HDR_FORMAT	ValueSquaredMeanMapFormat_Color;
+		typedef FLOAT		ValueMapFormat;
+		typedef FLOAT		ValueSquaredMeanMapFormat;
 
 		typedef uint4		TSPPSquaredMeanRayHitDistanceMapFormat;
 		typedef float2		DepthPartialDerivativeMapFormat;
@@ -617,8 +565,7 @@ namespace ShadingConvention{
 
 		typedef float4 DebugMapFormat;
 
-		static const FLOAT InvalidContrastValue = -1.f;
-		static const FLOAT InvalidColorValueW = -1.f;
+		static const FLOAT InvalidValue = -1.f;
 
 #ifndef SVGF_TemporalSupersamplingReverseReproject_RootConstants
 #define SVGF_TemporalSupersamplingReverseReproject_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_TemporalSupersamplingReverseReproject_RCSTRUCT
@@ -636,10 +583,8 @@ namespace ShadingConvention{
 #define SVGF_DisocclusionBlur_RootConstants(reg) cbuffer cbRootConstants : register(reg) SVGF_DisocclusionBlur_RCSTRUCT
 #endif
 #else
-		const DXGI_FORMAT ValueMapFormat_Contrast = DXGI_FORMAT_R16_FLOAT;
-		const DXGI_FORMAT ValueMapFormat_Color = HDR_FORMAT;
-		const DXGI_FORMAT ValueSquaredMeanMapFormat_Contrast = DXGI_FORMAT_R16_FLOAT;
-		const DXGI_FORMAT ValueSquaredMeanMapFormat_Color = HDR_FORMAT;
+		const DXGI_FORMAT ValueMapFormat = DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT ValueSquaredMeanMapFormat = DXGI_FORMAT_R16_FLOAT;
 
 		const DXGI_FORMAT TSPPSquaredMeanRayHitDistanceMapFormat = DXGI_FORMAT_R16G16B16A16_UINT;
 		const DXGI_FORMAT DepthPartialDerivativeMapFormat = DXGI_FORMAT_R16G16_FLOAT;
@@ -696,6 +641,56 @@ namespace ShadingConvention{
 		}
 	}
 
+	namespace SSAO {
+#ifndef SSAO_Default_RCSTRUCT
+#define SSAO_Default_RCSTRUCT {			\
+		DirectX::XMFLOAT2 gInvTexDim;	\
+	};
+#endif
+
+		namespace ThreadGroup {
+			namespace Default {
+				enum {
+					Width = 8,
+					Height = 8,
+					Depth = 1,
+					Size = Width * Height * Depth
+				};
+			}
+		}
+
+#ifdef _HLSL
+		typedef AOMAP_FORMAT	AOCoefficientMapFormat;
+		typedef FLOAT			AOCoefficientSquaredMeanMapFormat;
+		typedef float3			RandomVectorMapFormat;
+		typedef float4			DebugMapFormat;
+
+		static const float InvalidAOValue = -1.f;
+
+#ifndef SSAO_Default_RootConstants
+#define SSAO_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) SSAO_Default_RCSTRUCT
+#endif
+#else
+		const DXGI_FORMAT AOCoefficientMapFormat = AOMAP_FORMAT;
+		const DXGI_FORMAT AOCoefficientSquaredMeanMapFormat = DXGI_FORMAT_R16_FLOAT;
+		const DXGI_FORMAT RandomVectorMapFormat = DXGI_FORMAT_R8G8B8A8_SNORM;
+		const DXGI_FORMAT DebugMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+		const FLOAT AOMapClearValues[4] = { 1.f, 0.f, 0.f, 0.f };
+
+		namespace RootConstant {
+			namespace Default {
+				struct Struct SSAO_Default_RCSTRUCT
+					enum {
+					E_InvTexDimX = 0,
+					E_InvTexDimY,
+					Count
+				};
+			}
+		}
+#endif
+	}
+
 	namespace RTAO {
 #ifdef _HLSL
 		typedef AOMAP_FORMAT	AOCoefficientMapFormat;
@@ -704,7 +699,7 @@ namespace ShadingConvention{
 		typedef FLOAT			RayHitDistanceMapFormat;
 
 		static const FLOAT RayHitDistanceOnMiss = 0.f;
-		static const FLOAT InvalidAOCoefficientValue = SVGF::InvalidContrastValue;
+		static const FLOAT InvalidAOCoefficientValue = SVGF::InvalidValue;
 
 		bool HasAORayHitAnyGeometry(FLOAT tHit) {
 			return tHit != RayHitDistanceOnMiss;
@@ -773,6 +768,15 @@ namespace ShadingConvention{
 					Height	= 8,
 					Depth	= 1,
 					Size	= Width * Height * Depth
+				};
+			}
+
+			namespace BlendScattering {
+				enum {
+					Width = 8,
+					Height = 8,
+					Depth = 8,
+					Size = Width * Height * Depth
 				};
 			}
 		}
@@ -854,6 +858,51 @@ namespace ShadingConvention{
 					E_NearPlane = 0,
 					E_FarPlane,
 					E_DepthExponent,
+					Count
+				};
+			}
+		}
+	}
+
+	namespace SSCS {
+		namespace ThreadGroup {
+			namespace ComputeContactShadow {
+				enum {
+					Width	= 8,
+					Height	= 8,
+					Depth	= 1,
+					Size	= Width * Height * Depth
+				};
+			}
+		}
+
+#ifndef SSCS_ComputeContactShadow_RCSTRUCT 
+#define SSCS_ComputeContactShadow_RCSTRUCT {	\
+		UINT gMaxSteps;							\
+		FLOAT gRayMaxDistance;					\
+		FLOAT gThickness;						\
+	};
+#endif
+
+#ifdef _HLSL
+	#ifndef SSCS_ComputeContactShadow_RootConstants
+	#define SSCS_ComputeContactShadow_RootConstants(reg) cbuffer cbRootConstants : register (reg) SSCS_ComputeContactShadow_RCSTRUCT
+	#endif
+
+		typedef uint ContactShadowMapFormat;
+		typedef float4 DebugMapFormat;
+#else
+		const DXGI_FORMAT ContactShadowMapFormat = DXGI_FORMAT_R16_UINT;
+		const DXGI_FORMAT DebugMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+#endif
+
+		namespace RootConstant {
+			namespace ComputeContactShadow {
+				struct Struct SSCS_ComputeContactShadow_RCSTRUCT
+				enum {
+					E_MaxSteps = 0,
+					E_RayMaxDistance,
+					E_Thcikness,
 					Count
 				};
 			}

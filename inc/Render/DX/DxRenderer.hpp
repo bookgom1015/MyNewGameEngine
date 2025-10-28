@@ -68,6 +68,7 @@ namespace Render {
 			namespace SVGF { class SVGFClass; }
 			namespace BlurFilter { class BlurFilterClass; }
 			namespace VolumetricLight { class VolumetricLightClass; }
+			namespace SSCS { class SSCSClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -147,6 +148,7 @@ namespace Render {
 
 			BOOL DrawImGui();
 
+			BOOL ApplyContactShadow();
 			BOOL DrawAO();
 			BOOL IntegrateIrradiance();
 			BOOL ApplyVolumetricLight();
@@ -189,6 +191,7 @@ namespace Render {
 			std::unique_ptr<Shading::SVGF::SVGFClass> mSVGF;
 			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;
 			std::unique_ptr<Shading::VolumetricLight::VolumetricLightClass> mVolumetricLight;
+			std::unique_ptr<Shading::SSCS::SSCSClass> mSSCS;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

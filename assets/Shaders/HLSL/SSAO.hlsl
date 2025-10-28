@@ -26,6 +26,8 @@ RWTexture2D<ShadingConvention::SSAO::AOCoefficientMapFormat>    go_AOMap        
 RWTexture2D<ShadingConvention::SVGF::RayHitDistanceMapFormat>   go_RayHitDistMap   : register(u1);
 RWTexture2D<ShadingConvention::SSAO::DebugMapFormat>            go_DebugMap        : register(u2);
 
+#define MaxSampleCount 14
+
 [numthreads(
     ShadingConvention::SSAO::ThreadGroup::Default::Width,
     ShadingConvention::SSAO::ThreadGroup::Default::Height,
@@ -39,8 +41,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         return;
     }
     
-    const uint2 FullResDTid = DTid * 2;
-    const uint NormalDepth = gi_NormalDepthMap[FullResDTid];
+    const uint NormalDepth = gi_NormalDepthMap[DTid];
     
     float3 normalW;
     float dump;
@@ -57,9 +58,13 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     const float3 RandVec = 2.f * gi_RandomVectorMap.SampleLevel(gsamLinearWrap, 4.f * randTexC, 0) - 1.f;
 
     float occlusionSum = 0.f;
-    float distSum = 0.f;
 
 	// Sample neighboring points about p in the hemisphere oriented by n.
+    float weights[MaxSampleCount];
+    float weightSum = 0.f;
+    
+    float dists[MaxSampleCount];
+    
 	[loop]
     for (uint i = 0; i < cbAO.SampleCount; ++i) {
         const uint LoopSeed = Random::InitRand(DTid.x + DTid.y * cbAO.TextureDim.x * i, cbAO.FrameCount + i);        
@@ -100,21 +105,33 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 		//
         const float Dist = distance(PosW.xyz, PosW_.xyz);
         const float DotP = max(dot(normalW, normalize(PosW_.xyz - PosW.xyz)), 0.f);
-
-        const float Occlusion = DotP * SSAO::OcclusionFunction(Dist, cbAO.SurfaceEpsilon, cbAO.OcclusionFadeStart, cbAO.OcclusionFadeEnd);
+        
+        const float Occlusion = DotP * SSAO::OcclusionFunction(
+            Dist, cbAO.SurfaceEpsilon, cbAO.OcclusionFadeStart, cbAO.OcclusionFadeEnd);
+            
+        weights[i] = Occlusion;
+        weightSum += Occlusion;
+        
+        dists[i] = Dist;
 
         occlusionSum += Occlusion;
-        distSum += Dist;
+    }
+    
+    float dist = 100.f;
+    if (weightSum > 1e-6) {
+        dist = 0.f;
+        
+        for (uint i = 0; i < cbAO.SampleCount; ++i) 
+            dist += weights[i] / weightSum * dists[i];
     }
 
     occlusionSum /= cbAO.SampleCount;
-    distSum /= cbAO.SampleCount;
 
     const float Access = 1.f - occlusionSum;
 
 	// Sharpen the contrast of the SSAO map to make the SSAO affect more dramatic.
     go_AOMap[DTid] = saturate(pow(Access, cbAO.OcclusionStrength));
-    go_RayHitDistMap[DTid] = distSum;
+    go_RayHitDistMap[DTid] = dist;
 }
 
 #endif // __SSAO_HLSL__

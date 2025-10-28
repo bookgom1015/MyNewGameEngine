@@ -515,11 +515,7 @@ void DxImGuiManager::AOTree(Common::Render::ShadingArgument::ShadingArgumentSet*
 				ImGui::SliderFloat("##Occlusion Strength", &pArgSet->SSAO.OcclusionStrength, pArgSet->SSAO.MinOcclusionStrength, pArgSet->SSAO.MaxOcclusionStrength);
 
 				ImGui::Text("Sample Count");
-				ImGui::SliderInt("##Sample Count", reinterpret_cast<int*>(&pArgSet->SSAO.SampleCount), pArgSet->SSAO.MinSampleCount, pArgSet->SSAO.MaxSampleCount);
-
-				ImGui::Text("Blur Count");
-				ImGui::SliderInt("##Blur Count", reinterpret_cast<int*>(&pArgSet->SSAO.BlurCount), 0, 10);
-			}
+				ImGui::SliderInt("##Sample Count", reinterpret_cast<int*>(&pArgSet->SSAO.SampleCount), pArgSet->SSAO.MinSampleCount, pArgSet->SSAO.MaxSampleCount);}
 		}
 		ImGui::Unindent();
 

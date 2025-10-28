@@ -23,21 +23,15 @@
 #include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
 #include "./../../../assets/Shaders/HLSL/SVGF.hlsli"
 
-#ifdef ValueType_Color
-#define PackedRowResultCacheType uint2
-#else
-#define PackedRowResultCacheType uint
-#endif
-
 ConstantBuffer<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> cbLocalMeanVar : register(b0);
 
-Texture2D<ValueType>                                             gi_Value             : register(t0);
+Texture2D<ShadingConvention::SVGF::ValueMapFormat>               gi_Value             : register(t0);
 RWTexture2D<ShadingConvention::SVGF::LocalMeanVarianceMapFormat> go_LocalMeanVariance : register(u0);
 
 #include "./../../../assets/Shaders/HLSL/CalcLocalMeanVariance.hlsli"
 
 // Group shared memory cache for the row aggregated results.
-groupshared PackedRowResultCacheType PackedRowResultCache[16][8]; // 16bit float valueSum, squared valueSum
+groupshared uint PackedRowResultCache[16][8]; // 16bit float valueSum, squared valueSum
 groupshared uint NumValuesCache[16][8];
 
 // Adjust an index to a pixel that had a valid value generated for it.
@@ -72,7 +66,7 @@ void FilterHorizontally(uint2 Gid, uint GI) {
 
 		// Load all the contributing columns for each row.
         const int2 Pixel = CalcLocalMeanVariance::GetActivePixelIndex(KernelBasePixel + GTid4x16 * int2(1, cbLocalMeanVar.PixelStepY));
-        ValueType value = InvalidValue;
+        float value = ShadingConvention::SVGF::InvalidValue;
 
 		// The lane is out of bounds of the GroupDim * kernel, but could be within bounds of the input texture, so don't read it form the texture.
 		// However, we need to keep it as an active lane for a below split sum.
@@ -82,8 +76,8 @@ void FilterHorizontally(uint2 Gid, uint GI) {
 		// Filter the values for the first GroupDim columns.
 		{
 			// Accumulate for the whole kernel width.
-            ValueType valueSum = 0;
-            ValueType squaredValueSum = 0;
+            float valueSum = 0.f;
+            float squaredValueSum = 0.f;
             uint numValues = 0;
 
 			// Since a row uses 16 lanes, but we only need to calculate the aggregate for the first half (8) lanes,
@@ -91,7 +85,7 @@ void FilterHorizontally(uint2 Gid, uint GI) {
 
 			// Initialize the first 8 lanes to the first cell contribution of the kernel.
 			// This covers the remainder of 1 in cbLocalMeanVar.KernelWidth / 2 used in the loop below.
-            if (GTid4x16.x < GroupDim.x && any(value != InvalidValue)) {
+            if (GTid4x16.x < GroupDim.x && value != ShadingConvention::SVGF::InvalidValue) {
                 valueSum = value;
                 squaredValueSum = value * value;
                 ++numValues;
@@ -103,9 +97,9 @@ void FilterHorizontally(uint2 Gid, uint GI) {
 
             for (uint c = 0; c < cbLocalMeanVar.KernelRadius; ++c) {
                 const uint LaneToReadFrom = RowKernelStartLaneIndex + c;
-                const ValueType cValue = WaveReadLaneAt(value, LaneToReadFrom);
+                const float cValue = WaveReadLaneAt(value, LaneToReadFrom);
 
-                if (any(cValue != InvalidValue)) {
+                if (cValue != ShadingConvention::SVGF::InvalidValue) {
                     valueSum += cValue;
                     squaredValueSum += cValue * cValue;
                     ++numValues;
@@ -120,11 +114,7 @@ void FilterHorizontally(uint2 Gid, uint GI) {
 
 			// Store only the valid results, i.e. first GroupDim columns.
             if (GTid4x16.x < GroupDim.x) {
-            #ifdef ValueType_Color
-                PackedRowResultCache[GTid4x16.y][GTid4x16.x] = uint2(ValuePackaging::Float4ToUint(valueSum), ValuePackaging::Float4ToUint(squaredValueSum));
-            #else
                 PackedRowResultCache[GTid4x16.y][GTid4x16.x] = ValuePackaging::Float2ToHalf(float2(valueSum, squaredValueSum));
-            #endif
                 NumValuesCache[GTid4x16.y][GTid4x16.x] = numValues;
             }
         }
@@ -132,8 +122,8 @@ void FilterHorizontally(uint2 Gid, uint GI) {
 }
 
 void FilterVertically(uint2 DTid, uint2 GTid) {
-    ValueType valueSum = 0;
-    ValueType squaredValueSum = 0;
+    float valueSum = 0.f;
+    float squaredValueSum = 0.f;
     uint numValues = 0;
 
     const uint2 Pixel = CalcLocalMeanVariance::GetActivePixelIndex(int2(DTid.x, DTid.y * cbLocalMeanVar.PixelStepY));
@@ -144,15 +134,9 @@ void FilterVertically(uint2 DTid, uint2 GTid) {
         const uint rNumValues = NumValuesCache[RowID][GTid.x];
 
         if (rNumValues > 0) {
-        #ifdef ValueType_Color
-            const uint2 UnpackedRowSum = PackedRowResultCache[RowID][GTid.x];
-            const ValueType rValueSum = ValuePackaging::UintToFloat4(UnpackedRowSum.x);
-            const ValueType rSquaredValueSum = ValuePackaging::UintToFloat4(UnpackedRowSum.y);
-        #else
             const float2 UnpackedRowSum = ValuePackaging::HalfToFloat2(PackedRowResultCache[RowID][GTid.x]);
-            const ValueType rValueSum = UnpackedRowSum.x;
-            const ValueType rSquaredValueSum = UnpackedRowSum.y;
-        #endif
+            const float rValueSum = UnpackedRowSum.x;
+            const float rSquaredValueSum = UnpackedRowSum.y;
 
             valueSum += rValueSum;
             squaredValueSum += rSquaredValueSum;
@@ -162,26 +146,16 @@ void FilterVertically(uint2 DTid, uint2 GTid) {
 
 	// Calculate mean and variance.
     const float InvN = 1.f / max(numValues, 1);
-    const ValueType Mean = InvN * valueSum;
+    const float Mean = InvN * valueSum;
 
 	// Apply Bessel's correction to the estimated variance, multiply by N/N-1,
 	// since the true population mean is not known; it is only estimated as the sample mean.
     const float BesselCorrection = numValues / float(max(numValues, 2) - 1);
     
-#ifdef ValueType_Color
-    const float3 Diff = (squaredValueSum - Mean * Mean).rgb;
-    
-    float variance = BesselCorrection * (InvN * sqrt(dot(Diff, Diff)) * 0.577350269189);
-    variance = max(0, variance); // Ensure variance doesn't go negative due to imprecision.
-
-    const uint Packed = ValuePackaging::Float4ToUint(Mean);
-    go_LocalMeanVariance[Pixel] = numValues > 0 ? float2(Packed, variance) : (float2)0.f;
-#else
     float variance = BesselCorrection * (InvN * squaredValueSum - Mean * Mean);
     variance = max(0, variance); // Ensure variance doesn't go negative due to imprecision.
     
-    go_LocalMeanVariance[Pixel] = numValues > 0 ? float2(Mean, variance) : (float2)0.f;
-#endif
+    go_LocalMeanVariance[Pixel] = numValues > 0 ? float2(Mean, variance) : ShadingConvention::SVGF::InvalidValue;
 }
 
 [numthreads(

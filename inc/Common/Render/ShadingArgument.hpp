@@ -28,33 +28,6 @@ namespace Common::Render {
 			FLOAT ModulationFactor = 0.9f;
 		};
 
-		struct SSAOArguments {
-			const FLOAT MinOcclusionRadius = 0.1f;
-			const FLOAT MaxOcclusionRadius = 10.f;
-			FLOAT OcclusionRadius = 1.f;
-
-			const FLOAT MinOcclusionFadeStart = 0.f;
-			FLOAT OcclusionFadeStart = 1.f;
-
-			const FLOAT MaxOcclusionFadeEnd = 10.f;
-			FLOAT OcclusionFadeEnd = 8.f;
-
-			const FLOAT MinOcclusionStrength = 1.f;
-			const FLOAT MaxOcclusionStrength = 10.f;
-			FLOAT OcclusionStrength = 4.f;
-
-			const FLOAT MinSurfaceEpsilon = 0.001f;
-			const FLOAT MaxSurfaceEpsilon = 0.1f;
-			FLOAT SurfaceEpsilon = 0.05f;
-
-			const UINT MaxSampleCount = 14;
-			const UINT MinSampleCount = 1;
-			UINT SampleCount = 6;
-
-
-			UINT BlurCount = 3;
-		};
-
 		struct BlendWithCurrentFrameArguments {
 			BOOL UseClamping = TRUE;
 			FLOAT DepthSigma = 1.f;
@@ -93,6 +66,34 @@ namespace Common::Render {
 			BOOL FullscreenBlurEnabaled = TRUE;
 			BOOL UseSmoothingVariance = TRUE;
 			UINT LowTsppBlurPassCount = 3;
+		};
+
+		struct SSAOArguments {
+			const FLOAT MinOcclusionRadius = 0.1f;
+			const FLOAT MaxOcclusionRadius = 10.f;
+			FLOAT OcclusionRadius = 1.f;
+
+			const FLOAT MinOcclusionFadeStart = 0.f;
+			FLOAT OcclusionFadeStart = 1.f;
+
+			const FLOAT MaxOcclusionFadeEnd = 10.f;
+			FLOAT OcclusionFadeEnd = 8.f;
+
+			const FLOAT MinOcclusionStrength = 1.f;
+			const FLOAT MaxOcclusionStrength = 10.f;
+			FLOAT OcclusionStrength = 4.f;
+
+			const FLOAT MinSurfaceEpsilon = 0.001f;
+			const FLOAT MaxSurfaceEpsilon = 0.1f;
+			FLOAT SurfaceEpsilon = 0.05f;
+
+			const UINT MaxSampleCount = 14;
+			const UINT MinSampleCount = 1;
+			UINT SampleCount = 6;
+
+			BlendWithCurrentFrameArguments BlendWithCurrentFrame;
+			AtrousWaveletTransformFilterArguments AtrousWaveletTransformFilter;
+			DenoiserArguments Denoiser;
 		};
 
 		struct RTAOArguments {

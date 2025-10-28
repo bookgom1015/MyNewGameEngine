@@ -39,6 +39,7 @@
 #include "Render/DX/Shading/SVGF.hpp"
 #include "Render/DX/Shading/BlurFilter.hpp"
 #include "Render/DX/Shading/VolumetricLight.hpp"
+#include "Render/DX/Shading/SSCS.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -75,6 +76,7 @@ DxRenderer::DxRenderer() {
 	mSVGF = std::make_unique<Shading::SVGF::SVGFClass>();
 	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
 	mVolumetricLight = std::make_unique<Shading::VolumetricLight::VolumetricLightClass>();
+	mSSCS = std::make_unique<Shading::SSCS::SSCSClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -92,6 +94,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mSVGF.get());
 	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
 	mShadingObjectManager->AddShadingObject(mVolumetricLight.get());
+	mShadingObjectManager->AddShadingObject(mSSCS.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -209,6 +212,8 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
 		rendableOpaques));
+
+	CheckReturn(mpLogFile, ApplyContactShadow());
 
 	CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
 		mpCurrentFrameResource,
@@ -743,6 +748,8 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 		aoCB.OcclusionStrength = mpShadingArgumentSet->SSAO.OcclusionStrength;
 		aoCB.SurfaceEpsilon = mpShadingArgumentSet->SSAO.SurfaceEpsilon;
 		aoCB.SampleCount = mpShadingArgumentSet->SSAO.SampleCount;
+		aoCB.CheckerboardRayGenEnabled = FALSE;
+		aoCB.EvenPixelsActivated = FALSE;
 	}
 
 	aoCB.FrameCount = static_cast<UINT>(mpCurrentFrameResource->mFence);
@@ -791,7 +798,8 @@ BOOL DxRenderer::UpdateRaySortingCB() {
 BOOL DxRenderer::UpdateCalcLocalMeanVarianceCB() {
 	ConstantBuffers::SVGF::CalcLocalMeanVarianceCB localMeanCB;
 
-	const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
+	const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RaytracingEnabled ?
+		mpShadingArgumentSet->RTAO.CheckboardRayGeneration : FALSE;
 	const UINT PixelStepY = CheckboardRayGeneration ? 2 : 1;
 
 	localMeanCB.TextureDim = { mClientWidth, mClientHeight };
@@ -820,8 +828,10 @@ BOOL DxRenderer::UpdateBlendWithCurrentFrameCB() {
 
 	blendFrameCB.BlurStrengthMaxTspp = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.LowTSPPMaxTSPP;
 	blendFrameCB.BlurDecayStrength = mpShadingArgumentSet->RTAO.BlendWithCurrentFrame.LowTSPPDecayConstant;
-	blendFrameCB.CheckerboardEnabled = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
-	blendFrameCB.CheckerboardEvenPixelActivated = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
+	blendFrameCB.CheckerboardEnabled = mpShadingArgumentSet->RaytracingEnabled ? 
+		mpShadingArgumentSet->RTAO.CheckboardRayGeneration : FALSE;
+	blendFrameCB.CheckerboardEvenPixelActivated = mpShadingArgumentSet->RaytracingEnabled ?
+		mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels : FALSE;
 
 	mpCurrentFrameResource->CopyBlendWithCurrentFrameCB(blendFrameCB);
 
@@ -1258,6 +1268,17 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->TextureDepth = 128;
 		CheckReturn(mpLogFile, mVolumetricLight->Initialize(mpLogFile, initData.get()));
 	}
+	// SSCS
+	{
+		auto initData = Shading::SSCS::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mSSCS->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -1335,14 +1356,14 @@ BOOL DxRenderer::BuildLights() {
 		mShadow->AddLight(light);
 	}
 	// Directional light 2
-	{
-		std::shared_ptr<Foundation::Light> light = std::make_shared<Foundation::Light>();
-		light->Type = Common::Render::LightType::E_Directional;
-		light->Direction = { 0.067f, -0.701f, -0.836f };
-		light->Color = { 149.f / 255.f, 142.f / 255.f, 100.f / 255.f };
-		light->Intensity = 1.534f;
-		mShadow->AddLight(light);
-	}
+	//{
+	//	std::shared_ptr<Foundation::Light> light = std::make_shared<Foundation::Light>();
+	//	light->Type = Common::Render::LightType::E_Directional;
+	//	light->Direction = { 0.067f, -0.701f, -0.836f };
+	//	light->Color = { 149.f / 255.f, 142.f / 255.f, 100.f / 255.f };
+	//	light->Intensity = 1.534f;
+	//	mShadow->AddLight(light);
+	//}
 
 	return TRUE;
 }
@@ -1399,6 +1420,17 @@ BOOL DxRenderer::DrawImGui() {
 		mbRaytracingSupported));
 
 	CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::ApplyContactShadow() {
+	CheckReturn(mpLogFile, mSSCS->ComputeContactShadow(
+		mpCurrentFrameResource,
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv(),
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
+		mDepthStencilBuffer->DepthStencilBufferSrv()));
 
 	return TRUE;
 }
@@ -1571,10 +1603,10 @@ BOOL DxRenderer::DrawAO() {
 				{
 					const auto PrevTemporalCacheFrameIndex = mSSAO->CurrentTemporalCacheFrameIndex();
 					const auto CurrTemporalCacheFrameIndex = mSSAO->MoveToNextTemporalCacheFrame();
-
+		
 					const auto PrevTemporalAOFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
 					const auto CurrTemporalAOFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
-
+		
 					// Retrieves values from previous frame via reverse reprojection.
 					CheckReturn(mpLogFile, mSVGF->ReverseReprojectPreviousFrame(
 						mpCurrentFrameResource,
@@ -1606,19 +1638,14 @@ BOOL DxRenderer::DrawAO() {
 						mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
 						mSSAO->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_AOCoefficient),
 						Shading::SVGF::Value::E_Contrast,
-						mpShadingArgumentSet->SSAO.CheckboardRayGeneration));
-					// Interpolate the variance for the inactive cells from the valid checkerboard cells.
-					if (mpShadingArgumentSet->SSAO.CheckboardRayGeneration) {
-						CheckReturn(mpLogFile, mSVGF->FillInCheckerboard(
-							mpCurrentFrameResource,
-							mpShadingArgumentSet->SSAO.CheckboardRayGeneration));
-					}
+						FALSE));
+					
 					// Blends reprojected values with current frame values.
 					// Inactive pixels are filtered from active neighbors on checkerboard sampling before the blending operation.
 					{
 						const auto CurrTemporalCacheFrameIndex = mSSAO->MoveToNextTemporalCacheFrame();
 						const auto CurrAOResourceFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
-
+		
 						CheckReturn(mpLogFile, mSVGF->BlendWithCurrentFrame(
 							mpCurrentFrameResource,
 							mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
@@ -1644,14 +1671,14 @@ BOOL DxRenderer::DrawAO() {
 					const auto CurrTemporalCacheFrameIndex = mSSAO->CurrentTemporalCacheFrameIndex();
 					const auto InputAOResourceFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
 					const auto OutputAOResourceFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
-
+			
 					const FLOAT RayHitDistToKernelWidthScale = 22 / mpShadingArgumentSet->SSAO.OcclusionRadius *
 						mpShadingArgumentSet->SSAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleFactor;
 					const FLOAT RayHitDistToKernelSizeScaleExp = Foundation::Util::D3D12Util::Lerp(
 						1,
 						mpShadingArgumentSet->SSAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleExponent,
 						Foundation::Util::D3D12Util::RelativeCoef(mpShadingArgumentSet->SSAO.OcclusionRadius, 4, 22));
-
+			
 					CheckReturn(mpLogFile, mSVGF->ApplyAtrousWaveletTransformFilter(
 						mpCurrentFrameResource,
 						mGBuffer->NormalDepthMap(),
@@ -1671,7 +1698,7 @@ BOOL DxRenderer::DrawAO() {
 				// Stage 2: 3x3 multi-pass disocclusion blur (with more relaxed depth-aware constraints for such pixels).
 				if (mpShadingArgumentSet->SSAO.Denoiser.DisocclusionBlurEnabled) {
 					const auto CurrAOResourceFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
-
+			
 					CheckReturn(mpLogFile, mSVGF->BlurDisocclusion(
 						mpCurrentFrameResource,
 						mDepthStencilBuffer->GetDepthStencilBuffer(),

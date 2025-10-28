@@ -16,6 +16,7 @@ using namespace Render::DX::Shading;
 namespace {
 	const WCHAR* const HLSL_CalculateScatteringAndDensity = L"CalculateScatteringAndDensity.hlsl";
 	const WCHAR* const HLSL_AccumulateSacttering = L"AccumulateSacttering.hlsl";
+	const WCHAR* const HLSL_BlendScattering = L"BlendScattering.hlsl";
 	const WCHAR* const HLSL_ApplyFog = L"ApplyFog.hlsl";
 }
 
@@ -60,6 +61,11 @@ BOOL VolumetricLight::VolumetricLightClass::CompileShaders() {
 		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_AccumulateSacttering, L"CS", L"cs_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_AccumulateScattering]));
 	}
+	// BlendScattering
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_BlendScattering, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_BlendScattering]));
+	}
 	// ApplyFog
 	{
 		const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ApplyFog, L"VS", L"vs_6_5");
@@ -86,9 +92,8 @@ BOOL VolumetricLight::VolumetricLightClass::CompileShaders() {
 BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
 	// CalculateScatteringAndDensity
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
-		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxLights, 1, 0);
+		CD3DX12_DESCRIPTOR_RANGE texTables[3] = {}; UINT index = 0;
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxLights, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxLights, 0, 1);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
@@ -97,8 +102,8 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CalculateScatteringAndDensity::Count] = {};
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::CB_Pass].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::CB_Light].InitAsConstantBufferView(1);
-		slotRootParameter[RootSignature::CalculateScatteringAndDensity::RC_Consts].InitAsConstants(ShadingConvention::VolumetricLight::RootConstant::CalculateScatteringAndDensity::Count, 2);
-		slotRootParameter[RootSignature::CalculateScatteringAndDensity::SI_PrevFrustumVolumeMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::CalculateScatteringAndDensity::RC_Consts].InitAsConstants(
+			ShadingConvention::VolumetricLight::RootConstant::CalculateScatteringAndDensity::Count, 2);
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::SI_ZDepthMaps].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::SI_ZDepthCubeMaps].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::UO_FrustumVolumeMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -135,6 +140,29 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_AccumulateScattering]),
 			L"VolumetricLight_GR_AccumulateScattering"));
+	}
+	// BlendScattering
+	{
+		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+
+		index = 0;
+
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BlendScattering::Count] = {};
+		slotRootParameter[RootSignature::BlendScattering::SI_PreviousScattering].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::BlendScattering::UIO_CurrentScattering].InitAsDescriptorTable(1, &texTables[index++]);
+
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
+			_countof(slotRootParameter), slotRootParameter,
+			static_cast<UINT>(samplers.size()), samplers.data(),
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
+			mInitData.Device,
+			rootSigDesc,
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_BlendScattering]),
+			L"VolumetricLight_GR_BlendScattering"));
 	}
 	// ApplyFog
 	{
@@ -199,6 +227,23 @@ BOOL VolumetricLight::VolumetricLightClass::BuildPipelineStates() {
 			psoDesc,
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_AccumulateScattering]),
 			L"VolumetricLight_CP_AccumulateScattering"));
+	}
+	// BlendScattering
+	{
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BlendScattering].Get();
+		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+		{
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_BlendScattering]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
+		}
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateComputePipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_BlendScattering]),
+			L"VolumetricLight_CP_BlendScattering"));
 	}
 	// ApplyFog
 	{
@@ -285,6 +330,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildFog(
 
 	CheckReturn(mpLogFile, CalculateScatteringAndDensity(pFrameResource, ppDepthMaps, si_depthMaps, nearZ, farZ, depth_exp, uniformDensity, anisotropicCoeff, ppLights, numLights));
 	CheckReturn(mpLogFile, AccumulateScattering(pFrameResource, nearZ, farZ, depth_exp, densityScale));
+	CheckReturn(mpLogFile, BlendScattering(pFrameResource));
 
 	return TRUE;
 }
@@ -429,12 +475,16 @@ BOOL VolumetricLight::VolumetricLightClass::CalculateScatteringAndDensity(
 		mFrustumVolumeMaps[mCurrentFrame]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mFrustumVolumeMaps[mCurrentFrame].get());
 	
-		CmdList->SetComputeRootConstantBufferView(RootSignature::CalculateScatteringAndDensity::CB_Pass, pFrameResource->MainPassCBAddress());
-		CmdList->SetComputeRootConstantBufferView(RootSignature::CalculateScatteringAndDensity::CB_Light, pFrameResource->LightCBAddress());
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalculateScatteringAndDensity::SI_PrevFrustumVolumeMap, mhFrustumVolumeMapGpus[Descriptor::E_Srv][mPreviousFrame]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalculateScatteringAndDensity::SI_ZDepthMaps, si_depthMaps);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalculateScatteringAndDensity::SI_ZDepthCubeMaps, si_depthMaps);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalculateScatteringAndDensity::UO_FrustumVolumeMap, mhFrustumVolumeMapGpus[Descriptor::E_Uav][mCurrentFrame]);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::CalculateScatteringAndDensity::CB_Pass, pFrameResource->MainPassCBAddress());
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::CalculateScatteringAndDensity::CB_Light, pFrameResource->LightCBAddress());
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::CalculateScatteringAndDensity::SI_ZDepthMaps, si_depthMaps);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::CalculateScatteringAndDensity::SI_ZDepthCubeMaps, si_depthMaps);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::CalculateScatteringAndDensity::UO_FrustumVolumeMap, mhFrustumVolumeMapGpus[Descriptor::E_Uav][mCurrentFrame]);
 		
 		ShadingConvention::VolumetricLight::RootConstant::CalculateScatteringAndDensity::Struct rc;
 		rc.gNearZ = nearZ;
@@ -453,9 +503,15 @@ BOOL VolumetricLight::VolumetricLightClass::CalculateScatteringAndDensity(
 			TRUE);
 	
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.TextureWidth, ShadingConvention::VolumetricLight::ThreadGroup::CalculateScatteringAndDensity::Width),
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.TextureHeight, ShadingConvention::VolumetricLight::ThreadGroup::CalculateScatteringAndDensity::Height),
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.TextureDepth, ShadingConvention::VolumetricLight::ThreadGroup::CalculateScatteringAndDensity::Depth));
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.TextureWidth, 
+				ShadingConvention::VolumetricLight::ThreadGroup::CalculateScatteringAndDensity::Width),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.TextureHeight, 
+				ShadingConvention::VolumetricLight::ThreadGroup::CalculateScatteringAndDensity::Height),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.TextureDepth, 
+				ShadingConvention::VolumetricLight::ThreadGroup::CalculateScatteringAndDensity::Depth));
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
@@ -500,6 +556,45 @@ BOOL VolumetricLight::VolumetricLightClass::AccumulateScattering(
 			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.TextureWidth), ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Width),
 			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.TextureHeight), ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Height),
 			ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Depth);
+	}
+
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL VolumetricLight::VolumetricLightClass::BlendScattering(Foundation::Resource::FrameResource* const pFrameResource) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0,
+		mPipelineStates[PipelineState::CP_BlendScattering].Get()));
+
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+
+	{
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_BlendScattering].Get());
+
+		mFrustumVolumeMaps[mPreviousFrame]->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		mFrustumVolumeMaps[mCurrentFrame]->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mFrustumVolumeMaps[mCurrentFrame].get());
+
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::BlendScattering::SI_PreviousScattering, mhFrustumVolumeMapGpus[Descriptor::E_Srv][mPreviousFrame]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::BlendScattering::UIO_CurrentScattering, mhFrustumVolumeMapGpus[Descriptor::E_Uav][mCurrentFrame]);
+
+		CmdList->Dispatch(
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.TextureWidth,
+				ShadingConvention::VolumetricLight::ThreadGroup::BlendScattering::Width),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.TextureHeight,
+				ShadingConvention::VolumetricLight::ThreadGroup::BlendScattering::Height),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.TextureDepth,
+				ShadingConvention::VolumetricLight::ThreadGroup::BlendScattering::Depth));
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

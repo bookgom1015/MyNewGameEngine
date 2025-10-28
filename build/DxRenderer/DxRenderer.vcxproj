@@ -48,6 +48,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\RTAO.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\SSAO.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\SSCS.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\SVGF.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\TAA.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\ToneMapping.hpp" />
@@ -106,6 +107,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\RTAO.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\SSAO.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\SSCS.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\SVGF.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\TAA.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\ToneMapping.cpp" />
@@ -315,6 +317,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\DenoiseAO.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\ComputeContactShadow.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\BlendScattering.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

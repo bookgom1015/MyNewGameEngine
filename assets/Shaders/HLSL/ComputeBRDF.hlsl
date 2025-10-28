@@ -40,8 +40,8 @@ void CalcShadowFactors(out float shadowFactors[MaxLights], float2 texc) {
     uint2 size;
     gi_ShadowMap.GetDimensions(size.x, size.y);
     
-    const uint2 Id = texc * size - 0.5;
-    const uint Value = gi_ShadowMap.Load(uint3(Id, 0));
+    const uint2 Index = min((uint2)(texc * size), size - 1);
+    const uint Value = gi_ShadowMap.Load(uint3(Index, 0));
     
 		[loop]
     for (uint i = 0; i < cbLight.LightCount; ++i) {

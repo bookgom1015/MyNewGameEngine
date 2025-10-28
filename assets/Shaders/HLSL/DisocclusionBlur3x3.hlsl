@@ -19,19 +19,14 @@ Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat>		gi_Depth			
 Texture2D<ShadingConvention::SVGF::DisocclusionBlurStrengthMapFormat>	gi_BlurStrength			: register(t1);
 Texture2D<ShadingConvention::GBuffer::RoughnessMetalnessMapFormat>		gi_RoughnessMetalness	: register(t2);
 
-RWTexture2D<ValueType> gio_Value : register(u0);
+RWTexture2D<ShadingConvention::SVGF::ValueMapFormat>					gio_Value				: register(u0);
 
 // Group shared memory cache for the row aggregated results.
 static const uint NumValuesToLoadPerRowOrColumn = ShadingConvention::SVGF::ThreadGroup::Default::Width + (FilterKernel::Width - 1);
-// 32bit float filtered value.
-groupshared ValueType FilteredResultCache[NumValuesToLoadPerRowOrColumn][8];
 
-#ifdef ValueType_Color
-groupshared ValueType PackedValueCache[NumValuesToLoadPerRowOrColumn][8];
-groupshared float PackedDepthCache[NumValuesToLoadPerRowOrColumn][8];
-#else
 groupshared uint PackedValueDepthCache[NumValuesToLoadPerRowOrColumn][8];
-#endif
+// 32bit float filtered value.
+groupshared float FilteredResultCache[NumValuesToLoadPerRowOrColumn][8];
 
 // Find a dispatchThreadID with steps in between the group threads and groups interleaved to cover all pixels.
 uint2 GetPixelIndex(in uint2 Gid, in uint2 GTid) {
@@ -62,7 +57,7 @@ void FilterHorizontally(in uint2 Gid, in uint GI) {
 
 		// Load all the contributing columns for each row.
 		int2 pixel = GroupKernelBasePixel + GTid4x16 * gStep;
-		ValueType value = InvalidValue;
+		float value = ShadingConvention::SVGF::InvalidValue;
 		float depth = 0.f;
 
 		// The lane is out of bounds of the GroupDim + kernel, but could be within bounds of the input texture,
@@ -77,19 +72,15 @@ void FilterHorizontally(in uint2 Gid, in uint GI) {
 		if (ShaderUtil::IsInRange(GTid4x16.x, FilterKernel::Radius, FilterKernel::Radius + GroupDim.x - 1)) {
 			const int Row = GTid4x16.y;
 			const int Col = GTid4x16.x - FilterKernel::Radius;
-		#ifdef ValueType_Color
-			PackedValueCache[Row][Col] = value;
-			PackedDepthCache[Row][Col] = depth;
-		#else
+			
 			PackedValueDepthCache[Row][Col] = ValuePackaging::Float2ToHalf(float2(value, depth));
-		#endif
 		}
 
 		// Filter the values for the first GroupDim columns.
 		{
 			// Accumulate for the whole kernel width.
-			ValueType weightedValueSum = 0.f;
-			ValueType gaussianWeightedValueSum = 0.f;
+			float weightedValueSum = 0.f;
+			float gaussianWeightedValueSum = 0.f;
 			float weightSum = 0.f;
 			float gaussianWeightedSum = 0.f;
 
@@ -103,13 +94,14 @@ void FilterHorizontally(in uint2 Gid, in uint GI) {
 
 			// Get values for the kernel center.
 			const uint kcLaneIndex = RowKernelStartLaneIndex + FilterKernel::Radius;
-			const ValueType kcValue = WaveReadLaneAt(value, kcLaneIndex);
+			const float kcValue = WaveReadLaneAt(value, kcLaneIndex);
 			const float kcDepth = WaveReadLaneAt(depth, kcLaneIndex);
 
 			// Initialize the first 8 lanes to the center cell contribution of the kernel.
 			// This covers the remainder of 1 in FilterKernel::Width / 2 used in the loop below.
 			{
-				if (GTid4x16.x < GroupDim.x && any(kcValue != InvalidValue) && kcDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue) {
+				if (GTid4x16.x < GroupDim.x && kcValue != ShadingConvention::SVGF::InvalidValue && 
+						kcDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue) {
 					const float w_h = FilterKernel::Kernel1D[FilterKernel::Radius];
 					gaussianWeightedValueSum = w_h * kcValue;
 					gaussianWeightedSum = w_h;
@@ -127,10 +119,12 @@ void FilterHorizontally(in uint2 Gid, in uint GI) {
 				const uint KernelCellIndex = KernelCellIndexOffset + c;
 
 				const uint LaneToReadFrom = RowKernelStartLaneIndex + KernelCellIndex;
-				const ValueType cValue = WaveReadLaneAt(value, LaneToReadFrom);
+				const float cValue = WaveReadLaneAt(value, LaneToReadFrom);
 				const float cDepth = WaveReadLaneAt(depth, LaneToReadFrom);
 
-				if (any(cValue != InvalidValue) && kcDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue && cDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue) {
+				if (cValue != ShadingConvention::SVGF::InvalidValue && 
+						kcDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue && 
+						cDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue) {
 					float w_h = FilterKernel::Kernel1D[KernelCellIndex];
 
 					// Simple depth test with tolerance growing as the kernel radius increases.
@@ -156,14 +150,9 @@ void FilterHorizontally(in uint2 Gid, in uint GI) {
 
 			// Store only the valid results, i.e. first GroupDim columns.
 			if (GTid4x16.x < GroupDim.x) {
-			#ifdef ValueType_Color
-				const float Mag = sqrt(dot(gaussianWeightedSum, gaussianWeightedSum));
-				const float4 GaussianFilteredValue = Mag > 1e-6 ? gaussianWeightedValueSum / gaussianWeightedSum : InvalidValue;
-				const float4 FilteredValue = weightSum > 1e-6 ? weightedValueSum / weightSum : GaussianFilteredValue;
-			#else
-				const float GaussianFilteredValue = gaussianWeightedSum > 1e-6 ? gaussianWeightedValueSum / gaussianWeightedSum : InvalidValue;
+				const float GaussianFilteredValue = gaussianWeightedSum > 1e-6 ? 
+					gaussianWeightedValueSum / gaussianWeightedSum : ShadingConvention::SVGF::InvalidValue;
 				const float FilteredValue = weightSum > 1e-6 ? weightedValueSum / weightSum : GaussianFilteredValue;
-			#endif
 
 				FilteredResultCache[GTid4x16.y][GTid4x16.x] = FilteredValue;
 			}
@@ -173,19 +162,15 @@ void FilterHorizontally(in uint2 Gid, in uint GI) {
 
 void FilterVertically(in uint2 DTid, in uint2 GTid, in float blurStrength) {
 	// Kernel center values.
-#ifdef ValueType_Color
-	const float4 kcValue = PackedValueCache[GTid.y + FilterKernel::Radius][GTid.x];
-	const float kcDepth = PackedDepthCache[GTid.y + FilterKernel::Radius][GTid.x];
-#else
 	const float2 kcValueDepth = ValuePackaging::HalfToFloat2(PackedValueDepthCache[GTid.y + FilterKernel::Radius][GTid.x]);
     const float kcValue = kcValueDepth.x;
     const float kcDepth = kcValueDepth.y;
-#endif
-	ValueType filteredValue = kcValue;
+	
+	float filteredValue = kcValue;
 
 	if (blurStrength >= 0.01f && kcDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue) {
-		ValueType weightedValueSum = 0.f;
-		ValueType gaussianWeightedValueSum = 0.f;
+		float weightedValueSum = 0.f;
+		float gaussianWeightedValueSum = 0.f;
 		float weightSum = 0.f;
 		float gaussianWeightSum = 0.f;
 
@@ -194,15 +179,12 @@ void FilterVertically(in uint2 DTid, in uint2 GTid, in float blurStrength) {
 		for (uint r = 0; r < FilterKernel::Width; ++r) {
 			uint rowID = GTid.y + r;
 
-		#ifdef ValueType_Color
-			const float rDepth = PackedDepthCache[rowID][GTid.x];
-		#else
 			const float2 rUnpackedValueDepth = ValuePackaging::HalfToFloat2(PackedValueDepthCache[rowID][GTid.x]);
-            const float rDepth = rUnpackedValueDepth.y;
-		#endif
-			const ValueType rFilteredValue = FilteredResultCache[rowID][GTid.x];
+            const float rDepth = rUnpackedValueDepth.y;			
+			const float rFilteredValue = FilteredResultCache[rowID][GTid.x];
 
-			if (rDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue && any(rFilteredValue != InvalidValue)) {
+			if (rDepth != ShadingConvention::DepthStencilBuffer::InvalidDepthValue && 
+					rFilteredValue != ShadingConvention::SVGF::InvalidValue) {
 				const float w_h = FilterKernel::Kernel1D[r];
 
 				// Simple depth test with tolerance growing as the kernel radius increases.
@@ -219,12 +201,11 @@ void FilterVertically(in uint2 DTid, in uint2 GTid, in float blurStrength) {
 			}
 		}
 
-		float mag = sqrt(dot(gaussianWeightSum, gaussianWeightSum));
-		const ValueType GaussianFilteredValue = mag > 1e-6 ? gaussianWeightedValueSum / gaussianWeightSum : InvalidValue;
-
-		mag = sqrt(dot(weightSum, weightSum));
-		filteredValue = weightSum > 1e-6 ? weightedValueSum / weightSum : GaussianFilteredValue;
-		filteredValue = any(filteredValue != InvalidValue) ? lerp(kcValue, filteredValue, blurStrength) : filteredValue;
+		float gaussianFilteredValue = gaussianWeightSum > 1e-6 ? 
+			gaussianWeightedValueSum / gaussianWeightSum : ShadingConvention::SVGF::InvalidValue;
+        filteredValue = weightSum > 1e-6 ? weightedValueSum / weightSum : gaussianFilteredValue;
+        filteredValue = filteredValue != ShadingConvention::SVGF::InvalidValue ? 
+			lerp(kcValue, filteredValue, blurStrength) : filteredValue;
 	}
 
 	gio_Value[DTid] = filteredValue;
@@ -236,22 +217,11 @@ void FilterVertically(in uint2 DTid, in uint2 GTid, in float blurStrength) {
     ShadingConvention::SVGF::ThreadGroup::Default::Depth)]
 void CS(in uint2 Gid : SV_GroupID, in uint2 GTid : SV_GroupThreadID, 
 		in uint GI : SV_GroupIndex, in uint2 DTid : SV_DispatchThreadID) {
-#ifdef ValueType_Color
-	const float2 RoughnessMetalness = gi_RoughnessMetalness[DTid];
-	const float Var_x = RoughnessMetalness.r;
-
-	const float Exponent = 1.f / 16.f;
-	const float Numer = pow(log(Var_x + 1.f), Exponent) * (gMaxStep - 1.f);
-	const float Denom = pow(log(2.f), Exponent);
-	const float Limit = Numer / Denom;
-	if (gStep > floor(Limit)) return;
-#endif
-
 	const uint2 sDTid = GetPixelIndex(Gid, GTid);
 	// Pass through if all pixels have 0 blur strength set.
 	float blurStrength;
 	{
-		if (GI == 0) FilteredResultCache[0][0] = InvalidValue;
+		if (GI == 0) FilteredResultCache[0][0] = ShadingConvention::SVGF::InvalidValue;
 		GroupMemoryBarrierWithGroupSync();
 
 		blurStrength = gi_BlurStrength[sDTid];
@@ -262,7 +232,7 @@ void CS(in uint2 Gid : SV_GroupID, in uint2 GTid : SV_GroupThreadID,
 
 		GroupMemoryBarrierWithGroupSync();
 
-		if (all(FilteredResultCache[0][0] == InvalidValue)) return;
+		if (all(FilteredResultCache[0][0] == ShadingConvention::SVGF::InvalidValue)) return;
 	}
 
 	FilterHorizontally(Gid, GI);

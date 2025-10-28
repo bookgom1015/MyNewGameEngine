@@ -41,12 +41,4 @@ void Render::DX::Shading::SSAO::SSAOClass::GetOffsetVectors(DirectX::XMFLOAT4 of
 	std::copy(&mOffsets[0], &mOffsets[14], &offsets[0]);
 }
 
-constexpr UINT Render::DX::Shading::SSAO::SSAOClass::TexWidth() const {
-	return mTexWidth;
-}
-
-constexpr UINT Render::DX::Shading::SSAO::SSAOClass::TexHeight() const {
-	return mTexHeight;
-}
-
 #endif // __SSAO_INL__

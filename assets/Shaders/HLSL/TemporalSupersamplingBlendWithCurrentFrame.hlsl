@@ -16,15 +16,13 @@
 
 ConstantBuffer<ConstantBuffers::SVGF::BlendWithCurrentFrameCB> cbBlend : register(b0);
 
-Texture2D<ValueType>														gi_CurrentFrameValue						: register(t0);
+Texture2D<ShadingConvention::SVGF::ValueMapFormat>							gi_CurrentFrameValue						: register(t0);
 Texture2D<ShadingConvention::SVGF::LocalMeanVarianceMapFormat>				gi_CurrentFrameLocalMeanVariance			: register(t1);
 Texture2D<ShadingConvention::SVGF::RayHitDistanceMapFormat>					gi_CurrentFrameRayHitDistance				: register(t2);
-Texture2D<ValueType>														gi_CachedValue								: register(t3);
-Texture2D<ValueSquaredMeanType>												gi_CachedSquaredMean						: register(t4);
-Texture2D<ShadingConvention::SVGF::TSPPSquaredMeanRayHitDistanceMapFormat>	gi_ReprojTsppValueSquaredMeanRayHitDist		: register(t5);
+Texture2D<ShadingConvention::SVGF::TSPPSquaredMeanRayHitDistanceMapFormat>	gi_ReprojTsppValueSquaredMeanRayHitDist		: register(t3);
 
-RWTexture2D<ValueType>													go_Value				: register(u0);
-RWTexture2D<ValueSquaredMeanType>										go_ValueSquaredMean		: register(u2);
+RWTexture2D<ShadingConvention::SVGF::ValueMapFormat>					go_Value				: register(u0);
+RWTexture2D<ShadingConvention::SVGF::ValueSquaredMeanMapFormat>			go_ValueSquaredMean		: register(u2);
 RWTexture2D<ShadingConvention::SVGF::TSPPMapFormat>						go_Tspp					: register(u1);
 RWTexture2D<ShadingConvention::SVGF::RayHitDistanceMapFormat>			go_RayHitDistance		: register(u3);
 RWTexture2D<ShadingConvention::SVGF::VarianceMapFormat>					go_Variance				: register(u4);
@@ -45,37 +43,31 @@ void CS(uint2 DTid : SV_DispatchThreadID) {
 		isCurrentFrameValueActive = cbBlend.CheckerboardEvenPixelActivated == IsEvenPixel;
 	}
 
-	ValueType value = isCurrentFrameValueActive ? gi_CurrentFrameValue[DTid] : InvalidValue;
-	const bool IsValidValue = any(value != InvalidValue);
-	ValueSquaredMeanType valueSquaredMean = IsValidValue ? value * value : InvalidValue;
-	float rayHitDistance = 0.f;
-	float variance = 0.f;
+	float value = isCurrentFrameValueActive ? gi_CurrentFrameValue[DTid] : ShadingConvention::SVGF::InvalidValue;
+	const bool IsValidValue = value != ShadingConvention::SVGF::InvalidValue;
+	float valueSquaredMean = IsValidValue ? value * value : ShadingConvention::SVGF::InvalidValue;
+	float rayHitDistance = ShadingConvention::SVGF::InvalidValue;
+	float variance = ShadingConvention::SVGF::InvalidValue;
 
 	if (tspp > 0) {
 		const uint MaxTspp = 1 / cbBlend.MinSmoothingFactor;
 		tspp = IsValidValue ? min(tspp + 1, MaxTspp) : tspp;
 
-		ValueType cachedValue = gi_CachedValue[DTid];
+		float cachedValue = CachedValues.y;
 
 		const float2 LocalMeanVariance = gi_CurrentFrameLocalMeanVariance[DTid];
 		const float LocalMean = LocalMeanVariance.x;
 		const float LocalVariance = LocalMeanVariance.y;
 		if (cbBlend.ClampCachedValues) {
 			const float LocalStdDev = max(cbBlend.StdDevGamma * sqrt(LocalVariance), cbBlend.ClampingMinStdDevTolerance);
-			const ValueType NonClampedCachedValue = cachedValue;
+			const float NonClampedCachedValue = cachedValue;
 
 			// Clamp value to mean +/- std.dev of local neighborhood to supress ghosting on value changing due to other occluder movements.
 			// Ref: Salvi2016, Temporal-Super-Sampling
 			cachedValue = clamp(cachedValue, LocalMean - LocalStdDev, LocalMean + LocalStdDev);
 
 			// Scale down the tspp based on how strongly the cached value got clamped to give more weight to new smaples.
-		#ifdef ValueType_Color
-			float variance = SVGF::ColorVariance(cachedValue, NonClampedCachedValue);
-			float tsppScale = saturate(cbBlend.ClampDifferenceToTsppScale * variance);
-		#else
 			float tsppScale = saturate(cbBlend.ClampDifferenceToTsppScale * abs(cachedValue - NonClampedCachedValue));
-		#endif
-
 			tspp = lerp(tspp, 0.f, tsppScale);
 		}
 		const float InvTspp = 1.f / tspp;
@@ -94,17 +86,13 @@ void CS(uint2 DTid : SV_DispatchThreadID) {
 
 		// Value Squared Mean.
 		{
-			const ValueType CachedSquaredMeanValue = gi_CachedSquaredMean[DTid];
+			const float CachedSquaredMeanValue = CachedValues.z;
 			valueSquaredMean = IsValidValue ? lerp(CachedSquaredMeanValue, valueSquaredMean, a) : CachedSquaredMeanValue;
 		}
 
 		// Variance.
 		{
-		#ifdef ValueType_Color
-			float temporalVariance = SVGF::ColorVariance(valueSquaredMean, value * value);
-		#else
 			float temporalVariance = valueSquaredMean - value * value;
-		#endif
 			temporalVariance = max(0.f, temporalVariance); // Ensure variance doesn't go negative due to imprecision.
 			variance = tspp >= cbBlend.MinTsppToUseTemporalVariance ? temporalVariance : LocalVariance;
 			variance = max(0.1f, variance);
