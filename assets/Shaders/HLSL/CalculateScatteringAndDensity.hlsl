@@ -53,9 +53,10 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 		else if (light.Type == Common::Render::LightType::E_Tube || light.Type == Common::Render::LightType::E_Rect) {
 			// Tube and rectangular light do not have shadow(depth) map, 
 			//  so these can not calculate visibility.
-			return;
+			continue;
 		}
 		else {
+			continue;
 			direction = PosW - light.Position;
 			Ld = length(direction);
 		}

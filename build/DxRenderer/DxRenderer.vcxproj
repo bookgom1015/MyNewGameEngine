@@ -43,6 +43,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\MotionBlur.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RayGen.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RaySorting.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RTAO.hpp" />
@@ -102,6 +103,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\MotionBlur.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RayGen.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RaySorting.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RTAO.cpp" />
@@ -327,6 +329,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\BlendScattering.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\ApplyContactShadow.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\MotionBlur.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

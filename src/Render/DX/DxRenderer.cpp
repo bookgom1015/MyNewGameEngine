@@ -40,6 +40,7 @@
 #include "Render/DX/Shading/BlurFilter.hpp"
 #include "Render/DX/Shading/VolumetricLight.hpp"
 #include "Render/DX/Shading/SSCS.hpp"
+#include "Render/DX/Shading/MotionBlur.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -77,6 +78,7 @@ DxRenderer::DxRenderer() {
 	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
 	mVolumetricLight = std::make_unique<Shading::VolumetricLight::VolumetricLightClass>();
 	mSSCS = std::make_unique<Shading::SSCS::SSCSClass>();
+	mMotionBlur = std::make_unique<Shading::MotionBlur::MotionBlurClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -95,6 +97,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
 	mShadingObjectManager->AddShadingObject(mVolumetricLight.get());
 	mShadingObjectManager->AddShadingObject(mSSCS.get());
+	mShadingObjectManager->AddShadingObject(mMotionBlur.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -213,7 +216,8 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->PositionMapSrv(),
 		rendableOpaques));
 
-	CheckReturn(mpLogFile, ApplyContactShadow());
+	if (mpShadingArgumentSet->SSCS.Enabled) 
+		CheckReturn(mpLogFile, ApplyContactShadow());
 
 	CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
 		mpCurrentFrameResource,
@@ -291,6 +295,25 @@ BOOL DxRenderer::Draw() {
 			mSwapChain->BackBufferCopy(),
 			mSwapChain->BackBufferCopySrv(),
 			mpShadingArgumentSet->GammaCorrection.Gamma));
+	}
+
+	if (mpShadingArgumentSet->MotionBlur.Enabled) {
+		mMotionBlur->ApplyMotionBlur(
+			mpCurrentFrameResource,
+			mSwapChain->ScreenViewport(),
+			mSwapChain->ScissorRect(),
+			mSwapChain->BackBuffer(),
+			mSwapChain->BackBufferRtv(),
+			mSwapChain->BackBufferCopy(),
+			mSwapChain->BackBufferCopySrv(),
+			mDepthStencilBuffer->GetDepthStencilBuffer(),
+			mDepthStencilBuffer->DepthStencilBufferSrv(),
+			mGBuffer->VelocityMap(),
+			mGBuffer->VelocityMapSrv(),
+			mpShadingArgumentSet->MotionBlur.Intensity,
+			mpShadingArgumentSet->MotionBlur.Limit,
+			mpShadingArgumentSet->MotionBlur.DepthBias,
+			mpShadingArgumentSet->MotionBlur.SampleCount);
 	}
 
 	CheckReturn(mpLogFile, DrawImGui());		
@@ -550,7 +573,7 @@ BOOL DxRenderer::UpdateLightCB() {
 			}
 		}
 		else if (light->Type == Common::Render::LightType::E_Spot) {
-			const auto Proj = XMMatrixPerspectiveFovLH(Common::Util::MathUtil::DegreesToRadians(light->OuterConeAngle), 1.f, 0.1f, light->AttenuationRadius);
+			const auto Proj = XMMatrixPerspectiveFovLH(Common::Util::MathUtil::DegreesToRadians(light->OuterConeAngle) * 2.f, 1.f, 0.1f, light->AttenuationRadius);
 			const auto Pos = XMLoadFloat3(&light->Position);
 
 			const XMVECTOR Direction = XMLoadFloat3(&light->Direction);
@@ -1279,6 +1302,17 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mSSCS->Initialize(mpLogFile, initData.get()));
 	}
+	// MotionBlur
+	{
+		auto initData = Shading::MotionBlur::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mMotionBlur->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -1430,7 +1464,15 @@ BOOL DxRenderer::ApplyContactShadow() {
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
-		mDepthStencilBuffer->DepthStencilBufferSrv()));
+		mDepthStencilBuffer->DepthStencilBufferSrv(),
+		mpShadingArgumentSet->SSCS.MaxSteps,
+		mpShadingArgumentSet->SSCS.RayMaxDistance,
+		mpShadingArgumentSet->SSCS.Thcikness));
+
+	CheckReturn(mpLogFile, mSSCS->ApplyContactShadow(
+		mpCurrentFrameResource,
+		mShadow->ShadowMap(),
+		mShadow->ShadowMapUav()));
 
 	return TRUE;
 }

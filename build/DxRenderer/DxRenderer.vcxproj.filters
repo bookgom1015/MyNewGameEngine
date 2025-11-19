@@ -157,6 +157,9 @@
     <Filter Include="Shader Files\SSCS">
       <UniqueIdentifier>{e06dfc1c-5a46-419c-a9b4-354b49df9eb6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\MotionBlur">
+      <UniqueIdentifier>{4377b6a7-0e43-4c73-8809-497602da7edd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -298,6 +301,9 @@
       <Filter>Header Files\Shading Files\Blur</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\SSCS.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\MotionBlur.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -471,6 +477,9 @@
       <Filter>Common Files\Foundation\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\SSCS.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\MotionBlur.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -712,6 +721,12 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\BlendScattering.hlsl">
       <Filter>Shader Files\VolumetricLight</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ApplyContactShadow.hlsl">
+      <Filter>Shader Files\SSCS</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\MotionBlur.hlsl">
+      <Filter>Shader Files\MotionBlur</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -198,10 +198,14 @@ BOOL TAA::TAAClass::ApplyTAA(
 		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mInitData.ClientWidth);
 		rc.gInvTexDim.y = 1.f / static_cast<FLOAT>(mInitData.ClientHeight);
 
-		std::array<std::uint32_t, ShadingConvention::TAA::RootConstant::Default::Count> consts;
-		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::TAA::RootConstant::Default::Struct));
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::TAA::RootConstant::Default::Struct>(
+			RootSignature::Default::RC_Consts,
+			ShadingConvention::TAA::RootConstant::Default::Count,
+			&rc,
+			0,
+			CmdList,
+			FALSE);
 
-		CmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::TAA::RootConstant::Default::Count, consts.data(), 0);
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_BackBuffer, si_backBufferCopy);
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_HistoryMap, mhHistoryMapGpuSrv);
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_VelocityMap, si_velocityMap);

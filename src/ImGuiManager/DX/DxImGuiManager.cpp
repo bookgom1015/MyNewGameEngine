@@ -356,6 +356,10 @@ void DxImGuiManager::ShadingObjectHeader(Common::Render::ShadingArgument::Shadin
 		AOTree(pArgSet);
 		// VolumetricLight
 		VolumetricLightTree(pArgSet);
+		// SSCS
+		SSCSTree(pArgSet);
+		// MotionBlur
+		MotionBlurTree(pArgSet);
 	}
 }
 
@@ -539,6 +543,22 @@ void DxImGuiManager::VolumetricLightTree(Common::Render::ShadingArgument::Shadin
 
 		ImGui::Text("Density Scale");
 		ImGui::SliderFloat("##Density Scale", &pArgSet->VolumetricLight.DensityScale, pArgSet->VolumetricLight.MinDensityScale, pArgSet->VolumetricLight.MaxDensityScale);
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::SSCSTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("SSCS")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->SSCS.Enabled));
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::MotionBlurTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("MotionBlur")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->MotionBlur.Enabled));
 
 		ImGui::TreePop();
 	}

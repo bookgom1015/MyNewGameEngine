@@ -12,6 +12,7 @@ using namespace Render::DX::Shading;
 
 namespace {
 	const WCHAR* const HLSL_ComputeContactShadow = L"ComputeContactShadow.hlsl";
+	const WCHAR* const HLSL_ApplyContactShadow = L"ApplyContactShadow.hlsl";
 }
 
 SSCS::InitDataPtr SSCS::MakeInitData() {
@@ -41,60 +42,114 @@ BOOL SSCS::SSCSClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 BOOL SSCS::SSCSClass::CompileShaders() {
-	const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ComputeContactShadow, L"CS", L"cs_6_5");
-	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_ComputeContactShadow]));
+	// ComputeContactShadow
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ComputeContactShadow, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_ComputeContactShadow]));
+	}
+	// ApplyContactShadow
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ApplyContactShadow, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_ApplyContactShadow]));
+	}
 
 	return TRUE;
 }
 
 BOOL SSCS::SSCSClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
-	CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
-	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
+	// ComputeContactShadow
+	{
+		CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
 
-	index = 0;
+		index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ComputeContactShadow::Count] = {};
-	slotRootParameter[RootSignature::ComputeContactShadow::CB_Pass].InitAsConstantBufferView(0);
-	slotRootParameter[RootSignature::ComputeContactShadow::CB_Light].InitAsConstantBufferView(1);
-	slotRootParameter[RootSignature::ComputeContactShadow::RC_Consts].InitAsConstants(
-		ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count, 2);
-	slotRootParameter[RootSignature::ComputeContactShadow::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
-	slotRootParameter[RootSignature::ComputeContactShadow::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
-	slotRootParameter[RootSignature::ComputeContactShadow::UO_ContactShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
-	slotRootParameter[RootSignature::ComputeContactShadow::UO_DebugMap].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ComputeContactShadow::Count] = {};
+		slotRootParameter[RootSignature::ComputeContactShadow::CB_Pass].InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::ComputeContactShadow::CB_Light].InitAsConstantBufferView(1);
+		slotRootParameter[RootSignature::ComputeContactShadow::RC_Consts].InitAsConstants(
+			ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count, 2);
+		slotRootParameter[RootSignature::ComputeContactShadow::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::UO_ContactShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::UO_DebugMap].InitAsDescriptorTable(1, &texTables[index++]);
 
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
-		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
+			_countof(slotRootParameter), slotRootParameter,
+			static_cast<UINT>(samplers.size()), samplers.data(),
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
-		mInitData.Device,
-		rootSigDesc,
-		IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ComputeContactShadow]),
-		L"SSCS_GR_ComputeContactShadow"));
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
+			mInitData.Device,
+			rootSigDesc,
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ComputeContactShadow]),
+			L"SSCS_GR_ComputeContactShadow"));
+	}
+	// ApplyContactShadow
+	{
+		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
+
+		index = 0;
+
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyContactShadow::Count] = {};
+		slotRootParameter[RootSignature::ApplyContactShadow::UI_ContactShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ApplyContactShadow::UIO_ShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
+
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
+			_countof(slotRootParameter), slotRootParameter,
+			static_cast<UINT>(samplers.size()), samplers.data(),
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
+			mInitData.Device,
+			rootSigDesc,
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ApplyContactShadow]),
+			L"SSCS_GR_ApplyContactShadow"));
+	}
 
 	return TRUE;
 }
 
 BOOL SSCS::SSCSClass::BuildPipelineStates() {
-	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-	psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ComputeContactShadow].Get();
-	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	// ComputeContactShadow
 	{
-		const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_ComputeContactShadow]);
-		NullCheck(mpLogFile, CS);
-		psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
-	}
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ComputeContactShadow].Get();
+		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+		{
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_ComputeContactShadow]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
+		}
 
-	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateComputePipelineState(
-		mInitData.Device,
-		psoDesc,
-		IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_ComputeContactShadow]),
-		L"SSCS_CP_ComputeContactShadow"));
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateComputePipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_ComputeContactShadow]),
+			L"SSCS_CP_ComputeContactShadow"));
+	}
+	// ApplyContactShadow
+	{
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ApplyContactShadow].Get();
+		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+		{
+			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_ApplyContactShadow]);
+			NullCheck(mpLogFile, CS);
+			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
+		}
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateComputePipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::CP_ApplyContactShadow]),
+			L"SSCS_CP_ApplyContactShadow"));
+	}
 
 	return TRUE;
 }
@@ -129,7 +184,8 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		Foundation::Resource::GpuResource* const pPositionMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 		Foundation::Resource::GpuResource* const pDepthMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+		UINT maxSteps, FLOAT rayMaxDist, FLOAT thickness) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -139,6 +195,8 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
+		static UINT frame = 0;
+
 		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_ComputeContactShadow].Get());
 
 		CmdList->SetComputeRootConstantBufferView(
@@ -147,9 +205,11 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 			RootSignature::ComputeContactShadow::CB_Light, pFrameResource->LightCBAddress());
 
 		ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Struct rc;
-		rc.gMaxSteps = 16;
-		rc.gRayMaxDistance = 0.6f;
-		rc.gThickness = 0.04f;
+		rc.gMaxSteps = maxSteps;
+		rc.gRayMaxDistance = rayMaxDist;
+		rc.gThickness = thickness;
+		rc.gTextureDimX = mInitData.ClientWidth;
+		rc.gFrameCount = frame++;
 
 		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Struct>(
 			RootSignature::ComputeContactShadow::RC_Consts,
@@ -179,6 +239,43 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 			Foundation::Util::D3D12Util::CeilDivide(
 				mInitData.ClientHeight, ShadingConvention::SSCS::ThreadGroup::ComputeContactShadow::Height),
 			ShadingConvention::SSCS::ThreadGroup::ComputeContactShadow::Depth);
+	}
+
+	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL SSCS::SSCSClass::ApplyContactShadow(
+		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pShadowMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE uio_shadowMap) {
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+		pFrameResource->CommandAllocator(0),
+		0,
+		mPipelineStates[PipelineState::CP_ApplyContactShadow].Get()));
+
+	const auto CmdList = mInitData.CommandObject->CommandList(0);
+	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+
+	{
+		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_ApplyContactShadow].Get());
+
+		pShadowMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, pShadowMap);
+
+		mContactShadowMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Foundation::Util::D3D12Util::UavBarrier(CmdList, mContactShadowMap.get());
+
+		CmdList->SetComputeRootDescriptorTable(RootSignature::ApplyContactShadow::UI_ContactShadowMap, mhContactShadowMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::ApplyContactShadow::UIO_ShadowMap, uio_shadowMap);
+
+		CmdList->Dispatch(
+			Foundation::Util::D3D12Util::CeilDivide(
+				mInitData.ClientWidth, ShadingConvention::SSCS::ThreadGroup::ApplyContactShadow::Width),
+			Foundation::Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::SSCS::ThreadGroup::ApplyContactShadow::Height),
+			ShadingConvention::SSCS::ThreadGroup::ApplyContactShadow::Depth);
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));

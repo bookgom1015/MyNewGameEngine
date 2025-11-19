@@ -874,6 +874,15 @@ namespace ShadingConvention{
 					Size	= Width * Height * Depth
 				};
 			}
+
+			namespace ApplyContactShadow {
+				enum {
+					Width = 8,
+					Height = 8,
+					Depth = 1,
+					Size = Width * Height * Depth
+				};
+			}
 		}
 
 #ifndef SSCS_ComputeContactShadow_RCSTRUCT 
@@ -881,6 +890,8 @@ namespace ShadingConvention{
 		UINT gMaxSteps;							\
 		FLOAT gRayMaxDistance;					\
 		FLOAT gThickness;						\
+		UINT gTextureDimX;						\
+		UINT gFrameCount;						\
 	};
 #endif
 
@@ -903,10 +914,42 @@ namespace ShadingConvention{
 					E_MaxSteps = 0,
 					E_RayMaxDistance,
 					E_Thcikness,
+					E_TextureDimX,
+					E_FrameCount,
 					Count
 				};
 			}
 		}
+	}
+
+	namespace MotionBlur {
+#ifndef MotionBlur_Default_RCSTRUCT
+#define MotionBlur_Default_RCSTRUCT {	\
+		FLOAT gIntensity;				\
+		FLOAT gLimit;					\
+		FLOAT gDepthBias;				\
+		UINT  gSampleCount;				\
+	};
+#endif
+
+#ifdef _HLSL
+	#ifndef MotionBlur_Default_RootConstants
+	#define MotionBlur_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) MotionBlur_Default_RCSTRUCT
+	#endif
+#else
+		namespace RootConstant {
+			namespace Default {
+				struct Struct MotionBlur_Default_RCSTRUCT
+				enum {
+					E_Intensity = 0,
+					E_Limit,
+					E_DepthBias,
+					E_SampleCount,
+					Count
+				};
+			}
+		}
+#endif
 	}
 }
 

@@ -7,6 +7,7 @@ namespace Render::DX::Shading {
 		namespace Shader {
 			enum Type {
 				CS_ComputeContactShadow = 0,
+				CS_ApplyContactShadow,
 				Count
 			};
 		}
@@ -14,6 +15,7 @@ namespace Render::DX::Shading {
 		namespace RootSignature {
 			enum Type {
 				GR_ComputeContactShadow = 0,
+				GR_ApplyContactShadow,
 				Count
 			};
 
@@ -29,11 +31,20 @@ namespace Render::DX::Shading {
 					Count
 				};
 			}
+
+			namespace ApplyContactShadow {
+				enum {
+					UI_ContactShadowMap = 0,
+					UIO_ShadowMap,
+					Count
+				};
+			}
 		}
 
 		namespace PipelineState {
 			enum Type {
 				CP_ComputeContactShadow = 0,
+				CP_ApplyContactShadow,
 				Count
 			};
 		}
@@ -73,7 +84,13 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pPositionMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
 				Foundation::Resource::GpuResource* const pDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+				UINT maxSteps, FLOAT rayMaxDist, FLOAT thickness);
+			BOOL ApplyContactShadow(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				Foundation::Resource::GpuResource* const pShadowMap,
+				D3D12_GPU_DESCRIPTOR_HANDLE uio_shadowMap);
+
 
 		private:
 			BOOL BuildResources();

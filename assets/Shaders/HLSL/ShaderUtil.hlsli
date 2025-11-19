@@ -1,6 +1,14 @@
 #ifndef __SHADERUITL_HLSLI__
 #define __SHADERUITL_HLSLI__
 
+#ifndef FitToScreenVertexOut
+#define FitToScreenVertexOut    \
+struct VertexOut {              \
+    float4 PosH : SV_Position;  \
+    float2 TexC : TexCoord;     \
+};
+#endif // FitToScreenVertexOut
+
 #ifndef FitToScreenVertexShader
 #define FitToScreenVertexShader                          \
 VertexOut VS(                                            \

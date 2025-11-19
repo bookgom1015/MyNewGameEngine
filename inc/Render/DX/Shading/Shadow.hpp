@@ -81,6 +81,7 @@ namespace Render::DX::Shading {
 
 			__forceinline Foundation::Resource::GpuResource* ShadowMap() const;
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ShadowMapSrv() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ShadowMapUav() const;
 
 			void ZDepthMaps(std::vector<Render::DX::Foundation::Resource::GpuResource*>& maps);
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ZDepthMapSrv() const;

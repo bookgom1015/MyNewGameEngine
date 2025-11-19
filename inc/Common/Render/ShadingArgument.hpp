@@ -149,6 +149,23 @@ namespace Common::Render {
 			BOOL TricubicSamplingEnabled = TRUE;
 		};
 
+		struct SSCSArguments {
+			BOOL Enabled = TRUE;
+
+			UINT MaxSteps = 8;
+			FLOAT RayMaxDistance = 0.3f;
+			FLOAT Thcikness = 0.02f;
+		};
+
+		struct MotionBlurArguments {
+			BOOL Enabled = TRUE;
+
+			FLOAT Intensity = 0.01f;
+			FLOAT Limit = 0.005f;
+			FLOAT DepthBias = 0.05f;
+			INT SampleCount = 16;
+		};
+
 		struct ShadingArgumentSet {
 			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
@@ -157,6 +174,8 @@ namespace Common::Render {
 			RTAOArguments RTAO;
 			RaySortingArguments RaySorting;
 			VolumetricLightArguments VolumetricLight;
+			SSCSArguments SSCS;
+			MotionBlurArguments MotionBlur;
 
 			BOOL ShadowEnabled = TRUE;
 			BOOL AOEnabled = TRUE;

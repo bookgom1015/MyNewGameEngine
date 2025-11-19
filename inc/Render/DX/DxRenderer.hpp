@@ -69,6 +69,7 @@ namespace Render {
 			namespace BlurFilter { class BlurFilterClass; }
 			namespace VolumetricLight { class VolumetricLightClass; }
 			namespace SSCS { class SSCSClass; }
+			namespace MotionBlur { class MotionBlurClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -192,6 +193,7 @@ namespace Render {
 			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;
 			std::unique_ptr<Shading::VolumetricLight::VolumetricLightClass> mVolumetricLight;
 			std::unique_ptr<Shading::SSCS::SSCSClass> mSSCS;
+			std::unique_ptr<Shading::MotionBlur::MotionBlurClass> mMotionBlur;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
