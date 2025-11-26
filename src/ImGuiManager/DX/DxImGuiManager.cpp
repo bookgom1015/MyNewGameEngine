@@ -3,6 +3,7 @@
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Render/ShadingArgument.hpp"
 #include "Common/Render/LightType.h"
+#include "Common/Render/TonemapperType.h"
 #include "Render/DX/Foundation/Light.h"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
@@ -360,6 +361,8 @@ void DxImGuiManager::ShadingObjectHeader(Common::Render::ShadingArgument::Shadin
 		SSCSTree(pArgSet);
 		// MotionBlur
 		MotionBlurTree(pArgSet);
+		// Bloom
+		BloomTree(pArgSet);
 	}
 }
 
@@ -390,6 +393,24 @@ void DxImGuiManager::GammaCorrectionTree(Common::Render::ShadingArgument::Shadin
 void DxImGuiManager::ToneMappingTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("Tone Mapping")) {
 		ImGui::SliderFloat("Exposure", reinterpret_cast<float*>(&pArgSet->ToneMapping.Exposure), pArgSet->ToneMapping.MinExposure, pArgSet->ToneMapping.MaxExposure);
+
+		ImGui::Text("Tonemapper");
+		ImGui::Indent();
+		{
+			ImGui::RadioButton("Exponential", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
+				Common::Render::TonemapperType::E_Exponential); ImGui::SameLine();
+			ImGui::RadioButton("Reinhard", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
+				Common::Render::TonemapperType::E_Reinhard); ImGui::SameLine();
+			ImGui::RadioButton("ReinhardExt", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
+				Common::Render::TonemapperType::E_ReinhardExt);
+			ImGui::RadioButton("Uncharted2", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
+				Common::Render::TonemapperType::E_Uncharted2); ImGui::SameLine();
+			ImGui::RadioButton("ACES", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
+				Common::Render::TonemapperType::E_ACES); ImGui::SameLine();
+			ImGui::RadioButton("Log", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
+				Common::Render::TonemapperType::E_Log);
+		}
+		ImGui::Unindent();
 
 		ImGui::TreePop();
 	}
@@ -559,6 +580,14 @@ void DxImGuiManager::SSCSTree(Common::Render::ShadingArgument::ShadingArgumentSe
 void DxImGuiManager::MotionBlurTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("MotionBlur")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->MotionBlur.Enabled));
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::BloomTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("Bloom")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->Bloom.Enabled));
 
 		ImGui::TreePop();
 	}

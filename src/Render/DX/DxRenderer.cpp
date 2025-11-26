@@ -41,6 +41,7 @@
 #include "Render/DX/Shading/VolumetricLight.hpp"
 #include "Render/DX/Shading/SSCS.hpp"
 #include "Render/DX/Shading/MotionBlur.hpp"
+#include "Render/DX/Shading/Bloom.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -79,6 +80,7 @@ DxRenderer::DxRenderer() {
 	mVolumetricLight = std::make_unique<Shading::VolumetricLight::VolumetricLightClass>();
 	mSSCS = std::make_unique<Shading::SSCS::SSCSClass>();
 	mMotionBlur = std::make_unique<Shading::MotionBlur::MotionBlurClass>();
+	mBloom = std::make_unique<Shading::Bloom::BloomClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -98,6 +100,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mVolumetricLight.get());
 	mShadingObjectManager->AddShadingObject(mSSCS.get());
 	mShadingObjectManager->AddShadingObject(mMotionBlur.get());
+	mShadingObjectManager->AddShadingObject(mBloom.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -263,6 +266,9 @@ BOOL DxRenderer::Draw() {
 
 	CheckReturn(mpLogFile, ApplyVolumetricLight());
 
+	if (mpShadingArgumentSet->Bloom.Enabled)
+		CheckReturn(mpLogFile, ApplyBloom());
+
 	if (mpShadingArgumentSet->TAA.Enabled) {
 		CheckReturn(mpLogFile, mTAA->ApplyTAA(
 			mpCurrentFrameResource,
@@ -283,7 +289,8 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->ScissorRect(),
 		mSwapChain->BackBuffer(),
 		mSwapChain->BackBufferRtv(),
-		mpShadingArgumentSet->ToneMapping.Exposure));
+		mpShadingArgumentSet->ToneMapping.Exposure,
+		mpShadingArgumentSet->ToneMapping.TonemapperType));
 
 	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
 		CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
@@ -1273,6 +1280,7 @@ BOOL DxRenderer::InitShadingObjects() {
 	// BlurFilter
 	{
 		auto initData = Shading::BlurFilter::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
@@ -1312,6 +1320,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mMotionBlur->Initialize(mpLogFile, initData.get()));
+	}
+	// Bloom
+	{
+		auto initData = Shading::MotionBlur::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mBloom->Initialize(mpLogFile, initData.get()));
 	}
 
 	return TRUE;
@@ -1831,6 +1851,68 @@ BOOL DxRenderer::ApplyVolumetricLight() {
 		mSwapChain->ScissorRect(),
 		mpCamera->NearZ(), mpCamera->FarZ(), mpShadingArgumentSet->VolumetricLight.DepthExponent,
 		mpShadingArgumentSet->VolumetricLight.TricubicSamplingEnabled));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::ApplyBloom() {
+	CheckReturn(mpLogFile, mBloom->ExtractHighlights(
+		mpCurrentFrameResource,
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapSrv(),
+		mpShadingArgumentSet->Bloom.Threshold,
+		mpShadingArgumentSet->Bloom.SoftKnee));
+
+	const auto blurFunc = [&](
+		D3D12_VIEWPORT viewport,
+		D3D12_RECT scissorRect,
+		Foundation::Resource::GpuResource* const pInputMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
+		Foundation::Resource::GpuResource* const pOutputMap,
+		D3D12_CPU_DESCRIPTOR_HANDLE ro_outputMap,
+		UINT width, UINT height) -> BOOL {
+			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
+				mpCurrentFrameResource,
+				viewport,
+				scissorRect,
+				Shading::BlurFilter::BlurType::Graphics::G_GaussianBlurFilterNxN_9x9,
+				pInputMap,
+				si_inputMap,
+				pOutputMap,
+				ro_outputMap,
+				width, height));
+
+			return TRUE;
+	};
+
+	CheckReturn(mpLogFile, mBloom->BlurHighlights(blurFunc));
+
+	//UINT srcIndex = 0;
+	//UINT dstIndex = 1;
+	//
+	//for (UINT i = 0; i < 3; ++i) {
+	//	CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
+	//		mpCurrentFrameResource,
+	//		Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
+	//		mBloom->HighlightMap(srcIndex),
+	//		mBloom->HighlightMapSrv(srcIndex),
+	//		mBloom->HighlightMap(dstIndex),
+	//		mBloom->HighlightMapUav(dstIndex),
+	//		mBloom->TextureWidth(),
+	//		mBloom->TextureHeight()));
+	//
+	//	srcIndex = (srcIndex + 1) % 2;
+	//	dstIndex = (dstIndex + 1) % 2;
+	//}
+	//
+	//CheckReturn(mpLogFile, mBloom->ApplyBloom(
+	//	mpCurrentFrameResource,
+	//	mSwapChain->ScreenViewport(),
+	//	mSwapChain->ScissorRect(),
+	//	mToneMapping->InterMediateMapResource(),
+	//	mToneMapping->InterMediateMapRtv(),
+	//	mToneMapping->InterMediateCopyMapResource(),
+	//	mToneMapping->InterMediateCopyMapSrv()));
 
 	return TRUE;
 }

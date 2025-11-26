@@ -15,12 +15,9 @@
 
 ConstantBuffer<ConstantBuffers::PassCB> cbPass : register(b0);
 
-struct VertexOut {
-    float4 PosH : SV_Position;
-    float2 TexC : TexCoord;
-};
-
 static const int SAMPLE_COUNT = 8192;
+
+FitToScreenVertexOut
 
 FitToScreenVertexShader
 

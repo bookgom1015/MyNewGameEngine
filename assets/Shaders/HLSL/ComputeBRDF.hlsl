@@ -27,10 +27,7 @@ Texture2D<ShadingConvention::GBuffer::RoughnessMetalnessMapFormat>  gi_Roughness
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap           : register(t5);
 Texture2D<ShadingConvention::Shadow::ShadowMapFormat>               gi_ShadowMap             : register(t6);
 
-struct VertexOut {
-    float4 PosH : SV_Position;
-    float2 TexC : TexCoord;
-};
+FitToScreenVertexOut
 
 FitToScreenVertexShader
 

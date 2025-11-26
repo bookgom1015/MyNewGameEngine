@@ -160,6 +160,9 @@
     <Filter Include="Shader Files\MotionBlur">
       <UniqueIdentifier>{4377b6a7-0e43-4c73-8809-497602da7edd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Bloom">
+      <UniqueIdentifier>{aa4be462-2a74-475d-8fef-b2a7b90a9a96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -167,9 +170,6 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
-      <Filter>Common Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h">
       <Filter>Header Files\Foundation</Filter>
@@ -305,6 +305,12 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\MotionBlur.hpp">
       <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Bloom.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\TonemapperType.h">
+      <Filter>Common Files\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -480,6 +486,9 @@
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\MotionBlur.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Bloom.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -727,6 +736,18 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\MotionBlur.hlsl">
       <Filter>Shader Files\MotionBlur</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ExtractHighlights.hlsl">
+      <Filter>Shader Files\Bloom</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ApplyBloom.hlsl">
+      <Filter>Shader Files\Bloom</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterNxNCS.hlsl">
+      <Filter>Shader Files\BlurFilter</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterRGBANxN.hlsl">
+      <Filter>Shader Files\BlurFilter</Filter>
     </None>
   </ItemGroup>
 </Project>

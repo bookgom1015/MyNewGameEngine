@@ -21,6 +21,8 @@ namespace Common::Render {
 			const FLOAT MaxExposure = 8.f;
 			const FLOAT MinExposure = 0.01f;
 			FLOAT Exposure = 1.4f;
+
+			UINT TonemapperType = 0;
 		};
 
 		struct TAAArguments {
@@ -166,6 +168,13 @@ namespace Common::Render {
 			INT SampleCount = 16;
 		};
 
+		struct BloomArguments {
+			BOOL Enabled = TRUE;
+
+			FLOAT Threshold = 1.f;
+			FLOAT SoftKnee = 0.5f;
+		};
+
 		struct ShadingArgumentSet {
 			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
@@ -176,6 +185,7 @@ namespace Common::Render {
 			VolumetricLightArguments VolumetricLight;
 			SSCSArguments SSCS;
 			MotionBlurArguments MotionBlur;
+			BloomArguments Bloom;
 
 			BOOL ShadowEnabled = TRUE;
 			BOOL AOEnabled = TRUE;

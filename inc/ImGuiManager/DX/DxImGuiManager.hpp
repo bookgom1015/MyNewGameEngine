@@ -75,6 +75,7 @@ namespace ImGuiManager {
 			void VolumetricLightTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void SSCSTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void MotionBlurTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void BloomTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
 			BOOL mbIsD3D12Initialized = FALSE;

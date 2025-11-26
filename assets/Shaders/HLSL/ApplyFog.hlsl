@@ -20,10 +20,7 @@ VolumetricLight_ApplyFog_RootConstants(b1)
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>				gi_PositionMap		: register(t0);
 Texture3D<ShadingConvention::VolumetricLight::FrustumVolumeMapFormat>	gi_FrustumVolumeMap	: register(t1);
 
-struct VertexOut {
-	float4 PosH		: SV_POSITION;
-	float2 TexC		: TEXCOORD;
-};
+FitToScreenVertexOut
 
 struct PixelOut {
 	HDR_FORMAT	OutputMap	: SV_TARGET0;

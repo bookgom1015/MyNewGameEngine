@@ -70,6 +70,7 @@ namespace Render {
 			namespace VolumetricLight { class VolumetricLightClass; }
 			namespace SSCS { class SSCSClass; }
 			namespace MotionBlur { class MotionBlurClass; }
+			namespace Bloom { class BloomClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -153,6 +154,7 @@ namespace Render {
 			BOOL DrawAO();
 			BOOL IntegrateIrradiance();
 			BOOL ApplyVolumetricLight();
+			BOOL ApplyBloom();
 			BOOL PresentAndSignal();
 
 		private:
@@ -194,6 +196,7 @@ namespace Render {
 			std::unique_ptr<Shading::VolumetricLight::VolumetricLightClass> mVolumetricLight;
 			std::unique_ptr<Shading::SSCS::SSCSClass> mSSCS;
 			std::unique_ptr<Shading::MotionBlur::MotionBlurClass> mMotionBlur;
+			std::unique_ptr<Shading::Bloom::BloomClass> mBloom;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

@@ -80,7 +80,7 @@ void MS(
     }
 }
 
-float4 PS(in VertexOut pin) : SV_Target {
+HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     return gi_EnvCubeMap.SampleLevel(gsamAnisotropicClamp, normalize(pin.PosL), 0);
 }
 

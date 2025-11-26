@@ -77,7 +77,7 @@ namespace Render::DX::Shading {
 				const D3D12_RECT& scissorRect,
 				Foundation::Resource::GpuResource* const pBackBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
-				FLOAT exposure);
+				FLOAT exposure, UINT tonemapperType);
 
 		private:
 			BOOL BuildResources();

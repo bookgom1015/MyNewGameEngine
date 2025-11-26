@@ -204,6 +204,7 @@ namespace ShadingConvention{
 	#ifndef ToneMapping_Default_RCSTRUCT
 	#define ToneMapping_Default_RCSTRUCT {	\
 		FLOAT gExposure;					\
+		UINT gTonemapperType;				\
 	};
 #endif
 
@@ -223,6 +224,7 @@ namespace ShadingConvention{
 			struct Struct ToneMapping_Default_RCSTRUCT
 			enum {
 				E_Exposure = 0,
+				E_TonemapperType,
 				Count
 			};
 		}
@@ -950,6 +952,47 @@ namespace ShadingConvention{
 			}
 		}
 #endif
+	}
+
+	namespace Bloom {
+#ifndef Bloom_ExtractHighlights_RCSTRUCT
+#define Bloom_ExtractHighlights_RCSTRUCT {	\
+		FLOAT gThreshold;					\
+		FLOAT gSoftKnee;					\
+	};
+#endif
+
+		namespace ThreadGroup {
+			namespace Default {
+				enum {
+					Width	= 8,
+					Height	= 8,
+					Depth	= 1,
+					Size	= Width * Height * Depth
+				};
+			}
+		}
+
+#ifdef _HLSL
+		#ifndef Bloom_ExtractHighlights_RootConstants
+		#define Bloom_ExtractHighlights_RootConstants(reg) cbuffer cbRootConstants : register(reg) Bloom_ExtractHighlights_RCSTRUCT
+		#endif
+
+		typedef HDR_FORMAT HighlightMapFormat;
+#else
+		const DXGI_FORMAT HighlightMapFormat = HDR_FORMAT;
+#endif
+
+		namespace RootConstant {
+			namespace ExtractHighlights {
+				struct Struct Bloom_ExtractHighlights_RCSTRUCT
+				enum {
+					E_Threshold = 0,
+					E_SoftKnee,
+					Count
+				};
+			}
+		}
 	}
 }
 

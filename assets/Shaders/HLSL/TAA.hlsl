@@ -18,10 +18,7 @@ Texture2D<HDR_FORMAT>                                    gi_BackBuffer  : regist
 Texture2D<HDR_FORMAT>                                    gi_HistoryMap  : register(t1);
 Texture2D<ShadingConvention::GBuffer::VelocityMapFormat> gi_VelocityMap : register(t2);
 
-struct VertexOut {
-    float4 PosH : SV_POSITION;
-    float2 TexC : TEXCOORD;
-};
+FitToScreenVertexOut
 
 FitToScreenVertexShader
 
