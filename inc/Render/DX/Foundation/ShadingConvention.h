@@ -962,6 +962,12 @@ namespace ShadingConvention{
 	};
 #endif
 
+#ifndef Bloom_BlendBloomWithDownSampled_RCSTRUCT
+#define Bloom_BlendBloomWithDownSampled_RCSTRUCT {	\
+		DirectX::XMFLOAT2 gInvTexDim;				\
+	};
+#endif
+
 		namespace ThreadGroup {
 			namespace Default {
 				enum {
@@ -974,9 +980,13 @@ namespace ShadingConvention{
 		}
 
 #ifdef _HLSL
-		#ifndef Bloom_ExtractHighlights_RootConstants
-		#define Bloom_ExtractHighlights_RootConstants(reg) cbuffer cbRootConstants : register(reg) Bloom_ExtractHighlights_RCSTRUCT
-		#endif
+	#ifndef Bloom_ExtractHighlights_RootConstants
+	#define Bloom_ExtractHighlights_RootConstants(reg) cbuffer cbRootConstants : register(reg) Bloom_ExtractHighlights_RCSTRUCT
+	#endif
+
+	#ifndef Bloom_BlendBloomWithDownSampled_RootConstants
+	#define Bloom_BlendBloomWithDownSampled_RootConstants(reg) cbuffer cbRootConstants : register(reg) Bloom_BlendBloomWithDownSampled_RCSTRUCT
+	#endif
 
 		typedef HDR_FORMAT HighlightMapFormat;
 #else
@@ -989,6 +999,55 @@ namespace ShadingConvention{
 				enum {
 					E_Threshold = 0,
 					E_SoftKnee,
+					Count
+				};
+			}
+
+			namespace BlendBloomWithDownSampled {
+				struct Struct Bloom_BlendBloomWithDownSampled_RCSTRUCT
+					enum {
+					E_InvTexDimX = 0,
+					E_InvTexDimY,
+					Count
+				};
+			}
+		}
+	}
+
+	namespace TextureScaler {
+#ifndef TextureScaler_DownSample6x6_RCSTRUCT
+#define TextureScaler_DownSample6x6_RCSTRUCT {	\
+		DirectX::XMUINT2 gSrcTexDim;			\
+		DirectX::XMUINT2 gDstTexDim;			\
+	};
+#endif
+
+		namespace ThreadGroup {
+			namespace DownSample6x6 {
+				enum {
+					Width = 8,
+					Height = 8,
+					Depth = 1,
+					Size = Width * Height * Depth
+				};
+			}
+		}
+
+#ifdef _HLSL
+	#ifndef TextureScaler_DownSample6x6_RootConstants
+	#define TextureScaler_DownSample6x6_RootConstants(reg) cbuffer cbRootConstants : register(reg) TextureScaler_DownSample6x6_RCSTRUCT
+	#endif
+#else		
+#endif
+
+		namespace RootConstant {
+			namespace DownSample6x6 {
+				struct Struct TextureScaler_DownSample6x6_RCSTRUCT
+				enum {
+					E_SrcTexDim_X = 0,
+					E_SrcTexDim_Y,
+					E_DstTexDim_X,
+					E_DstTexDim_Y,
 					Count
 				};
 			}

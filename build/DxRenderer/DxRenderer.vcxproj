@@ -61,6 +61,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShaderTable.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\ShadingObjectManager.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\TextureScaler.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\VolumetricLight.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +123,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderManager.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShaderTable.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Util\ShadingObjectManager.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\TextureScaler.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\VolumetricLight.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -246,10 +248,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilter3x3CS.hlsl">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterRG3x3CS.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilter3x3.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -353,12 +352,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterNxNCS.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterNxN.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterRGBANxN.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\DownSample2Nx2N.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\BlendBloomWithDownSampled.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

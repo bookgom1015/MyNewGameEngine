@@ -52,6 +52,7 @@ namespace Render {
 
 				namespace MipmapGenerator { class MipmapGeneratorClass; }
 				namespace EquirectangularConverter { class EquirectangularConverterClass; }
+				namespace TextureScaler { class TextureScalerClass; }
 			}
 
 			namespace EnvironmentMap { class EnvironmentMapClass; }
@@ -179,6 +180,7 @@ namespace Render {
 
 			std::unique_ptr<Shading::Util::MipmapGenerator::MipmapGeneratorClass> mMipmapGenerator;
 			std::unique_ptr<Shading::Util::EquirectangularConverter::EquirectangularConverterClass> mEquirectangularConverter;
+			std::unique_ptr<Shading::Util::TextureScaler::TextureScalerClass> mTextureScaler;
 
 			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
 			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection;

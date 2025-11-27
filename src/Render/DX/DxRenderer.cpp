@@ -25,6 +25,7 @@
 #include "Render/DX/Shading/Util/EquirectangularConverter.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 #include "Render/DX/Shading/Util/AccelerationStructure.hpp"
+#include "Render/DX/Shading/Util/TextureScaler.hpp"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "Render/DX/Shading/GammaCorrection.hpp"
 #include "Render/DX/Shading/ToneMapping.hpp"
@@ -63,6 +64,7 @@ DxRenderer::DxRenderer() {
 
 	mMipmapGenerator = std::make_unique<Shading::Util::MipmapGenerator::MipmapGeneratorClass>();
 	mEquirectangularConverter = std::make_unique<Shading::Util::EquirectangularConverter::EquirectangularConverterClass>();
+	mTextureScaler = std::make_unique<Shading::Util::TextureScaler::TextureScalerClass>();
 
 	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap::EnvironmentMapClass>();
 	mGammaCorrection = std::make_unique<Shading::GammaCorrection::GammaCorrectionClass>();
@@ -84,6 +86,7 @@ DxRenderer::DxRenderer() {
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
+	mShadingObjectManager->AddShadingObject(mTextureScaler.get());
 	mShadingObjectManager->AddShadingObject(mEnvironmentMap.get());
 	mShadingObjectManager->AddShadingObject(mGammaCorrection.get());
 	mShadingObjectManager->AddShadingObject(mToneMapping.get());
@@ -1129,6 +1132,15 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		CheckReturn(mpLogFile, mEquirectangularConverter->Initialize(mpLogFile, initData.get()));
 	}
+	// TextureScaler
+	{
+		auto initData = Shading::Util::TextureScaler::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		CheckReturn(mpLogFile, mTextureScaler->Initialize(mpLogFile, initData.get()));
+	}
 	// EnvironmentMap
 	{
 		auto initData = Shading::EnvironmentMap::MakeInitData();
@@ -1856,63 +1868,61 @@ BOOL DxRenderer::ApplyVolumetricLight() {
 }
 
 BOOL DxRenderer::ApplyBloom() {
+	const auto downSampleFunc = [&](
+		Foundation::Resource::GpuResource* const pInputMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
+		Foundation::Resource::GpuResource* const pOutputMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE uo_outputMap,
+		UINT srcTexDimX, UINT srcTexDimY, UINT dstTexDimX, UINT dstTexDimY,
+		UINT kernelRadius) -> BOOL {
+			CheckReturn(mpLogFile, mTextureScaler->DownSample2Nx2N(
+				mpCurrentFrameResource,
+				pInputMap,
+				si_inputMap,
+				pOutputMap,
+				uo_outputMap,
+				srcTexDimX, srcTexDimY, dstTexDimX, dstTexDimY,
+				kernelRadius));
+
+			return TRUE;
+		};
+
+	const auto blurFunc = [&](
+		Foundation::Resource::GpuResource* const pInputMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
+		Foundation::Resource::GpuResource* const pOutputMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE uo_outputMap,
+		UINT width, UINT height) -> BOOL {
+			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
+				mpCurrentFrameResource,
+				Shading::BlurFilter::PipelineState::CP_GaussianBlurFilterRGBANxN9x9,
+				pInputMap,
+				si_inputMap,
+				pOutputMap,
+				uo_outputMap,
+				width, height));
+
+			return TRUE;
+		};
+
 	CheckReturn(mpLogFile, mBloom->ExtractHighlights(
 		mpCurrentFrameResource,
 		mToneMapping->InterMediateMapResource(),
 		mToneMapping->InterMediateMapSrv(),
 		mpShadingArgumentSet->Bloom.Threshold,
-		mpShadingArgumentSet->Bloom.SoftKnee));
+		mpShadingArgumentSet->Bloom.SoftKnee,
+		downSampleFunc));
 
-	const auto blurFunc = [&](
-		D3D12_VIEWPORT viewport,
-		D3D12_RECT scissorRect,
-		Foundation::Resource::GpuResource* const pInputMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
-		Foundation::Resource::GpuResource* const pOutputMap,
-		D3D12_CPU_DESCRIPTOR_HANDLE ro_outputMap,
-		UINT width, UINT height) -> BOOL {
-			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
-				mpCurrentFrameResource,
-				viewport,
-				scissorRect,
-				Shading::BlurFilter::BlurType::Graphics::G_GaussianBlurFilterNxN_9x9,
-				pInputMap,
-				si_inputMap,
-				pOutputMap,
-				ro_outputMap,
-				width, height));
+	CheckReturn(mpLogFile, mBloom->BlurHighlights(mpCurrentFrameResource, downSampleFunc, blurFunc));	
 
-			return TRUE;
-	};
-
-	CheckReturn(mpLogFile, mBloom->BlurHighlights(blurFunc));
-
-	//UINT srcIndex = 0;
-	//UINT dstIndex = 1;
-	//
-	//for (UINT i = 0; i < 3; ++i) {
-	//	CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
-	//		mpCurrentFrameResource,
-	//		Shading::BlurFilter::PipelineState::CP_GaussianBlurFilter3x3,
-	//		mBloom->HighlightMap(srcIndex),
-	//		mBloom->HighlightMapSrv(srcIndex),
-	//		mBloom->HighlightMap(dstIndex),
-	//		mBloom->HighlightMapUav(dstIndex),
-	//		mBloom->TextureWidth(),
-	//		mBloom->TextureHeight()));
-	//
-	//	srcIndex = (srcIndex + 1) % 2;
-	//	dstIndex = (dstIndex + 1) % 2;
-	//}
-	//
-	//CheckReturn(mpLogFile, mBloom->ApplyBloom(
-	//	mpCurrentFrameResource,
-	//	mSwapChain->ScreenViewport(),
-	//	mSwapChain->ScissorRect(),
-	//	mToneMapping->InterMediateMapResource(),
-	//	mToneMapping->InterMediateMapRtv(),
-	//	mToneMapping->InterMediateCopyMapResource(),
-	//	mToneMapping->InterMediateCopyMapSrv()));
+	CheckReturn(mpLogFile, mBloom->ApplyBloom(
+		mpCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(),
+		mToneMapping->InterMediateCopyMapSrv()));
 
 	return TRUE;
 }

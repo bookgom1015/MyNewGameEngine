@@ -2,29 +2,24 @@
 
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
-namespace Render::DX::Shading {
-	namespace BlurFilter {
-		__forceinline INT CalcDiameter(FLOAT sigma);
-		__forceinline BOOL CalcGaussWeights(FLOAT sigma, FLOAT weights[]);
-
+namespace Render::DX::Shading::Util {
+	namespace TextureScaler {
 		namespace Shader {
 			enum Type {
-				CS_GaussianBlurFilter3x3 = 0,
-				CS_GaussianBlurFilterRGBA3x3,
-				CS_GaussianBlurFilterNxN3x3,
-				CS_GaussianBlurFilterNxN5x5,
-				CS_GaussianBlurFilterNxN7x7,
-				CS_GaussianBlurFilterNxN9x9,
-				CS_GaussianBlurFilterRGBANxN3x3,
-				CS_GaussianBlurFilterRGBANxN5x5,
-				CS_GaussianBlurFilterRGBANxN7x7,
-				CS_GaussianBlurFilterRGBANxN9x9,
+				CS_DownSample2x2 = 0,
+				CS_DownSample4x4,
+				CS_DownSample6x6,
 				Count
 			};
 		}
 
 		namespace RootSignature {
-			namespace Default {
+			enum Type {
+				GR_DownSample2Nx2N = 0,
+				Count
+			};
+
+			namespace DownSample6x6 {
 				enum {
 					RC_Consts = 0,
 					SI_InputMap,
@@ -36,24 +31,16 @@ namespace Render::DX::Shading {
 
 		namespace PipelineState {
 			enum Type {
-				CP_GaussianBlurFilter3x3 = 0,
-				CP_GaussianBlurFilterRGBA3x3,
-				CP_GaussianBlurFilterNxN3x3,
-				CP_GaussianBlurFilterNxN5x5,
-				CP_GaussianBlurFilterNxN7x7,
-				CP_GaussianBlurFilterNxN9x9,
-				CP_GaussianBlurFilterRGBANxN3x3,
-				CP_GaussianBlurFilterRGBANxN5x5,
-				CP_GaussianBlurFilterRGBANxN7x7,
-				CP_GaussianBlurFilterRGBANxN9x9,
+				CP_DownSample2x2 = 0,
+				CP_DownSample4x4,
+				CP_DownSample6x6,
 				Count
 			};
 		}
 
-		class BlurFilterClass : public Foundation::ShadingObject {
+		class TextureScalerClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
 				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
@@ -61,8 +48,8 @@ namespace Render::DX::Shading {
 			};
 
 		public:
-			BlurFilterClass();
-			virtual ~BlurFilterClass() = default;
+			TextureScalerClass() = default;
+			virtual ~TextureScalerClass() = default;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -77,28 +64,26 @@ namespace Render::DX::Shading {
 			virtual BOOL BuildPipelineStates() override;
 
 		public:
-			BOOL GaussianBlur(
+			BOOL DownSample2Nx2N(
 				Foundation::Resource::FrameResource* const pFrameResource,
-				PipelineState::Type type,
 				Foundation::Resource::GpuResource* const pInputMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
 				Foundation::Resource::GpuResource* const pOutputMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE uo_outputMap,
-				UINT texWidth, UINT texHeight);
+				UINT srcTexDimX, UINT srcTexDimY, UINT dstTexDimX, UINT dstTexDimY,
+				UINT kernelRadius);
 
 		private:
 			InitData mInitData;
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
 
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
 		};
 
-		using InitDataPtr = std::unique_ptr<BlurFilterClass::InitData>;
+		using InitDataPtr = std::unique_ptr<TextureScalerClass::InitData>;
 
 		InitDataPtr MakeInitData();
 	}
 }
-
-#include "BlurFilter.inl"

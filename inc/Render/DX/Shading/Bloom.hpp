@@ -8,9 +8,8 @@ namespace Render::DX::Shading {
 	namespace Bloom {
 		namespace Shader {
 			enum Type {
-				VS_ExtractHighlights = 0,
-				MS_ExtractHighlights,
-				PS_ExtractHighlights,
+				CS_ExtractHighlights = 0,
+				CS_BlendBloomWithDownSampled,
 				VS_ApplyBloom,
 				MS_ApplyBloom,
 				PS_ApplyBloom,
@@ -21,6 +20,7 @@ namespace Render::DX::Shading {
 		namespace RootSignature {
 			enum Type {
 				GR_ExtractHighlights = 0,
+				GR_BlendBloomWithDownSampled,
 				GR_ApplyBloom,
 				Count
 			};
@@ -28,7 +28,16 @@ namespace Render::DX::Shading {
 			namespace ExtractHighlights {
 				enum {
 					RC_Consts = 0,
-					SI_BackBuffer,
+					UIO_HighlightMap,
+					Count
+				};
+			}
+
+			namespace BlendBloomWithDownSampled {
+				enum {
+					RC_Consts = 0,
+					SI_LowerScaleMap,
+					UIO_HigherScaleMap,
 					Count
 				};
 			}
@@ -44,8 +53,8 @@ namespace Render::DX::Shading {
 
 		namespace PipelineState {
 			enum Type {
-				GP_ExtractHighlights = 0,
-				MP_ExtractHighlights,
+				CP_ExtractHighlights = 0,
+				CP_BlendBloomWithDownSampled,
 				GP_ApplyBloom,
 				MP_ApplyBloom,
 				Count
@@ -54,9 +63,10 @@ namespace Render::DX::Shading {
 
 		namespace Resource {
 			enum Type {
-				E_FullRes = 0,
-				E_QuaterRes,
-				E_EighteenthRes,
+				E_4thRes = 0,
+				E_16thRes,
+				E_64thRes,
+				E_256thRes,
 				Count
 			};
 		}
@@ -73,16 +83,24 @@ namespace Render::DX::Shading {
 				UINT ClientHeight = 0;
 			};
 
+			using DownSampleFunc = std::function<BOOL(
+				Foundation::Resource::GpuResource* const,
+				D3D12_GPU_DESCRIPTOR_HANDLE,
+				Foundation::Resource::GpuResource* const,
+				D3D12_GPU_DESCRIPTOR_HANDLE,
+				UINT, UINT, UINT, UINT,
+				UINT)>;
+
+			using BlurFunc = std::function < BOOL(
+				Foundation::Resource::GpuResource* const,
+				D3D12_GPU_DESCRIPTOR_HANDLE,
+				Foundation::Resource::GpuResource* const,
+				D3D12_GPU_DESCRIPTOR_HANDLE,
+				UINT, UINT)>;
+
 		public:
 			BloomClass();
 			virtual ~BloomClass() = default;
-
-		public:
-			__forceinline constexpr UINT TextureWidth() const;
-			__forceinline constexpr UINT TextureHeight() const;
-
-			__forceinline Foundation::Resource::GpuResource* BloomMap() const;
-			__forceinline D3D12_GPU_DESCRIPTOR_HANDLE BloomMapSrv() const;
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -103,16 +121,12 @@ namespace Render::DX::Shading {
 				Foundation::Resource::FrameResource* const pFrameResource,
 				Foundation::Resource::GpuResource* const pBackBuffer,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_backBuffer,
-				FLOAT threshold, FLOAT softknee);
+				FLOAT threshold, FLOAT softknee,
+				DownSampleFunc downSampleFunc);
 			BOOL BlurHighlights(
-				std::function<BOOL(
-					D3D12_VIEWPORT viewport,
-					D3D12_RECT scissorRect,
-					Foundation::Resource::GpuResource* const,
-					D3D12_GPU_DESCRIPTOR_HANDLE,
-					Foundation::Resource::GpuResource* const,
-					D3D12_CPU_DESCRIPTOR_HANDLE,
-					UINT, UINT)> func);
+				Foundation::Resource::FrameResource* const pFrameResource,
+				DownSampleFunc downSampleFunc, 
+				BlurFunc blurFunc);
 			BOOL ApplyBloom(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				D3D12_VIEWPORT viewport,
@@ -126,6 +140,11 @@ namespace Render::DX::Shading {
 			BOOL BuildResources();
 			BOOL BuildDescriptors();
 
+			BOOL DownSampling(DownSampleFunc downSampleFunc);
+			BOOL UpSamplingWithBlur(
+				Foundation::Resource::FrameResource* const pFrameResource,
+				BlurFunc blurFunc);
+
 		private:
 			InitData mInitData;
 
@@ -137,26 +156,18 @@ namespace Render::DX::Shading {
 			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mHighlightMaps;
 			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapCpuSrvs;
 			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapGpuSrvs;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapCpuRtvs;
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapCpuUavs;
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapGpuUavs;
+
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mBloomMaps;
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapCpuSrvs;
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapGpuSrvs;
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapCpuUavs;
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapGpuUavs;
 		};
 
 		using InitDataPtr = std::unique_ptr<BloomClass::InitData>;
 
 		InitDataPtr MakeInitData();
 	}
-}
-
-constexpr UINT Render::DX::Shading::Bloom::BloomClass::TextureWidth() const {
-	return mInitData.ClientWidth >> 2;
-}
-
-constexpr UINT Render::DX::Shading::Bloom::BloomClass::TextureHeight() const {
-	return mInitData.ClientHeight >> 2;
-}
-
-Render::DX::Foundation::Resource::GpuResource* Render::DX::Shading::Bloom::BloomClass::BloomMap() const {
-	return mHighlightMaps[Resource::E_EighteenthRes].get();
-}
-D3D12_GPU_DESCRIPTOR_HANDLE Render::DX::Shading::Bloom::BloomClass::BloomMapSrv() const {
-	return mhHighlightMapGpuSrvs[Resource::E_EighteenthRes];
 }

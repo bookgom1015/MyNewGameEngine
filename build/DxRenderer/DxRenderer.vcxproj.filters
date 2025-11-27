@@ -163,6 +163,9 @@
     <Filter Include="Shader Files\Bloom">
       <UniqueIdentifier>{aa4be462-2a74-475d-8fef-b2a7b90a9a96}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\TextureScaler">
+      <UniqueIdentifier>{62775bd6-4af9-4b8d-8fd9-a5edaa9557d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -311,6 +314,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Render\TonemapperType.h">
       <Filter>Common Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\Util\TextureScaler.hpp">
+      <Filter>Header Files\Shading Files\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -491,6 +497,9 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Bloom.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\Util\TextureScaler.cpp">
+      <Filter>Source Files\Shading Files\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
@@ -629,10 +638,7 @@
     <None Include="..\..\inc\Render\DX\Shading\SSAO.inl">
       <Filter>Header Files\Shading Files</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilter3x3CS.hlsl">
-      <Filter>Shader Files\BlurFilter</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterRG3x3CS.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilter3x3.hlsl">
       <Filter>Shader Files\BlurFilter</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\Random.hlsli">
@@ -743,11 +749,14 @@
     <None Include="..\..\assets\Shaders\HLSL\ApplyBloom.hlsl">
       <Filter>Shader Files\Bloom</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterNxNCS.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterNxN.hlsl">
       <Filter>Shader Files\BlurFilter</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilterRGBANxN.hlsl">
-      <Filter>Shader Files\BlurFilter</Filter>
+    <None Include="..\..\assets\Shaders\HLSL\DownSample2Nx2N.hlsl">
+      <Filter>Shader Files\TextureScaler</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\BlendBloomWithDownSampled.hlsl">
+      <Filter>Shader Files\Bloom</Filter>
     </None>
   </ItemGroup>
 </Project>
