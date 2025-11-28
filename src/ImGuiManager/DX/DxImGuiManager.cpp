@@ -397,16 +397,16 @@ void DxImGuiManager::ToneMappingTree(Common::Render::ShadingArgument::ShadingArg
 		ImGui::Text("Tonemapper");
 		ImGui::Indent();
 		{
+			ImGui::RadioButton("ACES", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
+				Common::Render::TonemapperType::E_ACES); ImGui::SameLine();
 			ImGui::RadioButton("Exponential", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
 				Common::Render::TonemapperType::E_Exponential); ImGui::SameLine();
 			ImGui::RadioButton("Reinhard", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
-				Common::Render::TonemapperType::E_Reinhard); ImGui::SameLine();
+				Common::Render::TonemapperType::E_Reinhard); 
 			ImGui::RadioButton("ReinhardExt", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
-				Common::Render::TonemapperType::E_ReinhardExt);
+				Common::Render::TonemapperType::E_ReinhardExt); ImGui::SameLine();
 			ImGui::RadioButton("Uncharted2", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
-				Common::Render::TonemapperType::E_Uncharted2); ImGui::SameLine();
-			ImGui::RadioButton("ACES", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
-				Common::Render::TonemapperType::E_ACES); ImGui::SameLine();
+				Common::Render::TonemapperType::E_Uncharted2); ImGui::SameLine();			
 			ImGui::RadioButton("Log", reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
 				Common::Render::TonemapperType::E_Log);
 		}
