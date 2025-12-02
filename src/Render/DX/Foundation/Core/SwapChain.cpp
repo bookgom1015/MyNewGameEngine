@@ -114,7 +114,7 @@ BOOL SwapChain::BuildSwapChainBuffers() {
 	// Resize the previous resources we will be creating.
 	for (UINT i = 0; i < SwapChainBufferCount; ++i)
 		mSwapChainBuffers[i]->Reset();
-
+	
 	// Resize the swap chain.
 	CheckHRESULT(mpLogFile, mSwapChain->ResizeBuffers(
 		SwapChainBufferCount,

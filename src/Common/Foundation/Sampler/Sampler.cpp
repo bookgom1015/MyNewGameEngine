@@ -37,10 +37,10 @@ void Sampler::Reset(UINT numSamples, UINT numSampleSets, HemisphereDistribution:
         // uniform_real_distribution constructs excluding the end value [being, end).
         std::uniform_real_distribution<float> unitSquareDistributionInclusive(0.f, nextafter(1.f, FLT_MAX));
 
-        GetRandomJump = [&]() { return jumpDistribution(mGeneratorURNG); };
-        GetRandomSetJump = [&]() { return jumpSetDistribution(mGeneratorURNG); };
-        GetRandomFloat01 = [&]() { return unitSquareDistribution(mGeneratorURNG); };
-        GetRandomFloat01inclusive = [&]() { return unitSquareDistributionInclusive(mGeneratorURNG); };
+        GetRandomJump = [jumpDistribution, this]() mutable { return jumpDistribution(mGeneratorURNG); };
+        GetRandomSetJump = [jumpSetDistribution, this]() mutable { return jumpSetDistribution(mGeneratorURNG); };
+        GetRandomFloat01 = [unitSquareDistribution, this]() mutable { return unitSquareDistribution(mGeneratorURNG); };
+        GetRandomFloat01inclusive = [unitSquareDistributionInclusive, this]() mutable { return unitSquareDistributionInclusive(mGeneratorURNG); };
     }
     // Generate random samples.
     {
