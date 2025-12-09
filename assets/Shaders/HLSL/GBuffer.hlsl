@@ -24,12 +24,12 @@ VERTEX_IN
 
 struct VertexOut {
     float4 PosH        : SV_Position;
-    float4 CurrPosH    : CURR_POSITION_H;
-    float4 PrevPosH    : PREV_POSITION_H;
-    float3 PosW        : POSITION_W;
-    float3 PosL        : POSITION_L;
-    float3 NormalW     : NORMAL_W;
-    float3 PrevNormalW : PrevNORMAL_W;
+    float4 CurrPosH    : POSITION0;
+    float4 PrevPosH    : POSITION1;
+    float3 PosW        : POSITION2;
+    float3 PosL        : POSITION3;
+    float3 NormalW     : NORMAL0;
+    float3 PrevNormalW : NORMAL1;
     float2 TexC        : TEXCOORD;
 };
 
@@ -75,45 +75,56 @@ void MS(
         in uint Gid : SV_GroupID,
         out vertices VertexOut verts[MESH_SHADER_MAX_VERTICES],
         out indices uint3 prims[MESH_SHADER_MAX_PRIMITIVES]) {
-    SetMeshOutputCounts(MESH_SHADER_MAX_VERTICES, MESH_SHADER_MAX_PRIMITIVES);
-        
     const uint TotalPrimCount = gIndexCount / 3;
     const uint GlobalPrimId = Gid * MESH_SHADER_MAX_PRIMITIVES + GTid;
-    const uint VertexBase = GTid * 3;
     
-    if (GlobalPrimId < TotalPrimCount) {
-        const uint3 Index = uint3(
-            ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 0),
-            ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 1),
-            ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 2));
-                
-        prims[GTid] = uint3(VertexBase + 0, VertexBase + 1, VertexBase + 2);
+    const uint Remaining = TotalPrimCount - Gid * MESH_SHADER_MAX_PRIMITIVES;
+    const uint LocalPrimCount = min(Remaining, MESH_SHADER_MAX_PRIMITIVES);
         
-        [unroll]
-        for (uint i = 0; i < 3; ++i) {
-            Common::Foundation::Mesh::Vertex vin = gi_VertexBuffer[Index[i]];
+    SetMeshOutputCounts(LocalPrimCount * 3, LocalPrimCount);
     
-            VertexOut vout = (VertexOut) 0;
-            vout.PosL = vin.Position;
-            
-            float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);
-            vout.PosW = PosW.xyz;
+    if (GTid >= LocalPrimCount) return;
     
-            const float4 PosH = mul(PosW, cbPass.ViewProj);
-            vout.CurrPosH = PosH;
-            vout.PosH = PosH + float4(cbPass.JitteredOffset * PosH.w, 0, 0);
+    const uint LocalPrimId = GTid;
+    const uint PrimIndex = Gid * MESH_SHADER_MAX_PRIMITIVES + LocalPrimId;
     
-            const float4 PrevPosW = mul(float4(vin.Position, 1), cbObject.PrevWorld);
-            vout.PrevPosH = mul(PrevPosW, cbPass.PrevViewProj);
-            
-            vout.NormalW = mul(vin.Normal, (float3x3)cbObject.World);
-            vout.PrevNormalW = mul(vin.Normal, (float3x3)cbObject.PrevWorld);
+    const uint3 Indices = uint3(
+        ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 0),
+        ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 1),
+        ShaderUtil::GetIndex32(gi_IndexBuffer, GlobalPrimId * 3 + 2));
+        
+    prims[LocalPrimId] = uint3(
+        LocalPrimId * 3 + 0,
+        LocalPrimId * 3 + 1,
+        LocalPrimId * 3 + 2
+    );
     
-            float4 TexC = mul(float4(vin.TexCoord, 0.f, 1.f), cbObject.TexTransform);
-            vout.TexC = TexC.xy;
-         
-            verts[VertexBase + i] = vout;
-        }
+    [unroll]
+    for (uint i = 0; i < 3; ++i) {
+        const uint OutVert = LocalPrimId * 3 + i;
+    
+        Common::Foundation::Mesh::Vertex vin = gi_VertexBuffer[Indices[i]];
+    
+        VertexOut vout = (VertexOut) 0;
+        vout.PosL = vin.Position;
+        
+        float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);
+        vout.PosW = PosW.xyz;
+    
+        const float4 PosH = mul(PosW, cbPass.ViewProj);
+        vout.CurrPosH = PosH;
+        vout.PosH = PosH + float4(cbPass.JitteredOffset * PosH.w, 0, 0);
+    
+        const float4 PrevPosW = mul(float4(vin.Position, 1), cbObject.PrevWorld);
+        vout.PrevPosH = mul(PrevPosW, cbPass.PrevViewProj);
+        
+        vout.NormalW = mul(vin.Normal, (float3x3)cbObject.World);
+        vout.PrevNormalW = mul(vin.Normal, (float3x3)cbObject.PrevWorld);
+    
+        float4 TexC = mul(float4(vin.TexCoord, 0.f, 1.f), cbObject.TexTransform);
+        vout.TexC = TexC.xy;
+     
+        verts[OutVert] = vout;
     }
 }
 

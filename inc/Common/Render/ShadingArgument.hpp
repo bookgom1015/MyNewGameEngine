@@ -73,7 +73,7 @@ namespace Common::Render {
 		struct SSAOArguments {
 			const FLOAT MinOcclusionRadius = 0.1f;
 			const FLOAT MaxOcclusionRadius = 10.f;
-			FLOAT OcclusionRadius = 1.f;
+			FLOAT OcclusionRadius = 4.f;
 
 			const FLOAT MinOcclusionFadeStart = 0.f;
 			FLOAT OcclusionFadeStart = 1.f;
@@ -83,7 +83,7 @@ namespace Common::Render {
 
 			const FLOAT MinOcclusionStrength = 1.f;
 			const FLOAT MaxOcclusionStrength = 10.f;
-			FLOAT OcclusionStrength = 4.f;
+			FLOAT OcclusionStrength = 2.f;
 
 			const FLOAT MinSurfaceEpsilon = 0.001f;
 			const FLOAT MaxSurfaceEpsilon = 0.1f;
