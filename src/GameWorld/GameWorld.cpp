@@ -60,7 +60,7 @@ BOOL GameWorldClass::Initialize(Common::Debug::LogFile* const pLogFile, HINSTANC
 	mWindowsManager->RegisterOnResizeFunc(std::bind(&GameWorldClass::OnResize, this, std::placeholders::_1, std::placeholders::_2));
 	mWindowsManager->RegisterInputProcessor(mInputProcessor.get());
 
-	mGameTimer->SetFrameTimeLimit(Common::Foundation::Core::GameTimer::FrameTimeLimits::E_90f);
+	mGameTimer->SetFrameTimeLimit(Common::Foundation::Core::GameTimer::FrameTimeLimits::E_Unlimited);
 
 	bInitialized = TRUE;
 
