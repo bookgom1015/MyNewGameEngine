@@ -63,18 +63,18 @@ void MS(                                                     \
         out vertices VertexOut verts[6],                     \
         out indices uint3 prims[2]) {                        \
     SetMeshOutputCounts(6, 2);                               \
-    const uint IndexBase = GTid * 3;                         \
-    const uint3 Indices = uint3(                             \
-        IndexBase + 0,                                       \
-        IndexBase + 1,                                       \
-        IndexBase + 2);                                      \
-    prims[GTid] = Indices;                                   \
+    const uint VertexBase = GTid * 3;                        \
+    const uint3 Index = uint3(                               \
+        VertexBase + 0,                                      \
+        VertexBase + 1,                                      \
+        VertexBase + 2);                                     \
+    prims[GTid] = Index;                                     \
     [unroll]                                                 \
     for (uint i = 0;i < 3; ++i) {                            \
         VertexOut vout = (VertexOut)0;                       \
-        vout.TexC = gVertices[Indices[i]];                   \
+        vout.TexC = gVertices[Index[i]];                     \
         vout.PosH = ShaderUtil::TexCoordToScreen(vout.TexC); \
-        verts[IndexBase + i] = vout;                         \
+        verts[VertexBase + i] = vout;                        \
     }                                                        \
 }
 #endif // FitToScreenMeshShader

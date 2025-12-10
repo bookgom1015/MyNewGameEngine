@@ -49,13 +49,16 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     
     const uint TexCSeed_X = Random::InitRand(DTid.x + DTid.y * cbAO.TextureDim.x, 1);
     const uint TexCSeed_Y = Random::InitRand(DTid.y + DTid.y * cbAO.TextureDim.x, 1);
+    const uint TexCSeed_Z = Random::InitRand(DTid.x + DTid.x * cbAO.TextureDim.x, 1);
     
     float2 randTexC;
     randTexC.x = Random::Random01inclusive(TexCSeed_X);
     randTexC.y = Random::Random01inclusive(TexCSeed_Y);
     
 	// Extract random vector and map from [0,1] --> [-1, +1].
-    const float3 RandVec = 2.f * gi_RandomVectorMap.SampleLevel(gsamLinearWrap, 4.f * randTexC, 0) - 1.f;
+    //const float3 RandVec = 2.f * gi_RandomVectorMap.SampleLevel(gsamLinearWrap, 4.f * randTexC, 0) - 1.f;
+    float3 RandVec = float3(randTexC, Random::Random01inclusive(TexCSeed_Z));
+    RandVec = 2.f * RandVec - 1.f;
 
     float occlusionSum = 0.f;
 
@@ -73,7 +76,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 		// Are offset vectors are fixed and uniformly distributed (so that our offset vectors
 		// do not clump in the same direction).  If we reflect them about a random vector
 		// then we get a random uniform distribution of offset vectors.
-        const float3 Offset = reflect(Direction, RandVec);
+        const float3 Offset = Direction;
 
 		// Flip offset vector if it is behind the plane defined by (p, n).
         const float Flip = sign(dot(Offset, normalW));
