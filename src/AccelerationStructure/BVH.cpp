@@ -257,7 +257,6 @@ BVHNode* Recurse(BBoxEntries& work, REPORTPRM(float pct = 0.) int depth = 0) {
 	// distribute the triangles in the left or right child nodes
 	// for each triangle in the work set
 	for (int i = 0; i < (int)work.size(); i++) {
-
 		// create temporary bbox for triangle
 		BBoxTmp& v = work[i];
 
@@ -269,7 +268,6 @@ BVHNode* Recurse(BBoxEntries& work, REPORTPRM(float pct = 0.) int depth = 0) {
 
 		if (value < bestSplit) { // add temporary bbox v from work list to left BBoxentries list, 
 			// becomes new working list of triangles in next step
-
 			left.push_back(v);
 			lbottom = min3(lbottom, v.Bottom);
 			ltop = max3(ltop, v.Top);
@@ -470,7 +468,7 @@ void Common::AccelerationStructure::CreateCFBVH() {
 }
 
 // The gateway - creates the "pure" BVH, and then copies the results in the cache-friendly one
-void UpdateBoundingVolumeHierarchy(const char* filename) {
+void Common::AccelerationStructure::UpdateBoundingVolumeHierarchy(const char* filename) {
 	if (!gpSceneBVH) {
 		std::string BVHcacheFilename(filename);
 		BVHcacheFilename += ".bvh";
