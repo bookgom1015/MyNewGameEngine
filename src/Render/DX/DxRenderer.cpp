@@ -43,6 +43,7 @@
 #include "Render/DX/Shading/SSCS.hpp"
 #include "Render/DX/Shading/MotionBlur.hpp"
 #include "Render/DX/Shading/Bloom.hpp"
+#include "Render/DX/Shading/DOF.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -83,6 +84,7 @@ DxRenderer::DxRenderer() {
 	mSSCS = std::make_unique<Shading::SSCS::SSCSClass>();
 	mMotionBlur = std::make_unique<Shading::MotionBlur::MotionBlurClass>();
 	mBloom = std::make_unique<Shading::Bloom::BloomClass>();
+	mDOF = std::make_unique<Shading::DOF::DOFClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -104,6 +106,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mSSCS.get());
 	mShadingObjectManager->AddShadingObject(mMotionBlur.get());
 	mShadingObjectManager->AddShadingObject(mBloom.get());
+	mShadingObjectManager->AddShadingObject(mDOF.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -1335,7 +1338,7 @@ BOOL DxRenderer::InitShadingObjects() {
 	}
 	// Bloom
 	{
-		auto initData = Shading::MotionBlur::MakeInitData();
+		auto initData = Shading::Bloom::MakeInitData();
 		initData->MeshShaderSupported = mbMeshShaderSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
@@ -1344,6 +1347,17 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mBloom->Initialize(mpLogFile, initData.get()));
+	}
+	// DOF
+	{
+		auto initData = Shading::DOF::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mDOF->Initialize(mpLogFile, initData.get()));
 	}
 
 	return TRUE;

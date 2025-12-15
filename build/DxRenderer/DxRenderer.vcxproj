@@ -44,6 +44,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\Bloom.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\BlurFilter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\BRDF.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\DOF.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp" />
@@ -107,6 +108,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Bloom.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\BlurFilter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\BRDF.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\DOF.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp" />
@@ -367,6 +369,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\BlendBloomWithDownSampled.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\CalcFocalDistance.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

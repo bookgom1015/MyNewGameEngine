@@ -169,6 +169,9 @@
     <Filter Include="Common Files\Acceleration Structure">
       <UniqueIdentifier>{d5bce362-0460-4cbd-bbb7-567d14be0c9e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\DOF">
+      <UniqueIdentifier>{385491f0-a2cb-4080-ad44-8cd4ef5ef4d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -329,6 +332,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\Geometry.h">
       <Filter>Common Files\Acceleration Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\DOF.hpp">
+      <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -514,6 +520,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\AccelerationStructure\BVH.cpp">
       <Filter>Common Files\Acceleration Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\DOF.cpp">
+      <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -772,6 +781,9 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\BlendBloomWithDownSampled.hlsl">
       <Filter>Shader Files\Bloom</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\CalcFocalDistance.hlsl">
+      <Filter>Shader Files\DOF</Filter>
     </None>
   </ItemGroup>
 </Project>

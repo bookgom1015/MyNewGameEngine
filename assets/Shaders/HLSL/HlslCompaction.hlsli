@@ -6,8 +6,7 @@ typedef uint UINT;
 typedef int INT;
 typedef int BOOL;
 
-namespace DirectX
-{
+namespace DirectX {
     typedef float2 XMFLOAT2;
     typedef float3 XMFLOAT3;
     typedef float4 XMFLOAT4;

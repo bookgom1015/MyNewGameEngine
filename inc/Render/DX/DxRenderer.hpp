@@ -72,6 +72,7 @@ namespace Render {
 			namespace SSCS { class SSCSClass; }
 			namespace MotionBlur { class MotionBlurClass; }
 			namespace Bloom { class BloomClass; }
+			namespace DOF { class DOFClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -199,6 +200,7 @@ namespace Render {
 			std::unique_ptr<Shading::SSCS::SSCSClass> mSSCS;
 			std::unique_ptr<Shading::MotionBlur::MotionBlurClass> mMotionBlur;
 			std::unique_ptr<Shading::Bloom::BloomClass> mBloom;
+			std::unique_ptr<Shading::DOF::DOFClass> mDOF;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
