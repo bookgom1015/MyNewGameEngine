@@ -175,6 +175,10 @@ namespace Common::Render {
 			FLOAT SoftKnee = 0.5f;
 		};
 
+		struct DOFArguments {
+			BOOL Enabled = FALSE;
+		};
+
 		struct ShadingArgumentSet {
 			GammaCorrectionArguments GammaCorrection;			
 			ToneMappingArguments ToneMapping;
@@ -186,6 +190,7 @@ namespace Common::Render {
 			SSCSArguments SSCS;
 			MotionBlurArguments MotionBlur;
 			BloomArguments Bloom;
+			DOFArguments DOF;
 
 			BOOL ShadowEnabled = TRUE;
 			BOOL AOEnabled = TRUE;

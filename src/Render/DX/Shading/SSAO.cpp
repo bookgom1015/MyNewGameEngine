@@ -252,11 +252,11 @@ BOOL SSAO::SSAOClass::BuildRandomVectorTexture() {
 }
 
 BOOL SSAO::SSAOClass::DrawAO(
-	Foundation::Resource::FrameResource* const pFrameResource,
-	Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
-	D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
-	Foundation::Resource::GpuResource* const pPositionMap,
-	D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
+		Foundation::Resource::FrameResource* const pFrameResource,
+		Foundation::Resource::GpuResource* const pCurrNormalDepthMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_currNormalDepthMap,
+		Foundation::Resource::GpuResource* const pPositionMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,

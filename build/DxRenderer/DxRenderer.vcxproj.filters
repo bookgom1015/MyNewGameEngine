@@ -785,5 +785,17 @@
     <None Include="..\..\assets\Shaders\HLSL\CalcFocalDistance.hlsl">
       <Filter>Shader Files\DOF</Filter>
     </None>
+    <None Include="..\..\assets\Shaders\HLSL\CircleOfConfusion.hlsl">
+      <Filter>Shader Files\DOF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\Bokeh.hlsl">
+      <Filter>Shader Files\DOF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\Bokeh.hlsli">
+      <Filter>Shader Files\DOF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\BokehBlur3x3.hlsl">
+      <Filter>Shader Files\DOF</Filter>
+    </None>
   </ItemGroup>
 </Project>

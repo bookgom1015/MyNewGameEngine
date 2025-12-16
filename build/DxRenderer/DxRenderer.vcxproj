@@ -134,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\BlinnPhong.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\Bokeh.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\BRDF.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\CookTorrance.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli" />
@@ -374,6 +375,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\CalcFocalDistance.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\CircleOfConfusion.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\Bokeh.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\BokehBlur3x3.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

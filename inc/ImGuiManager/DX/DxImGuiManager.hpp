@@ -76,6 +76,7 @@ namespace ImGuiManager {
 			void SSCSTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void MotionBlurTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void BloomTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void DOFTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
 			BOOL mbIsD3D12Initialized = FALSE;

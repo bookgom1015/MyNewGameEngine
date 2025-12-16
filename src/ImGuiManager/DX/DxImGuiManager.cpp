@@ -363,6 +363,8 @@ void DxImGuiManager::ShadingObjectHeader(Common::Render::ShadingArgument::Shadin
 		MotionBlurTree(pArgSet);
 		// Bloom
 		BloomTree(pArgSet);
+		// DOF
+		DOFTree(pArgSet);
 	}
 }
 
@@ -588,6 +590,14 @@ void DxImGuiManager::MotionBlurTree(Common::Render::ShadingArgument::ShadingArgu
 void DxImGuiManager::BloomTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("Bloom")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->Bloom.Enabled));
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::DOFTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("Depth of Field")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->DOF.Enabled));
 
 		ImGui::TreePop();
 	}

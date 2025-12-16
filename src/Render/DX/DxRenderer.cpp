@@ -275,6 +275,9 @@ BOOL DxRenderer::Draw() {
 	if (mpShadingArgumentSet->Bloom.Enabled)
 		CheckReturn(mpLogFile, ApplyBloom());
 
+	if (mpShadingArgumentSet->DOF.Enabled)
+		CheckReturn(mpLogFile, ApplyDOF());
+
 	if (mpShadingArgumentSet->TAA.Enabled) {
 		CheckReturn(mpLogFile, mTAA->ApplyTAA(
 			mpCurrentFrameResource,
@@ -297,7 +300,7 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->BackBufferRtv(),
 		mpShadingArgumentSet->ToneMapping.Exposure,
 		mpShadingArgumentSet->ToneMapping.TonemapperType));
-
+	
 	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
 		CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
 			mpCurrentFrameResource,
@@ -1930,6 +1933,38 @@ BOOL DxRenderer::ApplyBloom() {
 	CheckReturn(mpLogFile, mBloom->BlurHighlights(mpCurrentFrameResource, downSampleFunc, blurFunc));	
 
 	CheckReturn(mpLogFile, mBloom->ApplyBloom(
+		mpCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(),
+		mToneMapping->InterMediateCopyMapSrv()));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::ApplyDOF() {
+	CheckReturn(mpLogFile, mDOF->CalcFocalDistance(
+		mpCurrentFrameResource,
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv()));
+
+	CheckReturn(mpLogFile, mDOF->CircleOfConfusion(
+		mpCurrentFrameResource,
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
+		mDepthStencilBuffer->DepthStencilBufferSrv()));
+
+	CheckReturn(mpLogFile, mDOF->Bokeh(
+		mpCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(),
+		mToneMapping->InterMediateCopyMapSrv()));
+
+	CheckReturn(mpLogFile, mDOF->BokehBlur(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),

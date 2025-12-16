@@ -157,6 +157,7 @@ namespace Render {
 			BOOL IntegrateIrradiance();
 			BOOL ApplyVolumetricLight();
 			BOOL ApplyBloom();
+			BOOL ApplyDOF();
 			BOOL PresentAndSignal();
 
 		private:

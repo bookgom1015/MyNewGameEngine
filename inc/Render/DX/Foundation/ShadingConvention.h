@@ -1055,6 +1055,28 @@ namespace ShadingConvention{
 	}
 
 	namespace DOF {
+#ifndef DOF_CircleOfConfusion_RCSTRUCT
+#define DOF_CircleOfConfusion_RCSTRUCT {	\
+		FLOAT gFocusRange;					\
+	};
+#endif
+
+#ifndef DOF_Bokeh_RCSTRUCT
+#define DOF_Bokeh_RCSTRUCT {			\
+		DirectX::XMFLOAT2 gInvTexDim;	\
+		FLOAT gSampleCount;				\
+		FLOAT gBokehRadius;				\
+		FLOAT gThreshold;				\
+		FLOAT gHighlightPower;			\
+	};
+#endif
+
+#ifndef DOF_BokehBlur3x3_RCSTRUCT
+#define DOF_BokehBlur3x3_RCSTRUCT {	\
+		DirectX::XMUINT2 gTexDim;	\
+	};
+#endif
+
 		namespace ThreadGroup {
 			namespace Default {
 				enum {
@@ -1062,6 +1084,56 @@ namespace ShadingConvention{
 					Height	= 8,
 					Depth	= 1,
 					Size	= Width * Height * Depth
+				};
+			}
+		}
+
+#ifdef _HLSL
+	#ifndef DOF_CircleOfConfusion_RootConstants
+	#define DOF_CircleOfConfusion_RootConstants(reg) cbuffer cbRootConstants : register(reg) DOF_CircleOfConfusion_RCSTRUCT
+	#endif
+
+	#ifndef DOF_Bokeh_RootConstants
+	#define DOF_Bokeh_RootConstants(reg) cbuffer cbRootConstants : register(reg) DOF_Bokeh_RCSTRUCT
+	#endif
+
+	#ifndef DOF_BokehBlur3x3_RootConstants
+	#define DOF_BokehBlur3x3_RootConstants(reg) cbuffer cbRootConstants : register(reg) DOF_BokehBlur3x3_RCSTRUCT
+	#endif
+
+		typedef float CircleOfConfusionMapFormat;
+#else		
+		const DXGI_FORMAT CircleOfConfusionMapFormat = DXGI_FORMAT_R16_SNORM;
+#endif
+
+		namespace RootConstant {
+			namespace CircleOfConfusion {
+				struct Struct DOF_CircleOfConfusion_RCSTRUCT
+				enum {
+					E_FocusRange = 0,
+					Count
+				};
+			}
+
+			namespace Bokeh {
+				struct Struct DOF_Bokeh_RCSTRUCT
+				enum {
+					E_InvTexDim_X = 0,
+					E_InvTexDim_Y,
+					E_SampleCount,
+					E_BokehRadius,
+					E_Threshold,
+					E_HighlightPower,
+					Count
+				};
+			}
+
+			namespace BokehBlur3x3 {
+				struct Struct DOF_BokehBlur3x3_RCSTRUCT
+					enum {
+					E_TexDim_X = 0,
+					E_TexDim_Y,
+					Count
 				};
 			}
 		}

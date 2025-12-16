@@ -79,27 +79,6 @@ BOOL MotionBlur::MotionBlurClass::BuildRootSignatures(const Render::DX::Shading:
 }
 
 BOOL MotionBlur::MotionBlurClass::BuildPipelineStates() {
-	// GraphicsPipelineState
-	{
-		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-		psoDesc.pRootSignature = mRootSignature.Get();
-		{
-			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_MotionBlur]);
-			NullCheck(mpLogFile, VS);
-			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_MotionBlur]);
-			NullCheck(mpLogFile, PS);
-			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-		}
-		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = SDR_FORMAT;
-
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device,
-			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_MotionBlur]),
-			L"MotionBlur_GP_Default"));
-	}
 	// MeshPipelineState
 	if (mInitData.MeshShaderSupported) {
 		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
@@ -120,6 +99,27 @@ BOOL MotionBlur::MotionBlurClass::BuildPipelineStates() {
 			psoDesc,
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_MotionBlur]),
 			L"MotionBlur_MP_Default"));
+	}
+	// GraphicsPipelineState
+	else {
+		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+		psoDesc.pRootSignature = mRootSignature.Get();
+		{
+			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_MotionBlur]);
+			NullCheck(mpLogFile, VS);
+			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_MotionBlur]);
+			NullCheck(mpLogFile, PS);
+			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+		}
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = SDR_FORMAT;
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_MotionBlur]),
+			L"MotionBlur_GP_Default"));
 	}
 
 	return TRUE;
