@@ -1072,8 +1072,9 @@ namespace ShadingConvention{
 #endif
 
 #ifndef DOF_BokehBlur3x3_RCSTRUCT
-#define DOF_BokehBlur3x3_RCSTRUCT {	\
-		DirectX::XMUINT2 gTexDim;	\
+#define DOF_BokehBlur3x3_RCSTRUCT {		\
+		DirectX::XMUINT2 gTexDim;		\
+		DirectX::XMFLOAT2 gInvTexDim;	\
 	};
 #endif
 
@@ -1133,6 +1134,8 @@ namespace ShadingConvention{
 					enum {
 					E_TexDim_X = 0,
 					E_TexDim_Y,
+					E_InvTexDim_X,
+					E_InvTexDim_Y,
 					Count
 				};
 			}

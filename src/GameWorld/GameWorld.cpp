@@ -10,6 +10,7 @@
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "GameWorld/Player/FreeLookActor.hpp"
 #include "GameWorld/Prefab/LampShade.hpp"
+#include "GameWorld/Prefab/FineDonut.hpp"
 #include "GameWorld/Prefab/MetalSphere.hpp"
 
 using namespace GameWorld;
@@ -227,6 +228,12 @@ BOOL GameWorldClass::InitActorManager() {
 BOOL GameWorldClass::BuildScene() {
 	new Player::FreeLookActor(mpLogFile, "free_look_actor", DirectX::XMFLOAT3(0.f, 2.f, -6.f));
 	new Prefab::LampShade(mpLogFile, "lamp_shade");
+	new Prefab::FineDonut(
+		mpLogFile, 
+		"fine_donut",
+		DirectX::XMFLOAT3(0.f, 12.f, 0.f),
+		DirectX::XMFLOAT4(0.f, 0.f, 0.f, 1.f),
+		DirectX::XMFLOAT3(8.f, 8.f, 8.f));
 	new Prefab::MetalSphere(
 		mpLogFile, 
 		"metal_sphere", 

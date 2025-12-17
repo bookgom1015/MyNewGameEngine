@@ -22,10 +22,10 @@ BlurFilter_Default_RootConstants(b0)
 static const int KERNEL_SIZE = (KERNEL_RADIUS * 2 + 1);
 
 static const float GAUSS_SIGMA =
-    (KERNEL_RADIUS == 1) ? 1.0f :   // 3x3
-    (KERNEL_RADIUS == 2) ? 1.2f :   // 5x5
-    (KERNEL_RADIUS == 3) ? 1.8f :   // 7x7
-                           2.0f;    // 9x9 (KERNEL_RADIUS == 4)
+    (KERNEL_RADIUS == 1) ? 0.5f : // 3x3
+    (KERNEL_RADIUS == 2) ? 1.f  : // 5x5
+    (KERNEL_RADIUS == 3) ? 1.5f : // 7x7
+                           2.f;   // 9x9 (KERNEL_RADIUS == 4)
 
 Texture2D<ValueType>   gi_InputMap  : register(t0);
 RWTexture2D<ValueType> go_OutputMap : register(u0);
@@ -39,10 +39,10 @@ void AddFilterContribution(
 
     if (id.x >= 0 && id.y >= 0 && id.x < gTexDim.x && id.y < gTexDim.y) {
         const float2 d = float2(offset);
-        const float sigma2 = GAUSS_SIGMA * GAUSS_SIGMA;
+        const float twoSigma2 = 2 * GAUSS_SIGMA * GAUSS_SIGMA;
 
         // 2D Gaussian: exp(-(x^2 + y^2) / (2sig^2))
-        const float weight = exp(-dot(d, d) / (2.f * sigma2));
+        const float weight = exp(-dot(d, d) / (twoSigma2));
 
         weightedValueSum += weight * gi_InputMap[id];
         weightSum += weight;

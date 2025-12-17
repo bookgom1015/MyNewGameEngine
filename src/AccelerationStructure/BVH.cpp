@@ -8,16 +8,6 @@
 
 using namespace Common::AccelerationStructure;
 
-// report progress during BVH construction
-#define PROGRESS_REPORT
-#ifdef PROGRESS_REPORT
-#define REPORT(x) x
-#define REPORTPRM(x) x,
-#else
-#define REPORT(x)
-#define REPORTPRM(x)
-#endif
-
 unsigned gReportCounter = 0;
 
 // The BVH
@@ -73,8 +63,7 @@ typedef std::vector<BBoxTmp> BBoxEntries;  // vector of triangle bounding boxes 
 // recursive building of BVH nodes
 // work is the working list (std::vector<>) of triangle bounding boxes 
 
-BVHNode* Recurse(BBoxEntries& work, REPORTPRM(float pct = 0.) int depth = 0) {
-	REPORT(float pctSpan = 11. / pow(3.f, depth);)
+BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 
 		// terminate recursion case: 
 		// if work set has less then 4 elements (triangle bounding boxes), create a leaf node 
@@ -150,22 +139,8 @@ BVHNode* Recurse(BBoxEntries& work, REPORTPRM(float pct = 0.) int depth = 0) {
 		// each bin has size "step"
 		step = (stop - start) / (1024. / (depth + 1.));
 
-#ifdef PROGRESS_REPORT
-		// Progress report variables...
-		float pctStart = pct + j * pctSpan;  // j is axis
-		float pctStep = pctSpan / ((stop - start - 2 * step) / step);
-#endif
-
 		// for each bin (equally spaced bins of size "step"):
 		for (float testSplit = start + step; testSplit < stop - step; testSplit += step) {
-
-#ifdef PROGRESS_REPORT
-			if ((1023 & gReportCounter++) == 0) {
-				std::printf("\b\b\b%02d%%", int(pctStart)); fflush(stdout);
-			}
-			pctStart += pctStep;
-#endif
-
 			// Create left and right bounding box
 			Vector3Df lbottom(FLT_MAX, FLT_MAX, FLT_MAX);
 			Vector3Df ltop(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -256,7 +231,7 @@ BVHNode* Recurse(BBoxEntries& work, REPORTPRM(float pct = 0.) int depth = 0) {
 
 	// distribute the triangles in the left or right child nodes
 	// for each triangle in the work set
-	for (int i = 0; i < (int)work.size(); i++) {
+	for (int i = 0, end = static_cast<int>(work.size()); i < end; i++) {
 		// create temporary bbox for triangle
 		BBoxTmp& v = work[i];
 
@@ -285,25 +260,13 @@ BVHNode* Recurse(BBoxEntries& work, REPORTPRM(float pct = 0.) int depth = 0) {
 	// create inner node
 	BVHInner* inner = new BVHInner;
 
-#ifdef PROGRESS_REPORT
-	if ((1023 & gReportCounter++) == 0) {
-		std::printf("\b\b\b%2d%%", int(pct + 3.f * pctSpan)); // Update progress indicator
-		fflush(stdout);
-	}
-#endif
 	// recursively build the left child
-	inner->Left = Recurse(left, REPORTPRM(pct + 3.f * pctSpan) depth + 1);
+	inner->Left = Recurse(left, depth + 1);
 	inner->Left->Bottom = lbottom;
 	inner->Left->Top = ltop;
 
-#ifdef PROGRESS_REPORT
-	if ((1023 & gReportCounter++) == 0) {
-		std::printf("\b\b\b%2d%%", int(pct + 6.f * pctSpan)); // Update progress indicator
-		fflush(stdout);
-	}
-#endif
 	// recursively build the right child
-	inner->Right = Recurse(right, REPORTPRM(pct + 6.f * pctSpan) depth + 1);
+	inner->Right = Recurse(right, depth + 1);
 	inner->Right->Bottom = rbottom;
 	inner->Right->Top = rtop;
 
@@ -355,11 +318,7 @@ BVHNode* CreateBVH() {
 
 	// ...and pass it to the recursive function that creates the SAH AABB BVH
 	// (Surface Area Heuristic, Axis-Aligned Bounding Boxes, Bounding Volume Hierarchy)
-
-	std::printf("Creating Bounding Volume Hierarchy data...    "); fflush(stdout);
 	BVHNode* root = Recurse(work); // builds BVH and returns root node
-	printf("\b\b\b100%%\n");
-
 	root->Bottom = bottom; // bottom is bottom of bbox bounding all triangles in the scene
 	root->Top = top;
 
@@ -437,10 +396,7 @@ void PopulateCacheFriendlyBVH(
 }
 
 void Common::AccelerationStructure::CreateCFBVH() {
-	if (!gpSceneBVH) {
-		puts("Internal bug in CreateCFBVH, please report it..."); fflush(stdout);
-		exit(1);
-	}
+	if (!gpSceneBVH) exit(1);
 
 	unsigned idxTriList = 0;
 	unsigned idxBoxes = 0;
@@ -453,18 +409,11 @@ void Common::AccelerationStructure::CreateCFBVH() {
 
 	PopulateCacheFriendlyBVH(&gTriangles[0], gpSceneBVH, idxBoxes, idxTriList);
 
-	if ((idxBoxes != gpCFBVH_No - 1) || (idxTriList != gTriIndexListNo)) {
-		puts("Internal bug in CreateCFBVH, please report it..."); fflush(stdout);
-		exit(1);
-	}
+	if ((idxBoxes != gpCFBVH_No - 1) || (idxTriList != gTriIndexListNo)) exit(1);
 
 	int maxDepth = 0;
 	CountDepth(gpSceneBVH, 0, maxDepth);
-	if (maxDepth >= BVH_STACK_SIZE) {
-		printf("Max depth of BVH was %d\n", maxDepth);
-		puts("Recompile with BVH_STACK_SIZE set to more than that..."); fflush(stdout);
-		exit(1);
-	}
+	if (maxDepth >= BVH_STACK_SIZE) exit(1);
 }
 
 // The gateway - creates the "pure" BVH, and then copies the results in the cache-friendly one
@@ -478,13 +427,6 @@ void Common::AccelerationStructure::UpdateBoundingVolumeHierarchy(const char* fi
 			// No cached BVH data - we need to calculate them
 			Clock me;
 			gpSceneBVH = CreateBVH();
-			printf("Building the BVH%s took %.2f seconds\n",
-#ifdef SIMD_SSE
-				" with SSE", // SIMD SSE building has been removed for the tutorial
-#else
-				"",
-#endif
-				me.readMS() / 1000.);
 
 			// Now that the BVH has been created, copy its data into a more cache-friendly format
 			// (CacheFriendlyBVHNode occupies exactly 32 bytes, i.e. a cache-line)
@@ -500,7 +442,6 @@ void Common::AccelerationStructure::UpdateBoundingVolumeHierarchy(const char* fi
 			fclose(fp);
 		}
 		else { // BVH has been built already and stored in a file, read the file
-			puts("Cache exists, reading the pre-calculated BVH data...");
 			if (1 != fread(&gpCFBVH_No, sizeof(unsigned), 1, fp)) return;
 			if (1 != fread(&gTriIndexListNo, sizeof(unsigned), 1, fp)) return;
 			gpCFBVH = new CacheFriendlyBVHNode[gpCFBVH_No];

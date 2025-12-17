@@ -14,7 +14,7 @@ namespace {
 	const WCHAR* const HLSL_CalcFocalDistance = L"CalcFocalDistance.hlsl";
 	const WCHAR* const HLSL_CircleOfConfusion = L"CircleOfConfusion.hlsl";
 	const WCHAR* const HLSL_Bokeh = L"Bokeh.hlsl";
-	const WCHAR* const HLSL_BokehBlur3x3 = L"BokehBlur3x3.hlsl";
+	const WCHAR* const HLSL_BokehBlurNxN = L"BokehBlurNxN.hlsl";
 }
 
 DOF::InitDataPtr DOF::MakeInitData() {
@@ -80,17 +80,17 @@ BOOL DOF::DOFClass::CompileShaders() {
 	// BokehBlur3x3
 	{
 		const auto VS = Util::ShaderManager::D3D12ShaderInfo(
-			HLSL_BokehBlur3x3, L"VS", L"vs_6_5");
+			HLSL_BokehBlurNxN, L"VS", L"vs_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
-			VS, mShaderHashes[Shader::VS_BokehBlur3x3]));
+			VS, mShaderHashes[Shader::VS_BokehBlurNxN]));
 		const auto MS = Util::ShaderManager::D3D12ShaderInfo(
-			HLSL_BokehBlur3x3, L"MS", L"ms_6_5");
+			HLSL_BokehBlurNxN, L"MS", L"ms_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
-			MS, mShaderHashes[Shader::MS_BokehBlur3x3]));
+			MS, mShaderHashes[Shader::MS_BokehBlurNxN]));
 		const auto PS = Util::ShaderManager::D3D12ShaderInfo(
-			HLSL_BokehBlur3x3, L"PS", L"ps_6_5");
+			HLSL_BokehBlurNxN, L"PS", L"ps_6_5");
 		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
-			PS, mShaderHashes[Shader::PS_BokehBlur3x3]));
+			PS, mShaderHashes[Shader::PS_BokehBlurNxN]));
 	}
 
 	return TRUE;
@@ -189,12 +189,12 @@ BOOL DOF::DOFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BokehBlur3x3::Count] = {};
-		slotRootParameter[RootSignature::BokehBlur3x3::RC_Consts].
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BokehBlurNxN::Count] = {};
+		slotRootParameter[RootSignature::BokehBlurNxN::RC_Consts].
 			InitAsConstants(ShadingConvention::DOF::RootConstant::BokehBlur3x3::Count, 0);
-		slotRootParameter[RootSignature::BokehBlur3x3::SI_InputMap].
+		slotRootParameter[RootSignature::BokehBlurNxN::SI_InputMap].
 			InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::BokehBlur3x3::SI_CoCMap].
+		slotRootParameter[RootSignature::BokehBlurNxN::SI_CoCMap].
 			InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
@@ -205,8 +205,8 @@ BOOL DOF::DOFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
 			mInitData.Device,
 			rootSigDesc,
-			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_BokehBlur3x3]),
-			L"DOF_GR_BokehBlur3x3"));
+			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_BokehBlurNxN]),
+			L"DOF_GR_BokehBlurNxN"));
 	}
 
 	return TRUE;
@@ -296,18 +296,18 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 				L"DOF_GP_Bokeh"));
 		}
 	}
-	// BokehBlur3x3
+	// BokehBlurNxN
 	{
 		// MeshPipelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
-			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BokehBlur3x3].Get();
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BokehBlurNxN].Get();
 			{
 				const auto MS = mInitData.ShaderManager->GetShader(
-					mShaderHashes[Shader::MS_BokehBlur3x3]);
+					mShaderHashes[Shader::MS_BokehBlurNxN]);
 				NullCheck(mpLogFile, MS);
 				const auto PS = mInitData.ShaderManager->GetShader(
-					mShaderHashes[Shader::PS_BokehBlur3x3]);
+					mShaderHashes[Shader::PS_BokehBlurNxN]);
 				NullCheck(mpLogFile, PS);
 				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
@@ -318,19 +318,19 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreatePipelineState(
 				mInitData.Device,
 				psoDesc,
-				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_BokehBlur3x3]),
-				L"DOF_MP_BokehBlur3x3"));
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_BokehBlurNxN]),
+				L"DOF_MP_BokehBlurNxN"));
 		}
 		// GraphicsPipelineState
 		else {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BokehBlur3x3].Get();
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BokehBlurNxN].Get();
 			{
 				const auto VS = mInitData.ShaderManager->GetShader(
-					mShaderHashes[Shader::VS_BokehBlur3x3]);
+					mShaderHashes[Shader::VS_BokehBlurNxN]);
 				NullCheck(mpLogFile, VS);
 				const auto PS = mInitData.ShaderManager->GetShader(
-					mShaderHashes[Shader::PS_BokehBlur3x3]);
+					mShaderHashes[Shader::PS_BokehBlurNxN]);
 				NullCheck(mpLogFile, PS);
 				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
@@ -341,8 +341,8 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 				mInitData.Device,
 				psoDesc,
-				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_BokehBlur3x3]),
-				L"DOF_GP_BokehBlur3x3"));
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_BokehBlurNxN]),
+				L"DOF_GP_BokehBlurNxN"));
 		}
 	}
 	return TRUE;
@@ -557,13 +557,13 @@ BOOL DOF::DOFClass::BokehBlur(
 		pFrameResource->CommandAllocator(0),
 		0,
 		mPipelineStates[mInitData.MeshShaderSupported ?
-		PipelineState::MP_BokehBlur3x3 : PipelineState::GP_BokehBlur3x3].Get()));
+		PipelineState::MP_BokehBlurNxN : PipelineState::GP_BokehBlurNxN].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_BokehBlur3x3].Get());
+		CmdList->SetGraphicsRootSignature(mRootSignatures[RootSignature::GR_BokehBlurNxN].Get());
 
 		CmdList->RSSetViewports(1, &viewport);
 		CmdList->RSSetScissorRects(1, &scissorRect);
@@ -581,10 +581,14 @@ BOOL DOF::DOFClass::BokehBlur(
 
 		ShadingConvention::DOF::RootConstant::BokehBlur3x3::Struct rc;
 		rc.gTexDim = { mInitData.ClientWidth, mInitData.ClientHeight };
+		rc.gInvTexDim = { 
+			1.f / static_cast<FLOAT>(mInitData.ClientWidth), 
+			1.f / static_cast<FLOAT>(mInitData.ClientHeight) 
+		};
 
 		Foundation::Util::D3D12Util::SetRoot32BitConstants<
 			ShadingConvention::DOF::RootConstant::BokehBlur3x3::Struct>(
-				RootSignature::BokehBlur3x3::RC_Consts,
+				RootSignature::BokehBlurNxN::RC_Consts,
 				ShadingConvention::DOF::RootConstant::BokehBlur3x3::Count,
 				&rc,
 				0,
@@ -592,9 +596,9 @@ BOOL DOF::DOFClass::BokehBlur(
 				FALSE);
 
 		CmdList->SetGraphicsRootDescriptorTable(
-			RootSignature::BokehBlur3x3::SI_InputMap, si_backBufferCopy);
+			RootSignature::BokehBlurNxN::SI_InputMap, si_backBufferCopy);
 		CmdList->SetGraphicsRootDescriptorTable(
-			RootSignature::BokehBlur3x3::SI_CoCMap, mhCircleOfConfusionMapGpuSrv);
+			RootSignature::BokehBlurNxN::SI_CoCMap, mhCircleOfConfusionMapGpuSrv);
 
 		for (UINT i = 0; i < 3; ++i) {
 			if (mInitData.MeshShaderSupported) {

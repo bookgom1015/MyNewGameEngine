@@ -794,7 +794,7 @@
     <None Include="..\..\assets\Shaders\HLSL\Bokeh.hlsli">
       <Filter>Shader Files\DOF</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\BokehBlur3x3.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\BokehBlurNxN.hlsl">
       <Filter>Shader Files\DOF</Filter>
     </None>
   </ItemGroup>

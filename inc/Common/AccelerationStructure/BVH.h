@@ -27,10 +27,10 @@
 
 namespace Common::AccelerationStructure {
 	struct Clock {
-		unsigned firstValue;
+		unsigned FirstValue;
 		Clock() { reset(); }
-		void reset() { firstValue = clock(); }
-		unsigned readMS() { return (clock() - firstValue) / (CLOCKS_PER_SEC / 1000); }
+		void reset() { FirstValue = clock(); }
+		unsigned readMS() { return (clock() - FirstValue) / (CLOCKS_PER_SEC / 1000); }
 	};
 
 	// The nice version of the BVH - a shallow hierarchy of inner and leaf nodes

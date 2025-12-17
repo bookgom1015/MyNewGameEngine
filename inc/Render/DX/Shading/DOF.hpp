@@ -11,9 +11,9 @@ namespace Render::DX::Shading {
 				VS_Bokeh,
 				MS_Bokeh,
 				PS_Bokeh,
-				VS_BokehBlur3x3,
-				MS_BokehBlur3x3,
-				PS_BokehBlur3x3,
+				VS_BokehBlurNxN,
+				MS_BokehBlurNxN,
+				PS_BokehBlurNxN,
 				Count
 			};
 		}
@@ -23,7 +23,7 @@ namespace Render::DX::Shading {
 				GR_CalcFocalDistance = 0,
 				GR_CircleOfConfusion,
 				GR_Bokeh,
-				GR_BokehBlur3x3,
+				GR_BokehBlurNxN,
 				Count
 			};
 
@@ -56,7 +56,7 @@ namespace Render::DX::Shading {
 				};
 			}
 
-			namespace BokehBlur3x3 {
+			namespace BokehBlurNxN {
 				enum {
 					RC_Consts = 0,
 					SI_InputMap,
@@ -72,8 +72,8 @@ namespace Render::DX::Shading {
 				CP_CircleOfConfusion,
 				GP_Bokeh,
 				MP_Bokeh,
-				GP_BokehBlur3x3,
-				MP_BokehBlur3x3,
+				GP_BokehBlurNxN,
+				MP_BokehBlurNxN,
 				Count
 			};
 		}

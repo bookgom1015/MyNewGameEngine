@@ -389,7 +389,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\BokehBlur3x3.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\BokehBlurNxN.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
