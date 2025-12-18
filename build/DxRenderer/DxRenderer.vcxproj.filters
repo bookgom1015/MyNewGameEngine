@@ -172,6 +172,9 @@
     <Filter Include="Shader Files\DOF">
       <UniqueIdentifier>{385491f0-a2cb-4080-ad44-8cd4ef5ef4d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\EyeAdaption">
+      <UniqueIdentifier>{d82b861c-dca0-40be-9746-5bc5232504c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -334,6 +337,9 @@
       <Filter>Common Files\Acceleration Structure</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\DOF.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\EyeAdaption.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -522,6 +528,9 @@
       <Filter>Common Files\Acceleration Structure</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\DOF.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\EyeAdaption.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -796,6 +805,9 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\BokehBlurNxN.hlsl">
       <Filter>Shader Files\DOF</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ExtractSceneLuminance.hlsl">
+      <Filter>Shader Files\EyeAdaption</Filter>
     </None>
   </ItemGroup>
 </Project>

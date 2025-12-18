@@ -96,6 +96,22 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 			lastStartIndexLocation = startIndexLocation;
 			lastIndexCount = indexCount;
 			lastPrevMatId = prevMatId;
+
+			{
+				Common::AccelerationStructure::Triangle tri = {};
+
+				tri.Index1 = 3 * index.normal_index + 0;
+				tri.Index2 = 3 * index.normal_index + 1;
+				tri.Index3 = 3 * index.normal_index + 2;
+
+				tri.Normal = {
+					attrib.normals[3 * index.normal_index + 0],
+					attrib.normals[3 * index.normal_index + 1],
+					attrib.normals[3 * index.normal_index + 2]
+				};
+
+
+			}
 		}
 	}
 

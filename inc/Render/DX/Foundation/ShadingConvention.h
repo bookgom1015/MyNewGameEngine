@@ -1141,6 +1141,19 @@ namespace ShadingConvention{
 			}
 		}
 	}
+
+	namespace EyeAdaption {
+		namespace ThreadGroup {
+			namespace Default {
+				enum {
+					Width	= 8,
+					Height	= 8,
+					Depth	= 1,
+					Size	= Width * Height * Depth
+				};
+			}
+		}
+	}
 }
 
 #endif // __SHADINGCONVENTION_H__

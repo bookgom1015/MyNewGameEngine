@@ -231,9 +231,9 @@ BOOL GameWorldClass::BuildScene() {
 	new Prefab::FineDonut(
 		mpLogFile, 
 		"fine_donut",
-		DirectX::XMFLOAT3(0.f, 12.f, 0.f),
+		DirectX::XMFLOAT3(0.f, 8.f, 0.f),
 		DirectX::XMFLOAT4(0.f, 0.f, 0.f, 1.f),
-		DirectX::XMFLOAT3(8.f, 8.f, 8.f));
+		DirectX::XMFLOAT3(3.f, 2.f, 3.f));
 	new Prefab::MetalSphere(
 		mpLogFile, 
 		"metal_sphere", 

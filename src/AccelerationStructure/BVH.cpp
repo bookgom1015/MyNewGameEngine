@@ -64,18 +64,16 @@ typedef std::vector<BBoxTmp> BBoxEntries;  // vector of triangle bounding boxes 
 // work is the working list (std::vector<>) of triangle bounding boxes 
 
 BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
+	// terminate recursion case: 
+	// if work set has less then 4 elements (triangle bounding boxes), create a leaf node 
+	// and create a list of the triangles contained in the node
 
-		// terminate recursion case: 
-		// if work set has less then 4 elements (triangle bounding boxes), create a leaf node 
-		// and create a list of the triangles contained in the node
-
-		if (work.size() < 4) {
-
-			BVHLeaf* leaf = new BVHLeaf;
-			for (BBoxEntries::iterator it = work.begin(); it != work.end(); it++)
-				leaf->Triangles.push_back(it->pTriangles);
-			return leaf;
-		}
+	if (work.size() < 4) {
+		BVHLeaf* leaf = new BVHLeaf;
+		for (BBoxEntries::iterator it = work.begin(); it != work.end(); it++)
+			leaf->Triangles.push_back(it->pTriangles);
+		return leaf;
+	}
 
 	// else, work size > 4, divide  node further into smaller nodes
 	// start by finding the working list's bounding box (top and bottom)
@@ -105,7 +103,6 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 
 	// Try all 3 axises X, Y, Z
 	for (int j = 0; j < 3; j++) {  // 0 = X, 1 = Y, 2 = Z axis
-
 		int axis = j;
 
 		// we will try dividing the triangles based on the current axis,
@@ -137,7 +134,7 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 		// Binning: Try splitting at a uniform sampling (at equidistantly spaced planes) that gets smaller the deeper we go:
 		// size of "sampling grid": 1024 (depth 0), 512 (depth 1), etc
 		// each bin has size "step"
-		step = (stop - start) / (1024. / (depth + 1.));
+		step = (stop - start) / (1024.f / (depth + 1.f));
 
 		// for each bin (equally spaced bins of size "step"):
 		for (float testSplit = start + step; testSplit < stop - step; testSplit += step) {
@@ -154,7 +151,6 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 			// For each test split (or bin), allocate triangles in remaining work list based on their bbox centers
 			// this is a fast O(N) pass, no triangle sorting needed (yet)
 			for (unsigned i = 0; i < work.size(); i++) {
-
 				BBoxTmp& v = work[i];
 
 				// compute bbox center
@@ -213,7 +209,6 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 	// If we found no split to improve the cost, create a BVH leaf
 
 	if (bestAxis == -1) {
-
 		BVHLeaf* leaf = new BVHLeaf;
 		for (BBoxEntries::iterator it = work.begin(); it != work.end(); it++)
 			leaf->Triangles.push_back(it->pTriangles); // put triangles of working list in leaf's triangle list

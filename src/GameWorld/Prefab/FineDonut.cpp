@@ -1,5 +1,6 @@
 #include "GameWorld/Prefab/FineDonut.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Util/MathUtil.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "GameWorld/Foundation/Core/Component.hpp"
 #include "GameWorld/Foundation/Mesh/MeshComponent.hpp"
@@ -36,5 +37,18 @@ BOOL FineDonut::ProcessActorInput(Common::Input::InputState* const pInputState) 
 }
 
 BOOL FineDonut::UpdateActor(FLOAT delta) {
+	static FLOAT elapsed = 0.f;
+	elapsed += delta;
+
+	auto rad = Common::Util::MathUtil::DegreesToRadians(elapsed * 45.f);
+
+	auto q1 = XMQuaternionRotationAxis(UnitVector::UpVector, rad);
+	auto q2 = XMQuaternionMultiply(UnitVector::RightVector, q1);
+
+	XMFLOAT4 rot;
+	XMStoreFloat4(&rot, XMQuaternionRotationAxis(q2, rad));
+
+	SetRotation(rot);
+
 	return TRUE;
 }

@@ -46,6 +46,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\BRDF.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\DOF.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\EyeAdaption.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\GBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\MotionBlur.hpp" />
@@ -110,6 +111,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\BRDF.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\DOF.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\EyeAdaption.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\GBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\MotionBlur.cpp" />
@@ -390,6 +392,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\BokehBlurNxN.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\ExtractSceneLuminance.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
