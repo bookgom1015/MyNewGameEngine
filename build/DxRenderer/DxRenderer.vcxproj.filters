@@ -806,7 +806,7 @@
     <None Include="..\..\assets\Shaders\HLSL\BokehBlurNxN.hlsl">
       <Filter>Shader Files\DOF</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\ExtractSceneLuminance.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\LuminanceHistogram.hlsl">
       <Filter>Shader Files\EyeAdaption</Filter>
     </None>
   </ItemGroup>

@@ -124,7 +124,8 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pBackBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 				Foundation::Resource::GpuResource* const pBackBufferCopy,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy,
+				UINT numSamples, FLOAT bokehRadius, FLOAT threshold, FLOAT highlightPower);
 			BOOL BokehBlur(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				D3D12_VIEWPORT viewport,

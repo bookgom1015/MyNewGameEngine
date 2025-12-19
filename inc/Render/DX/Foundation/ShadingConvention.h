@@ -1064,7 +1064,7 @@ namespace ShadingConvention{
 #ifndef DOF_Bokeh_RCSTRUCT
 #define DOF_Bokeh_RCSTRUCT {			\
 		DirectX::XMFLOAT2 gInvTexDim;	\
-		FLOAT gSampleCount;				\
+		INT gSampleCount;				\
 		FLOAT gBokehRadius;				\
 		FLOAT gThreshold;				\
 		FLOAT gHighlightPower;			\

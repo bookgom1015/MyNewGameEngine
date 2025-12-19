@@ -46,7 +46,8 @@ namespace ImGuiManager {
 				Render::DX::Foundation::Core::DescriptorHeap* const pDescriptorHeap);
 			void CleanUpD3D12();
 
-			void HookMsgCallback(Common::Foundation::Core::WindowsManager* const pWndManager);
+			void HookMsgCallback(
+				Common::Foundation::Core::WindowsManager* const pWndManager);
 
 			BOOL DrawImGui(
 				ID3D12GraphicsCommandList6* const pCmdList,
@@ -59,24 +60,36 @@ namespace ImGuiManager {
 
 		private:
 			void FrameRateText(UINT clientWidth, UINT clientHeight);
-			void RaytraycingEnableCheckBox(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void RaytraycingEnableCheckBox(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void LightHeader(
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 				Render::DX::Foundation::Light* lights[],
 				UINT numLights,
 				std::queue<std::shared_ptr<Render::DX::Foundation::Light>>& pendingLights);
 
-			void ShadingObjectHeader(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void ShadowTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void GammaCorrectionTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void ToneMappingTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void TAATree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void AOTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void VolumetricLightTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void SSCSTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void MotionBlurTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void BloomTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void DOFTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void ShadingObjectHeader(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void ShadowTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void GammaCorrectionTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void ToneMappingTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void TAATree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void AOTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void VolumetricLightTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void SSCSTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void MotionBlurTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void BloomTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void DOFTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
 			BOOL mbIsD3D12Initialized = FALSE;

@@ -571,7 +571,8 @@ void DxImGuiManager::VolumetricLightTree(Common::Render::ShadingArgument::Shadin
 	}
 }
 
-void DxImGuiManager::SSCSTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+void DxImGuiManager::SSCSTree(
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("SSCS")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->SSCS.Enabled));
 
@@ -598,6 +599,35 @@ void DxImGuiManager::BloomTree(Common::Render::ShadingArgument::ShadingArgumentS
 void DxImGuiManager::DOFTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("Depth of Field")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->DOF.Enabled));
+
+		ImGui::Text("Bokeh");
+		ImGui::Indent();
+		{
+			ImGui::Text("Sample Count");
+			ImGui::SliderInt("##Sample Count", 
+				reinterpret_cast<int*>(&pArgSet->DOF.BokehSampleCount), 
+				pArgSet->DOF.MinBokehSampleCount, 
+				pArgSet->DOF.MaxBokehSampleCount);
+
+			ImGui::Text("Radius");
+			ImGui::SliderFloat("##Radius",
+				&pArgSet->DOF.BokehRadius, 
+				pArgSet->DOF.MinBokehRadius,
+				pArgSet->DOF.MaxBokehRadius);
+
+			ImGui::Text("Threshold");
+			ImGui::SliderFloat("##Threshold",
+				&pArgSet->DOF.BokehThreshold,
+				pArgSet->DOF.MinBokehThreshold,
+				pArgSet->DOF.MaxBokehThreshold);
+
+			ImGui::Text("Highlight Power");
+			ImGui::SliderFloat("##Highlight Power",
+				&pArgSet->DOF.HighlightPower,
+				pArgSet->DOF.MinHighlightPower,
+				pArgSet->DOF.MaxHighlightPower);
+		}
+		ImGui::Unindent();
 
 		ImGui::TreePop();
 	}

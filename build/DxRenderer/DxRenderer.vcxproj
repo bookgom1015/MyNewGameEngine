@@ -396,7 +396,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL\ExtractSceneLuminance.hlsl">
+    <None Include="..\..\assets\Shaders\HLSL\LuminanceHistogram.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

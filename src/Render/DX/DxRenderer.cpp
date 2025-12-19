@@ -1962,7 +1962,11 @@ BOOL DxRenderer::ApplyDOF() {
 		mToneMapping->InterMediateMapResource(),
 		mToneMapping->InterMediateMapRtv(),
 		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv()));
+		mToneMapping->InterMediateCopyMapSrv(),
+		mpShadingArgumentSet->DOF.BokehSampleCount,
+		mpShadingArgumentSet->DOF.BokehRadius,
+		mpShadingArgumentSet->DOF.BokehThreshold,
+		mpShadingArgumentSet->DOF.HighlightPower));
 
 	CheckReturn(mpLogFile, mDOF->BokehBlur(
 		mpCurrentFrameResource,

@@ -177,6 +177,22 @@ namespace Common::Render {
 
 		struct DOFArguments {
 			BOOL Enabled = FALSE;
+
+			const UINT MaxBokehSampleCount = 10;
+			const UINT MinBokehSampleCount = 1;
+			UINT BokehSampleCount = 4;
+
+			const FLOAT MaxBokehRadius = 10.f;
+			const FLOAT MinBokehRadius = 1.f;
+			FLOAT BokehRadius = 2.f;
+
+			const FLOAT MaxBokehThreshold = 0.9f;
+			const FLOAT MinBokehThreshold = 0.1f;
+			FLOAT BokehThreshold = 0.9f;
+
+			const FLOAT MaxHighlightPower = 8.f;
+			const FLOAT MinHighlightPower = 1.f;
+			FLOAT HighlightPower = 2.f;
 		};
 
 		struct ShadingArgumentSet {

@@ -479,7 +479,8 @@ BOOL DOF::DOFClass::Bokeh(
 		Foundation::Resource::GpuResource* const pBackBuffer,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 		Foundation::Resource::GpuResource* const pBackBufferCopy,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy,
+		UINT numSamples, FLOAT bokehRadius, FLOAT threshold, FLOAT highlightPower) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -510,10 +511,10 @@ BOOL DOF::DOFClass::Bokeh(
 		rc.gInvTexDim = { 
 			1.f / static_cast<float>(mInitData.ClientWidth),
 			1.f / static_cast<float>(mInitData.ClientHeight) };
-		rc.gSampleCount = 4;
-		rc.gBokehRadius = 2.f;
-		rc.gThreshold = 0.9f;
-		rc.gHighlightPower = 2.f;
+		rc.gSampleCount = static_cast<INT>(numSamples);
+		rc.gBokehRadius = bokehRadius;
+		rc.gThreshold = threshold;
+		rc.gHighlightPower = highlightPower;
 
 		Foundation::Util::D3D12Util::SetRoot32BitConstants<
 			ShadingConvention::DOF::RootConstant::Bokeh::Struct>(
