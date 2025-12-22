@@ -10,6 +10,11 @@
 
 using namespace Render::DX::Shading;
 
+namespace {
+	const WCHAR* const HLSL_LuminanceHistogram = L"LuminanceHistogram.hlsl";
+	const WCHAR* const HLSL_PercentileExtract = L"PercentileExtract.hlsl";
+}
+
 EyeAdaption::InitDataPtr EyeAdaption::MakeInitData() {
 	return std::unique_ptr<EyeAdaptionClass::InitData>(new EyeAdaptionClass::InitData());
 }
@@ -37,6 +42,20 @@ BOOL EyeAdaption::EyeAdaptionClass::Initialize(
 }
 
 BOOL EyeAdaption::EyeAdaptionClass::CompileShaders() {
+	// LuminanceHistogram
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(
+			HLSL_LuminanceHistogram, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
+			CS, mShaderHashes[Shader::CS_LuminanceHistogram]));
+	}
+	// PercentileExtract
+	{
+		const auto CS = Util::ShaderManager::D3D12ShaderInfo(
+			HLSL_PercentileExtract, L"CS", L"cs_6_5");
+		CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
+			CS, mShaderHashes[Shader::CS_PercentileExtract]));
+	}
 	return TRUE;
 }
 

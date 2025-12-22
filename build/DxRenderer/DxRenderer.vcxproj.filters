@@ -809,5 +809,8 @@
     <None Include="..\..\assets\Shaders\HLSL\LuminanceHistogram.hlsl">
       <Filter>Shader Files\EyeAdaption</Filter>
     </None>
+    <None Include="..\..\assets\Shaders\HLSL\PercentileExtract.hlsl">
+      <Filter>Shader Files\EyeAdaption</Filter>
+    </None>
   </ItemGroup>
 </Project>

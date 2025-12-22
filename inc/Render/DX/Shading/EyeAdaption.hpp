@@ -6,7 +6,9 @@ namespace Render::DX::Shading {
 	namespace EyeAdaption {
 		namespace Shader {
 			enum Type {
-				Count = 0
+				CS_LuminanceHistogram = 0,
+				CS_PercentileExtract,
+				Count
 			};
 		}
 

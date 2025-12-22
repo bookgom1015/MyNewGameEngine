@@ -1143,6 +1143,39 @@ namespace ShadingConvention{
 	}
 
 	namespace EyeAdaption {
+#ifndef EyeAdaption_LuminanceHistogram_RCSTRUCT
+#define EyeAdaption_LuminanceHistogram_RCSTRUCT {	\
+		DirectX::XMUINT2 gTexDim;					\
+		FLOAT gMinLogLum;							\
+		FLOAT gMaxLogLum;							\
+		UINT gBinCount;								\
+		UINT gPixelCount;							\
+	};
+#endif
+
+#ifndef EyeAdaption_PercentilExtract_RCSTRUCT
+#define EyeAdaption_PercentilExtract_RCSTRUCT {	\
+		FLOAT gMinLogLum;						\
+		FLOAT gMaxLogLum;						\
+		FLOAT gLowPercent;						\
+		FLOAT gHighPercent;						\
+		UINT gBinCount;							\
+	};
+#endif
+
+		struct HistogramBin {
+			UINT Count;
+		};
+
+		struct Result {
+			FLOAT AvgLogLum;
+			FLOAT LowLogLum;
+			FLOAT HighLogLum;
+			UINT LowBin;
+			UINT HighBin;
+			UINT TotalCount;
+		};
+
 		namespace ThreadGroup {
 			namespace Default {
 				enum {
@@ -1150,6 +1183,44 @@ namespace ShadingConvention{
 					Height	= 8,
 					Depth	= 1,
 					Size	= Width * Height * Depth
+				};
+			}
+		}
+
+#ifdef _HLSL
+	#ifndef EyeAdaption_LuminanceHistogram_RootConstants
+	#define EyeAdaption_LuminanceHistogram_RootConstants(reg) cbuffer cbRootConstants : register(reg) EyeAdaption_LuminanceHistogram_RCSTRUCT
+	#endif
+
+	#ifndef EyeAdaption_PercentilExtract_RootConstants
+	#define EyeAdaption_PercentilExtract_RootConstants(reg) cbuffer cbRootConstants : register(reg) EyeAdaption_PercentilExtract_RCSTRUCT
+	#endif
+#else		
+#endif
+
+		namespace RootConstant {
+			namespace LuminanceHistogram {
+				struct Struct EyeAdaption_LuminanceHistogram_RCSTRUCT
+					enum {
+					E_TexDim_X = 0,
+					E_TexDim_Y,
+					E_MinLogLum,
+					E_MaxLogLum,
+					E_BinCount,
+					E_PixelCount,
+					Count
+				};
+			}
+
+			namespace PercentilExtract {
+				struct Struct EyeAdaption_PercentilExtract_RCSTRUCT
+					enum {
+					E_MinLogLum,
+					E_MaxLogLum,
+					E_LowPercent,
+					E_HighPercent,
+					E_BinCount,
+					Count
 				};
 			}
 		}
