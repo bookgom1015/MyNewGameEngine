@@ -3,6 +3,7 @@
 #include "MemoryManagement.hpp"
 
 #include <windef.h>
+#include <cmath>
 
 namespace Common::Foundation::Core {
 	namespace DataStructure {

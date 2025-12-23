@@ -812,5 +812,11 @@
     <None Include="..\..\assets\Shaders\HLSL\PercentileExtract.hlsl">
       <Filter>Shader Files\EyeAdaption</Filter>
     </None>
+    <None Include="..\..\assets\Shaders\HLSL\ClearHistogram.hlsl">
+      <Filter>Shader Files\EyeAdaption</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\TemporalSmoothing.hlsl">
+      <Filter>Shader Files\EyeAdaption</Filter>
+    </None>
   </ItemGroup>
 </Project>

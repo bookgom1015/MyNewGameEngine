@@ -73,6 +73,7 @@ namespace Render {
 			namespace MotionBlur { class MotionBlurClass; }
 			namespace Bloom { class BloomClass; }
 			namespace DOF { class DOFClass; }
+			namespace EyeAdaption { class EyeAdaptionClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -157,11 +158,14 @@ namespace Render {
 			BOOL IntegrateIrradiance();
 			BOOL ApplyVolumetricLight();
 			BOOL ApplyBloom();
+			BOOL ApplyEyeAdaption();
 			BOOL ApplyDOF();
 			BOOL PresentAndSignal();
 
 		private:
 			BOOL mbInitialized = FALSE;
+
+			FLOAT mDeltaTime = 0.f;
 
 			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries;
 			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials;
@@ -202,6 +206,7 @@ namespace Render {
 			std::unique_ptr<Shading::MotionBlur::MotionBlurClass> mMotionBlur;
 			std::unique_ptr<Shading::Bloom::BloomClass> mBloom;
 			std::unique_ptr<Shading::DOF::DOFClass> mDOF;
+			std::unique_ptr<Shading::EyeAdaption::EyeAdaptionClass> mEyeAdaption;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

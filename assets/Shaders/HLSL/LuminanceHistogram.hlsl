@@ -8,10 +8,12 @@
 #include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
 #include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 
+EyeAdaption_LuminanceHistogram_RootConstants(b0)
+                                                                                                                                                                                                                                                                                        
 Texture2D<HDR_FORMAT> gi_BackBuffer	: register(t0);
 RWStructuredBuffer<ShadingConvention::EyeAdaption::HistogramBin> go_Histogram : register(u0);
 
-groupshared uint gLocalBins[gBinCount]
+groupshared uint gLocalBins[MAX_BIN_COUNT];
 
 float GetLuminance(in float3 hdr) {
     return dot(hdr, float3(0.2126f, 0.7152f, 0.0722f));
@@ -37,13 +39,14 @@ void CS(in uint2 DTid : SV_DispatchThreadID, in uint2 GTid : SV_GroupThreadID) {
     GroupMemoryBarrierWithGroupSync();
     
    if (all(DTid < gTexDim)) {
-        const float4 Scene = gi_BackBuffer[DTid];
+        const uint2 FullResDTid = DTid * 2;
+        const float4 Scene = gi_BackBuffer[FullResDTid];
     
         const float Lum = GetLuminance(Scene.rgb);
         const float LogLum = ConvertToLogSpace(Lum);    
         
-        const float t = saturate(
-            (LogLum - gMinLogLum) / (gMaxLogLum - gMinLogLum));
+        const float InvRange = rcp(max(gMaxLogLum - gMinLogLum, 1e-6f));
+        const float t = saturate((LogLum - gMinLogLum) * InvRange);
         const uint BinIndex = ConvertToBinIndex(t);
         
         InterlockedAdd(gLocalBins[BinIndex], 1);    

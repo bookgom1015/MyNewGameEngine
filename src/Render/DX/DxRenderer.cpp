@@ -44,6 +44,7 @@
 #include "Render/DX/Shading/MotionBlur.hpp"
 #include "Render/DX/Shading/Bloom.hpp"
 #include "Render/DX/Shading/DOF.hpp"
+#include "Render/DX/Shading/EyeAdaption.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -85,6 +86,7 @@ DxRenderer::DxRenderer() {
 	mMotionBlur = std::make_unique<Shading::MotionBlur::MotionBlurClass>();
 	mBloom = std::make_unique<Shading::Bloom::BloomClass>();
 	mDOF = std::make_unique<Shading::DOF::DOFClass>();
+	mEyeAdaption = std::make_unique<Shading::EyeAdaption::EyeAdaptionClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -107,6 +109,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mMotionBlur.get());
 	mShadingObjectManager->AddShadingObject(mBloom.get());
 	mShadingObjectManager->AddShadingObject(mDOF.get());
+	mShadingObjectManager->AddShadingObject(mEyeAdaption.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -200,6 +203,8 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 
 	CheckReturn(mpLogFile, mShadingObjectManager->Update());
 
+	mDeltaTime = deltaTime;
+
 	return TRUE;
 }
 
@@ -275,6 +280,8 @@ BOOL DxRenderer::Draw() {
 	if (mpShadingArgumentSet->Bloom.Enabled)
 		CheckReturn(mpLogFile, ApplyBloom());
 
+	CheckReturn(mpLogFile, ApplyEyeAdaption());
+
 	if (mpShadingArgumentSet->DOF.Enabled)
 		CheckReturn(mpLogFile, ApplyDOF());
 
@@ -298,6 +305,7 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->ScissorRect(),
 		mSwapChain->BackBuffer(),
 		mSwapChain->BackBufferRtv(),
+		mEyeAdaption->Luminance(),
 		mpShadingArgumentSet->ToneMapping.Exposure,
 		mpShadingArgumentSet->ToneMapping.TonemapperType));
 	
@@ -1362,6 +1370,17 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mDOF->Initialize(mpLogFile, initData.get()));
 	}
+	// EyeAdaption
+	{
+		auto initData = Shading::EyeAdaption::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mEyeAdaption->Initialize(mpLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
@@ -1884,6 +1903,61 @@ BOOL DxRenderer::ApplyVolumetricLight() {
 	return TRUE;
 }
 
+BOOL DxRenderer::ApplyEyeAdaption() {
+	CheckReturn(mpLogFile, mEyeAdaption->ClearHistogram(
+		mpCurrentFrameResource));
+
+	CheckReturn(mpLogFile, mEyeAdaption->BuildLuminanceHistogram(
+		mpCurrentFrameResource,
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapSrv()));
+
+	CheckReturn(mpLogFile, mEyeAdaption->PercentileExtract(
+		mpCurrentFrameResource));
+
+	CheckReturn(mpLogFile, mEyeAdaption->TemporalSmoothing(
+		mpCurrentFrameResource,
+		mDeltaTime));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::ApplyDOF() {
+	CheckReturn(mpLogFile, mDOF->CalcFocalDistance(
+		mpCurrentFrameResource,
+		mGBuffer->PositionMap(),
+		mGBuffer->PositionMapSrv()));
+
+	CheckReturn(mpLogFile, mDOF->CircleOfConfusion(
+		mpCurrentFrameResource,
+		mDepthStencilBuffer->GetDepthStencilBuffer(),
+		mDepthStencilBuffer->DepthStencilBufferSrv()));
+
+	CheckReturn(mpLogFile, mDOF->Bokeh(
+		mpCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(),
+		mToneMapping->InterMediateCopyMapSrv(),
+		mpShadingArgumentSet->DOF.BokehSampleCount,
+		mpShadingArgumentSet->DOF.BokehRadius,
+		mpShadingArgumentSet->DOF.BokehThreshold,
+		mpShadingArgumentSet->DOF.HighlightPower));
+
+	CheckReturn(mpLogFile, mDOF->BokehBlur(
+		mpCurrentFrameResource,
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect(),
+		mToneMapping->InterMediateMapResource(),
+		mToneMapping->InterMediateMapRtv(),
+		mToneMapping->InterMediateCopyMapResource(),
+		mToneMapping->InterMediateCopyMapSrv()));
+
+	return TRUE;
+}
+
 BOOL DxRenderer::ApplyBloom() {
 	const auto downSampleFunc = [&](
 		Foundation::Resource::GpuResource* const pInputMap,
@@ -1930,45 +2004,9 @@ BOOL DxRenderer::ApplyBloom() {
 		mpShadingArgumentSet->Bloom.SoftKnee,
 		downSampleFunc));
 
-	CheckReturn(mpLogFile, mBloom->BlurHighlights(mpCurrentFrameResource, downSampleFunc, blurFunc));	
+	CheckReturn(mpLogFile, mBloom->BlurHighlights(mpCurrentFrameResource, downSampleFunc, blurFunc));
 
 	CheckReturn(mpLogFile, mBloom->ApplyBloom(
-		mpCurrentFrameResource,
-		mSwapChain->ScreenViewport(),
-		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv()));
-
-	return TRUE;
-}
-
-BOOL DxRenderer::ApplyDOF() {
-	CheckReturn(mpLogFile, mDOF->CalcFocalDistance(
-		mpCurrentFrameResource,
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv()));
-
-	CheckReturn(mpLogFile, mDOF->CircleOfConfusion(
-		mpCurrentFrameResource,
-		mDepthStencilBuffer->GetDepthStencilBuffer(),
-		mDepthStencilBuffer->DepthStencilBufferSrv()));
-
-	CheckReturn(mpLogFile, mDOF->Bokeh(
-		mpCurrentFrameResource,
-		mSwapChain->ScreenViewport(),
-		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv(),
-		mpShadingArgumentSet->DOF.BokehSampleCount,
-		mpShadingArgumentSet->DOF.BokehRadius,
-		mpShadingArgumentSet->DOF.BokehThreshold,
-		mpShadingArgumentSet->DOF.HighlightPower));
-
-	CheckReturn(mpLogFile, mDOF->BokehBlur(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),

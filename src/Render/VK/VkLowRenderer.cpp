@@ -38,7 +38,7 @@ BOOL VkLowRenderer::Initialize(
 		UINT width, UINT height) {
 	mpLogFile = pLogFile;
 	mpWindowsManager = pWndManager;
-	mpArgumentSet = pArgSet;
+	mpShadingArgumentSet = pArgSet;
 
 	mpImGuiManager = dynamic_cast<ImGuiManager::VK::VkImGuiManager*>(pImGuiManager);
 

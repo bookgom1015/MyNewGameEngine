@@ -16,6 +16,7 @@
 ToneMapping_Default_RootConstants(b0)
 
 Texture2D<ShadingConvention::ToneMapping::IntermediateMapFormat> gi_IntermediateMap : register(t0);
+RWStructuredBuffer<float> gi_Luminance : register(u0);
 
 FitToScreenVertexOut
 
@@ -82,7 +83,12 @@ float3 TonemapLog(in float3 hdr, in float a = 1.f) {
 
 SDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float3 HDR = gi_IntermediateMap.SampleLevel(gsamLinearClamp, pin.TexC, 0).rgb;
-    const float3 Color = HDR * gExposure;    
+        
+    const float Luminance = gi_Luminance[0];
+    const float Key = 0.18f;
+    const float Exposure = exp2(-Luminance) * Key;
+        
+    const float3 Color = HDR * Exposure;
     
     float3 sdr = (float3)0.f;
     if (gTonemapperType == Common::Render::TonemapperType::E_Exponential)

@@ -62,8 +62,12 @@ BOOL ToneMapping::ToneMappingClass::BuildRootSignatures(const Render::DX::Shadin
 	index = 0;
 
 	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
-	slotRootParameter[RootSignature::Default::RC_Cosnts].InitAsConstants(ShadingConvention::ToneMapping::RootConstant::Default::Count, 0);
-	slotRootParameter[RootSignature::Default::SI_Intermediate].InitAsDescriptorTable(1, &texTables[index++]);
+	slotRootParameter[RootSignature::Default::RC_Cosnts]
+		.InitAsConstants(ShadingConvention::ToneMapping::RootConstant::Default::Count, 0);
+	slotRootParameter[RootSignature::Default::SI_Intermediate]
+		.InitAsDescriptorTable(1, &texTables[index++]);
+	slotRootParameter[RootSignature::Default::UI_AvgLogLuminance]
+		.InitAsUnorderedAccessView(0);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
@@ -157,6 +161,7 @@ BOOL ToneMapping::ToneMappingClass::Resolve(
 		const D3D12_RECT& scissorRect,
 		Foundation::Resource::GpuResource* const pBackBuffer,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+		Foundation::Resource::GpuResource* const pAvgLogLuminance,
 		FLOAT exposure, UINT tonemapperType) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
@@ -184,8 +189,15 @@ BOOL ToneMapping::ToneMappingClass::Resolve(
 		std::array<std::uint32_t, ShadingConvention::ToneMapping::RootConstant::Default::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::ToneMapping::RootConstant::Default::Struct));
 
-		CmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Cosnts, ShadingConvention::ToneMapping::RootConstant::Default::Count, consts.data(), 0);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_Intermediate, mhIntermediateMapGpuSrv);
+		CmdList->SetGraphicsRoot32BitConstants(
+			RootSignature::Default::RC_Cosnts, 
+			ShadingConvention::ToneMapping::RootConstant::Default::Count, consts.data(), 0);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::Default::SI_Intermediate, mhIntermediateMapGpuSrv);
+		CmdList->SetGraphicsRootUnorderedAccessView(
+			RootSignature::Default::UI_AvgLogLuminance,
+			pAvgLogLuminance->Resource()->GetGPUVirtualAddress());
+
 
 		if (mInitData.MeshShaderSupported) {
 			CmdList->DispatchMesh(1, 1, 1);

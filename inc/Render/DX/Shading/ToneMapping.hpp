@@ -18,6 +18,7 @@ namespace Render::DX::Shading {
 				enum {
 					RC_Cosnts = 0,
 					SI_Intermediate,
+					UI_AvgLogLuminance,
 					Count
 				};
 			}
@@ -77,6 +78,7 @@ namespace Render::DX::Shading {
 				const D3D12_RECT& scissorRect,
 				Foundation::Resource::GpuResource* const pBackBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
+				Foundation::Resource::GpuResource* const pAvgLogLuminance,
 				FLOAT exposure, UINT tonemapperType);
 
 		private:

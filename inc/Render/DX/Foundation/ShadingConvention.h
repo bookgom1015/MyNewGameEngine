@@ -1143,23 +1143,33 @@ namespace ShadingConvention{
 	}
 
 	namespace EyeAdaption {
+#define MAX_BIN_COUNT 128
+
 #ifndef EyeAdaption_LuminanceHistogram_RCSTRUCT
 #define EyeAdaption_LuminanceHistogram_RCSTRUCT {	\
 		DirectX::XMUINT2 gTexDim;					\
 		FLOAT gMinLogLum;							\
 		FLOAT gMaxLogLum;							\
 		UINT gBinCount;								\
-		UINT gPixelCount;							\
 	};
 #endif
 
-#ifndef EyeAdaption_PercentilExtract_RCSTRUCT
-#define EyeAdaption_PercentilExtract_RCSTRUCT {	\
-		FLOAT gMinLogLum;						\
-		FLOAT gMaxLogLum;						\
-		FLOAT gLowPercent;						\
-		FLOAT gHighPercent;						\
-		UINT gBinCount;							\
+#ifndef EyeAdaption_PercentileExtract_RCSTRUCT
+#define EyeAdaption_PercentileExtract_RCSTRUCT {	\
+		FLOAT gMinLogLum;							\
+		FLOAT gMaxLogLum;							\
+		FLOAT gLowPercent;							\
+		FLOAT gHighPercent;							\
+		UINT gBinCount;								\
+	};
+#endif
+
+#ifndef EyeAdaption_TemporalSmoothing_RCSTRUCT
+#define EyeAdaption_TemporalSmoothing_RCSTRUCT {	\
+		FLOAT gUpSpeed;								\
+		FLOAT gGlareUpSpeed;						\
+		FLOAT gDownSpeed;							\
+		FLOAT gDeltaTime;							\
 	};
 #endif
 
@@ -1192,8 +1202,12 @@ namespace ShadingConvention{
 	#define EyeAdaption_LuminanceHistogram_RootConstants(reg) cbuffer cbRootConstants : register(reg) EyeAdaption_LuminanceHistogram_RCSTRUCT
 	#endif
 
-	#ifndef EyeAdaption_PercentilExtract_RootConstants
-	#define EyeAdaption_PercentilExtract_RootConstants(reg) cbuffer cbRootConstants : register(reg) EyeAdaption_PercentilExtract_RCSTRUCT
+	#ifndef EyeAdaption_PercentileExtract_RootConstants
+	#define EyeAdaption_PercentileExtract_RootConstants(reg) cbuffer cbRootConstants : register(reg) EyeAdaption_PercentileExtract_RCSTRUCT
+	#endif
+
+	#ifndef EyeAdaption_TemporalSmoothing_RootConstants
+	#define EyeAdaption_TemporalSmoothing_RootConstants(reg) cbuffer cbRootConstants : register(reg) EyeAdaption_TemporalSmoothing_RCSTRUCT
 	#endif
 #else		
 #endif
@@ -1201,25 +1215,35 @@ namespace ShadingConvention{
 		namespace RootConstant {
 			namespace LuminanceHistogram {
 				struct Struct EyeAdaption_LuminanceHistogram_RCSTRUCT
-					enum {
+				enum {
 					E_TexDim_X = 0,
 					E_TexDim_Y,
 					E_MinLogLum,
 					E_MaxLogLum,
 					E_BinCount,
-					E_PixelCount,
 					Count
 				};
 			}
 
-			namespace PercentilExtract {
-				struct Struct EyeAdaption_PercentilExtract_RCSTRUCT
-					enum {
+			namespace PercentileExtract {
+				struct Struct EyeAdaption_PercentileExtract_RCSTRUCT
+				enum {
 					E_MinLogLum,
 					E_MaxLogLum,
 					E_LowPercent,
 					E_HighPercent,
 					E_BinCount,
+					Count
+				};
+			}
+
+			namespace TemporalSmoothing {
+				struct Struct EyeAdaption_TemporalSmoothing_RCSTRUCT
+				enum {
+					E_UpSpeed,
+					E_GlareUpSpeed,
+					E_DownSpeed,
+					E_DeltaTime,
 					Count
 				};
 			}
