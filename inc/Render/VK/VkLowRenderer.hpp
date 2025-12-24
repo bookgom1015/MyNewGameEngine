@@ -6,11 +6,15 @@
 #include <memory>
 
 #ifndef VK_USE_PLATFORM_WIN32_KHR
-	#define VK_USE_PLATFORM_WIN32_KHR
+#define VK_USE_PLATFORM_WIN32_KHR
 #endif
 #include <vulkan/vulkan.h>
 
 #include "Common/Render/Renderer.hpp"
+
+namespace Common::Foundation::Core {
+	struct Processor;
+}
 
 namespace ImGuiManager::VK {
 	class VkImGuiManager;
@@ -47,6 +51,8 @@ namespace Render::VK {
 		RendererAPI virtual BOOL Draw() override;
 
 	private:
+		BOOL GetHWInfo();
+
 		BOOL CreateInstance();
 		BOOL CreateSurface();
 		BOOL CreateDevice();
@@ -62,6 +68,8 @@ namespace Render::VK {
 		UINT mClientHeight = 0;
 
 	protected:
+		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor;
+
 		std::unique_ptr<Foundation::Core::Instance> mInstance;
 		std::unique_ptr<Foundation::Core::Surface> mSurface;
 		std::unique_ptr<Foundation::Core::Device> mDevice;

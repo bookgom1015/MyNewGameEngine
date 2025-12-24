@@ -95,7 +95,10 @@
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Instance.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Surface.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\SwapChain.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Util\VulkanUtil.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Shading\GBuffer.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Shading\Util\ShaderManager.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\VkLowRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp" />
   </ItemGroup>
@@ -104,14 +107,19 @@
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
+    <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp" />
+    <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp" />
     <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
+    <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\CommandObject.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Instance.cpp" />
-    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Surface.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\SwapChain.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Util\VulkanUtil.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Shading\GBuffer.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Shading\Util\ShaderManager.cpp" />
     <ClCompile Include="..\..\src\Render\VK\VkLowRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\VK\VkRenderer.cpp" />
   </ItemGroup>

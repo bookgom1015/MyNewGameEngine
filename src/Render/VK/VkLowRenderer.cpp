@@ -1,6 +1,7 @@
 #include "Render/VK/VkLowRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
+#include "Common/Foundation/Core/HWInfo.hpp"
 #include "Render/VK/Foundation/Core/Instance.hpp"
 #include "Render/VK/Foundation/Core/Surface.hpp"
 #include "Render/VK/Foundation/Core/Device.hpp"
@@ -21,6 +22,8 @@ namespace {
 }
 
 VkLowRenderer::VkLowRenderer() {
+	mProcessor = std::make_unique<Common::Foundation::Core::Processor>();
+
 	mInstance = std::make_unique<Foundation::Core::Instance>();
 	mSurface = std::make_unique<Foundation::Core::Surface>();
 	mDevice = std::make_unique<Foundation::Core::Device>();
@@ -45,6 +48,8 @@ BOOL VkLowRenderer::Initialize(
 	mClientWidth = width;
 	mClientHeight = height;
 
+	CheckReturn(mpLogFile, GetHWInfo());
+
 	CheckReturn(mpLogFile, CreateInstance());	
 	CheckReturn(mpLogFile, CreateSurface());
 	CheckReturn(mpLogFile, CreateDevice());
@@ -67,6 +72,12 @@ BOOL VkLowRenderer::OnResize(UINT width, UINT height) { return TRUE; }
 BOOL VkLowRenderer::Update(FLOAT deltaTime) { return TRUE; }
 
 BOOL VkLowRenderer::Draw() { return TRUE; }
+
+BOOL VkLowRenderer::GetHWInfo() {
+	CheckReturn(mpLogFile, Common::Foundation::Core::HWInfo::GetCoreInfo(mpLogFile, *mProcessor.get()));
+
+	return TRUE;
+}
 
 BOOL VkLowRenderer::CreateInstance() {
 	CheckReturn(mpLogFile, mInstance->Initalize(mpLogFile));

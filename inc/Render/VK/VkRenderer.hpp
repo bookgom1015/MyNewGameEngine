@@ -7,6 +7,12 @@ namespace Render {
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace VK {
+		namespace Shading {
+			namespace Util {
+				class ShaderManager;
+			}
+		}
+
 		class VkRenderer : public VkLowRenderer {
 		public:
 			VkRenderer();
@@ -32,6 +38,9 @@ namespace Render {
 			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) override;
 			RendererAPI virtual BOOL UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) override;
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) override;
+
+		private:
+			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
 		};
 	}
 }

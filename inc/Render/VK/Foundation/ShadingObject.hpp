@@ -24,6 +24,7 @@ namespace Render::VK::Foundation {
 		virtual void CleanUp() = 0;
 
 	public:
+		virtual BOOL CompileShaders();
 		virtual BOOL OnResize(UINT width, UINT height);
 	};
 }

@@ -1,5 +1,7 @@
 #include "Render/VK/VkRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/HWInfo.hpp"
+#include "Render/VK/Shading/Util/ShaderManager.hpp"
 
 using namespace Render::VK;
 
@@ -12,7 +14,7 @@ extern "C" RendererAPI void Render::DestroyRenderer(Common::Render::Renderer* co
 }
 
 VkRenderer::VkRenderer() {
-
+	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
 }
 
 VkRenderer::~VkRenderer() {
@@ -26,6 +28,8 @@ BOOL VkRenderer::Initialize(
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
 	CheckReturn(mpLogFile, VkLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
+
+	CheckReturn(mpLogFile, mShaderManager->Initialize(mpLogFile, static_cast<UINT>(mProcessor->Logical)));
 
 	return TRUE;
 }
