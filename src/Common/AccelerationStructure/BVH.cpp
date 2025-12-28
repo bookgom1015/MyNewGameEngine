@@ -386,7 +386,7 @@ void PopulateCacheFriendlyBVH(
 		gpCFBVH[currIdxBoxes].u.Leaf.StartIndexInTriIndexList = idxTriList;
 
 		for (std::list<const Triangle*>::iterator it = p->Triangles.begin(); it != p->Triangles.end(); it++)
-			gTriIndexList[idxTriList++] = *it - pFirstTriangle;
+			gTriIndexList[idxTriList++] = static_cast<int>(*it - pFirstTriangle);
 	}
 }
 

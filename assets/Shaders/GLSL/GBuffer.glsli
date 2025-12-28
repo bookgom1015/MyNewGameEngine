@@ -1,0 +1,25 @@
+#ifndef _GBUFFER_GLSLI_
+#define _GBUFFER_GLSLI_
+
+layout (binding = 0) uniform PassCB {
+	mat4 View;
+	mat4 Proj;
+} ubPass;
+
+layout (binding = 1) uniform ObjectCB {
+	mat4 World;
+} ubObj;
+
+layout (binding = 2) uniform MaterialCB {
+	vec4 Albedo;
+
+	float Roughness;
+	float Metalness;
+	float _ConstantPad0_;
+	float _ConstantPad1_;
+
+	vec3	Specular;
+	float	_ConstantPad2_;
+} ubMat;
+
+#endif // _GBUFFER_GLSLI_

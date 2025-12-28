@@ -70,6 +70,9 @@
     <Filter Include="External Files\glslang">
       <UniqueIdentifier>{f3521105-8045-42bf-a16e-8ac1313c15f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files\Acceleration Structure">
+      <UniqueIdentifier>{86839dd3-e996-4347-bcb5-95781bbf326b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -129,6 +132,9 @@
     <ClCompile Include="..\..\src\Render\VK\Foundation\ShadingObject.cpp">
       <Filter>Source Files\Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\AccelerationStructure\BVH.cpp">
+      <Filter>Common Files\Acceleration Structure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp">
@@ -170,6 +176,15 @@
     <ClInclude Include="..\..\inc\Render\VK\Foundation\ShadingObject.hpp">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\AccelerationStructure\BVH.h">
+      <Filter>Common Files\Acceleration Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\AccelerationStructure\Geometry.h">
+      <Filter>Common Files\Acceleration Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\AccelerationStructure\LinearAlgebra.h">
+      <Filter>Common Files\Acceleration Structure</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Render\VK\Foundation\Core\Device.inl">
@@ -186,6 +201,18 @@
     </None>
     <None Include="..\..\inc\Common\Render\Renderer.inl">
       <Filter>Common Files\Render</Filter>
+    </None>
+    <None Include="..\..\inc\Render\VK\Shading\Util\ShaderManager.inl">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\GLSL\GBuffer.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\GLSL\GBuffer.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\GLSL\GBuffer.glsli">
+      <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
 </Project>

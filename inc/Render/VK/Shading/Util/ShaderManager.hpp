@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma comment(lib, "glslang.lib")
-
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -25,50 +23,40 @@ namespace Render::VK {
 	namespace Shading::Util {
 		class ShaderManager {
 		public:
-			enum ShaderStage {
-				E_VertexStage,
-				E_FragmentStage,
-			};
-
 			struct VkShaderInfo {
 				LPCSTR FileName = nullptr;
 				LPCSTR EntryPoint = nullptr;
-				ShaderStage Stage;
 			};
 
 		public:
 			ShaderManager() = default;
-			virtual ~ShaderManager();
+			virtual ~ShaderManager() = default;
 
 		public:
-			BOOL Initialize(Common::Debug::LogFile* const pLogFile, UINT numThreads);
+			BOOL Initialize(
+				Common::Debug::LogFile* const pLogFile, 
+				Foundation::Core::Device* const pDevice,
+				UINT numThreads);
 			void CleanUp();
 
 			BOOL AddShader(
 				const VkShaderInfo& shaderInfo,
 				Common::Foundation::Hash& hash);
-			BOOL CompileShaders(const Foundation::Core::Device& device, LPCWSTR baseDir);
+			BOOL CompileShaders(LPCWSTR baseDir);
 
 		private:
 			BOOL ReadFile(
 				Common::Foundation::Hash hash,
 				LPCWSTR baseDir,
 				std::vector<CHAR>& data);
-			BOOL ConvertGLSLtoSPIRV(
-				const VkShaderInfo& shaderInfo,
-				LPCSTR pCodeData,
-				const std::vector<LPCSTR>& includeDirs,
-				std::vector<UINT>& spirv);
 			BOOL CompileShader(
-				const Foundation::Core::Device& device, 
 				Common::Foundation::Hash hash, 
 				LPCWSTR baseDir);
 			BOOL CommitShaders();
 
 		private:
-			BOOL mbInitialized = FALSE;
-
 			Common::Debug::LogFile* mpLogFile = nullptr;
+			Foundation::Core::Device* mpDevice = nullptr;
 			UINT mThreadCount = 0;
 
 			std::vector<std::unique_ptr<std::mutex>> mCompileMutexes;
@@ -80,13 +68,4 @@ namespace Render::VK {
 	}
 }
 
-namespace std {
-	template<>
-	struct hash<Render::VK::Shading::Util::ShaderManager::VkShaderInfo> {
-		Common::Foundation::Hash operator()(const Render::VK::Shading::Util::ShaderManager::VkShaderInfo& info) const {
-			Common::Foundation::Hash hash = 0;
-			hash = Common::Util::HashUtil::HashCombine(hash, std::hash<LPCSTR>()(info.FileName));
-			return hash;
-		}
-	};
-}
+#include "ShaderManager.inl"

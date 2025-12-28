@@ -29,7 +29,10 @@ BOOL VkRenderer::Initialize(
 		UINT width, UINT height) {
 	CheckReturn(mpLogFile, VkLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
-	CheckReturn(mpLogFile, mShaderManager->Initialize(mpLogFile, static_cast<UINT>(mProcessor->Logical)));
+	CheckReturn(mpLogFile, mShaderManager->Initialize(
+		mpLogFile, 
+		mDevice.get(), 
+		static_cast<UINT>(mProcessor->Logical)));
 
 	return TRUE;
 }

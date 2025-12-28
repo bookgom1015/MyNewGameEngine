@@ -20,8 +20,20 @@
 #ifndef __LINEAR_ALGEBRA_H_
 #define __LINEAR_ALGEBRA_H_
 
-#include <CUDA\v13.1\include\cuda_runtime.h> // for __host__  __device__
-#include <math.h>
+// for __host__  __device__
+#if __has_include(<CUDA/v13.1/include/cuda_runtime.h>) 
+	#include <CUDA/v13.1/include/cuda_runtime.h>
+#elif __has_include(<hip/hip_runtime.h>) 
+	#ifndef __HIP_PLATFORM_AMD__
+	#define __HIP_PLATFORM_AMD__
+	#endif
+
+	#include <hip/hip_runtime.h>
+#else
+	#error("Neither CUDA or HIP runtime headers were found")
+#endif
+
+#include <cmath>
 
 namespace Common::AccelerationStructure {
 	struct Vector3Df {

@@ -228,12 +228,12 @@ BOOL GameWorldClass::InitActorManager() {
 BOOL GameWorldClass::BuildScene() {
 	new Player::FreeLookActor(mpLogFile, "free_look_actor", DirectX::XMFLOAT3(0.f, 2.f, -6.f));
 	new Prefab::LampShade(mpLogFile, "lamp_shade");
-	new Prefab::FineDonut(
-		mpLogFile, 
-		"fine_donut",
-		DirectX::XMFLOAT3(0.f, 8.f, 0.f),
-		DirectX::XMFLOAT4(0.f, 0.f, 0.f, 1.f),
-		DirectX::XMFLOAT3(3.f, 2.f, 3.f));
+	//new Prefab::FineDonut(
+	//	mpLogFile, 
+	//	"fine_donut",
+	//	DirectX::XMFLOAT3(0.f, 8.f, 0.f),
+	//	DirectX::XMFLOAT4(0.f, 0.f, 0.f, 1.f),
+	//	DirectX::XMFLOAT3(3.f, 2.f, 3.f));
 	new Prefab::MetalSphere(
 		mpLogFile, 
 		"metal_sphere", 

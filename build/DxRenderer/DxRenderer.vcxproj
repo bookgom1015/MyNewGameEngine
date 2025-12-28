@@ -77,7 +77,7 @@
     <ClCompile Include="..\..\externs\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="..\..\src\AccelerationStructure\BVH.cpp" />
+    <ClCompile Include="..\..\src\Common\AccelerationStructure\BVH.cpp" />
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp" />
     <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
@@ -179,6 +179,7 @@
     <None Include="..\..\inc\Render\DX\Shading\TAA.inl" />
     <None Include="..\..\inc\Render\DX\Shading\ToneMapping.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Util\AccelerationStructure.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Util\ShaderTable.inl" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -465,7 +466,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)externs\CUDA\v13.1\include;$(SolutionDir)externs\ROCm\6.4\include;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -490,7 +491,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_DLLEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)externs\CUDA\v13.1\include;$(SolutionDir)externs\ROCm\6.4\include;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

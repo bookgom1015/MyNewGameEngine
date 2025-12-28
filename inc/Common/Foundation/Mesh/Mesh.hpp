@@ -16,7 +16,6 @@
 
 #include "Common/Foundation/Mesh/Vertex.h"
 #include "Common/Foundation/Mesh/Material.h"
-#include "Common/AccelerationStructure/Geometry.h"
 
 namespace Common {
 	namespace Debug {
@@ -92,8 +91,6 @@ namespace Common {
 			std::unordered_map<Vertex, UINT> mUniqueVertices;
 			std::vector<Vertex> mVertices;
 			std::vector<UINT> mIndices;
-
-			std::vector<Common::AccelerationStructure::Triangle> mTriangles;
 
 			std::unordered_map<std::string, Subset> mSubsets;
 
