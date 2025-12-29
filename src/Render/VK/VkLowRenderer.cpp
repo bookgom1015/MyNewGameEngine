@@ -109,14 +109,13 @@ BOOL VkLowRenderer::CreateDevice() {
 
 BOOL VkLowRenderer::CreateSwapChain() {
 	Foundation::Core::SwapChain::InitData initData;
-	initData.LogFile = mpLogFile;
 	initData.PhysicalDevice = mDevice->PhysicalDevice();
 	initData.Device = mDevice->LogicalDevice();
 	initData.Surface = mSurface->GetSurface();
 	initData.Width = mClientWidth;
 	initData.Height = mClientHeight;
 
-	mSwapChain->Initialize(reinterpret_cast<void*>(&initData));
+	mSwapChain->Initialize(mpLogFile, reinterpret_cast<void*>(&initData));
 
 	return TRUE;
 }

@@ -6,8 +6,12 @@
 
 #include <fstream>
 #include <filesystem>
+#include <iostream>
 
 using namespace Render::VK::Shading::Util;
+
+ShaderManager::VkShaderInfo::VkShaderInfo(LPCSTR fileName, LPCSTR entryPoint) 
+	: FileName(fileName), EntryPoint(entryPoint) {}
 
 BOOL ShaderManager::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
@@ -16,6 +20,12 @@ BOOL ShaderManager::Initialize(
 	mpLogFile = pLogFile;
 	mpDevice = pDevice;
 	mThreadCount = numThreads;
+
+	mCompileMutexes.resize(numThreads);
+	mStagingShaders.resize(numThreads);
+
+	for (UINT i = 0; i < numThreads; ++i) 
+		mCompileMutexes[i] = std::make_unique<std::mutex>();
 
 	return TRUE;
 }

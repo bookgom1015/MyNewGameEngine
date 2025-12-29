@@ -9,8 +9,11 @@ namespace Render {
 	namespace VK {
 		namespace Shading {
 			namespace Util {
+				class ShadingObjectManager;
 				class ShaderManager;
 			}
+
+			namespace GBuffer { class GBufferClass; }
 		}
 
 		class VkRenderer : public VkLowRenderer {
@@ -40,7 +43,13 @@ namespace Render {
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) override;
 
 		private:
+			BOOL InitShadingObjects();
+
+		private:
+			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager;
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
+
+			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer;
 		};
 	}
 }

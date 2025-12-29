@@ -170,6 +170,7 @@
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl" />
     <None Include="..\..\inc\Render\DX\Shading\BlurFilter.inl" />
     <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\EyeAdaption.inl" />
     <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RayGen.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RaySorting.inl" />

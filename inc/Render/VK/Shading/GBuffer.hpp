@@ -3,17 +3,59 @@
 #include "Render/VK/Foundation/ShadingObject.hpp"
 
 namespace Render::VK::Shading {
+	namespace Shader {
+		enum Type {
+			VS_GBuffer = 0,
+			PS_GBuffer,
+			Count
+		};
+	}
+
+	namespace DescriptorSet {
+		enum {
+			UB_Pass = 0,
+			UB_Object,
+			UB_Material,
+			Count
+		};
+	}
+
 	namespace GBuffer {
 		class GBufferClass : public Foundation::ShadingObject {
+		public:
+			struct InitData {
+				Foundation::Core::Device* Device = nullptr;
+				Util::ShaderManager* ShaderManager = nullptr;
+				UINT ClientWidth = 0;
+				UINT ClientHeight = 0;
+			};
+
 		public:
 			GBufferClass();
 			virtual ~GBufferClass() = default;
 
 		public:
-			virtual BOOL Initialize(void* const pInitData) override;
+			virtual BOOL Initialize(
+				Common::Debug::LogFile* const pLogFile, 
+				void* const pData) override;
 			virtual void CleanUp() override;
 
 			virtual BOOL CompileShaders() override;
+			virtual BOOL BuildDescriptorSets() override;
+			virtual BOOL BuildPipelineLayouts() override;
+			virtual BOOL BuildPipelineStates() override;
+
+		private:
+			InitData mInitData;
+
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+
+			VkDescriptorSetLayout mDescriptorSetLayout;
+			VkPipelineLayout mPipelineLayout
 		};
+
+		using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;
+
+		InitDataPtr MakeInitData();
 	}
 }

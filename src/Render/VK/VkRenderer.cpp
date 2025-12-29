@@ -1,7 +1,9 @@
 #include "Render/VK/VkRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
+#include "Render/VK/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/VK/Shading/Util/ShaderManager.hpp"
+#include "Render/VK/Shading/GBuffer.hpp"
 
 using namespace Render::VK;
 
@@ -14,7 +16,12 @@ extern "C" RendererAPI void Render::DestroyRenderer(Common::Render::Renderer* co
 }
 
 VkRenderer::VkRenderer() {
+	mShadingObjectManager = std::make_unique<Shading::Util::ShadingObjectManager>();
 	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
+
+	mGBuffer = std::make_unique<Shading::GBuffer::GBufferClass>();
+
+	mShadingObjectManager->AddShadingObject(mGBuffer.get());
 }
 
 VkRenderer::~VkRenderer() {
@@ -29,10 +36,12 @@ BOOL VkRenderer::Initialize(
 		UINT width, UINT height) {
 	CheckReturn(mpLogFile, VkLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
-	CheckReturn(mpLogFile, mShaderManager->Initialize(
-		mpLogFile, 
-		mDevice.get(), 
-		static_cast<UINT>(mProcessor->Logical)));
+	CheckReturn(mpLogFile, InitShadingObjects());
+
+	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\GLSL\\"));
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptorSets());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineLayouts());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 
 	return TRUE;
 }
@@ -69,4 +78,24 @@ BOOL VkRenderer::UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foun
 
 void VkRenderer::RemoveMesh(Common::Foundation::Hash hash) {
 
+}
+
+BOOL VkRenderer::InitShadingObjects() {
+	CheckReturn(mpLogFile, mShadingObjectManager->Initialize(mpLogFile));
+	CheckReturn(mpLogFile, mShaderManager->Initialize(
+		mpLogFile,
+		mDevice.get(),
+		static_cast<UINT>(mProcessor->Logical)));
+
+	// GBuffer
+	{
+		auto initData = Shading::GBuffer::MakeInitData();
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mGBuffer->Initialize(mpLogFile, initData.get()));
+	}
+
+	return TRUE;
 }

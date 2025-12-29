@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -15,16 +16,36 @@
 #endif
 #include <vulkan/vulkan.h>
 
-#include "Common/Debug/Logger.hpp"
+#include "Common/Util/HashUtil.hpp"
 
-namespace Render::VK::Foundation {
-	class ShadingObject {
-	public:
-		virtual BOOL Initialize(void* const pInitData) = 0;
-		virtual void CleanUp() = 0;
+namespace Common::Debug {
+	struct LogFile;
+}
 
-	public:
-		virtual BOOL CompileShaders();
-		virtual BOOL OnResize(UINT width, UINT height);
-	};
+namespace Render::VK {
+	namespace Shading::Util {
+		class ShaderManager;
+	}
+
+	namespace Foundation {
+		namespace Core {
+			class Device;
+		}
+
+		class ShadingObject {
+		public:
+			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData);
+			virtual void CleanUp();
+
+		public:
+			virtual BOOL CompileShaders();
+			virtual BOOL BuildDescriptorSets();
+			virtual BOOL BuildPipelineLayouts();
+			virtual BOOL BuildPipelineStates();
+			virtual BOOL OnResize(UINT width, UINT height);
+
+		protected:
+			Common::Debug::LogFile* mpLogFile = nullptr;
+		};
+	}
 }

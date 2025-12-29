@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <vector>
+#include <array>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -131,5 +132,8 @@ namespace Render::VK::Foundation::Util {
 			UINT mipLevles,
 			const VkImageAspectFlags& aspectFlags,
 			VkImageView& imageView);
+
+		static VkVertexInputBindingDescription GetVertexBindingDescription();
+		static std::array<VkVertexInputAttributeDescription, 3> GetVertexAttributeDescriptions();
 	};
 }

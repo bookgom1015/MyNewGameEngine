@@ -110,6 +110,7 @@
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Util\VulkanUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Shading\GBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Shading\Util\ShaderManager.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Shading\Util\ShadingObjectManager.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\VkLowRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp" />
   </ItemGroup>
@@ -132,6 +133,7 @@
     <ClCompile Include="..\..\src\Render\VK\Foundation\Util\VulkanUtil.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Shading\GBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Shading\Util\ShaderManager.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Shading\Util\ShadingObjectManager.cpp" />
     <ClCompile Include="..\..\src\Render\VK\VkLowRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\VK\VkRenderer.cpp" />
   </ItemGroup>

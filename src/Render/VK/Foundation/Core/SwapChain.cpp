@@ -8,14 +8,14 @@ SwapChain::~SwapChain() {
 	CleanUp();
 }
 
-BOOL SwapChain::Initialize(void* const pData) {
-	if (pData == nullptr) return FALSE;
+BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
+	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));
 
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
-	CheckReturn(mInitData.LogFile, CreateSwapChain());
-	CheckReturn(mInitData.LogFile, CreateImageViews());
+	CheckReturn(mpLogFile, CreateSwapChain());
+	CheckReturn(mpLogFile, CreateImageViews());
 
 	return TRUE;
 }
@@ -35,8 +35,8 @@ BOOL SwapChain::OnResize(UINT width, UINT height) {
 	mInitData.Width = width;
 	mInitData.Height = height;
 
-	CheckReturn(mInitData.LogFile, CreateSwapChain());
-	CheckReturn(mInitData.LogFile, CreateImageViews());
+	CheckReturn(mpLogFile, CreateSwapChain());
+	CheckReturn(mpLogFile, CreateImageViews());
 
 	return TRUE;
 }
@@ -52,7 +52,7 @@ BOOL SwapChain::CreateSwapChain() {
 
 	if (imageCount < swapChainSupport.Capabilities.minImageCount ||
 		(swapChainSupport.Capabilities.maxImageCount > 0 && imageCount > swapChainSupport.Capabilities.maxImageCount)) {
-		ReturnFalse(mInitData.LogFile, L"Swap-chain does not support the specified number of images");
+		ReturnFalse(mpLogFile, L"Swap-chain does not support the specified number of images");
 	}
 
 	VkSwapchainCreateInfoKHR createInfo = {};
@@ -89,10 +89,10 @@ BOOL SwapChain::CreateSwapChain() {
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 	if (vkCreateSwapchainKHR(mInitData.Device, &createInfo, nullptr, &mSwapChain) != VK_SUCCESS)
-		ReturnFalse(mInitData.LogFile, L"Failed to create swap chain");
+		ReturnFalse(mpLogFile, L"Failed to create swap chain");
 
 	if (vkGetSwapchainImagesKHR(mInitData.Device, mSwapChain, &imageCount, mSwapChainImages.data()) != VK_SUCCESS)
-		ReturnFalse(mInitData.LogFile, L"Failed to get swap chain images");
+		ReturnFalse(mpLogFile, L"Failed to get swap chain images");
 
 	mSwapChainImageFormat = surfaceFormat.format;
 	mSwapChainExtent = extent;
@@ -102,8 +102,8 @@ BOOL SwapChain::CreateSwapChain() {
 
 BOOL SwapChain::CreateImageViews() {
 	for (size_t i = 0, end = mSwapChainImages.size(); i < end; ++i) {
-		CheckReturn(mInitData.LogFile, Foundation::Util::VulkanUtil::CreateImageView(
-			mInitData.LogFile,
+		CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CreateImageView(
+			mpLogFile,
 			mInitData.Device,
 			mSwapChainImages[i],
 			mSwapChainImageFormat,

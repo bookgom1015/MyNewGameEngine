@@ -821,5 +821,8 @@
     <None Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.inl">
       <Filter>Header Files\Shading Files\Util</Filter>
     </None>
+    <None Include="..\..\inc\Render\DX\Shading\EyeAdaption.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

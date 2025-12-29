@@ -21,8 +21,8 @@
 #define __LINEAR_ALGEBRA_H_
 
 // for __host__  __device__
-#if __has_include(<CUDA/v13.1/include/cuda_runtime.h>) 
-	#include <CUDA/v13.1/include/cuda_runtime.h>
+#if __has_include(<cuda_runtime.h>) 
+	#include <cuda_runtime.h>
 #elif __has_include(<hip/hip_runtime.h>) 
 	#ifndef __HIP_PLATFORM_AMD__
 	#define __HIP_PLATFORM_AMD__

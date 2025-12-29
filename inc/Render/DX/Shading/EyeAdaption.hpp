@@ -133,7 +133,4 @@ namespace Render::DX::Shading {
 	}
 }
 
-Render::DX::Foundation::Resource::GpuResource* 
-		Render::DX::Shading::EyeAdaption::EyeAdaptionClass::Luminance() const {
-	return mSmoothedLuminance.get();
-}
+#include "EyeAdaption.inl"

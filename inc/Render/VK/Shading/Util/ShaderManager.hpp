@@ -26,11 +26,17 @@ namespace Render::VK {
 			struct VkShaderInfo {
 				LPCSTR FileName = nullptr;
 				LPCSTR EntryPoint = nullptr;
+
+				VkShaderInfo() = default;
+				VkShaderInfo(LPCSTR fileName, LPCSTR entryPoint);
 			};
 
 		public:
 			ShaderManager() = default;
 			virtual ~ShaderManager() = default;
+
+		public:
+			__forceinline VkShaderModule GetShader(Common::Foundation::Hash hash);
 
 		public:
 			BOOL Initialize(

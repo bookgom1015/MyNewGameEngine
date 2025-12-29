@@ -13,4 +13,8 @@ namespace std {
 	};
 }
 
+VkShaderModule Render::VK::Shading::Util::ShaderManager::GetShader(Common::Foundation::Hash hash) {
+	return mShaders[hash];
+}
+
 #endif // __SHADERMANAGER_INL__

@@ -1,5 +1,6 @@
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Mesh/Vertex.h"
 
 #include <set>
 
@@ -571,4 +572,33 @@ BOOL VulkanUtil::CreateImageView(
 		ReturnFalse(pLogFile, L"Failed to create texture image view");
 
 	return TRUE;
+}
+
+VkVertexInputBindingDescription VulkanUtil::GetVertexBindingDescription() {
+	VkVertexInputBindingDescription bindingDescription = {};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = sizeof(Common::Foundation::Mesh::Vertex);
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	return bindingDescription;
+}
+
+std::array<VkVertexInputAttributeDescription, 3> VulkanUtil::GetVertexAttributeDescriptions() {
+	std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
+	attributeDescriptions[0].binding = 0;
+	attributeDescriptions[0].location = 0;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[0].offset = offsetof(Common::Foundation::Mesh::Vertex, Position);
+
+	attributeDescriptions[1].binding = 0;
+	attributeDescriptions[1].location = 1;
+	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[1].offset = offsetof(Common::Foundation::Mesh::Vertex, Normal);
+
+	attributeDescriptions[2].binding = 0;
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(Common::Foundation::Mesh::Vertex, TexCoord);
+
+	return attributeDescriptions;
 }

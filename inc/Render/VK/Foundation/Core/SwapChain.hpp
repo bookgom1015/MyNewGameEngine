@@ -9,7 +9,6 @@ namespace Render::VK::Foundation::Core {
 
 	public:
 		struct InitData {
-			Common::Debug::LogFile* LogFile;
 			VkPhysicalDevice PhysicalDevice;
 			VkDevice Device;
 			VkSurfaceKHR Surface;
@@ -22,7 +21,7 @@ namespace Render::VK::Foundation::Core {
 		virtual ~SwapChain();
 
 	public:
-		virtual BOOL Initialize(void* const pData) override;
+		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 		virtual void CleanUp() override;
 
 	public:
