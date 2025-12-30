@@ -41,7 +41,9 @@ BOOL VkRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\GLSL\\"));
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptorSets());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineLayouts());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildRenderPass());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildFramebuffers());
 
 	return TRUE;
 }

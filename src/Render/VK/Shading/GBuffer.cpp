@@ -30,7 +30,28 @@ BOOL GBuffer::GBufferClass::Initialize(
 	return TRUE;
 }
 
-void GBuffer::GBufferClass::CleanUp() {}
+void GBuffer::GBufferClass::CleanUp() {
+	if (mGraphicsPipeline != VK_NULL_HANDLE)
+		vkDestroyPipeline(
+			mInitData.Device->LogicalDevice(),
+			mGraphicsPipeline,
+			nullptr);
+	if (mRenderPass != VK_NULL_HANDLE)
+		vkDestroyRenderPass(
+			mInitData.Device->LogicalDevice(),
+			mRenderPass,
+			nullptr);
+	if (mPipelineLayout != VK_NULL_HANDLE) 
+		vkDestroyPipelineLayout(
+			mInitData.Device->LogicalDevice(),
+			mPipelineLayout,
+			nullptr);
+	if (mDescriptorSetLayout != VK_NULL_HANDLE)
+		vkDestroyDescriptorSetLayout(
+			mInitData.Device->LogicalDevice(),
+			mDescriptorSetLayout,
+			nullptr);
+}
 
 BOOL GBuffer::GBufferClass::CompileShaders() {
 	{
@@ -87,6 +108,79 @@ BOOL GBuffer::GBufferClass::BuildDescriptorSets() {
 	return TRUE;
 }
 
+BOOL GBuffer::GBufferClass::BuildRenderPass() {
+	VkAttachmentDescription colorAttachment{};
+	colorAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkAttachmentDescription normalAttachment{};
+	normalAttachment.format = VK_FORMAT_R8G8B8A8_UNORM;
+	normalAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	normalAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	normalAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	normalAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	normalAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	normalAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	normalAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkAttachmentDescription posAttachment{};
+	posAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+	posAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	posAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	posAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	posAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	posAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	posAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	posAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkAttachmentDescription attachments[RenderPass::Count] = {
+		colorAttachment, normalAttachment, posAttachment
+	};
+
+	VkAttachmentReference colorRefs[RenderPass::Count] = {
+		{ RenderPass::C_Color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
+		{ RenderPass::C_Normal, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
+		{ RenderPass::C_Position, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
+	};
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = RenderPass::Count;
+	subpass.pColorAttachments = colorRefs;
+
+	VkSubpassDependency subPassDependency = {};
+	subPassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	subPassDependency.dstSubpass = 0;
+	subPassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subPassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subPassDependency.srcAccessMask = 0;
+	subPassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	VkRenderPassCreateInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = _countof(attachments);
+	renderPassInfo.pAttachments = attachments;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &subPassDependency;
+
+	if (vkCreateRenderPass(
+			mInitData.Device->LogicalDevice(), 
+			&renderPassInfo, 
+			nullptr, 
+			&mRenderPass) != VK_SUCCESS) 
+		ReturnFalse(mpLogFile, "Failed to create render pass");
+
+	return TRUE;
+}
+
 BOOL GBuffer::GBufferClass::BuildPipelineLayouts() {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -110,13 +204,14 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.layout = mPipelineLayout;
+	pipelineInfo.renderPass = mRenderPass;
 
 	// Shaders
 	VkPipelineShaderStageCreateInfo vsStageInfo = {};
 	{
 		const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GBuffer]);
 		vsStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vsStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		vsStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 		vsStageInfo.module = VS;
 		vsStageInfo.pName = "main";
 	}
@@ -263,6 +358,19 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 
 	pipelineInfo.pDepthStencilState = &depthStencil;
 
+	if (vkCreateGraphicsPipelines(
+			mInitData.Device->LogicalDevice(), 
+			VK_NULL_HANDLE, 
+			1, 
+			&pipelineInfo,
+			nullptr, 
+			&mGraphicsPipeline) != VK_SUCCESS) 
+		ReturnFalse(mpLogFile, L"Failed to create graphics pipeline");
+
+	return TRUE;
+}
+
+BOOL GBuffer::GBufferClass::BuildFramebuffers() {
 
 
 	return TRUE;

@@ -19,6 +19,10 @@ BOOL ShadingObject::BuildDescriptorSets() { return TRUE; }
 
 BOOL ShadingObject::BuildPipelineLayouts() { return TRUE; }
 
+BOOL ShadingObject::BuildRenderPass() { return TRUE; }
+
 BOOL ShadingObject::BuildPipelineStates() { return TRUE; }
+
+BOOL ShadingObject::BuildFramebuffers() { return TRUE; }
 
 BOOL ShadingObject::OnResize(UINT width, UINT height) { return TRUE; }

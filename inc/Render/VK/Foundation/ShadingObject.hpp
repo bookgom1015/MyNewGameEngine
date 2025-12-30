@@ -41,7 +41,9 @@ namespace Render::VK {
 			virtual BOOL CompileShaders();
 			virtual BOOL BuildDescriptorSets();
 			virtual BOOL BuildPipelineLayouts();
+			virtual BOOL BuildRenderPass();
 			virtual BOOL BuildPipelineStates();
+			virtual BOOL BuildFramebuffers();
 			virtual BOOL OnResize(UINT width, UINT height);
 
 		protected:

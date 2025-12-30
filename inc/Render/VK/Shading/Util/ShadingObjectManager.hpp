@@ -40,7 +40,9 @@ namespace Render::VK {
 				BOOL CompileShaders(Shading::Util::ShaderManager* const pShaderManager, LPCWSTR baseDir);
 				BOOL BuildDescriptorSets();
 				BOOL BuildPipelineLayouts();
+				BOOL BuildRenderPass();
 				BOOL BuildPipelineStates();
+				BOOL BuildFramebuffers();
 				BOOL OnResize(UINT width, UINT height);
 
 			private:

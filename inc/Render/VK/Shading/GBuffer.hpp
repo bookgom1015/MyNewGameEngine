@@ -20,6 +20,15 @@ namespace Render::VK::Shading {
 		};
 	}
 
+	namespace RenderPass {
+		enum {
+			C_Color = 0,
+			C_Normal,
+			C_Position,
+			Count
+		};
+	}
+
 	namespace GBuffer {
 		class GBufferClass : public Foundation::ShadingObject {
 		public:
@@ -43,7 +52,12 @@ namespace Render::VK::Shading {
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildDescriptorSets() override;
 			virtual BOOL BuildPipelineLayouts() override;
+			virtual BOOL BuildRenderPass() override;
 			virtual BOOL BuildPipelineStates() override;
+			virtual BOOL BuildFramebuffers() override;
+
+		private:
+
 
 		private:
 			InitData mInitData;
@@ -51,7 +65,10 @@ namespace Render::VK::Shading {
 			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
 
 			VkDescriptorSetLayout mDescriptorSetLayout;
-			VkPipelineLayout mPipelineLayout
+			VkPipelineLayout mPipelineLayout;
+			VkRenderPass mRenderPass;
+			VkPipeline mGraphicsPipeline;
+			VkFramebuffer mFramebuffer;
 		};
 
 		using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;

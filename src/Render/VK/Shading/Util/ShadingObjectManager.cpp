@@ -38,9 +38,23 @@ BOOL ShadingObjectManager::BuildPipelineLayouts() {
 	return TRUE;
 }
 
+BOOL ShadingObjectManager::BuildRenderPass() {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->BuildRenderPass());
+
+	return TRUE;
+}
+
 BOOL ShadingObjectManager::BuildPipelineStates() {
 	for (const auto object : mShadingObjects)
 		CheckReturn(mpLogFile, object->BuildPipelineStates());
+
+	return TRUE;
+}
+
+BOOL ShadingObjectManager::BuildFramebuffers() {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->BuildFramebuffers());
 
 	return TRUE;
 }
