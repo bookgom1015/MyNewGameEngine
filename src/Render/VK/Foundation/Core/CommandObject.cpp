@@ -27,6 +27,7 @@ BOOL CommandObject::Initialize(
 
 	CheckReturn(mpLogFile, CreateQueues());
 	CheckReturn(mpLogFile, CreateCommandPool());
+	CheckReturn(mpLogFile, CreateCommandBuffer());
 	CheckReturn(mpLogFile, CreateSyncObjects());
 
 	return TRUE;
@@ -68,6 +69,20 @@ BOOL CommandObject::CreateCommandPool() {
 
 	if (vkCreateCommandPool(mDevice, &poolInfo, nullptr, &mCommandPool) != VK_SUCCESS)
 		ReturnFalse(mpLogFile, L"Failed to create command pool");
+
+	return TRUE;
+}
+
+BOOL CommandObject::CreateCommandBuffer() {
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = mCommandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers(mDevice, &allocInfo, &mCommandBuffer) != VK_SUCCESS) {
+		ReturnFalse(mpLogFile, L"Failed to allocate command buffers");
+	}
 
 	return TRUE;
 }

@@ -41,6 +41,10 @@ BOOL VkRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\GLSL\\"));
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptorSets());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineLayouts());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildImages());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildImageViews());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildFixedImages());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildFixedImageViews());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildRenderPass());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildFramebuffers());
@@ -49,11 +53,16 @@ BOOL VkRenderer::Initialize(
 }
 
 void VkRenderer::CleanUp() {
+	mShadingObjectManager->CleanUp();
+	mShaderManager->CleanUp();
+
 	VkLowRenderer::CleanUp();
 }
 
 BOOL VkRenderer::OnResize(UINT width, UINT height) {
 	CheckReturn(mpLogFile, VkLowRenderer::OnResize(width, height));
+
+	CheckReturn(mpLogFile, mShadingObjectManager->OnResize(width, height));
 
 #ifdef _DEBUG
 	std::cout << "VkRenderer resized (Width: " << width << " Height: " << height << ")" << std::endl;

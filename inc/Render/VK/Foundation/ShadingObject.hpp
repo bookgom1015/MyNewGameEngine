@@ -41,6 +41,10 @@ namespace Render::VK {
 			virtual BOOL CompileShaders();
 			virtual BOOL BuildDescriptorSets();
 			virtual BOOL BuildPipelineLayouts();
+			virtual BOOL BuildImages();
+			virtual BOOL BuildImageViews();
+			virtual BOOL BuildFixedImages();
+			virtual BOOL BuildFixedImageViews();
 			virtual BOOL BuildRenderPass();
 			virtual BOOL BuildPipelineStates();
 			virtual BOOL BuildFramebuffers();

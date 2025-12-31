@@ -17,6 +17,11 @@
 #endif
 #include <vulkan/vulkan.h>
 
+#ifndef vkIsValidHandle
+#define vkIsValidHandle(x) ((x) != VK_NULL_HANDLE)
+#endif
+
+
 namespace Common::Debug {
 	struct LogFile;
 }

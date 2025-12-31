@@ -9,6 +9,10 @@ using namespace Render::VK::Shading;
 namespace {
 	const CHAR* const GLSL_GBufferVS = "GBufferVS.spv";
 	const CHAR* const GLSL_GBufferPS = "GBufferPS.spv";
+
+	VkFormat ColorImageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+	VkFormat NormalImageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+	VkFormat PositionImageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 }
 
 GBuffer::InitDataPtr GBuffer::MakeInitData() {
@@ -31,22 +35,24 @@ BOOL GBuffer::GBufferClass::Initialize(
 }
 
 void GBuffer::GBufferClass::CleanUp() {
-	if (mGraphicsPipeline != VK_NULL_HANDLE)
+	DestroyResizableObjects();
+
+	if (vkIsValidHandle(mGraphicsPipeline))
 		vkDestroyPipeline(
 			mInitData.Device->LogicalDevice(),
 			mGraphicsPipeline,
 			nullptr);
-	if (mRenderPass != VK_NULL_HANDLE)
+	if (vkIsValidHandle(mRenderPass))
 		vkDestroyRenderPass(
 			mInitData.Device->LogicalDevice(),
 			mRenderPass,
 			nullptr);
-	if (mPipelineLayout != VK_NULL_HANDLE) 
+	if (vkIsValidHandle(mPipelineLayout))
 		vkDestroyPipelineLayout(
 			mInitData.Device->LogicalDevice(),
 			mPipelineLayout,
 			nullptr);
-	if (mDescriptorSetLayout != VK_NULL_HANDLE)
+	if (vkIsValidHandle(mDescriptorSetLayout))
 		vkDestroyDescriptorSetLayout(
 			mInitData.Device->LogicalDevice(),
 			mDescriptorSetLayout,
@@ -110,7 +116,7 @@ BOOL GBuffer::GBufferClass::BuildDescriptorSets() {
 
 BOOL GBuffer::GBufferClass::BuildRenderPass() {
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+	colorAttachment.format = ColorImageFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -120,7 +126,7 @@ BOOL GBuffer::GBufferClass::BuildRenderPass() {
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkAttachmentDescription normalAttachment{};
-	normalAttachment.format = VK_FORMAT_R8G8B8A8_UNORM;
+	normalAttachment.format = NormalImageFormat;
 	normalAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	normalAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	normalAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -130,7 +136,7 @@ BOOL GBuffer::GBufferClass::BuildRenderPass() {
 	normalAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkAttachmentDescription posAttachment{};
-	posAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+	posAttachment.format = PositionImageFormat;
 	posAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	posAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	posAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -196,6 +202,86 @@ BOOL GBuffer::GBufferClass::BuildPipelineLayouts() {
 			&mPipelineLayout) != VK_SUCCESS) {
 		ReturnFalse(mpLogFile, L"Failed to create pipeline layout");
 	}
+
+	return TRUE;
+}
+
+BOOL GBuffer::GBufferClass::BuildImages() {
+	CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CreateImage(
+		mpLogFile,
+		mInitData.Device->PhysicalDevice(),
+		mInitData.Device->LogicalDevice(),
+		mInitData.ClientWidth,
+		mInitData.ClientHeight,
+		1,
+		VK_SAMPLE_COUNT_1_BIT,
+		ColorImageFormat,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		mColorImage,
+		mColorImageMemory));
+
+	CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CreateImage(
+		mpLogFile,
+		mInitData.Device->PhysicalDevice(),
+		mInitData.Device->LogicalDevice(),
+		mInitData.ClientWidth,
+		mInitData.ClientHeight,
+		1,
+		VK_SAMPLE_COUNT_1_BIT,
+		NormalImageFormat,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		mNormalImage,
+		mNormalImageMemory));
+
+	CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CreateImage(
+		mpLogFile,
+		mInitData.Device->PhysicalDevice(),
+		mInitData.Device->LogicalDevice(),
+		mInitData.ClientWidth,
+		mInitData.ClientHeight,
+		1,
+		VK_SAMPLE_COUNT_1_BIT,
+		PositionImageFormat,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		mPositionImage,
+		mPositionImageMemory));
+
+	return TRUE;
+}
+
+BOOL GBuffer::GBufferClass::BuildImageViews() {
+	CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CreateImageView(
+		mpLogFile,
+		mInitData.Device->LogicalDevice(),
+		mColorImage,
+		ColorImageFormat,
+		1,
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		mColorImageView));
+
+	CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CreateImageView(
+		mpLogFile,
+		mInitData.Device->LogicalDevice(),
+		mNormalImage,
+		NormalImageFormat,
+		1,
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		mNormalImageView));
+
+	CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CreateImageView(
+		mpLogFile,
+		mInitData.Device->LogicalDevice(),
+		mPositionImage,
+		PositionImageFormat,
+		1,
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		mPositionImageView));
 
 	return TRUE;
 }
@@ -330,12 +416,16 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
 
+	VkPipelineColorBlendAttachmentState attachments[RenderPass::Count] = {
+		colorBlendAttachment, colorBlendAttachment, colorBlendAttachment
+	};
+
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	colorBlending.logicOpEnable = VK_FALSE;
 	colorBlending.logicOp = VK_LOGIC_OP_COPY;
-	colorBlending.attachmentCount = 1;
-	colorBlending.pAttachments = &colorBlendAttachment;
+	colorBlending.attachmentCount = _countof(attachments);
+	colorBlending.pAttachments = attachments;
 	colorBlending.blendConstants[0] = 0.f;
 	colorBlending.blendConstants[1] = 0.f;
 	colorBlending.blendConstants[2] = 0.f;
@@ -371,7 +461,94 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 }
 
 BOOL GBuffer::GBufferClass::BuildFramebuffers() {
+	VkImageView attachments[] = {
+		mColorImageView, mNormalImageView, mPositionImageView
+	};
 
+	VkFramebufferCreateInfo framebufferInfo{};
+	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	framebufferInfo.renderPass = mRenderPass;
+	framebufferInfo.attachmentCount = _countof(attachments);
+	framebufferInfo.pAttachments = attachments;
+	framebufferInfo.width = mInitData.ClientWidth;
+	framebufferInfo.height = mInitData.ClientHeight;
+	framebufferInfo.layers = 1;
+
+	if (vkCreateFramebuffer(
+			mInitData.Device->LogicalDevice(), 
+			&framebufferInfo, 
+			nullptr, 
+			&mFramebuffer) != VK_SUCCESS) 
+		ReturnFalse(mpLogFile, "Failed to create framebuffer");
 
 	return TRUE;
+}
+
+BOOL GBuffer::GBufferClass::OnResize(UINT width, UINT height) {
+	mInitData.ClientWidth = width;
+	mInitData.ClientHeight = height;
+
+	DestroyResizableObjects();
+	CheckReturn(mpLogFile, BuildImages());
+	CheckReturn(mpLogFile, BuildImageViews());
+	CheckReturn(mpLogFile, BuildFramebuffers());
+
+	return TRUE;
+}
+
+void GBuffer::GBufferClass::DestroyResizableObjects() {
+	// Framebuffer
+	if (vkIsValidHandle(mFramebuffer))
+		vkDestroyFramebuffer(
+			mInitData.Device->LogicalDevice(),
+			mFramebuffer,
+			nullptr);
+	// Color
+	if (vkIsValidHandle(mColorImageView))
+		vkDestroyImageView(
+			mInitData.Device->LogicalDevice(),
+			mColorImageView,
+			nullptr);
+	if (vkIsValidHandle(mColorImage))
+		vkDestroyImage(
+			mInitData.Device->LogicalDevice(),
+			mColorImage,
+			nullptr);
+	if (vkIsValidHandle(mColorImageMemory))
+		vkFreeMemory(
+			mInitData.Device->LogicalDevice(),
+			mColorImageMemory,
+			nullptr);
+	// Normal
+	if (vkIsValidHandle(mNormalImageView))
+		vkDestroyImageView(
+			mInitData.Device->LogicalDevice(),
+			mNormalImageView,
+			nullptr);
+	if (vkIsValidHandle(mNormalImage))
+		vkDestroyImage(
+			mInitData.Device->LogicalDevice(),
+			mNormalImage,
+			nullptr);
+	if (vkIsValidHandle(mNormalImageMemory))
+		vkFreeMemory(
+			mInitData.Device->LogicalDevice(),
+			mNormalImageMemory,
+			nullptr);
+	// Position
+	if (vkIsValidHandle(mPositionImageView))
+		vkDestroyImageView(
+			mInitData.Device->LogicalDevice(),
+			mPositionImageView,
+			nullptr);
+	if (vkIsValidHandle(mPositionImage))
+		vkDestroyImage(
+			mInitData.Device->LogicalDevice(),
+			mPositionImage,
+			nullptr);
+	if (vkIsValidHandle(mPositionImageMemory))
+		vkFreeMemory(
+			mInitData.Device->LogicalDevice(),
+			mPositionImageMemory,
+			nullptr);
 }

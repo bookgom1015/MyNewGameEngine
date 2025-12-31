@@ -52,12 +52,15 @@ namespace Render::VK::Shading {
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildDescriptorSets() override;
 			virtual BOOL BuildPipelineLayouts() override;
+			virtual BOOL BuildImages() override;
+			virtual BOOL BuildImageViews() override;
 			virtual BOOL BuildRenderPass() override;
 			virtual BOOL BuildPipelineStates() override;
 			virtual BOOL BuildFramebuffers() override;
+			virtual BOOL OnResize(UINT width, UINT height) override;
 
 		private:
-
+			void DestroyResizableObjects();
 
 		private:
 			InitData mInitData;
@@ -69,6 +72,18 @@ namespace Render::VK::Shading {
 			VkRenderPass mRenderPass;
 			VkPipeline mGraphicsPipeline;
 			VkFramebuffer mFramebuffer;
+
+			VkImage mColorImage;
+			VkImageView mColorImageView;
+			VkDeviceMemory mColorImageMemory;
+
+			VkImage mNormalImage;
+			VkImageView mNormalImageView;
+			VkDeviceMemory mNormalImageMemory;
+
+			VkImage mPositionImage;
+			VkImageView mPositionImageView;
+			VkDeviceMemory mPositionImageMemory;
 		};
 
 		using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;

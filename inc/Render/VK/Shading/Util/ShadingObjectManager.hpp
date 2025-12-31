@@ -33,6 +33,7 @@ namespace Render::VK {
 
 			public:
 				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+				void CleanUp();
 
 				void AddShadingObject(Foundation::ShadingObject* const pShadingObject);
 
@@ -40,6 +41,10 @@ namespace Render::VK {
 				BOOL CompileShaders(Shading::Util::ShaderManager* const pShaderManager, LPCWSTR baseDir);
 				BOOL BuildDescriptorSets();
 				BOOL BuildPipelineLayouts();
+				BOOL BuildImages();
+				BOOL BuildImageViews();
+				BOOL BuildFixedImages();
+				BOOL BuildFixedImageViews();
 				BOOL BuildRenderPass();
 				BOOL BuildPipelineStates();
 				BOOL BuildFramebuffers();

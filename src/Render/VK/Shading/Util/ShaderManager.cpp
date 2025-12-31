@@ -31,9 +31,8 @@ BOOL ShaderManager::Initialize(
 }
 
 void ShaderManager::CleanUp() {
-	for (auto& shader : mShaders) {
+	for (auto& shader : mShaders) 
 		vkDestroyShaderModule(mpDevice->LogicalDevice(), shader.second, nullptr);
-	}
 }
 
 BOOL ShaderManager::AddShader(

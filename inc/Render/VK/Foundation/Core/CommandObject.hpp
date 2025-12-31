@@ -37,6 +37,7 @@ namespace Render::VK::Foundation::Core {
 	private:
 		BOOL CreateQueues();
 		BOOL CreateCommandPool();
+		BOOL CreateCommandBuffer();
 		BOOL CreateSyncObjects();
 
 	private:
@@ -50,6 +51,7 @@ namespace Render::VK::Foundation::Core {
 
 		// Command objects;
 		VkCommandPool mCommandPool;
+		VkCommandBuffer mCommandBuffer;
 
 		VkQueue mGraphicsQueue;
 		VkQueue mPresentQueue;

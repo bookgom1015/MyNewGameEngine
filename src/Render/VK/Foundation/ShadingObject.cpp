@@ -19,6 +19,14 @@ BOOL ShadingObject::BuildDescriptorSets() { return TRUE; }
 
 BOOL ShadingObject::BuildPipelineLayouts() { return TRUE; }
 
+BOOL ShadingObject::BuildImages() { return TRUE; }
+
+BOOL ShadingObject::BuildImageViews() { return TRUE; }
+
+BOOL ShadingObject::BuildFixedImages() { return TRUE; }
+
+BOOL ShadingObject::BuildFixedImageViews() { return TRUE; }
+
 BOOL ShadingObject::BuildRenderPass() { return TRUE; }
 
 BOOL ShadingObject::BuildPipelineStates() { return TRUE; }

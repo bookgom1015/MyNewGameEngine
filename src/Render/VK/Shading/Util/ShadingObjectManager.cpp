@@ -11,6 +11,11 @@ BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	return TRUE;
 }
 
+void ShadingObjectManager::CleanUp() {
+	for (const auto object : mShadingObjects)
+		object->CleanUp();
+}
+
 void ShadingObjectManager::AddShadingObject(Foundation::ShadingObject* const pShadingObject) {
 	mShadingObjects.push_back(pShadingObject);
 }
@@ -34,6 +39,34 @@ BOOL ShadingObjectManager::BuildDescriptorSets() {
 BOOL ShadingObjectManager::BuildPipelineLayouts() {
 	for (const auto object : mShadingObjects)
 		CheckReturn(mpLogFile, object->BuildPipelineLayouts());
+
+	return TRUE;
+}
+
+BOOL ShadingObjectManager::BuildImages() {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->BuildImages());
+
+	return TRUE;
+}
+
+BOOL ShadingObjectManager::BuildImageViews() {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->BuildImageViews());
+
+	return TRUE;
+}
+
+BOOL ShadingObjectManager::BuildFixedImages() {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->BuildFixedImages());
+
+	return TRUE;
+}
+
+BOOL ShadingObjectManager::BuildFixedImageViews() {
+	for (const auto object : mShadingObjects)
+		CheckReturn(mpLogFile, object->BuildFixedImageViews());
 
 	return TRUE;
 }
