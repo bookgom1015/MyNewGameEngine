@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -80,8 +81,9 @@ BOOL EyeAdaption::EyeAdaptionClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures(
-		const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// LuminanceHistogram
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
@@ -101,7 +103,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures(
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -124,7 +126,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures(
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -149,7 +151,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures(
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(

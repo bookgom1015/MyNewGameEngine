@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -96,7 +97,9 @@ BOOL DOF::DOFClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL DOF::DOFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL DOF::DOFClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// CalcFocalDistance
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
@@ -114,7 +117,7 @@ BOOL DOF::DOFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -145,7 +148,7 @@ BOOL DOF::DOFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -172,7 +175,7 @@ BOOL DOF::DOFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -199,7 +202,7 @@ BOOL DOF::DOFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -249,7 +252,6 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 	}
 	// Bokeh
 	{
-		// MeshPipelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_Bokeh].Get();
@@ -272,7 +274,6 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_Bokeh]),
 				L"DOF_MP_Bokeh"));
 		}
-		// GraphicsPipelineState
 		else {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_Bokeh].Get();
@@ -298,7 +299,6 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 	}
 	// BokehBlurNxN
 	{
-		// MeshPipelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BokehBlurNxN].Get();
@@ -321,7 +321,6 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_BokehBlurNxN]),
 				L"DOF_MP_BokehBlurNxN"));
 		}
-		// GraphicsPipelineState
 		else {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BokehBlurNxN].Get();

@@ -10,6 +10,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -66,7 +67,9 @@ BOOL GBuffer::GBufferClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL GBuffer::GBufferClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL GBuffer::GBufferClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, ShadingConvention::GBuffer::MaxNumTextures, 0, 1);
 
@@ -83,7 +86,7 @@ BOOL GBuffer::GBufferClass::BuildRootSignatures(const Render::DX::Shading::Util:
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
+		Util::StaticSamplerCount, samplers,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 	);
 
@@ -97,36 +100,6 @@ BOOL GBuffer::GBufferClass::BuildRootSignatures(const Render::DX::Shading::Util:
 }
 
 BOOL GBuffer::GBufferClass::BuildPipelineStates() {
-	// GraphicsPipelineState
-	{
-		const auto inputLayout = Foundation::Util::D3D12Util::InputLayoutDesc();
-		auto psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc(inputLayout, ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
-		psoDesc.pRootSignature = mRootSignature.Get();
-		{
-			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GBuffer]);
-			NullCheck(mpLogFile, VS);
-			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GBuffer]);
-			NullCheck(mpLogFile, PS);
-			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-		}
-		psoDesc.NumRenderTargets = NumRenderTargtes;
-		psoDesc.RTVFormats[0] = ShadingConvention::GBuffer::AlbedoMapFormat;
-		psoDesc.RTVFormats[1] = ShadingConvention::GBuffer::NormalMapFormat;
-		psoDesc.RTVFormats[2] = ShadingConvention::GBuffer::NormalDepthMapFormat;
-		psoDesc.RTVFormats[3] = ShadingConvention::GBuffer::NormalDepthMapFormat;
-		psoDesc.RTVFormats[4] = ShadingConvention::GBuffer::SpecularMapFormat;
-		psoDesc.RTVFormats[5] = ShadingConvention::GBuffer::RoughnessMetalnessMapFormat;
-		psoDesc.RTVFormats[6] = ShadingConvention::GBuffer::VelocityMapFormat;
-		psoDesc.RTVFormats[7] = ShadingConvention::GBuffer::PositionMapFormat;
-
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device,
-			psoDesc, 
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GBuffer]),
-			L"GBuffer_GP_Default"));
-	}
-	// MeshPipelineState
 	if (mInitData.MeshShaderSupported) {
 		auto psoDesc = Foundation::Util::D3D12Util::DefaultMeshPsoDesc(ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
 		psoDesc.pRootSignature = mRootSignature.Get();
@@ -153,6 +126,34 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 			psoDesc,
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_GBuffer]),
 			L"GBuffer_MP_Default"));
+	}
+	else {
+		const auto inputLayout = Foundation::Util::D3D12Util::InputLayoutDesc();
+		auto psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc(inputLayout, ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
+		psoDesc.pRootSignature = mRootSignature.Get();
+		{
+			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GBuffer]);
+			NullCheck(mpLogFile, VS);
+			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GBuffer]);
+			NullCheck(mpLogFile, PS);
+			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+		}
+		psoDesc.NumRenderTargets = NumRenderTargtes;
+		psoDesc.RTVFormats[0] = ShadingConvention::GBuffer::AlbedoMapFormat;
+		psoDesc.RTVFormats[1] = ShadingConvention::GBuffer::NormalMapFormat;
+		psoDesc.RTVFormats[2] = ShadingConvention::GBuffer::NormalDepthMapFormat;
+		psoDesc.RTVFormats[3] = ShadingConvention::GBuffer::NormalDepthMapFormat;
+		psoDesc.RTVFormats[4] = ShadingConvention::GBuffer::SpecularMapFormat;
+		psoDesc.RTVFormats[5] = ShadingConvention::GBuffer::RoughnessMetalnessMapFormat;
+		psoDesc.RTVFormats[6] = ShadingConvention::GBuffer::VelocityMapFormat;
+		psoDesc.RTVFormats[7] = ShadingConvention::GBuffer::PositionMapFormat;
+
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+			mInitData.Device,
+			psoDesc, 
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GBuffer]),
+			L"GBuffer_GP_Default"));
 	}
 
 	return TRUE;

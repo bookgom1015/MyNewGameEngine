@@ -68,7 +68,7 @@ namespace Render::DX::Foundation {
 			__forceinline ID3D12GraphicsCommandList6* DirectCommandList() const;
 			__forceinline ID3D12GraphicsCommandList6* CommandList(UINT index) const;
 
-			__forceinline constexpr UINT64 CurrentFence() const;
+			__forceinline constexpr UINT64 CurrentFence() const noexcept;
 
 		private:
 			Common::Debug::LogFile* mpLogFile = nullptr;

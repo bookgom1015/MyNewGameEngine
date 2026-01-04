@@ -82,7 +82,7 @@ namespace Common {
 		protected:
 			Common::Debug::LogFile* mpLogFile = nullptr;
 			Common::Foundation::Core::WindowsManager* mpWindowsManager = nullptr;
-			ShadingArgument::ShadingArgumentSet* mpShadingArgumentSet;
+			ShadingArgument::ShadingArgumentSet* mpShadingArgumentSet = nullptr;
 
 			Common::Foundation::Camera::GameCamera* mpCamera = nullptr;
 

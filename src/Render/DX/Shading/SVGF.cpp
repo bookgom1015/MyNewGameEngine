@@ -8,6 +8,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -100,9 +101,13 @@ BOOL SVGF::SVGFClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL SVGF::SVGFClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// TemporalSupersamplingReverseReproject
 	{
+		using namespace RootSignature::TemporalSupersamplingReverseReproject;
+
 		CD3DX12_DESCRIPTOR_RANGE texTables[13] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
@@ -120,26 +125,27 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::Count] = {};
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::CB_CrossBilateralFilter].InitAsConstantBufferView(0);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::RC_Consts].InitAsConstants(ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Count, 1);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_NormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_ReprojectedNormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_Velocity].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedNormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValue].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValueSquaredMean].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedTSPP].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::SI_CachedRayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::UO_CachedTSPP].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::UO_TSPPSquaredMeanRayHitDistacne].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::UO_DebugMap0].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingReverseReproject::UO_DebugMap1].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		slotRootParameter[CB_CrossBilateralFilter].InitAsConstantBufferView(0);
+		slotRootParameter[RC_Consts].InitAsConstants(
+			ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Count, 1);
+		slotRootParameter[SI_NormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_ReprojectedNormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_Velocity].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_CachedNormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_CachedValue].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_CachedValueSquaredMean].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_CachedTSPP].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_CachedRayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_CachedTSPP].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_TSPPSquaredMeanRayHitDistacne].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_DebugMap0].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_DebugMap1].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
@@ -149,6 +155,8 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	}
 	// TemporalSupersamplingBlendWithCurrentFrame
 	{
+		using namespace RootSignature::TemporalSupersamplingBlendWithCurrentFrame;
+
 		CD3DX12_DESCRIPTOR_RANGE texTables[10] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
@@ -163,22 +171,22 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::Count] = {};
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::CB_TSPPBlendWithCurrentFrame].InitAsConstantBufferView(0);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_LocalMeanVaraince].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_RayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_TSPPSquaredMeanRayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_TemporalAOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_TSPP].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_AOCoefficientSquaredMean].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_RayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_VarianceMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_BlurStrength].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		slotRootParameter[CB_TSPPBlendWithCurrentFrame].InitAsConstantBufferView(0);
+		slotRootParameter[SI_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_LocalMeanVaraince].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_RayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_TSPPSquaredMeanRayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_TemporalAOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_TSPP].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_AOCoefficientSquaredMean].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_RayHitDistance].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_VarianceMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_BlurStrength].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
@@ -188,20 +196,23 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	}
 	// CalculateDepthPartialDerivative
 	{
+		using namespace RootSignature::CalcDepthPartialDerivative;
+
 		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CalcDepthPartialDerivative::Count] = {};
-		slotRootParameter[RootSignature::CalcDepthPartialDerivative::RC_Consts].InitAsConstants(ShadingConvention::SVGF::RootConstant::CalcDepthPartialDerivative::Count, 0, 0);
-		slotRootParameter[RootSignature::CalcDepthPartialDerivative::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::CalcDepthPartialDerivative::UO_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		slotRootParameter[RC_Consts].InitAsConstants(
+			ShadingConvention::SVGF::RootConstant::CalcDepthPartialDerivative::Count, 0, 0);
+		slotRootParameter[SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
@@ -211,20 +222,22 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	}
 	// CalculateMeanVariance
 	{
+		using namespace RootSignature::CalcLocalMeanVariance;
+
 		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CalcLocalMeanVariance::Count] = {};
-		slotRootParameter[RootSignature::CalcLocalMeanVariance::CB_LocalMeanVariance].InitAsConstantBufferView(0, 0);
-		slotRootParameter[RootSignature::CalcLocalMeanVariance::SI_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::CalcLocalMeanVariance::UO_LocalMeanVariance].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		slotRootParameter[CB_LocalMeanVariance].InitAsConstantBufferView(0, 0);
+		slotRootParameter[SI_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_LocalMeanVariance].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
@@ -234,18 +247,20 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	}
 	// FillInCheckerboard
 	{
+		using namespace RootSignature::FillInCheckerboard;
+
 		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::FillInCheckerboard::Count] = {};
-		slotRootParameter[RootSignature::FillInCheckerboard::CB_LocalMeanVariance].InitAsConstantBufferView(0, 0);
-		slotRootParameter[RootSignature::FillInCheckerboard::UIO_LocalMeanVariance].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		slotRootParameter[CB_LocalMeanVariance].InitAsConstantBufferView(0, 0);
+		slotRootParameter[UIO_LocalMeanVariance].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		CheckReturn(mpLogFile, mInitData.Device->CreateRootSignature(
@@ -255,6 +270,8 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	}
 	// Atrous Wavelet transform filter
 	{
+		using namespace RootSignature::AtrousWaveletTransformFilter;
+
 		CD3DX12_DESCRIPTOR_RANGE texTables[7] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
@@ -266,16 +283,17 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::AtrousWaveletTransformFilter::Count] = {};
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::CB_AtrousFilter].InitAsConstantBufferView(0, 0);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::RC_Consts].InitAsConstants(ShadingConvention::SVGF::RootConstant::AtrousWaveletTransformFilter::Count, 1);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::SI_TemporalValue].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::SI_NormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::SI_Variance].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::SI_HitDistance].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::SI_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::SI_TSPP].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::AtrousWaveletTransformFilter::UO_TemporalValue].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		slotRootParameter[CB_AtrousFilter].InitAsConstantBufferView(0, 0);
+		slotRootParameter[RC_Consts].InitAsConstants(
+			ShadingConvention::SVGF::RootConstant::AtrousWaveletTransformFilter::Count, 1);
+		slotRootParameter[SI_TemporalValue].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_NormalDepth].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_Variance].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_HitDistance].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_DepthPartialDerivative].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_TSPP].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UO_TemporalValue].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 			_countof(slotRootParameter), slotRootParameter,
@@ -289,6 +307,8 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 	}
 	// Disocclusion blur
 	{
+		using namespace RootSignature::DisocclusionBlur;
+
 		CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
@@ -297,12 +317,13 @@ BOOL SVGF::SVGFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DisocclusionBlur::Count] = {};
-		slotRootParameter[RootSignature::DisocclusionBlur::RC_Consts].InitAsConstants(ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Count, 0);
-		slotRootParameter[RootSignature::DisocclusionBlur::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::DisocclusionBlur::SI_BlurStrength].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::DisocclusionBlur::SI_RoughnessMetalnessMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::DisocclusionBlur::UIO_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		slotRootParameter[RC_Consts].InitAsConstants(
+			ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Count, 0);
+		slotRootParameter[SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_BlurStrength].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[SI_RoughnessMetalnessMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[UIO_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 			_countof(slotRootParameter), slotRootParameter,
@@ -324,7 +345,8 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalcDepthPartialDerivative].Get();
 		{
-			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcParticalDepthDerivative]);
+			const auto CS = mInitData.ShaderManager->GetShader(
+				mShaderHashes[Shader::CS_CalcParticalDepthDerivative]);
 			NullCheck(mpLogFile, CS);
 			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
@@ -406,7 +428,8 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_AtrousWaveletTransformFilter].Get();
 		{
-			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_EdgeStoppingFilterGaussian3x3]);
+			const auto CS = mInitData.ShaderManager->GetShader(
+				mShaderHashes[Shader::CS_EdgeStoppingFilterGaussian3x3]);
 			NullCheck(mpLogFile, CS);
 			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
@@ -490,13 +513,20 @@ BOOL SVGF::SVGFClass::CalculateDepthParticalDerivative(
 		std::array<std::uint32_t, ShadingConvention::SVGF::RootConstant::CalcDepthPartialDerivative::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::SVGF::RootConstant::CalcDepthPartialDerivative::Struct));
 	
-		CmdList->SetComputeRoot32BitConstants(RootSignature::CalcDepthPartialDerivative::RC_Consts, ShadingConvention::SVGF::RootConstant::CalcDepthPartialDerivative::Count, consts.data(), 0);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalcDepthPartialDerivative::SI_DepthMap, si_depthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalcDepthPartialDerivative::UO_DepthPartialDerivative, mhGpuDecs[Descriptor::EU_DepthPartialDerivative]);
+		CmdList->SetComputeRoot32BitConstants(
+			RootSignature::CalcDepthPartialDerivative::RC_Consts, 
+			ShadingConvention::SVGF::RootConstant::CalcDepthPartialDerivative::Count, consts.data(), 0);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::CalcDepthPartialDerivative::SI_DepthMap, si_depthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::CalcDepthPartialDerivative::UO_DepthPartialDerivative, 
+			mhGpuDecs[Descriptor::EU_DepthPartialDerivative]);
 	
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height), 
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height), 
 			ShadingConvention::SVGF::ThreadGroup::Default::Depth);
 	}
 	
@@ -528,14 +558,20 @@ BOOL SVGF::SVGFClass::CalculateLocalMeanVariance(
 	
 		const auto uo_localMeanVariance = mhGpuDecs[SVGF::Descriptor::LocalMeanVariance::EU_Raw];	
 
-		CmdList->SetComputeRootConstantBufferView(RootSignature::CalcLocalMeanVariance::CB_LocalMeanVariance, pFrameResource->CalcLocalMeanVarianceCBAddress());
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalcLocalMeanVariance::SI_AOCoefficient, si_valueMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::CalcLocalMeanVariance::UO_LocalMeanVariance, uo_localMeanVariance);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::CalcLocalMeanVariance::CB_LocalMeanVariance, 
+			pFrameResource->CalcLocalMeanVarianceCBAddress());
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::CalcLocalMeanVariance::SI_AOCoefficient, si_valueMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::CalcLocalMeanVariance::UO_LocalMeanVariance, uo_localMeanVariance);
 	
 		const INT PixelStepY = bCheckerboardSamplingEnabled ? 2 : 1;
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height * PixelStepY),
+			Foundation::Util::D3D12Util::CeilDivide(
+				mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height * PixelStepY),
 			ShadingConvention::SVGF::ThreadGroup::Default::Depth);
 	}
 
@@ -562,13 +598,19 @@ BOOL SVGF::SVGFClass::FillInCheckerboard(
 		pLocalMeanVarMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, pLocalMeanVarMap);
 
-		CmdList->SetComputeRootConstantBufferView(RootSignature::FillInCheckerboard::CB_LocalMeanVariance, pFrameResource->CalcLocalMeanVarianceCBAddress());
-		CmdList->SetComputeRootDescriptorTable(RootSignature::FillInCheckerboard::UIO_LocalMeanVariance, mhGpuDecs[Descriptor::LocalMeanVariance::EU_Raw]);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::FillInCheckerboard::CB_LocalMeanVariance, 
+			pFrameResource->CalcLocalMeanVarianceCBAddress());
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::FillInCheckerboard::UIO_LocalMeanVariance, 
+			mhGpuDecs[Descriptor::LocalMeanVariance::EU_Raw]);
 
 		const INT PixelStepY = bCheckerboardSamplingEnabled ? 2 : 1;
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height * PixelStepY),
+			Foundation::Util::D3D12Util::CeilDivide(
+				mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height * PixelStepY),
 			ShadingConvention::SVGF::ThreadGroup::Default::Depth);
 	}
 
@@ -630,20 +672,48 @@ BOOL SVGF::SVGFClass::ReverseReprojectPreviousFrame(
 			Foundation::Util::D3D12Util::UavBarrier(CmdList, mDebugMaps[i].get());
 		}
 
-		CmdList->SetComputeRootConstantBufferView(RootSignature::TemporalSupersamplingReverseReproject::CB_CrossBilateralFilter, pFrameResource->CrossBilateralFilterCBAddress());
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_NormalDepth, si_normalDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_ReprojectedNormalDepth, si_reprojNormalDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_Velocity, si_velocityMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_DepthPartialDerivative, mhGpuDecs[Descriptor::ES_DepthPartialDerivative]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedNormalDepth, si_cachedNormalDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValue, si_cachedValueMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValueSquaredMean, si_cachedValueSquaredMeanMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedTSPP, si_cachedTSPPMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::SI_CachedRayHitDistance, si_cachedRayHitDistMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_CachedTSPP, uo_cachedTSPPMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_TSPPSquaredMeanRayHitDistacne, mhGpuDecs[Descriptor::EU_TSPPSquaredMeanRayHitDistance]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_DebugMap0, mhDebugMapGpuUavs[0]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingReverseReproject::UO_DebugMap1, mhDebugMapGpuUavs[1]);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::TemporalSupersamplingReverseReproject::CB_CrossBilateralFilter, 
+			pFrameResource->CrossBilateralFilterCBAddress());
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_NormalDepth, 
+			si_normalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_ReprojectedNormalDepth, 
+			si_reprojNormalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_Velocity, 
+			si_velocityMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_DepthPartialDerivative,
+			mhGpuDecs[Descriptor::ES_DepthPartialDerivative]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_CachedNormalDepth, 
+			si_cachedNormalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValue, 
+			si_cachedValueMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_CachedValueSquaredMean, 
+			si_cachedValueSquaredMeanMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_CachedTSPP,
+			si_cachedTSPPMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::SI_CachedRayHitDistance,
+			si_cachedRayHitDistMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::UO_CachedTSPP, 
+			uo_cachedTSPPMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::UO_TSPPSquaredMeanRayHitDistacne,
+			mhGpuDecs[Descriptor::EU_TSPPSquaredMeanRayHitDistance]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::UO_DebugMap0,
+			mhDebugMapGpuUavs[0]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingReverseReproject::UO_DebugMap1, 
+			mhDebugMapGpuUavs[1]);
 
 		ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Struct rc;
 		rc.gTexDim = { static_cast<FLOAT>(mInitData.ClientWidth), static_cast<FLOAT>(mInitData.ClientHeight) };
@@ -659,8 +729,10 @@ BOOL SVGF::SVGFClass::ReverseReprojectPreviousFrame(
 			0);
 
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height),
 			ShadingConvention::SVGF::ThreadGroup::Default::Depth);
 	}
 
@@ -710,21 +782,45 @@ BOOL SVGF::SVGFClass::BlendWithCurrentFrame(
 		pTemporalTSPPMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, pTemporalTSPPMap);
 		
-		CmdList->SetComputeRootConstantBufferView(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::CB_TSPPBlendWithCurrentFrame, pFrameResource->BlendWithCurrentFrameCBAddress());
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_AOCoefficient, si_valueMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_LocalMeanVaraince, mhGpuDecs[Descriptor::LocalMeanVariance::ES_Raw]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_RayHitDistance, si_rayHitDistanceMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_TSPPSquaredMeanRayHitDistance, mhGpuDecs[Descriptor::ES_TSPPSquaredMeanRayHitDistance]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_TemporalAOCoefficient, uo_temporalCacheValueMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_TSPP, uo_temporalCacheTSPPMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_AOCoefficientSquaredMean, uo_temporalCacheValueSquaredMeanMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_RayHitDistance, uo_temporalCacheRayHitDistanceMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_VarianceMap, mhGpuDecs[Descriptor::Variance::EU_Raw]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_BlurStrength, mhGpuDecs[Descriptor::EU_DisocclusionBlurStrength]);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::CB_TSPPBlendWithCurrentFrame, 
+			pFrameResource->BlendWithCurrentFrameCBAddress());
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_AOCoefficient, 
+			si_valueMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_LocalMeanVaraince, 
+			mhGpuDecs[Descriptor::LocalMeanVariance::ES_Raw]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_RayHitDistance, 
+			si_rayHitDistanceMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_TSPPSquaredMeanRayHitDistance,
+			mhGpuDecs[Descriptor::ES_TSPPSquaredMeanRayHitDistance]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_TemporalAOCoefficient, 
+			uo_temporalCacheValueMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_TSPP,
+			uo_temporalCacheTSPPMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_AOCoefficientSquaredMean, 
+			uo_temporalCacheValueSquaredMeanMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_RayHitDistance, 
+			uo_temporalCacheRayHitDistanceMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_VarianceMap,
+			mhGpuDecs[Descriptor::Variance::EU_Raw]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::UO_BlurStrength,
+			mhGpuDecs[Descriptor::EU_DisocclusionBlurStrength]);
 
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Default::Width),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Default::Height),
 			ShadingConvention::SVGF::ThreadGroup::Default::Depth);
 	}
 
@@ -779,17 +875,33 @@ BOOL SVGF::SVGFClass::ApplyAtrousWaveletTransformFilter(
 			CmdList,
 			TRUE);
 		
-		CmdList->SetComputeRootConstantBufferView(RootSignature::AtrousWaveletTransformFilter::CB_AtrousFilter, pFrameResource->AtrousWaveletTransformFilterCBAddress());
-		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::SI_TemporalValue, si_temporalValueMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::SI_NormalDepth, si_normalDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::SI_Variance, mhGpuDecs[Descriptor::Variance::ES_Raw]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::SI_HitDistance, si_temporalCachehitDistanceMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::SI_DepthPartialDerivative, mhGpuDecs[Descriptor::ES_DepthPartialDerivative]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::AtrousWaveletTransformFilter::UO_TemporalValue, uo_TemporalValueMap);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::AtrousWaveletTransformFilter::CB_AtrousFilter, 
+			pFrameResource->AtrousWaveletTransformFilterCBAddress());
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::AtrousWaveletTransformFilter::SI_TemporalValue, 
+			si_temporalValueMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::AtrousWaveletTransformFilter::SI_NormalDepth, 
+			si_normalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::AtrousWaveletTransformFilter::SI_Variance, 
+			mhGpuDecs[Descriptor::Variance::ES_Raw]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::AtrousWaveletTransformFilter::SI_HitDistance, 
+			si_temporalCachehitDistanceMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::AtrousWaveletTransformFilter::SI_DepthPartialDerivative,
+			mhGpuDecs[Descriptor::ES_DepthPartialDerivative]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::AtrousWaveletTransformFilter::UO_TemporalValue, 
+			uo_TemporalValueMap);
 
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Atrous::Width),
-			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Atrous::Height),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientWidth, ShadingConvention::SVGF::ThreadGroup::Atrous::Width),
+			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::SVGF::ThreadGroup::Atrous::Height),
 			ShadingConvention::SVGF::ThreadGroup::Atrous::Depth);
 	}
 
@@ -825,10 +937,14 @@ BOOL SVGF::SVGFClass::BlurDisocclusion(
 		pTemporalValueMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, pTemporalValueMap);
 		
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::SI_DepthMap, si_depthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::SI_RoughnessMetalnessMap, si_roughnessMetalnessMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::SI_BlurStrength, mhGpuDecs[Descriptor::ES_DisocclusionBlurStrength]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DisocclusionBlur::UIO_AOCoefficient, uio_temporalValueMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DisocclusionBlur::SI_DepthMap, si_depthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DisocclusionBlur::SI_RoughnessMetalnessMap, si_roughnessMetalnessMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DisocclusionBlur::SI_BlurStrength, mhGpuDecs[Descriptor::ES_DisocclusionBlurStrength]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DisocclusionBlur::UIO_AOCoefficient, uio_temporalValueMap);
 
 		ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Struct rc;
 		rc.gTextureDim.x = mInitData.ClientWidth;

@@ -48,6 +48,8 @@
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
+#include <d3dcompiler.h>
+
 using namespace Render::DX;
 using namespace DirectX;
 
@@ -1458,14 +1460,14 @@ BOOL DxRenderer::BuildLights() {
 		mShadow->AddLight(light);
 	}
 	// Directional light 2
-	//{
-	//	std::shared_ptr<Foundation::Light> light = std::make_shared<Foundation::Light>();
-	//	light->Type = Common::Render::LightType::E_Directional;
-	//	light->Direction = { 0.067f, -0.701f, -0.836f };
-	//	light->Color = { 149.f / 255.f, 142.f / 255.f, 100.f / 255.f };
-	//	light->Intensity = 1.534f;
-	//	mShadow->AddLight(light);
-	//}
+	{
+		std::shared_ptr<Foundation::Light> light = std::make_shared<Foundation::Light>();
+		light->Type = Common::Render::LightType::E_Directional;
+		light->Direction = { 0.067f, -0.701f, -0.836f };
+		light->Color = { 149.f / 255.f, 142.f / 255.f, 100.f / 255.f };
+		light->Intensity = 1.534f;
+		mShadow->AddLight(light);
+	}
 
 	return TRUE;
 }
@@ -1553,7 +1555,8 @@ BOOL DxRenderer::DrawAO() {
 				mGBuffer->NormalDepthMap(),
 				mGBuffer->NormalDepthMapSrv(),
 				mGBuffer->PositionMap(),
-				mGBuffer->PositionMapSrv()));
+				mGBuffer->PositionMapSrv(),
+				mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 
 			CheckReturn(mpLogFile, mRaySorting->CalcRayIndexOffset(
 				mpCurrentFrameResource,
@@ -1572,7 +1575,8 @@ BOOL DxRenderer::DrawAO() {
 			mRayGen->RayDirectionOriginDepthMapSrv(),
 			mRaySorting->RayIndexOffsetMap(),
 			mRaySorting->RayIndexOffsetMapSrv(),
-			mpShadingArgumentSet->RTAO.RaySortingEnabled));
+			mpShadingArgumentSet->RTAO.RaySortingEnabled,
+			mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 
 		// Denosing(Spatio - Temporal Variance Guided Filtering)
 		{

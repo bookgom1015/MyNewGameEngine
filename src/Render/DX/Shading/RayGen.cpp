@@ -1,7 +1,6 @@
 #include "Render/DX/Shading/RayGen.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Sampler/Sampler.hpp"
-#include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
@@ -10,6 +9,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 using namespace DirectX;
@@ -78,7 +78,9 @@ BOOL RayGen::RayGenClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL RayGen::RayGenClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL RayGen::RayGenClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -97,7 +99,7 @@ BOOL RayGen::RayGenClass::BuildRootSignatures(const Render::DX::Shading::Util::S
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
+		Util::StaticSamplerCount, samplers,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 	);
 
@@ -184,7 +186,8 @@ BOOL RayGen::RayGenClass::GenerateRays(
 		Foundation::Resource::GpuResource* const pNormalDepthMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
 		Foundation::Resource::GpuResource* const pPositionMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+		BOOL bCheckboardRayGeneration) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -214,7 +217,7 @@ BOOL RayGen::RayGenClass::GenerateRays(
 		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_DebugMap, mhDebugMapGpuUav);
 
 		const UINT ActvieWidth = 
-			mInitData.ShadingArgumentSet->RTAO.CheckboardRayGeneration ? 
+			bCheckboardRayGeneration ? 
 			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientWidth, 2) 
 			: mInitData.ClientWidth;
 	

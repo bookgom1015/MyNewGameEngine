@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -77,7 +78,9 @@ BOOL BRDF::BRDFClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL BRDF::BRDFClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL BRDF::BRDFClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// ComputeBRDF
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[7] = {}; UINT index = 0;
@@ -105,7 +108,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 		);
 
@@ -151,7 +154,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 		);
 
@@ -168,48 +171,6 @@ BOOL BRDF::BRDFClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 BOOL BRDF::BRDFClass::BuildPipelineStates() {
 	// ComputeBRDF
 	{
-		// GraphicsPipelineState
-		{
-			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ComputeBRDF].Get();
-			{
-				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ComputeBRDF]);
-				NullCheck(mpLogFile, VS);
-				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-			}
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = HDR_FORMAT;
-
-			// BlinnPhong
-			{
-				{
-					const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ComputeBRDF_BlinnPhong]);
-					NullCheck(mpLogFile, PS);
-					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-				}
-
-				CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-					mInitData.Device,
-					psoDesc,
-					IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ComputeBRDF_BlinnPhong]),
-					L"BRDF_GP_ComputeBRDF_BlinnPhong"));
-			}
-			// CookTorrance
-			{
-				{
-					const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ComputeBRDF_CookTorrance]);
-					NullCheck(mpLogFile, PS);
-					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-				}
-
-				CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-					mInitData.Device,
-					psoDesc,
-					IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ComputeBRDF_CookTorrance]),
-					L"BRDF_GP_ComputeBRDF_CookTorrance"));
-			}
-		}
-		// MeshShaderPipelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ComputeBRDF].Get();
@@ -224,7 +185,8 @@ BOOL BRDF::BRDFClass::BuildPipelineStates() {
 			// BlinnPhong
 			{
 				{
-					const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ComputeBRDF_BlinnPhong]);
+					const auto PS = mInitData.ShaderManager->GetShader(
+						mShaderHashes[Shader::PS_ComputeBRDF_BlinnPhong]);
 					NullCheck(mpLogFile, PS);
 					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 				}
@@ -238,7 +200,8 @@ BOOL BRDF::BRDFClass::BuildPipelineStates() {
 			// CookTorrance
 			{
 				{
-					const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_ComputeBRDF_CookTorrance]);
+					const auto PS = mInitData.ShaderManager->GetShader(
+						mShaderHashes[Shader::PS_ComputeBRDF_CookTorrance]);
 					NullCheck(mpLogFile, PS);
 					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 				}
@@ -250,31 +213,52 @@ BOOL BRDF::BRDFClass::BuildPipelineStates() {
 					L"BRDF_MP_ComputeBRDF_CookTorrance"));
 			}
 		}
-	}
-	// IntegrateIrradiance
-	{
-		// GraphicsPipelineState
-		{
+		else {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateIrradiance].Get();
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ComputeBRDF].Get();
 			{
-				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_IntegrateIrradiance]);
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_ComputeBRDF]);
 				NullCheck(mpLogFile, VS);
-				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateIrradiance]);
-				NullCheck(mpLogFile, PS);
 				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = HDR_FORMAT;
 
-			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-				mInitData.Device,
-				psoDesc,
-				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_IntegrateIrradiance]),
-				L"BRDF_GP_IntegrateIrradiance"));
+			// BlinnPhong
+			{
+				{
+					const auto PS = mInitData.ShaderManager->GetShader(
+						mShaderHashes[Shader::PS_ComputeBRDF_BlinnPhong]);
+					NullCheck(mpLogFile, PS);
+					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+				}
+
+				CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+					mInitData.Device,
+					psoDesc,
+					IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ComputeBRDF_BlinnPhong]),
+					L"BRDF_GP_ComputeBRDF_BlinnPhong"));
+			}
+			// CookTorrance
+			{
+				{
+					const auto PS = mInitData.ShaderManager->GetShader(
+						mShaderHashes[Shader::PS_ComputeBRDF_CookTorrance]);
+					NullCheck(mpLogFile, PS);
+					psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+				}
+
+				CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+					mInitData.Device,
+					psoDesc,
+					IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_ComputeBRDF_CookTorrance]),
+					L"BRDF_GP_ComputeBRDF_CookTorrance"));
+			}
 		}
-		// MeshShaderPipelineState
+		
+	}
+	// IntegrateIrradiance
+	{
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateIrradiance].Get();
@@ -295,6 +279,27 @@ BOOL BRDF::BRDFClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_IntegrateIrradiance]),
 				L"BRDF_MP_IntegrateIrradiance"));
 		}
+		else {
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateIrradiance].Get();
+			{
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_IntegrateIrradiance]);
+				NullCheck(mpLogFile, VS);
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateIrradiance]);
+				NullCheck(mpLogFile, PS);
+				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_IntegrateIrradiance]),
+				L"BRDF_GP_IntegrateIrradiance"));
+		}
+		
 	}
 
 	return TRUE;
@@ -316,7 +321,8 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_ComputeBRDF_CookTorrance : PipelineState::GP_ComputeBRDF_CookTorrance].Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? 
+		PipelineState::MP_ComputeBRDF_CookTorrance : PipelineState::GP_ComputeBRDF_CookTorrance].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -338,8 +344,10 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 
 		CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
 
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::ComputeBRDF::CB_Pass, pFrameResource->MainPassCBAddress());
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::ComputeBRDF::CB_Light, pFrameResource->LightCBAddress());
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::ComputeBRDF::CB_Pass, pFrameResource->MainPassCBAddress());
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::ComputeBRDF::CB_Light, pFrameResource->LightCBAddress());
 
 		ShadingConvention::BRDF::RootConstant::ComputeBRDF::Struct rc;
 		rc.gShadowEnabled = bShadowEnabled;
@@ -393,7 +401,8 @@ BOOL BRDF::BRDFClass::IntegrateIrradiance(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_IntegrateIrradiance : PipelineState::GP_IntegrateIrradiance].Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? 
+		PipelineState::MP_IntegrateIrradiance : PipelineState::GP_IntegrateIrradiance].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);

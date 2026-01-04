@@ -73,7 +73,7 @@ namespace Render::DX::Shading {
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 			virtual BOOL CompileShaders() override;
-			virtual BOOL BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) override;
+			virtual BOOL BuildRootSignatures() override;
 			virtual BOOL BuildPipelineStates() override;
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 			virtual BOOL OnResize(UINT width, UINT height) override;
@@ -90,7 +90,8 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pNormalDepthMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_normalDepthMap,
 				Foundation::Resource::GpuResource* const pPositionMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+				BOOL bCheckboardRayGeneration);
 
 		private:
 			void BuildSamples();

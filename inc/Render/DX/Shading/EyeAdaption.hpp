@@ -91,8 +91,7 @@ namespace Render::DX::Shading {
 				void* const pData) override;
 
 			virtual BOOL CompileShaders() override;
-			virtual BOOL BuildRootSignatures(
-				const Render::DX::Shading::Util::StaticSamplers& samplers) override;
+			virtual BOOL BuildRootSignatures() override;
 			virtual BOOL BuildPipelineStates() override;
 
 		public:

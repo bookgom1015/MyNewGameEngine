@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Render/DX/Foundation/ShadingObject.hpp"
-
 #include <functional>
+
+#include "Render/DX/Foundation/ShadingObject.hpp"
 
 namespace Render::DX::Shading {
 	namespace Bloom {
@@ -111,7 +111,7 @@ namespace Render::DX::Shading {
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 			virtual BOOL CompileShaders() override;
-			virtual BOOL BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) override;
+			virtual BOOL BuildRootSignatures() override;
 			virtual BOOL BuildPipelineStates() override;
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 			virtual BOOL OnResize(UINT width, UINT height) override;

@@ -60,7 +60,7 @@ namespace Render::DX::Shading::Util {
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 			virtual BOOL CompileShaders() override;
-			virtual BOOL BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) override;
+			virtual BOOL BuildRootSignatures() override;
 			virtual BOOL BuildPipelineStates() override;
 
 		public:

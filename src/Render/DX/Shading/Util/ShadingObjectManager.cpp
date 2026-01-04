@@ -2,7 +2,6 @@
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
-#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading::Util;
 
@@ -50,10 +49,8 @@ BOOL ShadingObjectManager::CompileShaders(Shading::Util::ShaderManager* const pS
 }
 
 BOOL ShadingObjectManager::BuildRootSignatures() {
-	const auto& staticSamplers = Shading::Util::SamplerUtil::GetStaticSamplers();
-
 	for (const auto object : mShadingObjects) 
-		CheckReturn(mpLogFile, object->BuildRootSignatures(staticSamplers));
+		CheckReturn(mpLogFile, object->BuildRootSignatures());
 
 	return TRUE;
 }

@@ -5,6 +5,7 @@
 #include "Render/DX/DxLowRenderer.hpp"
 
 #include <array>
+#include <map>
 #include <queue>
 
 #include <DirectXCollision.h>

@@ -223,7 +223,7 @@ namespace Render::DX::Shading {
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 
 			virtual BOOL CompileShaders() override;
-			virtual BOOL BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) override;
+			virtual BOOL BuildRootSignatures() override;
 			virtual BOOL BuildPipelineStates() override;
 			virtual BOOL BuildDescriptors(Foundation::Core::DescriptorHeap* const pDescHeap) override;
 			virtual BOOL OnResize(UINT width, UINT height) override;
@@ -334,12 +334,4 @@ namespace Render::DX::Shading {
 	}
 }
 
-UINT Render::DX::Shading::SVGF::NumMantissaBitsInFloatFormat(UINT floatFormatBitLength) {
-	switch (floatFormatBitLength) {
-	case 32: return 23;
-	case 16: return 10;
-	case 11: return 6;
-	case 10: return 5;
-	}
-	return 0;
-}
+#include "SVGF.inl"

@@ -10,6 +10,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 using namespace DirectX;
@@ -59,7 +60,9 @@ BOOL TAA::TAAClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL TAA::TAAClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL TAA::TAAClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	CD3DX12_DESCRIPTOR_RANGE texTables[3] = {}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
@@ -68,14 +71,15 @@ BOOL TAA::TAAClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 	index = 0;
 
 	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
-	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(ShadingConvention::TAA::RootConstant::Default::Count, 0);
+	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(
+		ShadingConvention::TAA::RootConstant::Default::Count, 0);
 	slotRootParameter[RootSignature::Default::SI_BackBuffer].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::Default::SI_HistoryMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::Default::SI_VelocityMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
+		Util::StaticSamplerCount, samplers,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 	);
 
@@ -89,27 +93,6 @@ BOOL TAA::TAAClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticS
 }
 
 BOOL TAA::TAAClass::BuildPipelineStates() {
-	// GraphicsPipelineState
-	{
-		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-		psoDesc.pRootSignature = mRootSignature.Get();
-		{
-			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_TAA]);
-			NullCheck(mpLogFile, VS);
-			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_TAA]);
-			NullCheck(mpLogFile, PS);
-			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-		}
-		psoDesc.RTVFormats[0] = HDR_FORMAT;
-
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device,
-			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_TAA]),
-			L"TAA_GP_Default"));
-	}
-	// MeshShaderPipelineState
 	if (mInitData.MeshShaderSupported) {
 		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 		psoDesc.pRootSignature = mRootSignature.Get();
@@ -129,7 +112,26 @@ BOOL TAA::TAAClass::BuildPipelineStates() {
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_TAA]),
 			L"TAA_MP_Default"));
 	}
+	else {
+		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+		psoDesc.pRootSignature = mRootSignature.Get();
+		{
+			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_TAA]);
+			NullCheck(mpLogFile, VS);
+			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_TAA]);
+			NullCheck(mpLogFile, PS);
+			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+		}
+		psoDesc.RTVFormats[0] = HDR_FORMAT;
 
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_TAA]),
+			L"TAA_GP_Default"));
+	}
+	
 	return TRUE;
 }
 
@@ -148,7 +150,9 @@ BOOL TAA::TAAClass::OnResize(UINT width, UINT height) {
 
 	for (size_t i = 0, end = mHaltonSequence.size(); i < end; ++i) {
 		auto offset = mHaltonSequence[i];
-		mFittedToBakcBufferHaltonSequence[i] = XMFLOAT2(((offset.x - 0.5f) / mInitData.ClientWidth) * 2.f, ((offset.y - 0.5f) / mInitData.ClientHeight) * 2.f);
+		mFittedToBakcBufferHaltonSequence[i] = XMFLOAT2(
+			((offset.x - 0.5f) / mInitData.ClientWidth) * 2.f, 
+			((offset.y - 0.5f) / mInitData.ClientHeight) * 2.f);
 	}
 
 	CheckReturn(mpLogFile, BuildResources());

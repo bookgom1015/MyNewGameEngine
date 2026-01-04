@@ -10,6 +10,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -91,7 +92,9 @@ BOOL Shadow::ShadowClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL Shadow::ShadowClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// DrawZDepth
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
@@ -108,7 +111,7 @@ BOOL Shadow::ShadowClass::BuildRootSignatures(const Render::DX::Shading::Util::S
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -137,7 +140,7 @@ BOOL Shadow::ShadowClass::BuildRootSignatures(const Render::DX::Shading::Util::S
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -187,6 +190,7 @@ BOOL Shadow::ShadowClass::BuildPipelineStates() {
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_DrawShadow]);
+			NullCheck(mpLogFile, CS);
 			psoDesc.CS = { reinterpret_cast<BYTE*>(CS->GetBufferPointer()), CS->GetBufferSize() };
 		}
 

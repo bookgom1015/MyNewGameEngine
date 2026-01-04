@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading::Util;
 
@@ -62,7 +63,9 @@ BOOL TextureScaler::TextureScalerClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL TextureScaler::TextureScalerClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL TextureScaler::TextureScalerClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// DownSample2Nx2N
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
@@ -79,7 +82,7 @@ BOOL TextureScaler::TextureScalerClass::BuildRootSignatures(const Render::DX::Sh
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(

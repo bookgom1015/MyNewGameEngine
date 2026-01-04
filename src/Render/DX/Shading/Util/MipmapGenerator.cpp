@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading::Util;
 
@@ -55,7 +56,9 @@ BOOL MipmapGenerator::MipmapGeneratorClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// Default
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
@@ -64,12 +67,13 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures(const Render::DX
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
-		slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(ShadingConvention::MipmapGenerator::RootConstant::Default::Count, 0);
+		slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(
+			ShadingConvention::MipmapGenerator::RootConstant::Default::Count, 0);
 		slotRootParameter[RootSignature::Default::SI_InputMap].InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -85,29 +89,6 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures(const Render::DX
 BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 	// GenerateMipmap
 	{
-		// GraphicsPipelineState
-		{
-			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-			psoDesc.pRootSignature = mRootSignature.Get();
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = HDR_FORMAT;
-
-			{
-				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
-				NullCheck(mpLogFile, VS);
-				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GenerateMipmap]);
-				NullCheck(mpLogFile, PS);
-				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-			}
-
-			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-				mInitData.Device,
-				psoDesc,
-				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GenerateMipmap]),
-				L"MipmapGenerator_GP_GenerateMipmap"));
-		}
-		// MeshShaderPipelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignature.Get();
@@ -129,11 +110,7 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_GenerateMipmap]),
 				L"MipmapGenerator_MP_GenerateMipmap"));
 		}
-	}
-	// CopyMap
-	{
-		// GraphicsPipelineState
-		{
+		else {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
 			psoDesc.pRootSignature = mRootSignature.Get();
 			psoDesc.NumRenderTargets = 1;
@@ -142,7 +119,7 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 			{
 				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
 				NullCheck(mpLogFile, VS);
-				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_CopyMap]);
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GenerateMipmap]);
 				NullCheck(mpLogFile, PS);
 				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
 				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
@@ -151,10 +128,12 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
 				mInitData.Device,
 				psoDesc,
-				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_CopyMap]),
-				L"MipmapGenerator_GP_CopyMap"));
-		}
-		// MeshShaderPipelineState
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GenerateMipmap]),
+				L"MipmapGenerator_GP_GenerateMipmap"));
+		}		
+	}
+	// CopyMap
+	{
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 			psoDesc.pRootSignature = mRootSignature.Get();
@@ -176,6 +155,27 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_CopyMap]),
 				L"MipmapGenerator_MP_CopyMap"));
 		}
+		else {
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+			psoDesc.pRootSignature = mRootSignature.Get();
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+
+			{
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GenerateMipmap]);
+				NullCheck(mpLogFile, VS);
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_CopyMap]);
+				NullCheck(mpLogFile, PS);
+				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_CopyMap]),
+				L"MipmapGenerator_GP_CopyMap"));
+		}		
 	}
 
 	return TRUE;

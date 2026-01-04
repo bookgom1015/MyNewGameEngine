@@ -12,6 +12,7 @@
 #include "Render/DX/Foundation/Resource/Texture.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 #include "Render/DX/Shading/Util/MipmapGenerator.hpp"
 #include "Render/DX/Shading/Util/EquirectangularConverter.hpp"
 
@@ -155,7 +156,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// DrawSkySphere 
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
@@ -173,7 +176,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -196,7 +199,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -220,7 +223,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -237,7 +240,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -254,33 +257,6 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures(const Render::DX::
 BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 	// DrawSkySphere
 	{
-		// GraphicsPipelineState
-		{
-			const auto inputLayout = Foundation::Util::D3D12Util::InputLayoutDesc();
-			auto psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc(inputLayout, ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
-
-			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
-			{
-				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_DrawSkySphere]);
-				NullCheck(mpLogFile, VS);
-				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
-				NullCheck(mpLogFile, PS);
-				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-			}
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = HDR_FORMAT;
-			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
-			psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-			psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-
-			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-				mInitData.Device,
-				psoDesc,
-				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_DrawSkySphere]),
-				L"EnvironmentMap_GP_DrawSkySphere"));
-		}
-		// MeshShaderPiepelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::DefaultMeshPsoDesc(ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
 
@@ -304,6 +280,31 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 				psoDesc,
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_DrawSkySphere]),
 				L"EnvironmentMap_MP_DrawSkySphere"));
+		}
+		else {
+			const auto inputLayout = Foundation::Util::D3D12Util::InputLayoutDesc();
+			auto psoDesc = Foundation::Util::D3D12Util::DefaultPsoDesc(inputLayout, ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat);
+
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawSkySphere].Get();
+			{
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_DrawSkySphere]);
+				NullCheck(mpLogFile, VS);
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_DrawSkySphere]);
+				NullCheck(mpLogFile, PS);
+				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = HDR_FORMAT;
+			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+			psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_DrawSkySphere]),
+				L"EnvironmentMap_GP_DrawSkySphere"));
 		}
 	}
 	// ConvoluteDiffuseIrradiance
@@ -362,30 +363,6 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 	}
 	// IntegrateBrdf
 	{
-		// GraphicsPipelineState
-		{
-			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-
-			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateBrdf].Get();
-			{
-				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_IntegrateBrdf]);
-				NullCheck(mpLogFile, VS);
-				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateBrdf]);
-				NullCheck(mpLogFile, PS);
-				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-			}
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = ShadingConvention::EnvironmentMap::BrdfLutMapFormat;
-			psoDesc.DepthStencilState.DepthEnable = FALSE;
-
-			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-				mInitData.Device,
-				psoDesc,
-				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_IntegrateBrdf]),
-				L"EnvironmentMap_GP_IntegrateBrdf"));
-		}
-		// MeshShaderPiepelineState
 		if (mInitData.MeshShaderSupported) {
 			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 
@@ -408,6 +385,28 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 				IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_IntegrateBrdf]),
 				L"EnvironmentMap_MP_IntegrateBrdf"));
 		}
+		else {
+			auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+
+			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateBrdf].Get();
+			{
+				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_IntegrateBrdf]);
+				NullCheck(mpLogFile, VS);
+				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateBrdf]);
+				NullCheck(mpLogFile, PS);
+				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+			}
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = ShadingConvention::EnvironmentMap::BrdfLutMapFormat;
+			psoDesc.DepthStencilState.DepthEnable = FALSE;
+
+			CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+				mInitData.Device,
+				psoDesc,
+				IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_IntegrateBrdf]),
+				L"EnvironmentMap_GP_IntegrateBrdf"));
+		}				
 	}
 
 	return TRUE;

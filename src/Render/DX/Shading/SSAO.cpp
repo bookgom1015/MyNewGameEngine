@@ -8,6 +8,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 #include <DirectXColors.h>
 
@@ -76,7 +77,9 @@ BOOL SSAO::SSAOClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL SSAO::SSAOClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL SSAO::SSAOClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	CD3DX12_DESCRIPTOR_RANGE texTables[6] = {}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
@@ -100,7 +103,7 @@ BOOL SSAO::SSAOClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
+		Util::StaticSamplerCount, samplers,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(

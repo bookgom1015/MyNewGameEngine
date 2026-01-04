@@ -8,6 +8,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 #include <DirectXColors.h>
 
@@ -89,7 +90,9 @@ BOOL VolumetricLight::VolumetricLightClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// CalculateScatteringAndDensity
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[3] = {}; UINT index = 0;
@@ -110,7 +113,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -132,7 +135,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -155,7 +158,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -180,7 +183,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures(const Render::DX
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -347,7 +350,8 @@ BOOL VolumetricLight::VolumetricLightClass::ApplyFog(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[tricubicSamplingEnabled ? PipelineState::GP_ApplyFog_Tricubic : PipelineState::GP_ApplyFog].Get()));
+		mPipelineStates[tricubicSamplingEnabled ? 
+		PipelineState::GP_ApplyFog_Tricubic : PipelineState::GP_ApplyFog].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -553,8 +557,12 @@ BOOL VolumetricLight::VolumetricLightClass::AccumulateScattering(
 		CmdList->SetComputeRootDescriptorTable(RootSignature::AccumulateScattering::UIO_FrustumVolumeMap, mhFrustumVolumeMapGpus[Descriptor::E_Uav][mCurrentFrame]);
 
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.TextureWidth), ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Width),
-			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.TextureHeight), ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Height),
+			Foundation::Util::D3D12Util::CeilDivide(
+				static_cast<UINT>(mInitData.TextureWidth), 
+				ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Width),
+			Foundation::Util::D3D12Util::CeilDivide(
+				static_cast<UINT>(mInitData.TextureHeight), 
+				ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Height),
 			ShadingConvention::VolumetricLight::ThreadGroup::AccumulateScattering::Depth);
 	}
 
@@ -581,9 +589,11 @@ BOOL VolumetricLight::VolumetricLightClass::BlendScattering(Foundation::Resource
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mFrustumVolumeMaps[mCurrentFrame].get());
 
 		CmdList->SetComputeRootDescriptorTable(
-			RootSignature::BlendScattering::SI_PreviousScattering, mhFrustumVolumeMapGpus[Descriptor::E_Srv][mPreviousFrame]);
+			RootSignature::BlendScattering::SI_PreviousScattering, 
+			mhFrustumVolumeMapGpus[Descriptor::E_Srv][mPreviousFrame]);
 		CmdList->SetComputeRootDescriptorTable(
-			RootSignature::BlendScattering::UIO_CurrentScattering, mhFrustumVolumeMapGpus[Descriptor::E_Uav][mCurrentFrame]);
+			RootSignature::BlendScattering::UIO_CurrentScattering, 
+			mhFrustumVolumeMapGpus[Descriptor::E_Uav][mCurrentFrame]);
 
 		CmdList->Dispatch(
 			Foundation::Util::D3D12Util::D3D12Util::CeilDivide(

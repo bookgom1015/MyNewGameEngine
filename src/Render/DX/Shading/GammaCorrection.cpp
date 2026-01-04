@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -46,7 +47,9 @@ BOOL GammaCorrection::GammaCorrectionClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL GammaCorrection::GammaCorrectionClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL GammaCorrection::GammaCorrectionClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
@@ -58,7 +61,7 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildRootSignatures(const Render::DX
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
-		static_cast<UINT>(samplers.size()), samplers.data(),
+		Util::StaticSamplerCount, samplers,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 	);
 
@@ -72,27 +75,6 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildRootSignatures(const Render::DX
 }
 
 BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
-	// GraphicsPipelineState
-	{
-		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
-		psoDesc.pRootSignature = mRootSignature.Get();
-		{
-			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GammaCorrect]);
-			NullCheck(mpLogFile, VS);
-			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GammaCorrect]);
-			NullCheck(mpLogFile, PS);
-			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
-		}
-		psoDesc.RTVFormats[0] = SDR_FORMAT;
-
-		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
-			mInitData.Device,
-			psoDesc,
-			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GammaCorrect]),
-			L"GammaCorrection_GP_Default"));
-	}
-	// MeshShaderPipelineState
 	if (mInitData.MeshShaderSupported) {
 		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 		psoDesc.pRootSignature = mRootSignature.Get();
@@ -112,7 +94,26 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 			IID_PPV_ARGS(&mPipelineStates[PipelineState::MP_GammaCorrect]),
 			L"GammaCorrection_MP_Default"));
 	}
+	else {
+		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenPsoDesc();
+		psoDesc.pRootSignature = mRootSignature.Get();
+		{
+			const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GammaCorrect]);
+			NullCheck(mpLogFile, VS);
+			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GammaCorrect]);
+			NullCheck(mpLogFile, PS);
+			psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+		}
+		psoDesc.RTVFormats[0] = SDR_FORMAT;
 
+		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateGraphicsPipelineState(
+			mInitData.Device,
+			psoDesc,
+			IID_PPV_ARGS(&mPipelineStates[PipelineState::GP_GammaCorrect]),
+			L"GammaCorrection_GP_Default"));
+	}
+	
 	return TRUE;
 }
 

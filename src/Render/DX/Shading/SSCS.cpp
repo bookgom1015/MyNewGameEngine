@@ -7,6 +7,7 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX::Shading;
 
@@ -56,7 +57,9 @@ BOOL SSCS::SSCSClass::CompileShaders() {
 	return TRUE;
 }
 
-BOOL SSCS::SSCSClass::BuildRootSignatures(const Render::DX::Shading::Util::StaticSamplers& samplers) {
+BOOL SSCS::SSCSClass::BuildRootSignatures() {
+	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
+
 	// ComputeContactShadow
 	{
 		CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
@@ -79,7 +82,7 @@ BOOL SSCS::SSCSClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(
@@ -97,12 +100,14 @@ BOOL SSCS::SSCSClass::BuildRootSignatures(const Render::DX::Shading::Util::Stati
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyContactShadow::Count] = {};
-		slotRootParameter[RootSignature::ApplyContactShadow::UI_ContactShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::ApplyContactShadow::UIO_ShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ApplyContactShadow::UI_ContactShadowMap].InitAsDescriptorTable(
+			1, &texTables[index++]);
+		slotRootParameter[RootSignature::ApplyContactShadow::UIO_ShadowMap].InitAsDescriptorTable(
+			1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
-			static_cast<UINT>(samplers.size()), samplers.data(),
+			Util::StaticSamplerCount, samplers,
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		CheckReturn(mpLogFile, Foundation::Util::D3D12Util::CreateRootSignature(

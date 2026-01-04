@@ -6,9 +6,7 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "DirectXTex.lib")
 
-#include <map>
 #include <memory>
-#include <vector>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -20,7 +18,6 @@
 #include <Windows.h>
 
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
-#include <d3dcompiler.h>
 #include <dxgi1_6.h>
 
 #include "Common/Render/Renderer.hpp"

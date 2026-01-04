@@ -177,6 +177,7 @@
     <None Include="..\..\inc\Render\DX\Shading\RTAO.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Shadow.inl" />
     <None Include="..\..\inc\Render\DX\Shading\SSAO.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\SVGF.inl" />
     <None Include="..\..\inc\Render\DX\Shading\TAA.inl" />
     <None Include="..\..\inc\Render\DX\Shading\ToneMapping.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Util\AccelerationStructure.inl" />
