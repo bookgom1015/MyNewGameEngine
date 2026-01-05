@@ -106,6 +106,8 @@
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Instance.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Surface.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\SwapChain.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\RenderItem.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Resource\MeshGeometry.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Util\VulkanUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Shading\GBuffer.hpp" />
@@ -129,6 +131,8 @@
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Instance.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Surface.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\SwapChain.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\RenderItem.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Resource\MeshGeometry.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Util\VulkanUtil.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Shading\GBuffer.cpp" />

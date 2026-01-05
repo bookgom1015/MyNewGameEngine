@@ -16,6 +16,7 @@ namespace Common::Foundation {
 	}
 
 	namespace Mesh {
+		class Mesh;
 		struct Material;
 	}
 }

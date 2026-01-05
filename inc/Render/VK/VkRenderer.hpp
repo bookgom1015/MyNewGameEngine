@@ -2,11 +2,28 @@
 
 #include "Render/VK/VkLowRenderer.hpp"
 
+namespace Common::Foundation {
+	namespace Camera {
+		class GameCamera;
+	}
+
+	namespace Mesh {
+		class Mesh;
+		struct Material;
+	}
+}
+
 namespace Render {
 	extern "C" RendererAPI Common::Render::Renderer* CreateRenderer();
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace VK {
+		namespace Foundation {
+			namespace Resource {
+				struct MeshGeometry;
+			}
+		}
+
 		namespace Shading {
 			namespace Util {
 				class ShadingObjectManager;
@@ -44,6 +61,10 @@ namespace Render {
 
 		private:
 			BOOL InitShadingObjects();
+
+			BOOL BuildMeshGeometry(
+				Common::Foundation::Mesh::Mesh* const pMesh, 
+				Foundation::Resource::MeshGeometry*& pMeshGeo);
 
 		private:
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager;

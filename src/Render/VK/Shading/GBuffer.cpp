@@ -2,6 +2,7 @@
 #include "Common/Debug/Logger.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 #include "Render/VK/Foundation/Core/Device.hpp"
+#include "Render/VK/Foundation/Core/CommandObject.hpp"
 #include "Render/VK/Shading/Util/ShaderManager.hpp"
 
 using namespace Render::VK::Shading;
@@ -73,21 +74,21 @@ BOOL GBuffer::GBufferClass::CompileShaders() {
 }
 
 BOOL GBuffer::GBufferClass::BuildDescriptorSets() {
-	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
 	uboLayoutBinding.binding = DescriptorSet::UB_Pass;
 	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	uboLayoutBinding.descriptorCount = 1;
 	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	uboLayoutBinding.pImmutableSamplers = nullptr;
 
-	VkDescriptorSetLayoutBinding ubpLayoutBinding = {};
+	VkDescriptorSetLayoutBinding ubpLayoutBinding{};
 	ubpLayoutBinding.binding = DescriptorSet::UB_Object;
 	ubpLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	ubpLayoutBinding.descriptorCount = 1;
 	ubpLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	ubpLayoutBinding.pImmutableSamplers = nullptr;
 
-	VkDescriptorSetLayoutBinding ubmLayoutBinding = {};
+	VkDescriptorSetLayoutBinding ubmLayoutBinding{};
 	ubmLayoutBinding.binding = DescriptorSet::UB_Material;
 	ubmLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	ubmLayoutBinding.descriptorCount = 1;
@@ -98,7 +99,7 @@ BOOL GBuffer::GBufferClass::BuildDescriptorSets() {
 		uboLayoutBinding, ubpLayoutBinding, ubmLayoutBinding
 	};
 
-	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = _countof(bindings);
 	layoutInfo.pBindings = bindings;
@@ -155,12 +156,12 @@ BOOL GBuffer::GBufferClass::BuildRenderPass() {
 		{ RenderPass::C_Position, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
 	};
 
-	VkSubpassDescription subpass = {};
+	VkSubpassDescription subpass{};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = RenderPass::Count;
 	subpass.pColorAttachments = colorRefs;
 
-	VkSubpassDependency subPassDependency = {};
+	VkSubpassDependency subPassDependency{};
 	subPassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	subPassDependency.dstSubpass = 0;
 	subPassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -217,7 +218,7 @@ BOOL GBuffer::GBufferClass::BuildImages() {
 		VK_SAMPLE_COUNT_1_BIT,
 		ColorImageFormat,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		mColorImage,
 		mColorImageMemory));
@@ -232,7 +233,7 @@ BOOL GBuffer::GBufferClass::BuildImages() {
 		VK_SAMPLE_COUNT_1_BIT,
 		NormalImageFormat,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		mNormalImage,
 		mNormalImageMemory));
@@ -247,7 +248,7 @@ BOOL GBuffer::GBufferClass::BuildImages() {
 		VK_SAMPLE_COUNT_1_BIT,
 		PositionImageFormat,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		mPositionImage,
 		mPositionImageMemory));
@@ -293,7 +294,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	pipelineInfo.renderPass = mRenderPass;
 
 	// Shaders
-	VkPipelineShaderStageCreateInfo vsStageInfo = {};
+	VkPipelineShaderStageCreateInfo vsStageInfo{};
 	{
 		const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_GBuffer]);
 		vsStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -324,7 +325,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 		VK_DYNAMIC_STATE_SCISSOR
 	};
 
-	VkPipelineDynamicStateCreateInfo dynamicState = {};
+	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = _countof(dynamicStates);
 	dynamicState.pDynamicStates = dynamicStates;
@@ -334,7 +335,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	// Vertex input
 	auto bindingDesc = Foundation::Util::VulkanUtil::GetVertexBindingDescription();
 	auto vertexAttrDesc = Foundation::Util::VulkanUtil::GetVertexAttributeDescriptions();
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDesc;
@@ -344,7 +345,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 
 	// Input assembly
-	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
@@ -352,7 +353,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 
 	// Viewports and scissors
-	VkViewport viewport = {};
+	VkViewport viewport{};
 	viewport.x = 0.f;
 	viewport.y = 0.f;
 	viewport.width = static_cast<FLOAT>(mInitData.ClientWidth);
@@ -360,11 +361,11 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	viewport.minDepth = 0.f;
 	viewport.maxDepth = 1.f;
 
-	VkRect2D scissor = {};
+	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
 	scissor.extent = { mInitData.ClientWidth, mInitData.ClientHeight };
 
-	VkPipelineViewportStateCreateInfo viewportState = {};
+	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
 	viewportState.pViewports = &viewport;
@@ -374,7 +375,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	pipelineInfo.pViewportState = &viewportState;
 
 	// Rasterizer
-	VkPipelineRasterizationStateCreateInfo rasterizer = {};
+	VkPipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
@@ -390,7 +391,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	pipelineInfo.pRasterizationState = &rasterizer;
 
 	// Multisampling
-	VkPipelineMultisampleStateCreateInfo multisampling = {};
+	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_TRUE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -402,7 +403,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	pipelineInfo.pMultisampleState = &multisampling;
 
 	// Color blending
-	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask =
 		VK_COLOR_COMPONENT_R_BIT |
 		VK_COLOR_COMPONENT_G_BIT |
@@ -420,7 +421,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 		colorBlendAttachment, colorBlendAttachment, colorBlendAttachment
 	};
 
-	VkPipelineColorBlendStateCreateInfo colorBlending = {};
+	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	colorBlending.logicOpEnable = VK_FALSE;
 	colorBlending.logicOp = VK_LOGIC_OP_COPY;
@@ -434,7 +435,7 @@ BOOL GBuffer::GBufferClass::BuildPipelineStates() {
 	pipelineInfo.pColorBlendState = &colorBlending;
 
 	// Depth and stencil testing
-	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
 	depthStencil.depthWriteEnable = VK_TRUE;
@@ -492,6 +493,52 @@ BOOL GBuffer::GBufferClass::OnResize(UINT width, UINT height) {
 	CheckReturn(mpLogFile, BuildImages());
 	CheckReturn(mpLogFile, BuildImageViews());
 	CheckReturn(mpLogFile, BuildFramebuffers());
+
+	return TRUE;
+}
+
+BOOL GBuffer::GBufferClass::DrawGBuffer(
+		Foundation::Core::CommandObject* const pCmdObject,
+		const VkViewport& viewport,
+		const VkRect2D& scissorRect) {
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = 0;
+	beginInfo.pInheritanceInfo = nullptr;
+
+	decltype(auto) CmdBuffer = pCmdObject->CommandBuffer();
+
+	if (vkBeginCommandBuffer(CmdBuffer, &beginInfo) != VK_SUCCESS)
+		ReturnFalse(mpLogFile, L"Failed to begin recording command buffer");
+
+	{
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = mRenderPass;
+		renderPassInfo.framebuffer = mFramebuffer;
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = { 
+			mInitData.ClientWidth, mInitData.ClientHeight };
+
+		const VkClearValue ClearColors[RenderPass::Count] = {
+			{{0.0f, 0.0f, 0.0f, 1.0f}},
+			{{0.0f, 0.0f, 0.0f, 0.0f}},
+			{{0.0f, 0.0f, 0.0f, 1.0f}}
+		};
+		renderPassInfo.clearValueCount = _countof(ClearColors);
+		renderPassInfo.pClearValues = ClearColors;
+		vkCmdBeginRenderPass(CmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(CmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+
+		vkCmdSetViewport(CmdBuffer, 0, 1, &viewport);
+		vkCmdSetScissor(CmdBuffer, 0, 1, &scissorRect);
+
+		vkCmdEndRenderPass(CmdBuffer);
+	}
+
+	if (vkEndCommandBuffer(CmdBuffer) != VK_SUCCESS) 
+		ReturnFalse(mpLogFile, L"Failed to record command buffer");
 
 	return TRUE;
 }

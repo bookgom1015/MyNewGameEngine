@@ -14,6 +14,18 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
+	mScreenViewport = {
+		0.f, 0.f,
+		static_cast<float>(mInitData.Width),
+		static_cast<float>(mInitData.Height),
+		0.f, 1.f
+	};
+
+	mScissorRect = {
+		{ 0, 0 },
+		{ mInitData.Width, mInitData.Height }
+	};
+
 	CheckReturn(mpLogFile, CreateSwapChain());
 	CheckReturn(mpLogFile, CreateImageViews());
 
@@ -34,6 +46,18 @@ void SwapChain::CleanUp() {
 BOOL SwapChain::OnResize(UINT width, UINT height) {
 	mInitData.Width = width;
 	mInitData.Height = height;
+
+	mScreenViewport = {
+		0.f, 0.f,
+		static_cast<float>(mInitData.Width),
+		static_cast<float>(mInitData.Height),
+		0.f, 1.f
+	};
+
+	mScissorRect = {
+		{ 0, 0 },
+		{ mInitData.Width, mInitData.Height }
+	};
 
 	CheckReturn(mpLogFile, CreateSwapChain());
 	CheckReturn(mpLogFile, CreateImageViews());

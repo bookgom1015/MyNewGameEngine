@@ -26,6 +26,9 @@ namespace Render::VK::Foundation::Core {
 		virtual ~CommandObject();
 
 	public:
+		__forceinline const VkCommandBuffer& CommandBuffer() const;
+
+	public:
 		BOOL Initialize(
 			Common::Debug::LogFile* const pLogFile, 
 			VkPhysicalDevice physicalDevice, 
@@ -64,4 +67,8 @@ namespace Render::VK::Foundation::Core {
 		UINT mCurentImageIndex = 0;
 		UINT mCurrentFrame = 0;
 	};
+}
+
+namespace Render::VK::Foundation::Core {
+	const VkCommandBuffer& CommandObject::CommandBuffer() const { return mCommandBuffer; }
 }

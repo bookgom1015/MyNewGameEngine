@@ -59,31 +59,37 @@ namespace Render::VK::Shading {
 			virtual BOOL BuildFramebuffers() override;
 			virtual BOOL OnResize(UINT width, UINT height) override;
 
+		public:
+			BOOL DrawGBuffer(
+				Foundation::Core::CommandObject* const pCmdObject,
+				const VkViewport& viewport,
+				const VkRect2D& scissorRect);
+
 		private:
 			void DestroyResizableObjects();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			VkDescriptorSetLayout mDescriptorSetLayout;
-			VkPipelineLayout mPipelineLayout;
-			VkRenderPass mRenderPass;
-			VkPipeline mGraphicsPipeline;
-			VkFramebuffer mFramebuffer;
+			VkDescriptorSetLayout mDescriptorSetLayout{};
+			VkPipelineLayout mPipelineLayout{};
+			VkRenderPass mRenderPass{};
+			VkPipeline mGraphicsPipeline{};
+			VkFramebuffer mFramebuffer{};
 
-			VkImage mColorImage;
-			VkImageView mColorImageView;
-			VkDeviceMemory mColorImageMemory;
+			VkImage mColorImage{};
+			VkImageView mColorImageView{};
+			VkDeviceMemory mColorImageMemory{};
 
-			VkImage mNormalImage;
-			VkImageView mNormalImageView;
-			VkDeviceMemory mNormalImageMemory;
+			VkImage mNormalImage{};
+			VkImageView mNormalImageView{};
+			VkDeviceMemory mNormalImageMemory{};
 
-			VkImage mPositionImage;
-			VkImageView mPositionImageView;
-			VkDeviceMemory mPositionImageMemory;
+			VkImage mPositionImage{};
+			VkImageView mPositionImageView{};
+			VkDeviceMemory mPositionImageMemory{};
 		};
 
 		using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;

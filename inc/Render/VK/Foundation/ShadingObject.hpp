@@ -30,6 +30,7 @@ namespace Render::VK {
 	namespace Foundation {
 		namespace Core {
 			class Device;
+			class CommandObject;
 		}
 
 		class ShadingObject {

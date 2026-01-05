@@ -1,6 +1,9 @@
 #include "Render/VK/VkRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
+#include "Common/Foundation/Mesh/Mesh.hpp"
+#include "Render/VK/Foundation/Core/SwapChain.hpp"
+#include "Render/VK/Foundation/Resource/MeshGeometry.hpp"
 #include "Render/VK/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/VK/Shading/Util/ShaderManager.hpp"
 #include "Render/VK/Shading/GBuffer.hpp"
@@ -76,10 +79,18 @@ BOOL VkRenderer::Update(FLOAT deltaTime) {
 }
 
 BOOL VkRenderer::Draw() {
+	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
+		mCommandObject.get(),
+		mSwapChain->ScreenViewport(),
+		mSwapChain->ScissorRect()));
+
 	return TRUE;
 }
 
 BOOL VkRenderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) {
+	Foundation::Resource::MeshGeometry* meshGeo{};
+	CheckReturn(mpLogFile, BuildMeshGeometry(pMesh, meshGeo));
+
 	return TRUE;
 }
 
@@ -107,6 +118,15 @@ BOOL VkRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mGBuffer->Initialize(mpLogFile, initData.get()));
 	}
+
+	return TRUE;
+}
+
+BOOL VkRenderer::BuildMeshGeometry(
+		Common::Foundation::Mesh::Mesh* const pMesh,
+		Foundation::Resource::MeshGeometry*& pMeshGeo) {
+	auto geo = std::make_unique<Foundation::Resource::MeshGeometry>();
+	const auto Hash = Foundation::Resource::MeshGeometry::Hash(geo.get());
 
 	return TRUE;
 }

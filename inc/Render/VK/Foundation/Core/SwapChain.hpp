@@ -21,6 +21,10 @@ namespace Render::VK::Foundation::Core {
 		virtual ~SwapChain();
 
 	public:
+		__forceinline const VkViewport& ScreenViewport() const;
+		__forceinline const VkRect2D& ScissorRect() const;
+
+	public:
 		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
 		virtual void CleanUp() override;
 
@@ -32,12 +36,22 @@ namespace Render::VK::Foundation::Core {
 		BOOL CreateImageViews();
 
 	private:
-		InitData mInitData;
+		InitData mInitData{};
 
-		VkSwapchainKHR mSwapChain;
-		VkFormat mSwapChainImageFormat;
-		VkExtent2D mSwapChainExtent;
-		std::array<VkImage, SwapChainImageCount> mSwapChainImages;
-		std::array<VkImageView, SwapChainImageCount> mSwapChainImageViews;
+		VkSwapchainKHR mSwapChain{};
+		VkFormat mSwapChainImageFormat{};
+		VkExtent2D mSwapChainExtent{};
+
+		std::array<VkImage, SwapChainImageCount> mSwapChainImages{};
+		std::array<VkImageView, SwapChainImageCount> mSwapChainImageViews{};
+
+		VkViewport mScreenViewport{};
+		VkRect2D mScissorRect{};
 	};
+}
+
+namespace Render::VK::Foundation::Core {
+	const VkViewport& SwapChain::ScreenViewport() const { return mScreenViewport; }
+
+	const VkRect2D& SwapChain::ScissorRect() const { return mScissorRect; }
 }
