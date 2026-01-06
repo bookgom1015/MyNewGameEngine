@@ -309,6 +309,7 @@ BOOL DxRenderer::Draw() {
 		mSwapChain->BackBufferRtv(),
 		mEyeAdaption->Luminance(),
 		mpShadingArgumentSet->ToneMapping.Exposure,
+		mpShadingArgumentSet->ToneMapping.MiddleGrayKey,
 		mpShadingArgumentSet->ToneMapping.TonemapperType));
 	
 	if (mpShadingArgumentSet->GammaCorrection.Enabled) {

@@ -1,51 +1,14 @@
 #include "Common/AccelerationStructure/BVH.h"
 
-#include <vector>
 #include <string>
 #include <ctime>
 #include <cfloat>
 #include <algorithm>
-
-using namespace Common::AccelerationStructure;
-
-unsigned gReportCounter = 0;
-
-// The BVH
-BVHNode* gpSceneBVH = NULL;
-
-// the cache-friendly version of the BVH, to be stored in a file
-unsigned gTriIndexListNo = 0;
-int* gTriIndexList = NULL;
-unsigned gpCFBVH_No = 0;
-CacheFriendlyBVHNode* gpCFBVH = NULL;
-
-unsigned gTrianglesNo = 0;
-Triangle* gTriangles = NULL;
-
-unsigned gVerticesNo = 0;
-Vertex* gVertices = NULL;
+#include <iostream>
 
 #define BVH_STACK_SIZE 32
 
-//////////////////////////////////////////////////
-//  First, the "pure" implementation of the BVH
-//////////////////////////////////////////////////
-
-// Work item for creation of BVH:
-struct BBoxTmp {
-	// Bottom point (ie minx,miny,minz)
-	Vector3Df Bottom;
-	// Top point (ie maxx,maxy,maxz)
-	Vector3Df Top;
-	// Center point, ie 0.5*(top-bottom)
-	Vector3Df Center; // = bbox centroid
-	// Triangle
-	const Triangle* pTriangles;  // triangle list
-	BBoxTmp() :
-		Bottom(FLT_MAX, FLT_MAX, FLT_MAX),
-		Top(-FLT_MAX, -FLT_MAX, -FLT_MAX),
-		pTriangles(NULL) {}
-};
+using namespace Common::AccelerationStructure;
 
 // BVH CONSTRUCTION
 // This builds the BVH, finding optimal split planes for each depth
@@ -57,17 +20,104 @@ struct BBoxTmp {
 // I strongly recommend reading Ingo Wald's 2007 paper "On fast SAH based BVH construction",  
 // http://www.sci.utah.edu/~wald/Publications/2007/ParallelBVHBuild/fastbuild.pdf, to understand the code below
 
+// The gateway - creates the "pure" BVH, and then copies the results in the cache-friendly one
+void CacheFriendlyBVH::UpdateBoundingVolumeHierarchy() {
+	//if (!mpSceneBVH) {
+	//	std::string BVHcacheFilename(filename);
+	//	BVHcacheFilename += ".bvh";
+	//	FILE* fp;
+	//	fopen_s(&fp, BVHcacheFilename.c_str(), "rb");
+	//	if (!fp) {
+	//		// No cached BVH data - we need to calculate them
+	//		Clock me;
+	//		mpSceneBVH = CreateBVH();
+	//
+	//		// Now that the BVH has been created, copy its data into a more cache-friendly format
+	//		// (CacheFriendlyBVHNode occupies exactly 32 bytes, i.e. a cache-line)
+	//		Common::AccelerationStructure::CreateCFBVH();
+	//
+	//		// Now store the results, if possible...
+	//		fopen_s(&fp, BVHcacheFilename.c_str(), "wb");
+	//		if (!fp) return;
+	//		if (1 != fwrite(&mpNumCFBVH, sizeof(std::uint32_t), 1, fp)) return;
+	//		if (1 != fwrite(&mpTriIndexListNo, sizeof(std::uint32_t), 1, fp)) return;
+	//		if (mpNumCFBVH != fwrite(mpCFBVH, sizeof(CacheFriendlyBVHNode), mpNumCFBVH, fp)) return;
+	//		if (mpTriIndexListNo != fwrite(mpTriIndexList, sizeof(std::uint32_t), mpTriIndexListNo, fp)) return;
+	//		fclose(fp);
+	//	}
+	//	else { // BVH has been built already and stored in a file, read the file
+	//		if (1 != fread(&mpNumCFBVH, sizeof(std::uint32_t), 1, fp)) return;
+	//		if (1 != fread(&mpTriIndexListNo, sizeof(std::uint32_t), 1, fp)) return;
+	//		mpCFBVH = new CacheFriendlyBVHNode[mpNumCFBVH];
+	//		mpTriIndexList = new std::uint32_t[mpTriIndexListNo];
+	//		if (mpNumCFBVH != fread(mpCFBVH, sizeof(CacheFriendlyBVHNode), mpNumCFBVH, fp)) return;
+	//		if (mpTriIndexListNo != fread(mpTriIndexList, sizeof(std::uint32_t), mpTriIndexListNo, fp)) return;
+	//		fclose(fp);
+	//	}
+	//}
+}
 
-typedef std::vector<BBoxTmp> BBoxEntries;  // vector of triangle bounding boxes needed during BVH construction
+CacheFriendlyBVH::BVHNode* CacheFriendlyBVH::CreateBVH() {
+	/* Summary:
+	1. Create work BBox
+	2. Create BBox for every triangle and compute bounds
+	3. Expand bounds work BBox to fit all triangle bboxes
+	4. Compute triangle bbox centre and add triangle to working list
+	5. Build BVH tree with Recurse()
+	6. Return root node
+	*/
+	std::vector<BBoxTmp> work;
+	Vector3Df bottom(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3Df top(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+#ifdef _DEBUG
+	std::cout << "Gathering bounding box info from all triangles..." << std::endl;
+#endif 
+	// for each triangle
+	for (std::uint32_t j = 0; j < mNumTriIndexList; j++) {
+		const Triangle& triangle = mpTriangles[j];
+
+		// create a new temporary bbox per triangle 
+		BBoxTmp b;
+		b.pTriangles = &triangle;
+
+		// loop over triangle vertices and pick smallest vertex for bottom of triangle bbox
+		b.Bottom = min3(b.Bottom, mpVertices[triangle.Index1]);  // index of vertex
+		b.Bottom = min3(b.Bottom, mpVertices[triangle.Index2]);
+		b.Bottom = min3(b.Bottom, mpVertices[triangle.Index3]);
+
+		// loop over triangle vertices and pick largest vertex for top of triangle bbox
+		b.Top = max3(b.Top, mpVertices[triangle.Index1]);
+		b.Top = max3(b.Top, mpVertices[triangle.Index2]);
+		b.Top = max3(b.Top, mpVertices[triangle.Index3]);
+
+		// expand working list bbox by largest and smallest triangle bbox bounds
+		bottom = min3(bottom, b.Bottom);
+		top = max3(top, b.Top);
+
+		// compute triangle bbox center: (bbox top + bbox bottom) * 0.5
+		b.Center = (b.Top + b.Bottom) * 0.5f;
+
+		// add triangle bbox to working list
+		work.push_back(b);
+	}
+
+	// ...and pass it to the recursive function that creates the SAH AABB BVH
+	// (Surface Area Heuristic, Axis-Aligned Bounding Boxes, Bounding Volume Hierarchy)
+	BVHNode* root = Recurse(work); // builds BVH and returns root node
+	root->Bottom = bottom; // bottom is bottom of bbox bounding all triangles in the scene
+	root->Top = top;
+
+	return root;
+}
 
 // recursive building of BVH nodes
 // work is the working list (std::vector<>) of triangle bounding boxes 
-
-BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
+CacheFriendlyBVH::BVHNode* CacheFriendlyBVH::Recurse(
+		BBoxEntries& work, std::uint32_t depth) {
 	// terminate recursion case: 
 	// if work set has less then 4 elements (triangle bounding boxes), create a leaf node 
 	// and create a list of the triangles contained in the node
-
 	if (work.size() < 4) {
 		BVHLeaf* leaf = new BVHLeaf;
 		for (BBoxEntries::iterator it = work.begin(); it != work.end(); it++)
@@ -77,12 +127,11 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 
 	// else, work size > 4, divide  node further into smaller nodes
 	// start by finding the working list's bounding box (top and bottom)
-
 	Vector3Df bottom(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3Df top(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	// loop over all bboxes in current working list, expanding/growing the working list bbox
-	for (unsigned i = 0; i < work.size(); i++) {  // meer dan 4 bboxen in work
+	for (std::uint32_t i = 0; i < work.size(); i++) {  // meer dan 4 bboxen in work
 		BBoxTmp& v = work[i];
 		bottom = min3(bottom, v.Bottom);
 		top = max3(top, v.Top);
@@ -99,11 +148,11 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 
 	float bestSplit = FLT_MAX; // best split along axis, will indicate no split with better cost found (below)
 
-	int bestAxis = -1;
+	std::uint32_t bestAxis = InvalidAxis;
 
 	// Try all 3 axises X, Y, Z
-	for (int j = 0; j < 3; j++) {  // 0 = X, 1 = Y, 2 = Z axis
-		int axis = j;
+	for (std::uint32_t j = 0; j < 3; j++) {  // 0 = X, 1 = Y, 2 = Z axis
+		std::uint32_t axis = j;
 
 		// we will try dividing the triangles based on the current axis,
 		// and we will try split values from "start" to "stop", one "step" at a time.
@@ -146,11 +195,11 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 			Vector3Df rtop(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 			// The number of triangles in the left and right bboxes (needed to calculate SAH cost function)
-			int countLeft = 0, countRight = 0;
+			std::uint32_t countLeft = 0, countRight = 0;
 
 			// For each test split (or bin), allocate triangles in remaining work list based on their bbox centers
 			// this is a fast O(N) pass, no triangle sorting needed (yet)
-			for (unsigned i = 0; i < work.size(); i++) {
+			for (std::uint32_t i = 0; i < work.size(); i++) {
 				BBoxTmp& v = work[i];
 
 				// compute bbox center
@@ -163,13 +212,13 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 					// if center is smaller then testSplit value, put triangle in Left bbox
 					lbottom = min3(lbottom, v.Bottom);
 					ltop = max3(ltop, v.Top);
-					countLeft++;
+					++countLeft;
 				}
 				else {
 					// else put triangle in right bbox
 					rbottom = min3(rbottom, v.Bottom);
 					rtop = max3(rtop, v.Top);
-					countRight++;
+					++countRight;
 				}
 			}
 
@@ -207,8 +256,7 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 	// we should have the best splitting plane, best splitting axis and bboxes with minimal traversal cost
 
 	// If we found no split to improve the cost, create a BVH leaf
-
-	if (bestAxis == -1) {
+	if (bestAxis == InvalidAxis) {
 		BVHLeaf* leaf = new BVHLeaf;
 		for (BBoxEntries::iterator it = work.begin(); it != work.end(); it++)
 			leaf->Triangles.push_back(it->pTriangles); // put triangles of working list in leaf's triangle list
@@ -216,7 +264,6 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 	}
 
 	// Otherwise, create BVH inner node with L and R child nodes, split with the optimal value we found above
-
 	BBoxEntries left;
 	BBoxEntries right;  // BBoxEntries is a vector/list of BBoxTmp 
 	Vector3Df lbottom(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -226,7 +273,7 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 
 	// distribute the triangles in the left or right child nodes
 	// for each triangle in the work set
-	for (int i = 0, end = static_cast<int>(work.size()); i < end; i++) {
+	for (std::uint32_t i = 0, end = static_cast<std::uint32_t>(work.size()); i < end; i++) {
 		// create temporary bbox for triangle
 		BBoxTmp& v = work[i];
 
@@ -268,182 +315,85 @@ BVHNode* Recurse(BBoxEntries& work, int depth = 0) {
 	return inner;
 }  // end of Recurse() function, returns the rootnode (when all recursion calls have finished)
 
-BVHNode* CreateBVH() {
-	/* Summary:
-	1. Create work BBox
-	2. Create BBox for every triangle and compute bounds
-	3. Expand bounds work BBox to fit all triangle bboxes
-	4. Compute triangle bbox centre and add triangle to working list
-	5. Build BVH tree with Recurse()
-	6. Return root node
-	*/
-	std::vector<BBoxTmp> work;
-	Vector3Df bottom(FLT_MAX, FLT_MAX, FLT_MAX);
-	Vector3Df top(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	puts("Gathering bounding box info from all triangles...");
-	// for each triangle
-	for (unsigned j = 0; j < gTrianglesNo; j++) {
-		const Triangle& triangle = gTriangles[j];
-
-		// create a new temporary bbox per triangle 
-		BBoxTmp b;
-		b.pTriangles = &triangle;
-
-		// loop over triangle vertices and pick smallest vertex for bottom of triangle bbox
-		b.Bottom = min3(b.Bottom, gVertices[triangle.Index1]);  // index of vertex
-		b.Bottom = min3(b.Bottom, gVertices[triangle.Index2]);
-		b.Bottom = min3(b.Bottom, gVertices[triangle.Index3]);
-
-		// loop over triangle vertices and pick largest vertex for top of triangle bbox
-		b.Top = max3(b.Top, gVertices[triangle.Index1]);
-		b.Top = max3(b.Top, gVertices[triangle.Index2]);
-		b.Top = max3(b.Top, gVertices[triangle.Index3]);
-
-		// expand working list bbox by largest and smallest triangle bbox bounds
-		bottom = min3(bottom, b.Bottom);
-		top = max3(top, b.Top);
-
-		// compute triangle bbox center: (bbox top + bbox bottom) * 0.5
-		b.Center = (b.Top + b.Bottom) * 0.5f;
-
-		// add triangle bbox to working list
-		work.push_back(b);
-	}
-
-	// ...and pass it to the recursive function that creates the SAH AABB BVH
-	// (Surface Area Heuristic, Axis-Aligned Bounding Boxes, Bounding Volume Hierarchy)
-	BVHNode* root = Recurse(work); // builds BVH and returns root node
-	root->Bottom = bottom; // bottom is bottom of bbox bounding all triangles in the scene
-	root->Top = top;
-
-	return root;
-}
-
 // the following functions are required to create the cache-friendly BVH
 
-// recursively count bboxes
-int CountBoxes(BVHNode* root) {
-	if (!root->IsLeaf()) {
-		BVHInner* p = dynamic_cast<BVHInner*>(root);
-		return 1 + CountBoxes(p->Left) + CountBoxes(p->Right);
-	}
-	else {
-		return 1;
-	}
+void CacheFriendlyBVH::CreateCFBVH() {
+	if (!mpSceneBVH) exit(1);
+
+	std::uint32_t idxTriList = 0;
+	std::uint32_t idxBoxes = 0;
+
+	mNumTriIndexList = CountTriangles(mpSceneBVH);
+	mpTriIndexList = new std::uint32_t[mNumTriIndexList];
+
+	mpNumCFBVH = CountBoxes(mpSceneBVH);
+	mpCFBVH = new CacheFriendlyBVHNode[mpNumCFBVH]; // array
+
+	PopulateCacheFriendlyBVH(&mpTriangles[0], mpSceneBVH, idxBoxes, idxTriList);
+
+	if ((idxBoxes != mpNumCFBVH - 1) || (idxTriList != mNumTriIndexList)) exit(1);
+
+	std::uint32_t maxDepth = 0;
+	CountDepth(mpSceneBVH, 0, maxDepth);
+	if (maxDepth >= BVH_STACK_SIZE) exit(1);
 }
 
-// recursively count triangles
-unsigned CountTriangles(BVHNode* root) {
-	if (!root->IsLeaf()) {
-		BVHInner* p = dynamic_cast<BVHInner*>(root);
-		return CountTriangles(p->Left) + CountTriangles(p->Right);
-	}
-	else {
-		BVHLeaf* p = dynamic_cast<BVHLeaf*>(root);
-		return (unsigned)p->Triangles.size();
-	}
-}
 
-// recursively count depth
-void CountDepth(BVHNode* root, int depth, int& maxDepth) {
-	if (maxDepth < depth)
-		maxDepth = depth;
-
-	if (!root->IsLeaf()) {
-		BVHInner* p = dynamic_cast<BVHInner*>(root);
-		CountDepth(p->Left, depth + 1, maxDepth);
-		CountDepth(p->Right, depth + 1, maxDepth);
-	}
-}
-
-// Writes in the gpCFBVH and gTriIndexListNo arrays,
-// creating a cache-friendly version of the BVH
-void PopulateCacheFriendlyBVH(
+void CacheFriendlyBVH::PopulateCacheFriendlyBVH(
 		const Triangle* pFirstTriangle,
 		BVHNode* root,
-		unsigned& idxBoxes,
-		unsigned& idxTriList) {
-	unsigned currIdxBoxes = idxBoxes;
-	gpCFBVH[currIdxBoxes].Bottom = root->Bottom;
-	gpCFBVH[currIdxBoxes].Top = root->Top;
+		std::uint32_t& idxBoxes,
+		std::uint32_t& idxTriList) {
+	std::uint32_t currIdxBoxes = idxBoxes;
+	mpCFBVH[currIdxBoxes].Bottom = root->Bottom;
+	mpCFBVH[currIdxBoxes].Top = root->Top;
 
 	//DEPTH FIRST APPROACH (left first until complete)
 	if (!root->IsLeaf()) { // inner node
 		BVHInner* p = dynamic_cast<BVHInner*>(root);
 		// recursively populate left and right
-		int idxLeft = ++idxBoxes;
+		std::uint32_t idxLeft = ++idxBoxes;
 		PopulateCacheFriendlyBVH(pFirstTriangle, p->Left, idxBoxes, idxTriList);
-		int idxRight = ++idxBoxes;
+		std::uint32_t idxRight = ++idxBoxes;
 		PopulateCacheFriendlyBVH(pFirstTriangle, p->Right, idxBoxes, idxTriList);
-		gpCFBVH[currIdxBoxes].u.Inner.IdxLeft = idxLeft;
-		gpCFBVH[currIdxBoxes].u.Inner.IdxRight = idxRight;
+		mpCFBVH[currIdxBoxes].u.Inner.IdxLeft = idxLeft;
+		mpCFBVH[currIdxBoxes].u.Inner.IdxRight = idxRight;
 	}
-	else { // leaf
+	else { // leaf node
 		BVHLeaf* p = dynamic_cast<BVHLeaf*>(root);
-		unsigned count = (unsigned)p->Triangles.size();
-		gpCFBVH[currIdxBoxes].u.Leaf.Count = 0x80000000 | count;  // highest bit set indicates a leaf node (inner node if highest bit is 0)
-		gpCFBVH[currIdxBoxes].u.Leaf.StartIndexInTriIndexList = idxTriList;
+		std::uint32_t count = (std::uint32_t)p->Triangles.size();
+		mpCFBVH[currIdxBoxes].u.Leaf.Count = 0x80000000 | count;  // highest bit set indicates a leaf node (inner node if highest bit is 0)
+		mpCFBVH[currIdxBoxes].u.Leaf.StartIndexInTriIndexList = idxTriList;
 
 		for (std::list<const Triangle*>::iterator it = p->Triangles.begin(); it != p->Triangles.end(); it++)
-			gTriIndexList[idxTriList++] = static_cast<int>(*it - pFirstTriangle);
+			mpTriIndexList[idxTriList++] = static_cast<std::uint32_t>(*it - pFirstTriangle);
 	}
 }
 
-void Common::AccelerationStructure::CreateCFBVH() {
-	if (!gpSceneBVH) exit(1);
+std::uint32_t CacheFriendlyBVH::CountBoxes(BVHNode* root) {
+	if (!root->IsLeaf()) {
+		BVHInner* p = dynamic_cast<BVHInner*>(root);
+		return 1 + CountBoxes(p->Left) + CountBoxes(p->Right);
+	}
 
-	unsigned idxTriList = 0;
-	unsigned idxBoxes = 0;
-
-	gTriIndexListNo = CountTriangles(gpSceneBVH);
-	gTriIndexList = new int[gTriIndexListNo];
-
-	gpCFBVH_No = CountBoxes(gpSceneBVH);
-	gpCFBVH = new CacheFriendlyBVHNode[gpCFBVH_No]; // array
-
-	PopulateCacheFriendlyBVH(&gTriangles[0], gpSceneBVH, idxBoxes, idxTriList);
-
-	if ((idxBoxes != gpCFBVH_No - 1) || (idxTriList != gTriIndexListNo)) exit(1);
-
-	int maxDepth = 0;
-	CountDepth(gpSceneBVH, 0, maxDepth);
-	if (maxDepth >= BVH_STACK_SIZE) exit(1);
+	return 1;
 }
 
-// The gateway - creates the "pure" BVH, and then copies the results in the cache-friendly one
-void Common::AccelerationStructure::UpdateBoundingVolumeHierarchy(const char* filename) {
-	if (!gpSceneBVH) {
-		std::string BVHcacheFilename(filename);
-		BVHcacheFilename += ".bvh";
-		FILE* fp;
-		fopen_s(&fp, BVHcacheFilename.c_str(), "rb");
-		if (!fp) {
-			// No cached BVH data - we need to calculate them
-			Clock me;
-			gpSceneBVH = CreateBVH();
+std::uint32_t CacheFriendlyBVH::CountTriangles(BVHNode* root) {
+	if (!root->IsLeaf()) {
+		BVHInner* p = dynamic_cast<BVHInner*>(root);
+		return CountTriangles(p->Left) + CountTriangles(p->Right);
+	}
 
-			// Now that the BVH has been created, copy its data into a more cache-friendly format
-			// (CacheFriendlyBVHNode occupies exactly 32 bytes, i.e. a cache-line)
-			Common::AccelerationStructure::CreateCFBVH();
+	BVHLeaf* p = dynamic_cast<BVHLeaf*>(root);
+	return (std::uint32_t)p->Triangles.size();
+}
 
-			// Now store the results, if possible...
-			fopen_s(&fp, BVHcacheFilename.c_str(), "wb");
-			if (!fp) return;
-			if (1 != fwrite(&gpCFBVH_No, sizeof(unsigned), 1, fp)) return;
-			if (1 != fwrite(&gTriIndexListNo, sizeof(unsigned), 1, fp)) return;
-			if (gpCFBVH_No != fwrite(gpCFBVH, sizeof(CacheFriendlyBVHNode), gpCFBVH_No, fp)) return;
-			if (gTriIndexListNo != fwrite(gTriIndexList, sizeof(int), gTriIndexListNo, fp)) return;
-			fclose(fp);
-		}
-		else { // BVH has been built already and stored in a file, read the file
-			if (1 != fread(&gpCFBVH_No, sizeof(unsigned), 1, fp)) return;
-			if (1 != fread(&gTriIndexListNo, sizeof(unsigned), 1, fp)) return;
-			gpCFBVH = new CacheFriendlyBVHNode[gpCFBVH_No];
-			gTriIndexList = new int[gTriIndexListNo];
-			if (gpCFBVH_No != fread(gpCFBVH, sizeof(CacheFriendlyBVHNode), gpCFBVH_No, fp)) return;
-			if (gTriIndexListNo != fread(gTriIndexList, sizeof(int), gTriIndexListNo, fp)) return;
-			fclose(fp);
-		}
+void CacheFriendlyBVH::CountDepth(BVHNode* root, std::uint32_t depth, std::uint32_t& maxDepth) {
+	if (maxDepth < depth) maxDepth = depth;
+	if (!root->IsLeaf()) {
+		BVHInner* p = dynamic_cast<BVHInner*>(root);
+		CountDepth(p->Left, depth + 1, maxDepth);
+		CountDepth(p->Right, depth + 1, maxDepth);
 	}
 }

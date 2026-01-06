@@ -79,7 +79,7 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pBackBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 				Foundation::Resource::GpuResource* const pAvgLogLuminance,
-				FLOAT exposure, UINT tonemapperType);
+				FLOAT exposure, FLOAT middleGrayKey, UINT tonemapperType);
 
 		private:
 			BOOL BuildResources();

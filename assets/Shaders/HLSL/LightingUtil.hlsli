@@ -163,25 +163,24 @@ float3 ComputeRectLight(
         in float3 pos, 
         in float3 normal, 
         in float3 toEye) {
-    if (light.Size.x < FLT_EPSILON || light.Size.y < FLT_EPSILON) return 0;
+    if (light.Size.x < FLT_EPSILON || 
+        light.Size.y < FLT_EPSILON || 
+        dot(normalize(pos - light.Center), light.Direction) < 0) return 0;
     
     const float3 L0 = light.Position - pos;
     const float3 L1 = light.Position1 - pos;
     const float3 L2 = light.Position2 - pos;
     const float3 L3 = light.Position3 - pos;
-	
-    const float3 LightNormal = cross(light.Position1 - light.Position, light.Position2 - light.Position);
-    if (dot(normalize(pos - light.Center), LightNormal) < 0) return 0;
 
     const float3 n0 = normalize(cross(L0, L1));
     const float3 n1 = normalize(cross(L1, L2));
     const float3 n2 = normalize(cross(L2, L3));
     const float3 n3 = normalize(cross(L3, L0));
 
-    const float G0 = acos(dot(-n0, n1));
-    const float G1 = acos(dot(-n1, n2));
-    const float G2 = acos(dot(-n2, n3));            
-    const float G3 = acos(dot(-n3, n0));
+    const float G0 = acos(saturate(dot(-n0, n1)));
+    const float G1 = acos(saturate(dot(-n1, n2)));
+    const float G2 = acos(saturate(dot(-n2, n3)));            
+    const float G3 = acos(saturate(dot(-n3, n0)));
 
     const float SolidAngle = G0 + G1 + G2 + G3 - 2.f * 3.14159265359f;
 

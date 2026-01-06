@@ -22,6 +22,10 @@ namespace Common::Render {
 			const FLOAT MinExposure = 0.01f;
 			FLOAT Exposure = 1.4f;
 
+			const FLOAT MaxMiddleGrayKey = 0.99f;
+			const FLOAT MinMiddleGrayKey = 0.01f;
+			FLOAT MiddleGrayKey = 0.36f;
+
 			UINT TonemapperType = 0;
 		};
 
@@ -165,6 +169,9 @@ namespace Common::Render {
 			FLOAT Intensity = 0.01f;
 			FLOAT Limit = 0.005f;
 			FLOAT DepthBias = 0.05f;
+
+			const INT MaxSampleCount = 32;
+			const INT MinSampleCount = 8;
 			INT SampleCount = 16;
 		};
 

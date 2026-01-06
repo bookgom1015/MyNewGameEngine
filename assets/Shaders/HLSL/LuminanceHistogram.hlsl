@@ -54,9 +54,8 @@ void CS(in uint2 DTid : SV_DispatchThreadID, in uint2 GTid : SV_GroupThreadID) {
     
     GroupMemoryBarrierWithGroupSync();
     
-    if (ThreadIndex < gBinCount) {
+    if (ThreadIndex < gBinCount) 
         InterlockedAdd(go_Histogram[ThreadIndex].Count, gLocalBins[ThreadIndex]);
-    }
 }
 
 #endif // __EXTRACTSCENELUMINANCE_HLSL__

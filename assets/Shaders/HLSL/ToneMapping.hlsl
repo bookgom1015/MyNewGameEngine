@@ -85,10 +85,9 @@ SDR_FORMAT PS(in VertexOut pin) : SV_Target {
     const float3 HDR = gi_IntermediateMap.SampleLevel(gsamLinearClamp, pin.TexC, 0).rgb;
         
     const float Luminance = gi_Luminance[0];
-    const float Key = 0.18f;
-    const float Exposure = exp2(-Luminance) * Key;
+    const float Exposure = exp2(-Luminance) * gMiddleGrayKey;
         
-    const float3 Color = HDR * Exposure;
+    const float3 Color = HDR * (Exposure);
     
     float3 sdr = (float3)0.f;
     if (gTonemapperType == Common::Render::TonemapperType::E_Exponential)

@@ -163,7 +163,7 @@ BOOL ToneMapping::ToneMappingClass::Resolve(
 		Foundation::Resource::GpuResource* const pBackBuffer,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 		Foundation::Resource::GpuResource* const pAvgLogLuminance,
-		FLOAT exposure, UINT tonemapperType) {
+		FLOAT exposure, FLOAT middleGrayKey, UINT tonemapperType) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -185,6 +185,7 @@ BOOL ToneMapping::ToneMappingClass::Resolve(
 
 		ShadingConvention::ToneMapping::RootConstant::Default::Struct rc;
 		rc.gExposure = exposure;
+		rc.gMiddleGrayKey = middleGrayKey;
 		rc.gTonemapperType = tonemapperType;
 
 		std::array<std::uint32_t, ShadingConvention::ToneMapping::RootConstant::Default::Count> consts;

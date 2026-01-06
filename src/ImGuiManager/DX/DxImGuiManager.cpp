@@ -394,7 +394,14 @@ void DxImGuiManager::GammaCorrectionTree(Common::Render::ShadingArgument::Shadin
 
 void DxImGuiManager::ToneMappingTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("Tone Mapping")) {
-		ImGui::SliderFloat("Exposure", reinterpret_cast<float*>(&pArgSet->ToneMapping.Exposure), pArgSet->ToneMapping.MinExposure, pArgSet->ToneMapping.MaxExposure);
+		ImGui::SliderFloat(
+			"Exposure", 
+			reinterpret_cast<float*>(&pArgSet->ToneMapping.Exposure), 
+			pArgSet->ToneMapping.MinExposure, pArgSet->ToneMapping.MaxExposure);
+		ImGui::SliderFloat(
+			"Middle Gray Key", 
+			reinterpret_cast<float*>(&pArgSet->ToneMapping.MiddleGrayKey), 
+			pArgSet->ToneMapping.MinMiddleGrayKey, pArgSet->ToneMapping.MaxMiddleGrayKey);
 
 		ImGui::Text("Tonemapper");
 		ImGui::Indent();
@@ -583,6 +590,12 @@ void DxImGuiManager::SSCSTree(
 void DxImGuiManager::MotionBlurTree(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("MotionBlur")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->MotionBlur.Enabled));
+
+		ImGui::Text("Sample Count");
+		ImGui::SliderInt(
+			"##Sample Count", 
+			reinterpret_cast<int*>(&pArgSet->MotionBlur.SampleCount), 
+			pArgSet->MotionBlur.MinSampleCount, pArgSet->MotionBlur.MaxSampleCount);
 
 		ImGui::TreePop();
 	}

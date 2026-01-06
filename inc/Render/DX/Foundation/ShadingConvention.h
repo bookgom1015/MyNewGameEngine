@@ -204,6 +204,7 @@ namespace ShadingConvention{
 	#ifndef ToneMapping_Default_RCSTRUCT
 	#define ToneMapping_Default_RCSTRUCT {	\
 		FLOAT gExposure;					\
+		FLOAT gMiddleGrayKey;				\
 		UINT gTonemapperType;				\
 	};
 #endif
@@ -224,6 +225,7 @@ namespace ShadingConvention{
 			struct Struct ToneMapping_Default_RCSTRUCT
 			enum {
 				E_Exposure = 0,
+				E_MiddleGray,
 				E_TonemapperType,
 				Count
 			};

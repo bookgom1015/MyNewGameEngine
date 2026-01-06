@@ -20,6 +20,8 @@
 #ifndef __GEOMETRY_H__
 #define __GEOMETRY_H__
 
+#include <cstdint>
+
 #include "Common/AccelerationStructure/LinearAlgebra.h"
 
 namespace Common::AccelerationStructure {
@@ -27,15 +29,15 @@ namespace Common::AccelerationStructure {
 		// Normal vector of this vertex
 		Vector3Df Normal;
 
-		Vertex(float x, float y, float z, float nx, float ny, float nz, float amb = 60.f) :
-			Vector3Df(x, y, z), Normal(Vector3Df(nx, ny, nz)) { /* assert |nx,ny,nz| = 1 */ }
+		Vertex(float x, float y, float z, float nx, float ny, float nz, float amb = 60.f) 
+			: Vector3Df(x, y, z), Normal(Vector3Df(nx, ny, nz)) { /* assert |nx,ny,nz| = 1 */ }
 	};
 
 	struct Triangle {
 		// Indexes in vertices array
-		unsigned Index1;
-		unsigned Index2;
-		unsigned Index3;
+		std::uint32_t Index1;
+		std::uint32_t Index2;
+		std::uint32_t Index3;
 		// RGB Color Vector3Df 
 		Vector3Df Color;
 		// Center point
