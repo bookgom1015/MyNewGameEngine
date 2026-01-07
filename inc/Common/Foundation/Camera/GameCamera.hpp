@@ -13,7 +13,7 @@ namespace Common::Foundation {
 			GameCamera(
 				Core::WindowsManager* const pWndManager, 
 				FLOAT nearZ = 0.1f, 
-				FLOAT farZ = 100.f, 
+				FLOAT farZ = 1000.f, 
 				FLOAT fovY = 90.f);
 			virtual ~GameCamera() = default;
 

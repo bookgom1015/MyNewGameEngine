@@ -1,8 +1,8 @@
 #pragma once
 
-#include <DirectXMath.h>
+#include <algorithm>
 
-#include <windef.h>
+#include <DirectXMath.h>
 
 namespace Physics::Cyclone {
 	class Particle {
@@ -11,22 +11,34 @@ namespace Physics::Cyclone {
 		virtual ~Particle() = default;
 
 	public:
-		__forceinline constexpr void SetMass(FLOAT mass);
-		__forceinline constexpr void SetInverseMass(FLOAT invMass);
+		__forceinline constexpr float GetMass() const noexcept;
+		__forceinline constexpr void SetMass(float mass) noexcept;
 
-		void Integrate(FLOAT dt);
+		__forceinline constexpr void SetInverseMass(float invMass) noexcept;
 
-		void AddForce(const DirectX::XMFLOAT3& _force);
+		__forceinline constexpr bool HasFiniteMass() const;
+
+		__forceinline DirectX::XMVECTOR& GetVelocity();
+		__forceinline const DirectX::XMVECTOR& GetVelocity() const;
+
+		__forceinline DirectX::XMVECTOR& GetPosition();
+		__forceinline const DirectX::XMVECTOR& GetPosition() const;
+
+	public:
+		void Integrate(float dt);
+
+		void AddForce(const DirectX::XMFLOAT3& force);
+		void AddForce(const DirectX::XMVECTOR& force);
 
 	protected:
-		DirectX::XMFLOAT3 mPosition;
-		DirectX::XMFLOAT3 mVelocity;
-		DirectX::XMFLOAT3 mAcceleration;
+		DirectX::XMVECTOR mPosition{};
+		DirectX::XMVECTOR mVelocity{};
+		DirectX::XMVECTOR mAcceleration{};
 
-		FLOAT mDamping;
-		FLOAT mInverseMass;
+		float mDamping{};
+		float mInverseMass{};
 
-		DirectX::XMFLOAT3 mForceAccum;
+		DirectX::XMVECTOR mForceAccum{};
 	};
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <windef.h>
+#include <DirectXMath.h>
 
 namespace Physics::Cyclone {
 	class Particle;
@@ -11,6 +11,6 @@ namespace Physics::Cyclone {
 		virtual ~ParticleForceGenerator() = default;
 
 	public:
-		virtual void UpdateForce(Particle* pParticle, FLOAT dt) = 0;
+		virtual void UpdateForce(Particle* pParticle, float dt) = 0;
 	};
 }

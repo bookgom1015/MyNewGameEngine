@@ -1475,7 +1475,7 @@ BOOL DxRenderer::BuildLights() {
 
 BOOL DxRenderer::BuildScene() {
 	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
-	const FLOAT WidthSquared = 64.f * 64.f;
+	const FLOAT WidthSquared = 128.f * 128.f;
 	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
 
 	// Some of shading objects require particular constant buffers

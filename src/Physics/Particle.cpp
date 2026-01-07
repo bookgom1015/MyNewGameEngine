@@ -5,26 +5,22 @@
 using namespace DirectX;
 using namespace Physics::Cyclone;
 
-void Particle::Integrate(FLOAT dt) {
-	if (mInverseMass <= 0.f && dt <= 0.f) return;
+void Particle::Integrate(float  dt) {
+	if (mInverseMass <= 0.f || dt <= 0.f) return;
 
-	auto position = XMLoadFloat3(&mPosition);
-	auto velocity = XMLoadFloat3(&mVelocity);
-	position += velocity * dt;
-	XMStoreFloat3(&mPosition, position);
+	mPosition += mVelocity * dt;
 
-	auto accel = XMLoadFloat3(&mAcceleration);
-	velocity += accel * dt;
-	velocity *= std::powf(mDamping, dt);
-	XMStoreFloat3(&mVelocity, velocity);
+	mVelocity += mAcceleration * dt;
+	mVelocity *= std::powf(mDamping, dt);
 
-	mAcceleration = { 0.f, 0.f, 0.f };
+	mAcceleration = XMVectorSet(0.f, 0.f, 0.f, 0.f);
 }
 
-void Particle::AddForce(const DirectX::XMFLOAT3& _force) {
-	auto forceAccum = XMLoadFloat3(&mForceAccum);
+void Particle::AddForce(const XMFLOAT3& _force) {
 	auto force = XMLoadFloat3(&_force);
-	forceAccum += force;
+	mForceAccum += force;
+}
 
-	XMStoreFloat3(&mForceAccum, forceAccum);
+void Particle::AddForce(const DirectX::XMVECTOR& force) {
+	mForceAccum += force;
 }

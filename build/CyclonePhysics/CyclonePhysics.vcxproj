@@ -138,11 +138,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Physics\Particle.cpp" />
+    <ClCompile Include="..\..\src\Physics\ParticleAirBrake.cpp" />
+    <ClCompile Include="..\..\src\Physics\ParticleDrag.cpp" />
     <ClCompile Include="..\..\src\Physics\ParticleForceGenerator.cpp" />
+    <ClCompile Include="..\..\src\Physics\ParticleGlobalGravity.cpp" />
+    <ClCompile Include="..\..\src\Physics\ParticlePointGravity.cpp" />
+    <ClCompile Include="..\..\src\Physics\ParticleSpring.cpp" />
+    <ClCompile Include="..\..\src\Physics\ParticleUplift.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Physics\Particle.hpp" />
+    <ClInclude Include="..\..\inc\Physics\ParticleAirBrake.hpp" />
+    <ClInclude Include="..\..\inc\Physics\ParticleDrag.hpp" />
     <ClInclude Include="..\..\inc\Physics\ParticleForceGenerator.hpp" />
+    <ClInclude Include="..\..\inc\Physics\ParticleGlobalGravity.hpp" />
+    <ClInclude Include="..\..\inc\Physics\ParticlePointGravity.hpp" />
+    <ClInclude Include="..\..\inc\Physics\ParticleSpring.hpp" />
+    <ClInclude Include="..\..\inc\Physics\ParticleUplift.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Physics\Particle.inl" />

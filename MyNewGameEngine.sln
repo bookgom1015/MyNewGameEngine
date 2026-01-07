@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxRenderer", "build\DxRenderer\DxRenderer.vcxproj", "{A034ED57-2314-46DB-A79F-FCCF8A20FB89}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -23,6 +23,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameWorld", "build\GameWorld\GameWorld.vcxproj", "{6B12857C-65EB-4497-8D36-8CDB28CC3B8B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0E9B5E75-A8C2-4A9A-B0AC-83C636C753E3} = {0E9B5E75-A8C2-4A9A-B0AC-83C636C753E3}
+		{9CAF8371-1FAE-4F25-A8B7-BB119C98544A} = {9CAF8371-1FAE-4F25-A8B7-BB119C98544A}
 		{9DB6BEBF-8895-4285-B0FD-5FCE92D84231} = {9DB6BEBF-8895-4285-B0FD-5FCE92D84231}
 		{A034ED57-2314-46DB-A79F-FCCF8A20FB89} = {A034ED57-2314-46DB-A79F-FCCF8A20FB89}
 	EndProjectSection

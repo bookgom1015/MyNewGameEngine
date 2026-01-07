@@ -75,7 +75,8 @@ BOOL Mesh::LoadObj(Common::Debug::LogFile* const pLogFile, Mesh& mesh, LPCSTR fi
 			mesh.mIndices.push_back(static_cast<UINT>(mesh.mUniqueVertices[vertex]));
 			++indexCount;
 
-			INT currMatId = static_cast<INT>(shape.mesh.material_ids[index.vertex_index]);
+			INT face = static_cast<INT>(index.vertex_index / 3);
+			INT currMatId = static_cast<INT>(shape.mesh.material_ids[face]);
 			if (prevMatId != currMatId) {
 				if (prevMatId != -1) {
 					Subset subset;
