@@ -1534,11 +1534,17 @@ BOOL DxRenderer::ApplyContactShadow() {
 		mpCurrentFrameResource,
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
+		mGBuffer->NormalMap(),
+		mGBuffer->NormalMapSrv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferSrv(),
-		mpShadingArgumentSet->SSCS.MaxSteps,
+		mpShadingArgumentSet->SSCS.Steps,
 		mpShadingArgumentSet->SSCS.RayMaxDistance,
-		mpShadingArgumentSet->SSCS.Thcikness));
+		mpShadingArgumentSet->SSCS.Thcikness,
+		mpShadingArgumentSet->SSCS.BiasBase,
+		mpShadingArgumentSet->SSCS.BiasSlope,
+		mpShadingArgumentSet->SSCS.DepthEpsilonBase,
+		mpShadingArgumentSet->SSCS.DepthEpsilonScale));
 
 	CheckReturn(mpLogFile, mSSCS->ApplyContactShadow(
 		mpCurrentFrameResource,

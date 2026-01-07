@@ -62,9 +62,10 @@ BOOL SSCS::SSCSClass::BuildRootSignatures() {
 
 	// ComputeContactShadow
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[5] = {}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
+		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
 
@@ -76,6 +77,7 @@ BOOL SSCS::SSCSClass::BuildRootSignatures() {
 		slotRootParameter[RootSignature::ComputeContactShadow::RC_Consts].InitAsConstants(
 			ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count, 2);
 		slotRootParameter[RootSignature::ComputeContactShadow::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::ComputeContactShadow::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::ComputeContactShadow::UO_ContactShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::ComputeContactShadow::UO_DebugMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -188,9 +190,12 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		Foundation::Resource::GpuResource* const pPositionMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_positionMap,
+		Foundation::Resource::GpuResource* const pNormalMap,
+		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
 		Foundation::Resource::GpuResource* const pDepthMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-		UINT maxSteps, FLOAT rayMaxDist, FLOAT thickness) {
+		UINT maxSteps, FLOAT rayMaxDist, FLOAT thickness,
+		FLOAT biasBase, FLOAT biasSlope, FLOAT depthEpsilonBase, FLOAT depthEpsilonScale) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -215,6 +220,10 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		rc.gThickness = thickness;
 		rc.gTextureDimX = mInitData.ClientWidth;
 		rc.gFrameCount = frame++;
+		rc.gBiasBase = biasBase;
+		rc.gBiasSlope = biasSlope;
+		rc.gDepthEpsilonBase = depthEpsilonBase;
+		rc.gDepthEpsilonScale = depthEpsilonScale;
 
 		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Struct>(
 			RootSignature::ComputeContactShadow::RC_Consts,
@@ -225,6 +234,7 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 			TRUE);
 
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_READ);
 
 		mContactShadowMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -234,6 +244,7 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mDebugMap.get());
 
 		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::SI_PositionMap, si_positionMap);
+		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::SI_NormalMap, si_normalMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::SI_DepthMap, si_depthMap);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::UO_ContactShadowMap, mhContactShadowMapGpuUav);
 		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::UO_DebugMap, mhDebugMapGpuUav);

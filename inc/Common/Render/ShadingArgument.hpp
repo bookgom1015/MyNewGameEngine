@@ -11,91 +11,91 @@
 namespace Common::Render {
 	namespace ShadingArgument {
 		struct GammaCorrectionArguments {
-			BOOL Enabled = TRUE;
-			const FLOAT MaxGamma = 3.f;
-			const FLOAT MinGamma = 0.5f;
-			FLOAT Gamma = 2.2f;
+			bool Enabled = true;
+			const float MaxGamma = 3.f;
+			const float MinGamma = 0.5f;
+			float Gamma = 2.2f;
 		};
 
 		struct ToneMappingArguments {
-			const FLOAT MaxExposure = 8.f;
-			const FLOAT MinExposure = 0.01f;
-			FLOAT Exposure = 1.4f;
+			const float MaxExposure = 8.f;
+			const float MinExposure = 0.01f;
+			float Exposure = 1.4f;
 
-			const FLOAT MaxMiddleGrayKey = 0.99f;
-			const FLOAT MinMiddleGrayKey = 0.01f;
-			FLOAT MiddleGrayKey = 0.36f;
+			const float MaxMiddleGrayKey = 0.99f;
+			const float MinMiddleGrayKey = 0.01f;
+			float MiddleGrayKey = 0.36f;
 
-			UINT TonemapperType = 0;
+			std::uint32_t TonemapperType = 0;
 		};
 
 		struct TAAArguments {
-			BOOL Enabled = TRUE;
-			FLOAT ModulationFactor = 0.9f;
+			bool Enabled = true;
+			float ModulationFactor = 0.9f;
 		};
 
 		struct BlendWithCurrentFrameArguments {
-			BOOL UseClamping = TRUE;
-			FLOAT DepthSigma = 1.f;
-			FLOAT StdDevGamma = 0.6f;
-			FLOAT MinStdDevTolerance = 0.05f;
+			bool UseClamping = true;
+			float DepthSigma = 1.f;
+			float StdDevGamma = 0.6f;
+			float MinStdDevTolerance = 0.05f;
 
-			FLOAT ClampDifferenceToTSPPScale = 4.f;
-			UINT MinTSPPToUseTemporalVariance = 4;
-			UINT LowTSPPMaxTSPP = 12;
-			FLOAT LowTSPPDecayConstant = 1.f;
+			float ClampDifferenceToTSPPScale = 4.f;
+			std::uint32_t MinTSPPToUseTemporalVariance = 4;
+			std::uint32_t LowTSPPMaxTSPP = 12;
+			float LowTSPPDecayConstant = 1.f;
 		};
 
 		struct AtrousWaveletTransformFilterArguments {
-			FLOAT ValueSigma = 1.f;
-			FLOAT NormalSigma = 64.f;
-			FLOAT DepthSigma = 1.f;
-			FLOAT DepthWeightCutoff = 0.2f;
+			float ValueSigma = 1.f;
+			float NormalSigma = 64.f;
+			float DepthSigma = 1.f;
+			float DepthWeightCutoff = 0.2f;
 
-			FLOAT MinVarianceToDenoise = 0.f;
+			float MinVarianceToDenoise = 0.f;
 
-			BOOL UseSmoothedVariance = FALSE;
+			bool UseSmoothedVariance = false;
 
-			BOOL PerspectiveCorrectDepthInterpolation = TRUE;
+			bool PerspectiveCorrectDepthInterpolation = true;
 
-			BOOL UseAdaptiveKernelSize = TRUE;
-			BOOL KernelRadiusRotateKernelEnabled = TRUE;
-			INT KernelRadiusRotateKernelNumCycles = 3;
-			INT FilterMinKernelWidth = 3;
-			FLOAT FilterMaxKernelWidthPercentage = 1.5f;
-			FLOAT AdaptiveKernelSizeRayHitDistanceScaleFactor = 0.02f;
-			FLOAT AdaptiveKernelSizeRayHitDistanceScaleExponent = 2.f;
+			bool UseAdaptiveKernelSize = true;
+			bool KernelRadiusRotateKernelEnabled = true;
+			std::int32_t KernelRadiusRotateKernelNumCycles = 3;
+			std::int32_t FilterMinKernelWidth = 3;
+			float FilterMaxKernelWidthPercentage = 1.5f;
+			float AdaptiveKernelSizeRayHitDistanceScaleFactor = 0.02f;
+			float AdaptiveKernelSizeRayHitDistanceScaleExponent = 2.f;
 		};
 
 		struct DenoiserArguments {
-			BOOL DisocclusionBlurEnabled = TRUE;
-			BOOL FullscreenBlurEnabaled = TRUE;
-			BOOL UseSmoothingVariance = TRUE;
-			UINT LowTsppBlurPassCount = 3;
+			bool DisocclusionBlurEnabled = true;
+			bool FullscreenBlurEnabaled = true;
+			bool UseSmoothingVariance = true;
+			std::uint32_t LowTsppBlurPassCount = 3;
 		};
 
 		struct SSAOArguments {
-			const FLOAT MinOcclusionRadius = 0.1f;
-			const FLOAT MaxOcclusionRadius = 10.f;
-			FLOAT OcclusionRadius = 4.f;
+			const float MinOcclusionRadius = 0.1f;
+			const float MaxOcclusionRadius = 10.f;
+			float OcclusionRadius = 4.f;
 
-			const FLOAT MinOcclusionFadeStart = 0.f;
-			FLOAT OcclusionFadeStart = 1.f;
+			const float MinOcclusionFadeStart = 0.f;
+			float OcclusionFadeStart = 1.f;
 
-			const FLOAT MaxOcclusionFadeEnd = 10.f;
-			FLOAT OcclusionFadeEnd = 8.f;
+			const float MaxOcclusionFadeEnd = 10.f;
+			float OcclusionFadeEnd = 8.f;
 
-			const FLOAT MinOcclusionStrength = 1.f;
-			const FLOAT MaxOcclusionStrength = 10.f;
-			FLOAT OcclusionStrength = 2.f;
+			const float MinOcclusionStrength = 1.f;
+			const float MaxOcclusionStrength = 10.f;
+			float OcclusionStrength = 2.f;
 
-			const FLOAT MinSurfaceEpsilon = 0.001f;
-			const FLOAT MaxSurfaceEpsilon = 0.1f;
-			FLOAT SurfaceEpsilon = 0.05f;
+			const float MinSurfaceEpsilon = 0.001f;
+			const float MaxSurfaceEpsilon = 0.1f;
+			float SurfaceEpsilon = 0.05f;
 
-			const UINT MaxSampleCount = 14;
-			const UINT MinSampleCount = 1;
-			UINT SampleCount = 6;
+			const std::uint32_t MaxSampleCount = 14;
+			const std::uint32_t MinSampleCount = 1;
+			std::uint32_t SampleCount = 6;
 
 			BlendWithCurrentFrameArguments BlendWithCurrentFrame;
 			AtrousWaveletTransformFilterArguments AtrousWaveletTransformFilter;
@@ -103,103 +103,122 @@ namespace Common::Render {
 		};
 
 		struct RTAOArguments {
-			FLOAT OcclusionRadius = 10.f;
-			FLOAT OcclusionFadeStart = 0.f;
-			FLOAT OcclusionFadeEnd = 10.f;
-			FLOAT SurfaceEpsilon = 0.0001f;
+			float OcclusionRadius = 10.f;
+			float OcclusionFadeStart = 0.f;
+			float OcclusionFadeEnd = 10.f;
+			float SurfaceEpsilon = 0.0001f;
 
-			UINT SampleCount = 1;
-			const UINT MaxSampleCount = 128;
-			const UINT MinSampleCount = 1;
+			std::uint32_t SampleCount = 1;
+			const std::uint32_t MaxSampleCount = 128;
+			const std::uint32_t MinSampleCount = 1;
 
-			UINT SampleSetSize = 8;
-			const UINT MaxSampleSetSize = 8;
-			const UINT MinSampleSetSize = 1;
+			std::uint32_t SampleSetSize = 8;
+			const std::uint32_t MaxSampleSetSize = 8;
+			const std::uint32_t MinSampleSetSize = 1;
 
 			// RaySorting
-			BOOL RaySortingEnabled = TRUE;
-			BOOL CheckerboardGenerateRaysForEvenPixels = FALSE;
-			BOOL CheckboardRayGeneration = TRUE;
-			BOOL RandomFrameSeed = TRUE;
+			bool RaySortingEnabled = true;
+			bool CheckerboardGenerateRaysForEvenPixels = false;
+			bool CheckboardRayGeneration = true;
+			bool RandomFrameSeed = true;
 
 			BlendWithCurrentFrameArguments BlendWithCurrentFrame;
 			AtrousWaveletTransformFilterArguments AtrousWaveletTransformFilter;
 			DenoiserArguments Denoiser;
 
 			//
-			UINT MaxTSPP = 33;
+			std::uint32_t MaxTSPP = 33;
 		};
 
 		struct RaySortingArguments {
-			FLOAT DepthBinSizeMultiplier = 0.1f;
-			const FLOAT MinDepthBinSizeMultiplier = 0.01f;
-			const FLOAT MaxDepthBinSizeMultiplier = 10.f;
+			float DepthBinSizeMultiplier = 0.1f;
+			const float MinDepthBinSizeMultiplier = 0.01f;
+			const float MaxDepthBinSizeMultiplier = 10.f;
 		};
 
 		struct VolumetricLightArguments {
-			BOOL Enabled = TRUE;
-			FLOAT DepthExponent = 4.f;
+			bool Enabled = true;
+			float DepthExponent = 4.f;
 
-			const FLOAT MinAnisotropicCoefficient = -0.5f;
-			const FLOAT MaxAnisotropicCoefficient = 0.5f;
-			FLOAT AnisotropicCoefficient = 0.f;
+			const float MinAnisotropicCoefficient = -0.5f;
+			const float MaxAnisotropicCoefficient = 0.5f;
+			float AnisotropicCoefficient = 0.f;
 
-			const FLOAT MaxUniformDensity = 1.f;
-			const FLOAT MinUniformDensity = 0.f;
-			FLOAT UniformDensity = 0.1f;
+			const float MaxUniformDensity = 1.f;
+			const float MinUniformDensity = 0.f;
+			float UniformDensity = 0.1f;
 
-			const FLOAT MaxDensityScale = 1.f;
-			const FLOAT MinDensityScale = 0.f;
-			FLOAT DensityScale = 0.01f;
+			const float MaxDensityScale = 1.f;
+			const float MinDensityScale = 0.f;
+			float DensityScale = 0.01f;
 
-			BOOL TricubicSamplingEnabled = TRUE;
+			bool TricubicSamplingEnabled = true;
 		};
 
 		struct SSCSArguments {
-			BOOL Enabled = TRUE;
+			bool Enabled = true;
 
-			UINT MaxSteps = 8;
-			FLOAT RayMaxDistance = 0.3f;
-			FLOAT Thcikness = 0.02f;
+			const std::uint32_t MaxStep = 32;
+			const std::uint32_t MinStep = 8;
+			std::uint32_t Steps = 16;
+
+			float RayMaxDistance = 0.3f;
+			float Thcikness = 0.02f;
+
+			const float MaxBiasBase = 0.01f;
+			const float MinBiasBase = 0.002f;
+			float BiasBase = 0.002f;
+
+			const float MaxBiasSlope = 0.05f;
+			const float MinBiasSlope = 0.01f;
+			float BiasSlope = 0.01f;
+
+			const float MaxDepthEpsilonBase = 0.01f;
+			const float MinDepthEpsilonBase = 0.001f;
+			float DepthEpsilonBase = 0.005f;
+
+			const float MaxDepthEpsilonScale = 0.01f;
+			const float MinDepthEpsilonScale = 0.001f;
+			float DepthEpsilonScale = 0.005f;
 		};
 
 		struct MotionBlurArguments {
-			BOOL Enabled = TRUE;
+			bool Enabled = true;
 
-			FLOAT Intensity = 0.01f;
-			FLOAT Limit = 0.005f;
-			FLOAT DepthBias = 0.05f;
+			float Intensity = 0.01f;
+			float Limit = 0.005f;
+			float DepthBias = 0.05f;
 
-			const INT MaxSampleCount = 32;
-			const INT MinSampleCount = 8;
-			INT SampleCount = 16;
+			const std::int32_t MaxSampleCount = 32;
+			const std::int32_t MinSampleCount = 8;
+			std::int32_t SampleCount = 16;
 		};
 
 		struct BloomArguments {
-			BOOL Enabled = TRUE;
+			bool Enabled = true;
 
-			FLOAT Threshold = 1.f;
-			FLOAT SoftKnee = 0.5f;
+			float Threshold = 1.f;
+			float SoftKnee = 0.5f;
 		};
 
 		struct DOFArguments {
-			BOOL Enabled = FALSE;
+			bool Enabled = false;
 
-			const UINT MaxBokehSampleCount = 10;
-			const UINT MinBokehSampleCount = 1;
-			UINT BokehSampleCount = 4;
+			const std::uint32_t MaxBokehSampleCount = 10;
+			const std::uint32_t MinBokehSampleCount = 1;
+			std::uint32_t BokehSampleCount = 4;
 
-			const FLOAT MaxBokehRadius = 10.f;
-			const FLOAT MinBokehRadius = 1.f;
-			FLOAT BokehRadius = 2.f;
+			const float MaxBokehRadius = 10.f;
+			const float MinBokehRadius = 1.f;
+			float BokehRadius = 2.f;
 
-			const FLOAT MaxBokehThreshold = 0.9f;
-			const FLOAT MinBokehThreshold = 0.1f;
-			FLOAT BokehThreshold = 0.9f;
+			const float MaxBokehThreshold = 0.9f;
+			const float MinBokehThreshold = 0.1f;
+			float BokehThreshold = 0.9f;
 
-			const FLOAT MaxHighlightPower = 8.f;
-			const FLOAT MinHighlightPower = 1.f;
-			FLOAT HighlightPower = 2.f;
+			const float MaxHighlightPower = 8.f;
+			const float MinHighlightPower = 1.f;
+			float HighlightPower = 2.f;
 		};
 
 		struct ShadingArgumentSet {
@@ -215,9 +234,9 @@ namespace Common::Render {
 			BloomArguments Bloom;
 			DOFArguments DOF;
 
-			BOOL ShadowEnabled = TRUE;
-			BOOL AOEnabled = TRUE;
-			BOOL RaytracingEnabled = FALSE;
+			bool ShadowEnabled = true;
+			bool AOEnabled = true;
+			bool RaytracingEnabled = false;
 		};
 	}
 }

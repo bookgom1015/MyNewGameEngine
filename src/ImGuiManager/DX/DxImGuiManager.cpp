@@ -569,10 +569,18 @@ void DxImGuiManager::VolumetricLightTree(Common::Render::ShadingArgument::Shadin
 			pArgSet->VolumetricLight.MaxAnisotropicCoefficient);
 
 		ImGui::Text("Uniform Density");
-		ImGui::SliderFloat("##Uniform Density", &pArgSet->VolumetricLight.UniformDensity, pArgSet->VolumetricLight.MinUniformDensity, pArgSet->VolumetricLight.MaxUniformDensity);
+		ImGui::SliderFloat(
+			"##Uniform Density", 
+			&pArgSet->VolumetricLight.UniformDensity, 
+			pArgSet->VolumetricLight.MinUniformDensity, 
+			pArgSet->VolumetricLight.MaxUniformDensity);
 
 		ImGui::Text("Density Scale");
-		ImGui::SliderFloat("##Density Scale", &pArgSet->VolumetricLight.DensityScale, pArgSet->VolumetricLight.MinDensityScale, pArgSet->VolumetricLight.MaxDensityScale);
+		ImGui::SliderFloat(
+			"##Density Scale", 
+			&pArgSet->VolumetricLight.DensityScale,
+			pArgSet->VolumetricLight.MinDensityScale, 
+			pArgSet->VolumetricLight.MaxDensityScale);
 
 		ImGui::TreePop();
 	}
@@ -582,6 +590,37 @@ void DxImGuiManager::SSCSTree(
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::TreeNode("SSCS")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->SSCS.Enabled));
+
+		ImGui::Text("Step Count");
+		ImGui::SliderInt(
+			"##Step Count",
+			reinterpret_cast<int*>(&pArgSet->SSCS.Steps),
+			pArgSet->SSCS.MinStep, 
+			pArgSet->SSCS.MaxStep);
+
+		ImGui::Text("Bias Base");
+		ImGui::SliderFloat("##Bias Base",
+			&pArgSet->SSCS.BiasBase,
+			pArgSet->SSCS.MinBiasBase,
+			pArgSet->SSCS.MaxBiasBase);
+
+		ImGui::Text("Bias Slope");
+		ImGui::SliderFloat("##Bias Slope",
+			&pArgSet->SSCS.BiasSlope,
+			pArgSet->SSCS.MinBiasSlope,
+			pArgSet->SSCS.MaxBiasSlope);
+
+		ImGui::Text("Depth Epsilon Base");
+		ImGui::SliderFloat("##Bias Depth Epsilon Base",
+			&pArgSet->SSCS.DepthEpsilonBase,
+			pArgSet->SSCS.MinDepthEpsilonBase,
+			pArgSet->SSCS.MaxDepthEpsilonBase);
+
+		ImGui::Text("Depth Epsilon Scale");
+		ImGui::SliderFloat("##Bias Depth Epsilon Scale",
+			&pArgSet->SSCS.DepthEpsilonScale,
+			pArgSet->SSCS.MinDepthEpsilonScale,
+			pArgSet->SSCS.MaxDepthEpsilonScale);
 
 		ImGui::TreePop();
 	}

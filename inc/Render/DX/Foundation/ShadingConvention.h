@@ -896,6 +896,10 @@ namespace ShadingConvention{
 		FLOAT gThickness;						\
 		UINT gTextureDimX;						\
 		UINT gFrameCount;						\
+		FLOAT gBiasBase;						\
+		FLOAT gBiasSlope;						\
+		FLOAT gDepthEpsilonBase;				\
+		FLOAT gDepthEpsilonScale;				\
 	};
 #endif
 
@@ -920,6 +924,10 @@ namespace ShadingConvention{
 					E_Thcikness,
 					E_TextureDimX,
 					E_FrameCount,
+					E_BiasBase,
+					E_BiasSlope,
+					E_DepthEpsilonBase,
+					E_DepthEpsilonScale,
 					Count
 				};
 			}

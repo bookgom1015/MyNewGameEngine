@@ -17,7 +17,8 @@ ConstantBuffer<ConstantBuffers::LightCB> cbLight : register(b1);
 SSCS_ComputeContactShadow_RootConstants(b2)
 
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap : register(t0);
-Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat> gi_DepthMap    : register(t1);
+Texture2D<ShadingConvention::GBuffer::NormalMapFormat>              gi_NormalMap   : register(t1);
+Texture2D<ShadingConvention::DepthStencilBuffer::DepthBufferFormat> gi_DepthMap    : register(t2);
 
 RWTexture2D<ShadingConvention::SSCS::ContactShadowMapFormat> go_ContactShadowMap   : register(u0);
 RWTexture2D<ShadingConvention::SSCS::DebugMapFormat>         go_DebugMap           : register(u1);
@@ -30,10 +31,10 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     const float StepLength = gRayMaxDistance / gMaxSteps;
     
     uint result = 0;
-    for (uint i = 0 ; i < cbLight.LightCount; ++i) {
-        const Render::DX::Foundation::Light light = cbLight.Lights[i];
+    for (uint lightIndex = 0 ; lightIndex < cbLight.LightCount; ++lightIndex) {
+        const Render::DX::Foundation::Light light = cbLight.Lights[lightIndex];
         
-        const uint Seed = Random::InitRand(DTid.x + DTid.y * gTextureDimX, gFrameCount);
+        const uint Seed = Random::InitRand(DTid.x + DTid.y * gTextureDimX, gFrameCount ^ (lightIndex * 9781u));
         const float Noise = Random::Random01(Seed) * 0.5f + 0.25f;
         
         const float4 PosW = gi_PositionMap[DTid];
@@ -48,14 +49,24 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         
         const float3 RayStep = rayDirection * StepLength;
         
-        const float k = max(distance(cbPass.EyePosW, PosW.xyz) * 0.5f, 1.f);
-        const float Thickness = k * gThickness;
+        const float ViewDist = distance(PosW.xyz, cbPass.EyePosW);
+        const float gStepScaleFar = 2.f;
+        const float gStepScaleFarDist = 40.f;
+        const float StepScale = lerp(1.f, gStepScaleFar, saturate(ViewDist / gStepScaleFarDist));
+        const float gThicknessBase = 0.01f;
+        const float gThicknessFarScale = 2.f;
+        const float gThicknessFarDist = 40.f;
+        const float Thickness = gThicknessBase + gThicknessFarScale * saturate(ViewDist / gThicknessFarDist);
         
-        float3 rayPos = PosW.xyz;        
+        const float3 N = gi_NormalMap[DTid].xyz;
+        const float NoL = dot(N, rayDirection);
+        const float BiasW = gBiasBase + gBiasSlope * (1.f - NoL);
+        
+        float3 rayPos = PosW.xyz + N * BiasW;        
         float2 rayTexC = 0.f;        
         bool occluded = false;
-        for (uint i = 0; i < gMaxSteps; ++i) {
-            rayPos += RayStep * k * Noise;
+        for (uint stepIndex = 0; stepIndex < gMaxSteps; ++stepIndex) {
+            rayPos += RayStep * StepScale * Noise;
             
             float4 viewProjPos = mul(float4(rayPos, 1.f), cbPass.ViewProj);
             viewProjPos /= viewProjPos.w;
@@ -71,13 +82,14 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
             
             const float DepthDelta = RayDepthV - ZSampleDepthV;
                     
-            if (DepthDelta > 0.f && DepthDelta < Thickness) {
+            const float Epsilon = gDepthEpsilonBase + gDepthEpsilonScale * abs(RayDepthV);
+            if (DepthDelta > Epsilon && DepthDelta < Thickness) {
                 occluded = true;
                 break;
             }
         }
         
-        result = Shadow::CalcShiftedShadowValueF(occluded ? 0 : 1, result, i);
+        result = Shadow::CalcShiftedShadowValueF(occluded ? 0 : 1, result, lightIndex);
     }
     
     go_ContactShadowMap[DTid] = result;
