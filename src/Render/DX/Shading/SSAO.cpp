@@ -271,7 +271,9 @@ BOOL SSAO::SSAOClass::DrawAO(
 	{
 		CmdList->SetComputeRootSignature(mRootSignature.Get());
 
-		CmdList->SetComputeRootConstantBufferView(RootSignature::Default::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::Default::CB_AO, 
+			pFrameResource->AmbientOcclusionCB.CBAddress());
 
 		ShadingConvention::SSAO::RootConstant::Default::Struct rc;
 		rc.gInvTexDim.x = 1.f / static_cast<FLOAT>(mInitData.ClientWidth);

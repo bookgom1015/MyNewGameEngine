@@ -45,6 +45,7 @@
 #include "Render/DX/Shading/Bloom.hpp"
 #include "Render/DX/Shading/DOF.hpp"
 #include "Render/DX/Shading/EyeAdaption.hpp"
+#include "Render/DX/Shading/RaytracedShadow.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -89,6 +90,7 @@ DxRenderer::DxRenderer() {
 	mBloom = std::make_unique<Shading::Bloom::BloomClass>();
 	mDOF = std::make_unique<Shading::DOF::DOFClass>();
 	mEyeAdaption = std::make_unique<Shading::EyeAdaption::EyeAdaptionClass>();
+	mRaytracedShadow = std::make_unique<Shading::RaytracedShadow::RaytracedShadowClass>();
 
 	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
 	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
@@ -112,6 +114,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->AddShadingObject(mBloom.get());
 	mShadingObjectManager->AddShadingObject(mDOF.get());
 	mShadingObjectManager->AddShadingObject(mEyeAdaption.get());
+	mShadingObjectManager->AddShadingObject(mRaytracedShadow.get());
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -214,8 +217,6 @@ BOOL DxRenderer::Draw() {
 	const auto skySphere = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].front();
 	const auto& opaques = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque];
 
-	const auto& rendableOpaques = mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque];
-
 	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(), 
@@ -224,13 +225,9 @@ BOOL DxRenderer::Draw() {
 		mToneMapping->InterMediateMapRtv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(), 
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
-		rendableOpaques));
+		mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque]));
 
-	CheckReturn(mpLogFile, mShadow->Run(
-		mpCurrentFrameResource,
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv(),
-		rendableOpaques));
+	CheckReturn(mpLogFile, DrawShadow());
 
 	if (mpShadingArgumentSet->SSCS.Enabled) 
 		CheckReturn(mpLogFile, ApplyContactShadow());
@@ -261,8 +258,10 @@ BOOL DxRenderer::Draw() {
 		mGBuffer->RoughnessMetalnessMapSrv(),
 		mGBuffer->PositionMap(),
 		mGBuffer->PositionMapSrv(),
-		mShadow->ShadowMap(),
-		mShadow->ShadowMapSrv(),
+		mpShadingArgumentSet->RaytracingEnabled ?
+			mRaytracedShadow->ShadowMap() : mShadow->ShadowMap(),
+		mpShadingArgumentSet->RaytracingEnabled ?
+			mRaytracedShadow->ShadowMapSrv() : mShadow->ShadowMapSrv(),
 		mpShadingArgumentSet->ShadowEnabled));
 
 	CheckReturn(mpLogFile, IntegrateIrradiance());
@@ -493,7 +492,7 @@ BOOL DxRenderer::UpdateMainPassCB() {
 		mMainPassCB->JitteredOffset = { 0.f, 0.f };
 	}
 	
-	mpCurrentFrameResource->CopyMainPassCB(0, *mMainPassCB.get());
+	mpCurrentFrameResource->MainPassCB.CopyCB(*mMainPassCB.get());
 
 	return TRUE;
 }
@@ -636,7 +635,7 @@ BOOL DxRenderer::UpdateLightCB() {
 		}
 
 		mLightCB->Lights[i] = *light;
-		mpCurrentFrameResource->CopyLightCB(0, *mLightCB.get());
+		mpCurrentFrameResource->LightCB.CopyCB(*mLightCB.get());
 	}
 
 	return TRUE;
@@ -657,7 +656,7 @@ BOOL DxRenderer::UpdateObjectCB() {
 			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(World));
 			XMStoreFloat4x4(&objCB.TexTransform, XMMatrixTranspose(TexTransform));
 
-			mpCurrentFrameResource->CopyObjectCB(ritem->ObjectCBIndex, objCB);
+			mpCurrentFrameResource->ObjectCB.CopyCB(objCB, ritem->ObjectCBIndex);
 
 			// Next FrameResource need to be updated too.
 			--ritem->NumFramesDirty;
@@ -685,7 +684,7 @@ BOOL DxRenderer::UpdateMaterialCB() {
 			matCB.MetalnessMapIndex = material->MetalnessMapIndex;
 			matCB.SpecularMapIndex = material->SpecularMapIndex;
 
-			mpCurrentFrameResource->CopyMaterialCB(material->MaterialCBIndex, matCB);
+			mpCurrentFrameResource->MaterialCB.CopyCB(matCB, material->MaterialCBIndex);
 
 			--material->NumFramesDirty;
 		}
@@ -752,7 +751,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 		))
 	);
 
-	mpCurrentFrameResource->CopyProjectToCubeCB(*mProjectToCubeCB.get());
+	mpCurrentFrameResource->ProjectToCubeCB.CopyCB(*mProjectToCubeCB.get());
 
 	return TRUE;
 }
@@ -804,7 +803,7 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 
 	aoCB.FrameCount = static_cast<UINT>(mpCurrentFrameResource->mFence);
 
-	mpCurrentFrameResource->CopyAmbientOcclusionCB(aoCB);
+	mpCurrentFrameResource->AmbientOcclusionCB.CopyCB(aoCB);
 
 	return TRUE;
 }
@@ -823,7 +822,7 @@ BOOL DxRenderer::UpdateRayGenCB() {
 	rayGenCB.CheckerboardGenerateRaysForEvenPixels = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
 	rayGenCB.Seed = mpShadingArgumentSet->RTAO.RandomFrameSeed ? mRayGen->Seed() : 1879;
 
-	mpCurrentFrameResource->CopyRayGenCB(rayGenCB);
+	mpCurrentFrameResource->RayGenCB.CopyCB(rayGenCB);
 
 	return TRUE;
 }
@@ -840,7 +839,7 @@ BOOL DxRenderer::UpdateRaySortingCB() {
 	raySortingCB.CheckerboardRayGenEnabled = CheckboardRayGeneration;
 	raySortingCB.CheckerboardGenerateRaysForEvenPixels = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
 
-	mpCurrentFrameResource->CopyRaySortingCB(raySortingCB);
+	mpCurrentFrameResource->RaySortingCB.CopyCB(raySortingCB);
 
 	return TRUE;
 }
@@ -859,7 +858,7 @@ BOOL DxRenderer::UpdateCalcLocalMeanVarianceCB() {
 	localMeanCB.EvenPixelActivated = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
 	localMeanCB.PixelStepY = PixelStepY;
 
-	mpCurrentFrameResource->CopyCalcLocalMeanVarianceCB(localMeanCB);
+	mpCurrentFrameResource->CalcLocalMeanVarianceCB.CopyCB(localMeanCB);
 
 	return TRUE;
 }
@@ -883,7 +882,7 @@ BOOL DxRenderer::UpdateBlendWithCurrentFrameCB() {
 	blendFrameCB.CheckerboardEvenPixelActivated = mpShadingArgumentSet->RaytracingEnabled ?
 		mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels : FALSE;
 
-	mpCurrentFrameResource->CopyBlendWithCurrentFrameCB(blendFrameCB);
+	mpCurrentFrameResource->BlendWithCurrentFrameCB.CopyCB(blendFrameCB);
 
 	return TRUE;
 }
@@ -894,7 +893,7 @@ BOOL DxRenderer::UpdateCrossBilateralFilterCB() {
 	filterCB.DepthNumMantissaBits = Shading::SVGF::NumMantissaBitsInFloatFormat(16);
 	filterCB.DepthSigma = 1.f;
 
-	mpCurrentFrameResource->CopyCrossBilateralFilterCB(filterCB);
+	mpCurrentFrameResource->CrossBilateralFilterCB.CopyCB(filterCB);
 
 	return TRUE;
 }
@@ -929,7 +928,7 @@ BOOL DxRenderer::UpdateAtrousWaveletTransformFilterCB() {
 
 	filterCB.DepthNumMantissaBits = Shading::SVGF::NumMantissaBitsInFloatFormat(16);
 
-	mpCurrentFrameResource->CopyAtrousWaveletTransformFilterCB(filterCB);
+	mpCurrentFrameResource->AtrousWaveletTransformFilterCB.CopyCB(filterCB);
 
 	return TRUE;
 }
@@ -1256,7 +1255,6 @@ BOOL DxRenderer::InitShadingObjects() {
 	// RTAO
 	{
 		auto initData = Shading::RTAO::MakeInitData();
-		initData->ShadingArgumentSet = mpShadingArgumentSet;
 		initData->RaytracingSupported = mbRaytracingSupported;
 		initData->Device = mDevice.get();
 		initData->CommandObject = mCommandObject.get();
@@ -1383,6 +1381,18 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
 		CheckReturn(mpLogFile, mEyeAdaption->Initialize(mpLogFile, initData.get()));
+	}
+	// RaytracedShadow
+	{
+		auto initData = Shading::RaytracedShadow::MakeInitData();
+		initData->RaytracingSupported = mbRaytracingSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		CheckReturn(mpLogFile, mRaytracedShadow->Initialize(mpLogFile, initData.get()));
 	}
 
 	return TRUE;
@@ -1525,6 +1535,29 @@ BOOL DxRenderer::DrawImGui() {
 		mbRaytracingSupported));
 
 	CheckReturn(mpLogFile, mCommandObject->ExecuteCommandList(0));
+
+	return TRUE;
+}
+
+BOOL DxRenderer::DrawShadow() {
+	if (mpShadingArgumentSet->RaytracingEnabled) {
+		CheckReturn(mpLogFile, mRaytracedShadow->CalcShadow(
+			mpCurrentFrameResource,
+			mAccelerationStructureManager->AccelerationStructure(),
+			mGBuffer->PositionMap(),
+			mGBuffer->PositionMapSrv(),
+			mGBuffer->NormalMap(),
+			mGBuffer->NormalMapSrv(),
+			mDepthStencilBuffer->GetDepthStencilBuffer(),
+			mDepthStencilBuffer->DepthStencilBufferSrv()));
+	}
+	else {
+		CheckReturn(mpLogFile, mShadow->Run(
+			mpCurrentFrameResource,
+			mGBuffer->PositionMap(),
+			mGBuffer->PositionMapSrv(),
+			mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque]));
+	}
 
 	return TRUE;
 }

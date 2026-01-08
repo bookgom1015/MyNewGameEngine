@@ -119,6 +119,33 @@ namespace Random {
     uint Random(inout uint state, in uint lower, in uint upper) {
         return lower + uint(float(upper - lower + 1) * Random01(state));
     }
+    
+    // 1) Wang hash (nice finalizer)
+    uint Hash1(in uint x) {
+        x = (x ^ 61u) ^ (x >> 16);
+        x *= 9u;
+        x = x ^ (x >> 4);
+        x *= 0x27d4eb2du;
+        x = x ^ (x >> 15);
+        return x;
+    }
+    
+    // 2) Combine 3D coordinates into one hash
+    uint Hash3D(in uint3 v) {
+        // Mix coordinates with distinct large primes
+        uint h = v.x * 0x8da6b343u;   // primes / odd constants
+        h ^= v.y * 0xd8163841u;
+        h ^= v.z * 0xcb1ab31fu;
+    
+        // Final avalanche
+        return Hash1(h);
+    }
+    
+    // 3) If you want a [0,1) float
+    float Hash3D01(in uint3 v) {
+        // 24-bit mantissa-friendly scale
+        return (Hash3D(v) & 0x00FFFFFFu) / 16777216.0f; // 2^24
+    }
 }
 
 #endif // __RANDOM_HLSLI__

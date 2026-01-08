@@ -35,7 +35,7 @@ BOOL FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 	mForwardSpeed = 0.f;
 	mStrapeSpeed = 0.f;
 
-	mActualWalkSpeed = pInput->Keyboard.KeyValue(VK_LSHIFT) ? mWalkSpeed * 0.1f : mWalkSpeed;
+	mActualWalkSpeed = pInput->Keyboard.KeyValue(VK_LSHIFT) ? mWalkSpeed * 4.f : mWalkSpeed;
 
 	if (pInput->Keyboard.KeyValue(VK_W)) mForwardSpeed += 1.f;
 	if (pInput->Keyboard.KeyValue(VK_S)) mForwardSpeed += -1.f;

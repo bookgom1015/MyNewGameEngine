@@ -35,7 +35,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const Render::DX::Foundation::Light light = cbLight.Lights[lightIndex];
         
         const uint Seed = Random::InitRand(DTid.x + DTid.y * gTextureDimX, gFrameCount ^ (lightIndex * 9781u));
-        const float Noise = Random::Random01(Seed) * 0.5f + 0.25f;
+        const float Noise = lerp(0.75f, 1.25f, Random::Random01(Seed));
         
         const float4 PosW = gi_PositionMap[DTid];
         

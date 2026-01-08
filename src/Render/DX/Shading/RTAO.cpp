@@ -68,8 +68,10 @@ BOOL RTAO::RTAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 BOOL RTAO::RTAOClass::CompileShaders() {
-	const auto Lib = Util::ShaderManager::D3D12ShaderInfo(HLSL_RTAO, L"", L"lib_6_5");
-	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(Lib, mShaderHashes[Shader::Lib_RTAO]));
+	const auto Lib = Util::ShaderManager::D3D12ShaderInfo(
+		HLSL_RTAO, L"", L"lib_6_5");
+	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
+		Lib, mShaderHashes[Shader::Lib_RTAO]));
 
 	return TRUE;
 }
@@ -554,15 +556,24 @@ BOOL RTAO::RTAOClass::DrawAO(
 		pNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pRayDirectionOriginDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-		CmdList->SetComputeRootShaderResourceView(RootSignature::SI_AccelerationStructure, accelStruct);
-		CmdList->SetComputeRootConstantBufferView(RootSignature::CB_AO, pFrameResource->AmbientOcclusionCBAddress());
-		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_PositionMap, si_positionMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_NormalDepthMap, si_normalDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_RayDirectionOriginDepthMap, si_rayDirectionOriginDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::SI_RayIndexOffsetMap, si_rayIndexOffsetMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::UO_AOCoefficientMap, mhAOResourceGpus[RTAO::Descriptor::AO::EU_AOCoefficient]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::UO_RayHitDistanceMap, mhAOResourceGpus[RTAO::Descriptor::AO::EU_RayHitDistance]);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::UO_DebugMap, mhDebugMapGpuUav);
+		CmdList->SetComputeRootShaderResourceView(
+			RootSignature::SI_AccelerationStructure, accelStruct);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::CB_AO, pFrameResource->AmbientOcclusionCB.CBAddress());
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::SI_PositionMap, si_positionMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::SI_NormalDepthMap, si_normalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::SI_RayDirectionOriginDepthMap, si_rayDirectionOriginDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::SI_RayIndexOffsetMap, si_rayIndexOffsetMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::UO_AOCoefficientMap, mhAOResourceGpus[RTAO::Descriptor::AO::EU_AOCoefficient]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::UO_RayHitDistanceMap, mhAOResourceGpus[RTAO::Descriptor::AO::EU_RayHitDistance]);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::UO_DebugMap, mhDebugMapGpuUav);
 
 		D3D12_DISPATCH_RAYS_DESC dispatchDesc = {};
 		const auto& rayGen = mShaderTables[bRaySortingEnabled ? ShaderTable::E_SortedRayGenShader : ShaderTable::E_RayGenShader];

@@ -367,9 +367,12 @@ BOOL VolumetricLight::VolumetricLightClass::ApplyFog(
 
 		CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
 
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::ApplyFog::CB_Pass, pFrameResource->MainPassCBAddress());
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::ApplyFog::SI_PositionMap, si_positionMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::ApplyFog::SI_FrustumVolumeMap, mhFrustumVolumeMapGpus[Descriptor::E_Srv][mCurrentFrame]);
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::ApplyFog::CB_Pass, pFrameResource->MainPassCB.CBAddress());
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::ApplyFog::SI_PositionMap, si_positionMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::ApplyFog::SI_FrustumVolumeMap, mhFrustumVolumeMapGpus[Descriptor::E_Srv][mCurrentFrame]);
 
 		ShadingConvention::VolumetricLight::RootConstant::ApplyFog::Struct rc;
 		rc.gNearZ = nearZ;
@@ -480,9 +483,11 @@ BOOL VolumetricLight::VolumetricLightClass::CalculateScatteringAndDensity(
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mFrustumVolumeMaps[mCurrentFrame].get());
 	
 		CmdList->SetComputeRootConstantBufferView(
-			RootSignature::CalculateScatteringAndDensity::CB_Pass, pFrameResource->MainPassCBAddress());
+			RootSignature::CalculateScatteringAndDensity::CB_Pass, 
+			pFrameResource->MainPassCB.CBAddress());
 		CmdList->SetComputeRootConstantBufferView(
-			RootSignature::CalculateScatteringAndDensity::CB_Light, pFrameResource->LightCBAddress());
+			RootSignature::CalculateScatteringAndDensity::CB_Light, 
+			pFrameResource->LightCB.CBAddress());
 		CmdList->SetComputeRootDescriptorTable(
 			RootSignature::CalculateScatteringAndDensity::SI_ZDepthMaps, si_depthMaps);
 		CmdList->SetComputeRootDescriptorTable(

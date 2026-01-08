@@ -2,10 +2,6 @@
 
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
-namespace Common::Render::ShadingArgument {
-	struct ShadingArgumentSet;
-}
-
 namespace Render::DX::Shading {
 	namespace RTAO {
 		namespace Shader {
@@ -94,7 +90,6 @@ namespace Render::DX::Shading {
 		class RTAOClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet = nullptr;
 				BOOL RaytracingSupported = FALSE;
 				Foundation::Core::Device* Device = nullptr;
 				Foundation::Core::CommandObject* CommandObject = nullptr;
@@ -162,34 +157,34 @@ namespace Render::DX::Shading {
 		private:
 			InitData mInitData;
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			Microsoft::WRL::ComPtr<ID3D12StateObject> mStateObject;
-			Microsoft::WRL::ComPtr<ID3D12StateObjectProperties> mStateObjectProp;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			Microsoft::WRL::ComPtr<ID3D12StateObject> mStateObject{};
+			Microsoft::WRL::ComPtr<ID3D12StateObjectProperties> mStateObjectProp{};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, ShaderTable::Count> mShaderTables;
+			std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, ShaderTable::Count> mShaderTables{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::AO::Count> mAOResources;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceCpus;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceGpus;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::AO::Count> mAOResources{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceCpus{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceGpus{};
 
-			std::array<std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::TemporalCache::Count>, 2> mTemporalCaches;
-			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheCpus;
-			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheGpus;
+			std::array<std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::TemporalCache::Count>, 2> mTemporalCaches{};
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheCpus{};
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheGpus{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mTemporalAOResources;
-			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceCpus;
-			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceGpus;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mTemporalAOResources{};
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceCpus{};
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceGpus{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav{};
 
-			UINT mHitGroupShaderTableStrideInBytes = 0;
+			UINT mHitGroupShaderTableStrideInBytes{};
 
-			UINT mCurrentTemporalCacheFrameIndex = 0;
-			UINT mCurrentTemporalAOFrameIndex = 0;
+			UINT mCurrentTemporalCacheFrameIndex{};
+			UINT mCurrentTemporalAOFrameIndex{};
 		};
 
 		using InitDataPtr = std::unique_ptr<RTAOClass::InitData>;

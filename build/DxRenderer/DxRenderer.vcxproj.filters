@@ -175,6 +175,9 @@
     <Filter Include="Shader Files\EyeAdaption">
       <UniqueIdentifier>{d82b861c-dca0-40be-9746-5bc5232504c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\RaytracedShadow">
+      <UniqueIdentifier>{249e4575-7416-458e-bf86-a3f6e957d9c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -341,6 +344,12 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\LinearAlgebra.h">
       <Filter>Common Files\Acceleration Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\UploadBufferWrapper.hpp">
+      <Filter>Header Files\Foundation\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Shading\RaytracedShadow.hpp">
+      <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -532,6 +541,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Common\AccelerationStructure\BVH.cpp">
       <Filter>Common Files\Acceleration Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\UploadBufferWrapper.cpp">
+      <Filter>Source Files\Foundation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Shading\RaytracedShadow.cpp">
+      <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -826,6 +841,9 @@
     </None>
     <None Include="..\..\inc\Render\DX\Shading\SVGF.inl">
       <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\RaytracedShadow.hlsl">
+      <Filter>Shader Files\RaytracedShadow</Filter>
     </None>
   </ItemGroup>
 </Project>

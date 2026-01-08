@@ -385,7 +385,8 @@ BOOL DOF::DOFClass::CalcFocalDistance(
 			mRootSignatures[RootSignature::GR_CalcFocalDistance].Get());
 
 		CmdList->SetComputeRootConstantBufferView(
-			RootSignature::CalcFocalDistance::CB_Pass, pFrameResource->MainPassCBAddress());
+			RootSignature::CalcFocalDistance::CB_Pass, 
+			pFrameResource->MainPassCB.CBAddress());
 
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
@@ -429,7 +430,8 @@ BOOL DOF::DOFClass::CircleOfConfusion(
 			mRootSignatures[RootSignature::GR_CircleOfConfusion].Get());
 
 		CmdList->SetComputeRootConstantBufferView(
-			RootSignature::CalcFocalDistance::CB_Pass, pFrameResource->MainPassCBAddress());
+			RootSignature::CalcFocalDistance::CB_Pass, 
+			pFrameResource->MainPassCB.CBAddress());
 
 		ShadingConvention::DOF::RootConstant::CircleOfConfusion::Struct rc;
 		rc.gFocusRange = 16.f;

@@ -345,9 +345,9 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 		CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
 
 		CmdList->SetGraphicsRootConstantBufferView(
-			RootSignature::ComputeBRDF::CB_Pass, pFrameResource->MainPassCBAddress());
+			RootSignature::ComputeBRDF::CB_Pass, pFrameResource->MainPassCB.CBAddress());
 		CmdList->SetGraphicsRootConstantBufferView(
-			RootSignature::ComputeBRDF::CB_Light, pFrameResource->LightCBAddress());
+			RootSignature::ComputeBRDF::CB_Light, pFrameResource->LightCB.CBAddress());
 
 		ShadingConvention::BRDF::RootConstant::ComputeBRDF::Struct rc;
 		rc.gShadowEnabled = bShadowEnabled;
@@ -434,7 +434,9 @@ BOOL BRDF::BRDFClass::IntegrateIrradiance(
 
 		CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, nullptr);
 
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::IntegrateIrradiance::CB_Pass, pFrameResource->MainPassCBAddress());
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::IntegrateIrradiance::CB_Pass, 
+			pFrameResource->MainPassCB.CBAddress());
 
 		ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Struct rc;
 		rc.gAoEnabled = bAoEnabled;
@@ -442,19 +444,33 @@ BOOL BRDF::BRDFClass::IntegrateIrradiance(
 		std::array<std::uint32_t, ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Count> consts;
 		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Struct));
 
-		CmdList->SetGraphicsRoot32BitConstants(RootSignature::IntegrateIrradiance::RC_Consts, ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Count, consts.data(), 0);
+		CmdList->SetGraphicsRoot32BitConstants(
+			RootSignature::IntegrateIrradiance::RC_Consts, 
+			ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Count, 
+			consts.data(), 0);
 
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_BackBuffer, si_backBufferCopy);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_AlbedoMap, si_albedoMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_NormalMap, si_normalMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_DepthMap, si_depthMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_SpecularMap, si_specularMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_RoughnessMetalicMap, si_roughnessMetalnessMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_PositionMap, si_positionMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_AOMap, si_aoMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_DiffuseIrradianceCubeMap, si_diffuseIrradianceMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_BrdfLutMap, si_brdfLutMap);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::IntegrateIrradiance::SI_PrefilteredEnvCubeMap, si_prefilteredEnvCubeMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_BackBuffer, si_backBufferCopy);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_AlbedoMap, si_albedoMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_NormalMap, si_normalMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_DepthMap, si_depthMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_SpecularMap, si_specularMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_RoughnessMetalicMap, si_roughnessMetalnessMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_PositionMap, si_positionMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_AOMap, si_aoMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_DiffuseIrradianceCubeMap, si_diffuseIrradianceMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_BrdfLutMap, si_brdfLutMap);
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::IntegrateIrradiance::SI_PrefilteredEnvCubeMap, si_prefilteredEnvCubeMap);
 
 		if (mInitData.MeshShaderSupported) {
 			CmdList->DispatchMesh(1, 1, 1);

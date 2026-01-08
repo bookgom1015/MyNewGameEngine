@@ -31,10 +31,12 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 	go_FrustumVolumeMap.GetDimensions(dims.x, dims.y, dims.z);
 	if (any(DTid >= dims)) return;
 	
-	const float3 Jitter = (Random::HaltonSequence[(gFrameCount + DTid.x + DTid.y * 2) % MAX_HALTON_SEQUENCE] - (float3)0.5f) * 0.25f;
+	const uint Idx = Random::Hash3D(DTid) + gFrameCount;
+	const float Jitter = Random::HaltonSequence[Idx % MAX_HALTON_SEQUENCE].z - 0.5f;
 
-	const float3 NotJitteredPosW = ShaderUtil::ThreadIdToWorldPosition(DTid, dims, gDepthExponent, gNearZ, gFarZ, cbPass.InvView, cbPass.InvProj);
-	const float3 PosW = NotJitteredPosW + Jitter;
+	const float3 PosW = ShaderUtil::ThreadIdToWorldPosition(
+		float3((float2)DTid.xy, (float)DTid.z + Jitter), 
+			dims, gDepthExponent, gNearZ, gFarZ, cbPass.InvView, cbPass.InvProj);
 	const float3 ToEyeW = normalize(cbPass.EyePosW - PosW);
 
 	float3 Li = 0.f; // Ambient lights;

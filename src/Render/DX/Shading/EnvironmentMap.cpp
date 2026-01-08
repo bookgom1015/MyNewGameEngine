@@ -496,15 +496,24 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 
 		CmdList->OMSetRenderTargets(1, &ro_backBuffer, TRUE, &di_depthStencil);
 
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Pass, pFrameResource->MainPassCBAddress());
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::DrawSkySphere::CB_Pass, 
+			pFrameResource->MainPassCB.CBAddress());
 
-		D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(sphere->ObjectCBIndex);
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawSkySphere::CB_Object, ritemObjCBAddress);
-		CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawSkySphere::SI_EnvCubeMap, mhEnvironmentCubeMapGpuSrv);
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::DrawSkySphere::CB_Object, 
+			pFrameResource->ObjectCB.CBAddress(sphere->ObjectCBIndex));
+		CmdList->SetGraphicsRootDescriptorTable(
+			RootSignature::DrawSkySphere::SI_EnvCubeMap, 
+			mhEnvironmentCubeMapGpuSrv);
 
 		if (mInitData.MeshShaderSupported) {
-			CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_VertexBuffer, sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
-			CmdList->SetGraphicsRootShaderResourceView(RootSignature::DrawSkySphere::SI_IndexBuffer, sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
+			CmdList->SetGraphicsRootShaderResourceView(
+				RootSignature::DrawSkySphere::SI_VertexBuffer, 
+				sphere->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
+			CmdList->SetGraphicsRootShaderResourceView(
+				RootSignature::DrawSkySphere::SI_IndexBuffer, 
+				sphere->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
 
 			ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Struct rc;
 			rc.gVertexCount = sphere->Geometry->VertexBufferByteSize / sphere->Geometry->VertexByteStride;
@@ -522,7 +531,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 			const UINT PrimCount = rc.gIndexCount / 3;
 
 			CmdList->DispatchMesh(
-				Foundation::Util::D3D12Util::CeilDivide(PrimCount, ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::ThreadsPerGroup),
+				Foundation::Util::D3D12Util::CeilDivide(
+					PrimCount, 
+					ShadingConvention::EnvironmentMap::ThreadGroup::MeshShader::ThreadsPerGroup),
 				1,
 				1);
 		}
@@ -667,7 +678,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::Generate(
 		CheckReturn(mpLogFile, BuildEnvironmentMapDescriptors(TRUE));
 
 		CheckReturn(mpLogFile, GenerateMipmap(pMipmapGenerator));
-		CheckReturn(mpLogFile, ConvertEquirectangularMapToCubeMap(pEquirectangularConverter, pFrameResource->ProjectToCubeCBAddress()));
+		CheckReturn(mpLogFile, ConvertEquirectangularMapToCubeMap(
+			pEquirectangularConverter, pFrameResource->ProjectToCubeCB.CBAddress()));
 
 		mTasks = static_cast<TaskType>(mTasks | TaskType::E_NeedToSaveEnvCubeMap);
 		WLogln(mpLogFile, L"Generating environment cube-map completed");
@@ -676,7 +688,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::Generate(
 		CheckReturn(mpLogFile, CreateDiffuseIrradianceCubeMap());
 		CheckReturn(mpLogFile, BuildDiffuseIrradianceCubeMapDescriptors(TRUE));
 
-		CheckReturn(mpLogFile, DrawDiffuseIrradianceCubeMap(pFrameResource->ProjectToCubeCBAddress()));
+		CheckReturn(mpLogFile, DrawDiffuseIrradianceCubeMap(
+			pFrameResource->ProjectToCubeCB.CBAddress()));
 
 		mTasks = static_cast<TaskType>(mTasks | TaskType::E_NeedToSaveDiffuseIrradianceCubeMap);
 		WLogln(mpLogFile, L"Generating diffuse irradiance cube-map completed");
@@ -685,7 +698,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::Generate(
 		CheckReturn(mpLogFile, CreatePrefilteredEnvironmentCubeMap());
 		CheckReturn(mpLogFile, BuildPrefilteredEnvironmentCubeMapDescriptors(TRUE));
 
-		CheckReturn(mpLogFile, DrawPrefilteredEnvironmentCubeMap(pFrameResource->ProjectToCubeCBAddress()));
+		CheckReturn(mpLogFile, DrawPrefilteredEnvironmentCubeMap(
+			pFrameResource->ProjectToCubeCB.CBAddress()));
 
 		mTasks = static_cast<TaskType>(mTasks | TaskType::E_NeedToSavePrefilteredEnvCubeMap);
 		WLogln(mpLogFile, L"Generating prefiltered environment cube-map completed");
@@ -694,7 +708,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::Generate(
 		CheckReturn(mpLogFile, CreateBrdfLutMap());
 		CheckReturn(mpLogFile, BuildBrdfLutMapDescriptors(TRUE));
 
-		CheckReturn(mpLogFile, DrawBrdfLutMap(pFrameResource->MainPassCBAddress()));
+		CheckReturn(mpLogFile, DrawBrdfLutMap(pFrameResource->MainPassCB.CBAddress()));
 
 		mTasks = static_cast<TaskType>(mTasks | TaskType::E_NeedToSaveBrdfLutMap);
 		WLogln(mpLogFile, L"Generating BRDF-LUT map completed");

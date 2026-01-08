@@ -76,6 +76,7 @@ namespace Render {
 			namespace Bloom { class BloomClass; }
 			namespace DOF { class DOFClass; }
 			namespace EyeAdaption { class EyeAdaptionClass; }
+			namespace RaytracedShadow { class RaytracedShadowClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {
@@ -155,6 +156,7 @@ namespace Render {
 
 			BOOL DrawImGui();
 
+			BOOL DrawShadow();
 			BOOL ApplyContactShadow();
 			BOOL DrawAO();
 			BOOL IntegrateIrradiance();
@@ -209,6 +211,7 @@ namespace Render {
 			std::unique_ptr<Shading::Bloom::BloomClass> mBloom;
 			std::unique_ptr<Shading::DOF::DOFClass> mDOF;
 			std::unique_ptr<Shading::EyeAdaption::EyeAdaptionClass> mEyeAdaption;
+			std::unique_ptr<Shading::RaytracedShadow::RaytracedShadowClass> mRaytracedShadow;
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;

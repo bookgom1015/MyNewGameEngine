@@ -25,29 +25,36 @@ FitToScreenVertexShader
 FitToScreenMeshShader
 
 HDR_FORMAT PS(in VertexOut pin) : SV_TARGET {    
-    const float2 Velocity = gi_VelocityMap.Sample(gsamPointClamp, pin.TexC);
-    const float3 BackBufferColor = gi_BackBuffer.SampleLevel(gsamPointClamp, pin.TexC, 0).rgb;
+    const float2 Velocity = gi_VelocityMap.Sample(gsamLinearClamp, pin.TexC);
+    const float3 BackBufferColor = gi_BackBuffer.SampleLevel(gsamLinearClamp, pin.TexC, 0).rgb;
     
     if (!ShadingConvention::GBuffer::IsValidVelocity(Velocity)) return float4(BackBufferColor, 1.f);
     
     const float2 PrevTexC = pin.TexC - Velocity;
+    if (any(PrevTexC < 0.f) || any(PrevTexC > 1.f)) return float4(BackBufferColor, 1.f);
 
-    float3 historyColor = gi_HistoryMap.SampleLevel(gsamLinearClamp, PrevTexC, 0).rgb;
+    float3 historyColor = gi_HistoryMap.SampleLevel(gsamPointClamp, PrevTexC, 0).rgb;
+    const float3 Unclamped = historyColor;
         
-    const float2 dx = float2(gInvTexDim.x, 0.f);
-    const float2 dy = float2(0.f, gInvTexDim.y);
+    float3 minC = BackBufferColor;
+    float3 maxC = BackBufferColor;
+    [unroll] for(int oy = -1; oy <= 1; ++oy)
+    [unroll] for(int ox = -1; ox <= 1; ++ox) {
+      const float2 uv = pin.TexC + float2(ox, oy) * gInvTexDim;
+      const float3 c = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(uv), 0).rgb;
+      minC = min(minC, c);
+      maxC = max(maxC, c);
+    }
+    historyColor = clamp(historyColor, minC, maxC);
 
-    const float3 NearColor0 = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(pin.TexC + dx), 0).rgb;
-    const float3 NearColor1 = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(pin.TexC - dx), 0).rgb;
-    const float3 NearColor2 = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(pin.TexC + dy), 0).rgb;
-    const float3 NearColor3 = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(pin.TexC - dy), 0).rgb;
-
-    const float3 MinColor = min(BackBufferColor, min(NearColor0, min(NearColor1, min(NearColor2, NearColor3))));
-    const float3 MaxColor = max(BackBufferColor, max(NearColor0, max(NearColor1, max(NearColor2, NearColor3))));
-
-    historyColor = clamp(historyColor, MinColor, MaxColor);
-
-    const float3 ResolvedColor = BackBufferColor * (1.f - gModulationFactor) + historyColor * gModulationFactor;
+    const float v = length(Velocity); 
+    float w = gModulationFactor;                                                                                                                                                                                                                                                                                            
+    w *= exp2(-v * 2.f);
+                                                                                                                                                                                                                                                                                            
+    const float ClipAmt = length(Unclamped - historyColor);
+    w *= exp2(-ClipAmt * 4.f);
+                                                                                                                                                                                                                                                                                            
+    const float3 ResolvedColor = lerp(BackBufferColor, historyColor, w);
 
     return float4(ResolvedColor, 1.f);
 }

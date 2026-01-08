@@ -11,8 +11,7 @@
 #include <wrl.h>
 #include <Windows.h>
 
-#include "Render/DX/Foundation/ConstantBuffer.h"
-#include "Render/DX/Foundation/Resource/UploadBuffer.hpp"
+#include "Render/DX/Foundation/Util/UploadBufferWrapper.hpp"
 
 namespace Common::Debug {
 	struct LogFile;
@@ -36,44 +35,6 @@ namespace Render::DX::Foundation {
 			__forceinline ID3D12CommandAllocator* CommandAllocator(UINT index) const;
 			__forceinline void CommandAllocators(std::vector<ID3D12CommandAllocator*>& allocs) const;
 
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS MainPassCBAddress() const;
-			UINT MainPassCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS LightCBAddress() const;
-			UINT LightCBByteSize() const;
-			
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ObjectCBAddress() const;
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ObjectCBAddress(UINT index) const;
-			UINT ObjectCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS MaterialCBAddress() const;
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS MaterialCBAddress(UINT index) const;
-			UINT MaterialCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS ProjectToCubeCBAddress() const;
-			UINT ProjectToCubeCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS AmbientOcclusionCBAddress() const;
-			UINT AmbientOcclusionCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS RayGenCBAddress() const;
-			UINT RayGenCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS RaySortingCBAddress() const;
-			UINT RaySortingCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS CrossBilateralFilterCBAddress() const;
-			UINT CrossBilateralFilterCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS CalcLocalMeanVarianceCBAddress() const;
-			UINT CalcLocalMeanVarianceCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS BlendWithCurrentFrameCBAddress() const;
-			UINT BlendWithCurrentFrameCBByteSize() const;
-
-			__forceinline D3D12_GPU_VIRTUAL_ADDRESS AtrousWaveletTransformFilterCBAddress() const;
-			UINT AtrousWaveletTransformFilterCBByteSize() const;
-
 		public:
 			BOOL Initialize(
 				Common::Debug::LogFile* const pLogFile, 
@@ -85,20 +46,6 @@ namespace Render::DX::Foundation {
 
 		public:
 			BOOL ResetCommandListAllocators();
-
-		public:
-			__forceinline void CopyMainPassCB(INT elementIndex, const ConstantBuffers::PassCB& data);
-			__forceinline void CopyLightCB(INT elementIndex, const ConstantBuffers::LightCB& data);
-			__forceinline void CopyObjectCB(INT elementIndex, const ConstantBuffers::ObjectCB& data);
-			__forceinline void CopyMaterialCB(INT elementIndex, const ConstantBuffers::MaterialCB& data);
-			__forceinline void CopyProjectToCubeCB(const ConstantBuffers::ProjectToCubeCB& data);
-			__forceinline void CopyAmbientOcclusionCB(const ConstantBuffers::AmbientOcclusionCB& data);
-			__forceinline void CopyRayGenCB(const ConstantBuffers::RayGenCB& data);
-			__forceinline void CopyRaySortingCB(const ConstantBuffers::RaySortingCB& data);
-			__forceinline void CopyCrossBilateralFilterCB(const ConstantBuffers::SVGF::CrossBilateralFilterCB& data);
-			__forceinline void CopyCalcLocalMeanVarianceCB(const ConstantBuffers::SVGF::CalcLocalMeanVarianceCB& data);
-			__forceinline void CopyBlendWithCurrentFrameCB(const ConstantBuffers::SVGF::BlendWithCurrentFrameCB& data);
-			__forceinline void CopyAtrousWaveletTransformFilterCB(const ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB& data);
 
 		private:
 			BOOL CreateCommandListAllocators();
@@ -118,18 +65,19 @@ namespace Render::DX::Foundation {
 
 			UINT mThreadCount = 0;
 
-			UploadBuffer<ConstantBuffers::PassCB> mMainPassCB;
-			UploadBuffer<ConstantBuffers::LightCB> mLightCB;
-			UploadBuffer<ConstantBuffers::ObjectCB> mObjectCB;
-			UploadBuffer<ConstantBuffers::MaterialCB> mMaterialCB;
-			UploadBuffer<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
-			UploadBuffer<ConstantBuffers::AmbientOcclusionCB> mAmbientOcclusionCB;
-			UploadBuffer<ConstantBuffers::RayGenCB> mRayGenCB;
-			UploadBuffer<ConstantBuffers::RaySortingCB> mRaySortingCB;
-			UploadBuffer<ConstantBuffers::SVGF::CrossBilateralFilterCB> mCrossBilateralFilterCB;
-			UploadBuffer<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> mCalcLocalMeanVarianceCB;
-			UploadBuffer<ConstantBuffers::SVGF::BlendWithCurrentFrameCB> mBlendWithCurrentFrameCB;
-			UploadBuffer<ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB> mAtrousWaveletTransformFilterCB;
+		public:
+			UploadBufferWrapper<ConstantBuffers::PassCB> MainPassCB;
+			UploadBufferWrapper<ConstantBuffers::LightCB> LightCB;
+			UploadBufferWrapper<ConstantBuffers::ObjectCB> ObjectCB;
+			UploadBufferWrapper<ConstantBuffers::MaterialCB> MaterialCB;
+			UploadBufferWrapper<ConstantBuffers::ProjectToCubeCB> ProjectToCubeCB;
+			UploadBufferWrapper<ConstantBuffers::AmbientOcclusionCB> AmbientOcclusionCB;
+			UploadBufferWrapper<ConstantBuffers::RayGenCB> RayGenCB;
+			UploadBufferWrapper<ConstantBuffers::RaySortingCB> RaySortingCB;
+			UploadBufferWrapper<ConstantBuffers::SVGF::CrossBilateralFilterCB> CrossBilateralFilterCB;
+			UploadBufferWrapper<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> CalcLocalMeanVarianceCB;
+			UploadBufferWrapper<ConstantBuffers::SVGF::BlendWithCurrentFrameCB> BlendWithCurrentFrameCB;
+			UploadBufferWrapper<ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB> AtrousWaveletTransformFilterCB;
 		};
 	}
 }

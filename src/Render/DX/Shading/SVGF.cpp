@@ -560,7 +560,7 @@ BOOL SVGF::SVGFClass::CalculateLocalMeanVariance(
 
 		CmdList->SetComputeRootConstantBufferView(
 			RootSignature::CalcLocalMeanVariance::CB_LocalMeanVariance, 
-			pFrameResource->CalcLocalMeanVarianceCBAddress());
+			pFrameResource->CalcLocalMeanVarianceCB.CBAddress());
 		CmdList->SetComputeRootDescriptorTable(
 			RootSignature::CalcLocalMeanVariance::SI_AOCoefficient, si_valueMap);
 		CmdList->SetComputeRootDescriptorTable(
@@ -600,7 +600,7 @@ BOOL SVGF::SVGFClass::FillInCheckerboard(
 
 		CmdList->SetComputeRootConstantBufferView(
 			RootSignature::FillInCheckerboard::CB_LocalMeanVariance, 
-			pFrameResource->CalcLocalMeanVarianceCBAddress());
+			pFrameResource->CalcLocalMeanVarianceCB.CBAddress());
 		CmdList->SetComputeRootDescriptorTable(
 			RootSignature::FillInCheckerboard::UIO_LocalMeanVariance, 
 			mhGpuDecs[Descriptor::LocalMeanVariance::EU_Raw]);
@@ -674,7 +674,7 @@ BOOL SVGF::SVGFClass::ReverseReprojectPreviousFrame(
 
 		CmdList->SetComputeRootConstantBufferView(
 			RootSignature::TemporalSupersamplingReverseReproject::CB_CrossBilateralFilter, 
-			pFrameResource->CrossBilateralFilterCBAddress());
+			pFrameResource->CrossBilateralFilterCB.CBAddress());
 		CmdList->SetComputeRootDescriptorTable(
 			RootSignature::TemporalSupersamplingReverseReproject::SI_NormalDepth, 
 			si_normalDepthMap);
@@ -784,7 +784,7 @@ BOOL SVGF::SVGFClass::BlendWithCurrentFrame(
 		
 		CmdList->SetComputeRootConstantBufferView(
 			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::CB_TSPPBlendWithCurrentFrame, 
-			pFrameResource->BlendWithCurrentFrameCBAddress());
+			pFrameResource->BlendWithCurrentFrameCB.CBAddress());
 		CmdList->SetComputeRootDescriptorTable(
 			RootSignature::TemporalSupersamplingBlendWithCurrentFrame::SI_AOCoefficient, 
 			si_valueMap);
@@ -877,7 +877,7 @@ BOOL SVGF::SVGFClass::ApplyAtrousWaveletTransformFilter(
 		
 		CmdList->SetComputeRootConstantBufferView(
 			RootSignature::AtrousWaveletTransformFilter::CB_AtrousFilter, 
-			pFrameResource->AtrousWaveletTransformFilterCBAddress());
+			pFrameResource->AtrousWaveletTransformFilterCB.CBAddress());
 		CmdList->SetComputeRootDescriptorTable(
 			RootSignature::AtrousWaveletTransformFilter::SI_TemporalValue, 
 			si_temporalValueMap);

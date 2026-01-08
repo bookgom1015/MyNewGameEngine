@@ -446,15 +446,20 @@ BOOL Shadow::ShadowClass::DrawZDepth(
 		CmdList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 		CmdList->OMSetRenderTargets(0, nullptr, FALSE, &dsv);
 
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawZDepth::CB_Light, pFrameResource->LightCBAddress());
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::DrawZDepth::CB_Light, pFrameResource->LightCB.CBAddress());
 
 		ShadingConvention::Shadow::RootConstant::DrawZDepth::Struct rc;
 		rc.gLightIndex = lightIndex;
 
-		std::array<std::uint32_t, ShadingConvention::Shadow::RootConstant::DrawZDepth::Count> consts;
-		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::Shadow::RootConstant::DrawZDepth::Struct));
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::Shadow::RootConstant::DrawZDepth::Struct>(
+			RootSignature::DrawZDepth::RC_Consts,
+			ShadingConvention::Shadow::RootConstant::DrawZDepth::Count,
+			&rc,
+			0,
+			CmdList,
+			FALSE);
 
-		CmdList->SetGraphicsRoot32BitConstants(RootSignature::DrawZDepth::RC_Consts, ShadingConvention::Shadow::RootConstant::DrawZDepth::Count, consts.data(), 0);
 		//CmdList->SetGraphicsRootDescriptorTable(RootSignature::DrawZDepth::SI_Textures, si_textures);
 
 		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems));
@@ -488,27 +493,40 @@ BOOL Shadow::ShadowClass::DrawShadow(
 		mZDepthMaps[lightIndex]->Transite(CmdList, D3D12_RESOURCE_STATE_DEPTH_READ);
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-		CmdList->SetComputeRootConstantBufferView(RootSignature::DrawShadow::CB_Light, pFrameResource->LightCBAddress());
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::DrawShadow::CB_Light, pFrameResource->LightCB.CBAddress());
 
 		ShadingConvention::Shadow::RootConstant::DrawShadow::Struct rc;
 		rc.gLightIndex = lightIndex;
 
-		std::array<std::uint32_t, ShadingConvention::Shadow::RootConstant::DrawShadow::Count> consts;
-		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::Shadow::RootConstant::DrawShadow::Struct));
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::Shadow::RootConstant::DrawShadow::Struct>(
+			RootSignature::DrawShadow::RC_Consts,
+			ShadingConvention::Shadow::RootConstant::DrawShadow::Count,
+			&rc,
+			0,
+			CmdList,
+			TRUE);
 
-		CmdList->SetComputeRoot32BitConstants(RootSignature::DrawShadow::RC_Consts, ShadingConvention::Shadow::RootConstant::DrawShadow::Count, consts.data(), 0);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_PositionMap, si_positionMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::UIO_ShadowMap, mhShadowMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DrawShadow::SI_PositionMap, si_positionMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DrawShadow::UIO_ShadowMap, mhShadowMapGpuUav);
 
 		BOOL NeedCubeMap = RequiresCubeMap(mLights[lightIndex].get());
 
-		if (NeedCubeMap) CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
-		else CmdList->SetComputeRootDescriptorTable(RootSignature::DrawShadow::SI_ZDepthMap, mhZDepthMapGpuSrvs[lightIndex]);
+		if (NeedCubeMap) CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
+		else CmdList->SetComputeRootDescriptorTable(
+			RootSignature::DrawShadow::SI_ZDepthMap, mhZDepthMapGpuSrvs[lightIndex]);
 
 
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.ClientWidth), ShadingConvention::Shadow::ThreadGroup::DrawShadow::Width),
-			Foundation::Util::D3D12Util::CeilDivide(static_cast<UINT>(mInitData.ClientHeight), ShadingConvention::Shadow::ThreadGroup::DrawShadow::Height), 
+			Foundation::Util::D3D12Util::CeilDivide(
+				static_cast<UINT>(mInitData.ClientWidth), 
+				ShadingConvention::Shadow::ThreadGroup::DrawShadow::Width),
+			Foundation::Util::D3D12Util::CeilDivide(
+				static_cast<UINT>(mInitData.ClientHeight), 
+				ShadingConvention::Shadow::ThreadGroup::DrawShadow::Height), 
 			ShadingConvention::Shadow::ThreadGroup::DrawShadow::Depth);
 
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mShadowMap.get());
@@ -530,11 +548,13 @@ BOOL Shadow::ShadowClass::DrawRenderItems(
 		pCmdList->IASetIndexBuffer(&ri->Geometry->IndexBufferView());
 		pCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 
-		const D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(ri->ObjectCBIndex);
-		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawZDepth::CB_Object, ritemObjCBAddress);
+		pCmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::DrawZDepth::CB_Object, 
+			pFrameResource->ObjectCB.CBAddress(ri->ObjectCBIndex));
 
-		const D3D12_GPU_VIRTUAL_ADDRESS ritemMatCBAddress = pFrameResource->MaterialCBAddress(ri->Material->MaterialCBIndex);
-		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::DrawZDepth::CB_Material, ritemMatCBAddress);
+		pCmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::DrawZDepth::CB_Material, 
+			pFrameResource->MaterialCB.CBAddress(ri->Material->MaterialCBIndex));
 
 		pCmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
 	}

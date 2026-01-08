@@ -273,7 +273,9 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 
 		CmdList->OMSetRenderTargets(static_cast<UINT>(renderTargets.size()), renderTargets.data(), TRUE, &do_depthBuffer);
 
-		CmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Pass, pFrameResource->MainPassCBAddress());
+		CmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::Default::CB_Pass, 
+			pFrameResource->MainPassCB.CBAddress());
 
 		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems));
 	}
@@ -561,11 +563,13 @@ BOOL GBuffer::GBufferClass::DrawRenderItems(
 	for (size_t i = 0, end = ritems.size(); i < end; ++i) {
 		const auto ri = ritems[i];
 
-		const D3D12_GPU_VIRTUAL_ADDRESS ritemObjCBAddress = pFrameResource->ObjectCBAddress(ri->ObjectCBIndex);
-		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Object, ritemObjCBAddress);
+		pCmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::Default::CB_Object, 
+			pFrameResource->ObjectCB.CBAddress(ri->ObjectCBIndex));
 		
-		const D3D12_GPU_VIRTUAL_ADDRESS ritemMatCBAddress = pFrameResource->MaterialCBAddress(ri->Material->MaterialCBIndex);
-		pCmdList->SetGraphicsRootConstantBufferView(RootSignature::Default::CB_Material, ritemMatCBAddress);
+		pCmdList->SetGraphicsRootConstantBufferView(
+			RootSignature::Default::CB_Material, 
+			pFrameResource->MaterialCB.CBAddress(ri->Material->MaterialCBIndex));
 
 		if (mInitData.MeshShaderSupported) {
 			pCmdList->SetGraphicsRootShaderResourceView(RootSignature::Default::SI_VertexBuffer, ri->Geometry->VertexBufferGPU->GetGPUVirtualAddress());

@@ -32,9 +32,11 @@ void CS(in uint3 DTid : SV_DispatchThreadID) {
 	for (uint z = 0; z < dims.z; ++z) {
 		pos.z = z;
 		const float4 Slice = gio_FrustumVolumeMap[pos];
-		const float Tickness = VolumetricLight::SliceTickness((float)z / dims.z, gDepthExponent, gNearZ, gFarZ, dims.z);
+		const float Tickness = VolumetricLight::SliceTickness(
+			(float)z / dims.z, gDepthExponent, gNearZ, gFarZ, dims.z);
 
-		accum = VolumetricLight::ScatterStep(accum.rgb, accum.a, Slice.rgb, Slice.a, Tickness, gDensityScale);
+		accum = VolumetricLight::ScatterStep(
+			accum.rgb, accum.a, Slice.rgb, Slice.a, Tickness, gDensityScale);
 
 		gio_FrustumVolumeMap[pos] = accum;
 	}

@@ -203,7 +203,7 @@ namespace ShaderUtil {
     }
     
     
-    float3 ThreadIdToNdc(in uint3 DTid, in uint3 dims) {
+    float3 ThreadIdToNdc(in float3 DTid, in uint3 dims) {
     	float3 ndc = DTid;
     	ndc += 0.5f;
     	ndc *= float3(2.f / dims.x, -2.f / dims.y, 1.f / dims.z);
@@ -220,7 +220,14 @@ namespace ShaderUtil {
     	return PosW.xyz;
     }
     
-    float3 ThreadIdToWorldPosition(in uint3 DTid, in uint3 dims, in float z_exp, in float near, in float far, in float4x4 invView, in float4x4 invProj) {
+    float3 ThreadIdToWorldPosition(
+            in float3 DTid, 
+            in uint3 dims, 
+            in float z_exp, 
+            in float near, 
+            in float far, 
+            in float4x4 invView, 
+            in float4x4 invProj) {
     	const float3 Ndc = ThreadIdToNdc(DTid, dims);
     	const float DepthVS = NdcDepthToExpViewDepth(Ndc.z, z_exp, near, far);
     	return NdcToWorldPosition(Ndc, DepthVS, invView, invProj);

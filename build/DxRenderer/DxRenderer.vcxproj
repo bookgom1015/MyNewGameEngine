@@ -41,6 +41,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingConvention.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Util\UploadBufferWrapper.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Bloom.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\BlurFilter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\BRDF.hpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\MotionBlur.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RayGen.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RaySorting.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\RaytracedShadow.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\RTAO.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\Shadow.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\SSAO.hpp" />
@@ -106,6 +108,7 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\Texture.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Util\D3D12Util.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Util\UploadBufferWrapper.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Bloom.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\BlurFilter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\BRDF.cpp" />
@@ -117,6 +120,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\MotionBlur.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RayGen.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RaySorting.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\RaytracedShadow.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\RTAO.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\Shadow.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\SSAO.cpp" />
@@ -415,6 +419,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\TemporalSmoothing.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\RaytracedShadow.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

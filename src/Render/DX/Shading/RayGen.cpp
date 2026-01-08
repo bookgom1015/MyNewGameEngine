@@ -199,7 +199,9 @@ BOOL RayGen::RayGenClass::GenerateRays(
 	{
 		CmdList->SetComputeRootSignature(mRootSignature.Get());
 	
-		CmdList->SetComputeRootConstantBufferView(RootSignature::Default::CB_RayGen, pFrameResource->RayGenCBAddress());
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::Default::CB_RayGen, 
+			pFrameResource->RayGenCB.CBAddress());
 	
 		pNormalDepthMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -210,11 +212,18 @@ BOOL RayGen::RayGenClass::GenerateRays(
 		mDebugMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mDebugMap.get());		
 	
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_NormalDepthMap, si_normalDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_PositionMap, si_positionMap);
-		CmdList->SetComputeRootShaderResourceView(RootSignature::Default::SB_SampleSets, mHemisphereSamplesGPUBuffer.GpuVirtualAddress(0, 0));
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_RayDirectionOriginDepthMap, mhRayDirectionOriginDepthMapGpuUav);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_DebugMap, mhDebugMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::Default::SI_NormalDepthMap, si_normalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::Default::SI_PositionMap, si_positionMap);
+		CmdList->SetComputeRootShaderResourceView(
+			RootSignature::Default::SB_SampleSets, 
+			mHemisphereSamplesGPUBuffer.GpuVirtualAddress(0, 0));
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::Default::UO_RayDirectionOriginDepthMap, 
+			mhRayDirectionOriginDepthMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::Default::UO_DebugMap, mhDebugMapGpuUav);
 
 		const UINT ActvieWidth = 
 			bCheckboardRayGeneration ? 

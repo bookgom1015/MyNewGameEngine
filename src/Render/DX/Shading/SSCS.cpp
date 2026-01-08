@@ -210,9 +210,11 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_ComputeContactShadow].Get());
 
 		CmdList->SetComputeRootConstantBufferView(
-			RootSignature::ComputeContactShadow::CB_Pass, pFrameResource->MainPassCBAddress());
+			RootSignature::ComputeContactShadow::CB_Pass, 
+			pFrameResource->MainPassCB.CBAddress());
 		CmdList->SetComputeRootConstantBufferView(
-			RootSignature::ComputeContactShadow::CB_Light, pFrameResource->LightCBAddress());
+			RootSignature::ComputeContactShadow::CB_Light, 
+			pFrameResource->LightCB.CBAddress());
 
 		ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Struct rc;
 		rc.gMaxSteps = maxSteps;

@@ -136,10 +136,14 @@ BOOL RaySorting::RaySortingClass::CalcRayIndexOffset(
 		mRayIndexOffsetMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mRayIndexOffsetMap.get());
 
-		CmdList->SetComputeRootConstantBufferView(RootSignature::Default::CB_RaySorting, pFrameResource->RaySortingCBAddress());	
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::Default::CB_RaySorting, 
+			pFrameResource->RaySortingCB.CBAddress());	
 		
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::SI_NormalDepthMap, si_normalDepthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::Default::UO_RayIndexOffsetMap, mhRayIndexOffsetMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::Default::SI_NormalDepthMap, si_normalDepthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::Default::UO_RayIndexOffsetMap, mhRayIndexOffsetMapGpuUav);
 		
 		const UINT ActvieWidth =
 			mInitData.ShadingArgumentSet->RTAO.CheckboardRayGeneration ?
@@ -147,8 +151,10 @@ BOOL RaySorting::RaySortingClass::CalcRayIndexOffset(
 			: mInitData.ClientWidth;
 
 		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(ActvieWidth, ShadingConvention::RaySorting::RayGroup::Width),
-			Foundation::Util::D3D12Util::CeilDivide(mInitData.ClientHeight, ShadingConvention::RaySorting::RayGroup::Height),
+			Foundation::Util::D3D12Util::CeilDivide(
+				ActvieWidth, ShadingConvention::RaySorting::RayGroup::Width),
+			Foundation::Util::D3D12Util::CeilDivide(
+				mInitData.ClientHeight, ShadingConvention::RaySorting::RayGroup::Height),
 			ShadingConvention::RaySorting::RayGroup::Depth);
 		
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mRayIndexOffsetMap.get());

@@ -173,4 +173,26 @@ namespace ConstantBuffers {
 			FLOAT				FovY;
 		};
 	}
+
+	struct ContactShadowCB {
+		UINT TextureDimX;
+		UINT FrameCount;
+		UINT __ConstantPad0__;
+		UINT __ConstantPad1__;
+
+		FLOAT BiasBase;
+		FLOAT BiasSlope;
+		FLOAT DepthEpsilonBase;
+		FLOAT DepthEpsilonScale;
+
+		FLOAT StepScaleFar;
+		FLOAT StepScaleFarDist;
+		FLOAT RayMaxDistance;
+		FLOAT Thickness;
+
+		FLOAT ThicknessBase;;
+		FLOAT ThicknessFarScale;
+		FLOAT ThicknessFarDist;
+		FLOAT __ConstantPad2__;
+	};
 }
