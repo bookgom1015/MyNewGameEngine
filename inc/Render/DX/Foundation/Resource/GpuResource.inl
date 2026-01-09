@@ -5,7 +5,7 @@ void Render::DX::Foundation::Resource::GpuResource::Reset() {
 	mResource.Reset();
 }
 
-ID3D12Resource* const Render::DX::Foundation::Resource::GpuResource::Resource() const {
+ID3D12Resource* Render::DX::Foundation::Resource::GpuResource::Resource() const noexcept {
 	return mResource.Get();
 }
 

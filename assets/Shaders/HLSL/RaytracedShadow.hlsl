@@ -31,7 +31,7 @@ RWTexture2D<ShadingConvention::Shadow::ShadowMapFormat>				go_ShadowMap   : regi
 void RaytracedShadow_RayGen() {
 	const uint2 LaunchIndex = DispatchRaysIndex().xy;
 
-	const float3 NormalW = gi_NormalMap[LaunchIndex].xyz;
+	const float3 NormalW = normalize(gi_NormalMap[LaunchIndex].xyz);
 	const float Depth = gi_DepthMap[LaunchIndex];
 
 	uint value = 0;
@@ -45,7 +45,7 @@ void RaytracedShadow_RayGen() {
 
 			if (light.Type == Common::Render::LightType::E_Directional) {
 				RayDesc ray;
-				ray.Origin = PosW + 0.1f * NormalW;
+				ray.Origin = PosW + 0.01f * NormalW;
 				ray.Direction = -light.Direction;
 				ray.TMin = 0.f;
 				ray.TMax = 1000.f;
@@ -72,7 +72,7 @@ void RaytracedShadow_RayGen() {
 				const float Dist = distance(PosW, light.Position);
 
 				RayDesc ray;
-				ray.Origin = PosW + 0.1f * Direction;
+				ray.Origin = PosW + 0.01f * NormalW;
 				ray.Direction = Direction;
 				ray.TMin = 0.f;
 				ray.TMax = Dist;

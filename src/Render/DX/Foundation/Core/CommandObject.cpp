@@ -12,9 +12,11 @@ namespace {
 			D3D12_MESSAGE_ID id,
 			LPCSTR pDescription,
 			void* pContext) {
+		if (!pDescription) return;
+
 		std::string str(pDescription);
 
-		std::string sevStr;
+		const char* sevStr = nullptr;
 		switch (severity) {
 		case D3D12_MESSAGE_SEVERITY_CORRUPTION:
 			sevStr = "Corruption";
@@ -34,11 +36,11 @@ namespace {
 			break;
 		}
 
-		std::stringstream sstream;
-		sstream << '[' << sevStr << "] " << pDescription;
+		char buf[2048];
+		_snprintf_s(buf, _TRUNCATE, "[%s] %s", sevStr, pDescription);
 
-		const auto pLogFile = reinterpret_cast<Common::Debug::LogFile*>(pContext);
-		Logln(pLogFile, sstream.str());
+		auto* pLogFile = reinterpret_cast<Common::Debug::LogFile*>(pContext);
+		Logln(pLogFile, buf);
 	}
 }
 

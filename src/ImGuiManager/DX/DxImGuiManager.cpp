@@ -598,6 +598,12 @@ void DxImGuiManager::SSCSTree(
 			pArgSet->SSCS.MinStep, 
 			pArgSet->SSCS.MaxStep);
 
+		ImGui::Text("Thickness");
+		ImGui::SliderFloat("##Thickness",
+			&pArgSet->SSCS.Thcikness,
+			pArgSet->SSCS.MinThcikness,
+			pArgSet->SSCS.MaxThcikness);
+
 		ImGui::Text("Bias Base");
 		ImGui::SliderFloat("##Bias Base",
 			&pArgSet->SSCS.BiasBase,
@@ -621,6 +627,30 @@ void DxImGuiManager::SSCSTree(
 			&pArgSet->SSCS.DepthEpsilonScale,
 			pArgSet->SSCS.MinDepthEpsilonScale,
 			pArgSet->SSCS.MaxDepthEpsilonScale);
+
+		ImGui::Text("Max Step Scale Far");
+		ImGui::SliderFloat("##Max Step Scale Far",
+			&pArgSet->SSCS.StepScaleFar,
+			pArgSet->SSCS.MinStepScaleFar,
+			pArgSet->SSCS.MaxStepScaleFar);
+
+		ImGui::Text("Max Step Scale Far Dist");
+		ImGui::SliderFloat("##Max Step Scale Far Dist",
+			&pArgSet->SSCS.StepScaleFarDist,
+			pArgSet->SSCS.MinStepScaleFarDist,
+			pArgSet->SSCS.MaxStepScaleFarDist);
+
+		ImGui::Text("Max Thickness Far Scale");
+		ImGui::SliderFloat("##Max Thickness Far Scale",
+			&pArgSet->SSCS.ThicknessFarScale,
+			pArgSet->SSCS.MinThicknessFarScale,
+			pArgSet->SSCS.MaxThicknessFarScale);
+
+		ImGui::Text("Max Thickness Far Dist");
+		ImGui::SliderFloat("##Max Thickness Far Dist",
+			&pArgSet->SSCS.ThicknessFarDist,
+			pArgSet->SSCS.MinThicknessFarDist,
+			pArgSet->SSCS.MaxThicknessFarDist);
 
 		ImGui::TreePop();
 	}

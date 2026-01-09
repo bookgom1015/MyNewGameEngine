@@ -54,6 +54,7 @@ BOOL FrameResource::BuildConstantBuffres(
 	CheckReturn(mpLogFile, CalcLocalMeanVarianceCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
 	CheckReturn(mpLogFile, BlendWithCurrentFrameCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
 	CheckReturn(mpLogFile, AtrousWaveletTransformFilterCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
+	CheckReturn(mpLogFile, ContactShadowCB.Initialize(mpLogFile, mpDevice, 1, 1, TRUE));
 
 	return TRUE;
 }

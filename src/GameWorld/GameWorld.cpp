@@ -33,7 +33,7 @@ namespace {
 	typedef void (*DestroyImGuiManagerFunc)(Common::ImGuiManager::ImGuiManager*);
 }
 
-GameWorldClass* GameWorldClass::spGameWorld = nullptr;
+GameWorldClass* GameWorldClass::spGameWorld{};
 
 GameWorldClass::GameWorldClass() {
 	spGameWorld = this;
@@ -185,7 +185,8 @@ BOOL GameWorldClass::CreateImGuiManager() {
 	DestroyImGuiManagerFunc destroyFunc = (DestroyImGuiManagerFunc)GetProcAddress(hInputDLL, "DestroyImGuiManager");
 	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find ImGuiManager.dll functions");
 
-	mImGuiManager = std::unique_ptr<Common::ImGuiManager::ImGuiManager>(createFunc());
+	mImGuiManager = std::unique_ptr<Common::ImGuiManager::ImGuiManager, 
+		ImGuiManagerDeleter>(createFunc(), destroyFunc);
 	CheckReturn(mpLogFile, mImGuiManager->Initialize(mpLogFile, mWindowsManager->MainWindowHandle()));
 
 	return TRUE;
@@ -199,7 +200,8 @@ BOOL GameWorldClass::CreateRenderer() {
 	DestroyRendererFunc destroyFunc = (DestroyRendererFunc)GetProcAddress(hRendererDLL, "DestroyRenderer");
 	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
 
-	mRenderer = std::unique_ptr<Common::Render::Renderer>(createFunc());
+	mRenderer = std::unique_ptr<Common::Render::Renderer, RendererDeleter>(
+		createFunc(), destroyFunc);
 	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager.get(), mImGuiManager.get(), mArgumentSet.get(), InitClientWidth, InitClientHeight));
 
 	return TRUE;
@@ -213,7 +215,8 @@ BOOL GameWorldClass::CreateInputProcessor() {
 	DestroyInputProcessorFunc destroyFunc = (DestroyInputProcessorFunc)GetProcAddress(hInputDLL, "DestroyInputProcessor");
 	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find InputProcessor.dll functions");
 
-	mInputProcessor = std::unique_ptr<Common::Input::InputProcessor>(createFunc());
+	mInputProcessor = std::unique_ptr<Common::Input::InputProcessor, 
+		InputProcessorDeleter>(createFunc(), destroyFunc);
 	CheckReturn(mpLogFile, mInputProcessor->Initialize(mpLogFile));
 
 	return TRUE;

@@ -12,6 +12,9 @@
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
+// Cascase Shadow
+// https://scahp.tistory.com/39
+
 using namespace Render::DX::Shading;
 
 namespace {

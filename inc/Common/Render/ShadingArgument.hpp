@@ -160,26 +160,45 @@ namespace Common::Render {
 
 			const std::uint32_t MaxStep = 32;
 			const std::uint32_t MinStep = 8;
-			std::uint32_t Steps = 16;
+			std::uint32_t Steps = 8;
 
 			float RayMaxDistance = 0.3f;
-			float Thcikness = 0.02f;
+
+			const float MaxThcikness = 0.015f;
+			const float MinThcikness = 0.008f;
+			float Thcikness = 0.01f;
 
 			const float MaxBiasBase = 0.01f;
 			const float MinBiasBase = 0.002f;
-			float BiasBase = 0.002f;
+			float BiasBase = 0.003f;
 
-			const float MaxBiasSlope = 0.05f;
+			const float MaxBiasSlope = 0.1f;
 			const float MinBiasSlope = 0.01f;
-			float BiasSlope = 0.01f;
+			float BiasSlope = 0.022f;
 
 			const float MaxDepthEpsilonBase = 0.01f;
 			const float MinDepthEpsilonBase = 0.001f;
-			float DepthEpsilonBase = 0.005f;
+			float DepthEpsilonBase = 0.002f;
 
-			const float MaxDepthEpsilonScale = 0.01f;
+			const float MaxDepthEpsilonScale = 0.02f;
 			const float MinDepthEpsilonScale = 0.001f;
-			float DepthEpsilonScale = 0.005f;
+			float DepthEpsilonScale = 0.009f;
+
+			const float MaxStepScaleFar = 2.5f;
+			const float MinStepScaleFar = 1.5f;
+			float StepScaleFar = 2.f;
+
+			const float MaxStepScaleFarDist = 60.f;
+			const float MinStepScaleFarDist = 20.f;
+			float StepScaleFarDist = 40.f;
+
+			const float MaxThicknessFarScale = 1.5f;
+			const float MinThicknessFarScale = 3.f;
+			float ThicknessFarScale = 2.f;
+
+			const float MaxThicknessFarDist = 60.f;
+			const float MinThicknessFarDist = 20.f;
+			float ThicknessFarDist = 40.f;
 		};
 
 		struct MotionBlurArguments {

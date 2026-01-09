@@ -85,7 +85,7 @@ BOOL Bloom::BloomClass::BuildRootSignatures() {
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ExtractHighlights::Count] = {};
 		slotRootParameter[RootSignature::ExtractHighlights::RC_Consts].InitAsConstants(
-			ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count, 0);
+			ShadingConvention::Bloom::RootConstant::ExtractHighlights::Count, 0);
 		slotRootParameter[RootSignature::ExtractHighlights::UIO_HighlightMap].InitAsDescriptorTable(1, &texTables[index++]);
 		
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
@@ -109,7 +109,7 @@ BOOL Bloom::BloomClass::BuildRootSignatures() {
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BlendBloomWithDownSampled::Count] = {};
 		slotRootParameter[RootSignature::BlendBloomWithDownSampled::RC_Consts].InitAsConstants(
-			ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count, 0);
+			ShadingConvention::Bloom::RootConstant::BlendBloomWithDownSampled::Count, 0);
 		slotRootParameter[RootSignature::BlendBloomWithDownSampled::SI_LowerScaleMap].InitAsDescriptorTable(
 			1, &texTables[index++]);
 		slotRootParameter[RootSignature::BlendBloomWithDownSampled::UIO_HigherScaleMap].InitAsDescriptorTable(

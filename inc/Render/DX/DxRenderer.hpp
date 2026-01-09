@@ -122,6 +122,7 @@ namespace Render {
 			BOOL UpdateBlendWithCurrentFrameCB();
 			BOOL UpdateCrossBilateralFilterCB();
 			BOOL UpdateAtrousWaveletTransformFilterCB();
+			BOOL UpdateContactShadowCB();
 			BOOL ResolvePendingLights();
 			BOOL PopulateRendableItems();
 

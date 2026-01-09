@@ -26,43 +26,47 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	CreateDebuggingConsole();
 #endif
 
-	std::unique_ptr<Common::Debug::LogFile> LogFile = std::make_unique<Common::Debug::LogFile>();
-	const auto logFile = LogFile.get();
+	{
+		int* arr = new int[10];
 
-	if (!Common::Debug::Logger::Initialize(logFile, L"./log.txt")) return -1;
+		std::unique_ptr<Common::Debug::LogFile> LogFile = std::make_unique<Common::Debug::LogFile>();
+		const auto logFile = LogFile.get();
 
-	try {
-		GameWorld::GameWorldClass gw;
+		if (!Common::Debug::Logger::Initialize(logFile, L"./log.txt")) return -1;
 
-		if (!gw.Initialize(logFile, hInstance)) {
-			WLogln(logFile, L"Failed to initialize game");
+		try {
+			GameWorld::GameWorldClass gw;
+
+			if (!gw.Initialize(logFile, hInstance)) {
+				WLogln(logFile, L"Failed to initialize game");
+#ifdef _DEBUG
+				DestroyDebuggingConsole(TRUE);
+#endif
+				return -1;
+			}
+			if (!gw.RunLoop()) {
+				WLogln(logFile, L"Game-loop broke");
+#ifdef _DEBUG
+				DestroyDebuggingConsole(TRUE);
+#endif
+				return -1;
+			}
+		}
+		catch (std::exception& e) {
+			Logln(logFile, "Catched exception: ", e.what());
+
 #ifdef _DEBUG
 			DestroyDebuggingConsole(TRUE);
 #endif
 			return -1;
 		}
-		if (!gw.RunLoop()) {
-			WLogln(logFile, L"Game-loop broke");
-#ifdef _DEBUG
-			DestroyDebuggingConsole(TRUE);
-#endif
-			return -1;
-		}
-	}
-	catch (std::exception& e) {
-		Logln(logFile, "Catched exception: ", e.what());
 
-#ifdef _DEBUG
-		DestroyDebuggingConsole(TRUE);
-#endif
-		return -1;
+		WLogln(logFile, L"The game has successfully cleaned up");
 	}
 
 #ifdef _DEBUG
 	DestroyDebuggingConsole();
 #endif
-
-	WLogln(logFile, L"The game has successfully cleaned up");
 
 	return 0;
 }

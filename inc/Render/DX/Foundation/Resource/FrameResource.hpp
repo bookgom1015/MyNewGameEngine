@@ -78,6 +78,7 @@ namespace Render::DX::Foundation {
 			UploadBufferWrapper<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> CalcLocalMeanVarianceCB;
 			UploadBufferWrapper<ConstantBuffers::SVGF::BlendWithCurrentFrameCB> BlendWithCurrentFrameCB;
 			UploadBufferWrapper<ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB> AtrousWaveletTransformFilterCB;
+			UploadBufferWrapper<ConstantBuffers::ContactShadowCB> ContactShadowCB;
 		};
 	}
 }

@@ -50,6 +50,10 @@ namespace GameWorld {
 	}
 
 	class GameWorldClass {
+		using ImGuiManagerDeleter = void(*)(Common::ImGuiManager::ImGuiManager*);
+		using RendererDeleter = void(*)(Common::Render::Renderer*);
+		using InputProcessorDeleter = void(*)(Common::Input::InputProcessor*);
+
 	private:
 		enum ProcessingStage {
 			E_InputReady,
@@ -96,36 +100,36 @@ namespace GameWorld {
 		static GameWorldClass* spGameWorld;
 
 	private:
-		BOOL bInitialized = FALSE;
+		BOOL bInitialized{};
 
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
 
 		// Multi-threading variables
-		std::mutex mStageMutex;
+		std::mutex mStageMutex{};
 		ProcessingStage mStage = ProcessingStage::E_DrawFinished;
 
-		std::condition_variable mInputCV;
-		std::condition_variable mUpdateCV;
-		std::condition_variable mDrawCV;
+		std::condition_variable mInputCV{};
+		std::condition_variable mUpdateCV{};
+		std::condition_variable mDrawCV{};
 
 		// Windows
-		std::unique_ptr<Common::Foundation::Core::WindowsManager> mWindowsManager;
+		std::unique_ptr<Common::Foundation::Core::WindowsManager> mWindowsManager{};
 
 		// Actor manager
-		std::unique_ptr<GameWorld::Foundation::Core::ActorManager> mActorManager;
+		std::unique_ptr<GameWorld::Foundation::Core::ActorManager> mActorManager{};
 
 		// Renderer
-		std::unique_ptr<Common::Render::Renderer> mRenderer;
-		std::unique_ptr<Common::Render::ShadingArgument::ShadingArgumentSet> mArgumentSet;
+		std::unique_ptr<Common::Render::Renderer, RendererDeleter> mRenderer{ nullptr, nullptr };
+		std::unique_ptr<Common::Render::ShadingArgument::ShadingArgumentSet> mArgumentSet{};
 
 		// Timer
-		std::unique_ptr<Common::Foundation::Core::GameTimer> mGameTimer;
+		std::unique_ptr<Common::Foundation::Core::GameTimer> mGameTimer{};
 
 		// Input processor
-		std::unique_ptr<Common::Input::InputProcessor> mInputProcessor;
+		std::unique_ptr<Common::Input::InputProcessor, InputProcessorDeleter> mInputProcessor{ nullptr, nullptr };
 
 		// ImGui manager
-		std::unique_ptr<Common::ImGuiManager::ImGuiManager> mImGuiManager;
+		std::unique_ptr<Common::ImGuiManager::ImGuiManager, ImGuiManagerDeleter> mImGuiManager{ nullptr, nullptr };
 	};
 }
 

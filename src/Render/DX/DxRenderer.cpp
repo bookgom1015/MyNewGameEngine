@@ -451,6 +451,7 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 	CheckReturn(mpLogFile, UpdateBlendWithCurrentFrameCB());
 	CheckReturn(mpLogFile, UpdateCrossBilateralFilterCB());
 	CheckReturn(mpLogFile, UpdateAtrousWaveletTransformFilterCB());
+	CheckReturn(mpLogFile, UpdateContactShadowCB());
 
 	return TRUE;
 }
@@ -929,6 +930,33 @@ BOOL DxRenderer::UpdateAtrousWaveletTransformFilterCB() {
 	filterCB.DepthNumMantissaBits = Shading::SVGF::NumMantissaBitsInFloatFormat(16);
 
 	mpCurrentFrameResource->AtrousWaveletTransformFilterCB.CopyCB(filterCB);
+
+	return TRUE;
+}
+
+BOOL DxRenderer::UpdateContactShadowCB() {
+	static UINT frame = 0;
+
+	ConstantBuffers::ContactShadowCB csCB{};
+
+	csCB.BiasBase = mpShadingArgumentSet->SSCS.BiasBase;
+	csCB.BiasSlope = mpShadingArgumentSet->SSCS.BiasSlope;
+	csCB.DepthEpsilonBase = mpShadingArgumentSet->SSCS.DepthEpsilonBase;
+	csCB.DepthEpsilonScale = mpShadingArgumentSet->SSCS.DepthEpsilonScale;
+
+	csCB.StepScaleFar = mpShadingArgumentSet->SSCS.StepScaleFar;
+	csCB.StepScaleFarDist = mpShadingArgumentSet->SSCS.StepScaleFarDist;
+	csCB.RayMaxDistance = mpShadingArgumentSet->SSCS.RayMaxDistance;
+
+	csCB.Thickness = mpShadingArgumentSet->SSCS.Thcikness;
+	csCB.ThicknessFarScale = mpShadingArgumentSet->SSCS.ThicknessFarScale;
+	csCB.StepScaleFarDist = mpShadingArgumentSet->SSCS.ThicknessFarDist;
+
+	csCB.TextureDimX = mClientWidth;
+	csCB.MaxSteps = mpShadingArgumentSet->SSCS.Steps;
+	csCB.FrameCount = frame++;
+
+	mpCurrentFrameResource->ContactShadowCB.CopyCB(csCB);
 
 	return TRUE;
 }
@@ -1570,14 +1598,7 @@ BOOL DxRenderer::ApplyContactShadow() {
 		mGBuffer->NormalMap(),
 		mGBuffer->NormalMapSrv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
-		mDepthStencilBuffer->DepthStencilBufferSrv(),
-		mpShadingArgumentSet->SSCS.Steps,
-		mpShadingArgumentSet->SSCS.RayMaxDistance,
-		mpShadingArgumentSet->SSCS.Thcikness,
-		mpShadingArgumentSet->SSCS.BiasBase,
-		mpShadingArgumentSet->SSCS.BiasSlope,
-		mpShadingArgumentSet->SSCS.DepthEpsilonBase,
-		mpShadingArgumentSet->SSCS.DepthEpsilonScale));
+		mDepthStencilBuffer->DepthStencilBufferSrv()));
 
 	CheckReturn(mpLogFile, mSSCS->ApplyContactShadow(
 		mpCurrentFrameResource,

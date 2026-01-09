@@ -33,14 +33,51 @@ FitToScreenVertexShader
 
 FitToScreenMeshShader
 
+void CalcShadowFactorsPCF3x3(out float shadowFactors[MaxLights], float2 texc) {    
+    if (cbLight.LightCount == 0) return;
+    
+    uint2 size;
+    gi_ShadowMap.GetDimensions(size.x, size.y);    
+
+    float sum[MaxLights];
+    [unroll]
+    for (uint i = 0; i < MaxLights; ++i) sum[i] = 0.f;
+
+    const float2 Pixel = texc * size;
+    const int2 BasePixel = (int2)floor(Pixel + 0.5f);
+
+    const int Radius = 2;
+    const int Diameter = (2 * Radius) + 1;
+    const float invCount = 1.0f / (Diameter * Diameter);
+
+    [loop]
+    for (int dy = -Radius; dy <= Radius; ++dy) {
+        [loop]
+        for (int dx = -Radius; dx <= Radius; ++dx) {
+            int2 tap = BasePixel + int2(dx, dy);
+            tap = clamp(tap, int2(0, 0), int2((int)size.x - 1, (int)size.y - 1));
+
+            const uint Value = gi_ShadowMap.Load(uint3((uint2)tap, 0));
+
+            [loop]
+            for (uint i = 0; i < cbLight.LightCount; ++i)
+                sum[i] += Shadow::GetShiftedShadowValue(Value, i);
+        }
+    }
+
+    [loop]
+    for (uint i = 0; i < cbLight.LightCount; ++i)
+        shadowFactors[i] = sum[i] * invCount;
+}
+    
 void CalcShadowFactors(out float shadowFactors[MaxLights], float2 texc) {    
     uint2 size;
     gi_ShadowMap.GetDimensions(size.x, size.y);
     
-    const uint2 Index = min((uint2)(texc * size + 0.5f), size - 1);
+    const uint2 Index = min((uint2)(texc * size + 0.5f), size - 1);                                                                                                                                                                                                                                                                                            
     const uint Value = gi_ShadowMap.Load(uint3(Index, 0));
     
-		[loop]
+	[loop]
     for (uint i = 0; i < cbLight.LightCount; ++i) {
         shadowFactors[i] = Shadow::GetShiftedShadowValue(Value, i);
     }
@@ -66,7 +103,7 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
         shadowFactors[i] = 1;
     }
     if (gShadowEnabled) {
-        CalcShadowFactors(shadowFactors, pin.TexC);
+        CalcShadowFactorsPCF3x3(shadowFactors, pin.TexC);
     }
 
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);

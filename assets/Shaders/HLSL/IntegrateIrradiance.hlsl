@@ -84,10 +84,10 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
         const float AOValue = gi_AOMap.SampleLevel(gsamLinearClamp, pin.TexC, 0);
         if (AOValue != ShadingConvention::SSAO::InvalidAOValue) ao = AOValue;
     }
-    
+                                                                                                                                                                                                                                                                                            
     const float3 DiffuseIrradiance = gi_DiffuseIrradianceCubeEnv.SampleLevel(gsamLinearClamp, NormalW, 0).rgb;
     const float3 AmbientDiffuse = kD * Albedo.rgb * DiffuseIrradiance * ao;
-    const float3 AmbientSpecular = SpecularBias * SpecularIrradiance;
+    const float3 AmbientSpecular = SpecularBias * SpecularIrradiance * ao;
     const float3 AmbientLight = AmbientDiffuse + AmbientSpecular;
 
     return float4(Radiance + AmbientLight, 1.f);

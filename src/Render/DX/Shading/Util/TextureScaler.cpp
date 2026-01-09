@@ -76,7 +76,7 @@ BOOL TextureScaler::TextureScalerClass::BuildRootSignatures() {
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DownSample6x6::Count] = {};
 		slotRootParameter[RootSignature::DownSample6x6::RC_Consts].InitAsConstants(
-			ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count, 0);
+			ShadingConvention::TextureScaler::RootConstant::DownSample6x6::Count, 0);
 		slotRootParameter[RootSignature::DownSample6x6::SI_InputMap].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::DownSample6x6::UO_OutputMap].InitAsDescriptorTable(1, &texTables[index++]);
 

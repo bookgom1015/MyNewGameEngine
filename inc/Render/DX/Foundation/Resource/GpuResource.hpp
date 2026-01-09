@@ -49,7 +49,7 @@ namespace Render::DX::Foundation {
 			__forceinline void Reset();
 
 		public:
-			__forceinline ID3D12Resource* const Resource() const;
+			__forceinline ID3D12Resource* Resource() const noexcept;
 			__forceinline D3D12_RESOURCE_DESC Desc() const;
 			__forceinline D3D12_RESOURCE_STATES State() const;
 

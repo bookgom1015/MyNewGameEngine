@@ -175,11 +175,6 @@ namespace ConstantBuffers {
 	}
 
 	struct ContactShadowCB {
-		UINT TextureDimX;
-		UINT FrameCount;
-		UINT __ConstantPad0__;
-		UINT __ConstantPad1__;
-
 		FLOAT BiasBase;
 		FLOAT BiasSlope;
 		FLOAT DepthEpsilonBase;
@@ -188,11 +183,16 @@ namespace ConstantBuffers {
 		FLOAT StepScaleFar;
 		FLOAT StepScaleFarDist;
 		FLOAT RayMaxDistance;
-		FLOAT Thickness;
+		FLOAT __ConstantPad0__;
 
-		FLOAT ThicknessBase;;
+		FLOAT Thickness;
 		FLOAT ThicknessFarScale;
 		FLOAT ThicknessFarDist;
-		FLOAT __ConstantPad2__;
+		FLOAT __ConstantPad1__;
+
+		UINT TextureDimX;
+		UINT MaxSteps;
+		UINT FrameCount;
+		UINT __ConstantPad2__;
 	};
 }

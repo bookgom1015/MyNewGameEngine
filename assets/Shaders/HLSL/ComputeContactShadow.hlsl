@@ -11,10 +11,9 @@
 #include "./../../../assets/Shaders/HLSL/Shadow.hlsli"
 #include "./../../../assets/Shaders/HLSL/Random.hlsli"
 
-ConstantBuffer<ConstantBuffers::PassCB>  cbPass  : register(b0);
-ConstantBuffer<ConstantBuffers::LightCB> cbLight : register(b1);
-
-SSCS_ComputeContactShadow_RootConstants(b2)
+ConstantBuffer<ConstantBuffers::PassCB>  cbPass         : register(b0);
+ConstantBuffer<ConstantBuffers::LightCB> cbLight        : register(b1);
+ConstantBuffer<ConstantBuffers::ContactShadowCB> cbSSCS : register(b2);
 
 Texture2D<ShadingConvention::GBuffer::PositionMapFormat>            gi_PositionMap : register(t0);
 Texture2D<ShadingConvention::GBuffer::NormalMapFormat>              gi_NormalMap   : register(t1);
@@ -28,13 +27,13 @@ RWTexture2D<ShadingConvention::SSCS::DebugMapFormat>         go_DebugMap        
     ShadingConvention::SSCS::ThreadGroup::ComputeContactShadow::Height,
     ShadingConvention::SSCS::ThreadGroup::ComputeContactShadow::Depth)]
 void CS(in uint2 DTid : SV_DispatchThreadID) {    
-    const float StepLength = gRayMaxDistance / gMaxSteps;
+    const float StepLength = cbSSCS.RayMaxDistance / cbSSCS.MaxSteps;
     
     uint result = 0;
     for (uint lightIndex = 0 ; lightIndex < cbLight.LightCount; ++lightIndex) {
         const Render::DX::Foundation::Light light = cbLight.Lights[lightIndex];
         
-        const uint Seed = Random::InitRand(DTid.x + DTid.y * gTextureDimX, gFrameCount ^ (lightIndex * 9781u));
+        const uint Seed = Random::InitRand(DTid.x + DTid.y * cbSSCS.TextureDimX, cbSSCS.FrameCount ^ (lightIndex * 9781u));
         const float Noise = lerp(0.75f, 1.25f, Random::Random01(Seed));
         
         const float4 PosW = gi_PositionMap[DTid];
@@ -50,22 +49,19 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float3 RayStep = rayDirection * StepLength;
         
         const float ViewDist = distance(PosW.xyz, cbPass.EyePosW);
-        const float gStepScaleFar = 2.f;
-        const float gStepScaleFarDist = 40.f;
-        const float StepScale = lerp(1.f, gStepScaleFar, saturate(ViewDist / gStepScaleFarDist));
-        const float gThicknessBase = 0.01f;
-        const float gThicknessFarScale = 2.f;
-        const float gThicknessFarDist = 40.f;
-        const float Thickness = gThicknessBase + gThicknessFarScale * saturate(ViewDist / gThicknessFarDist);
+        const float StepScale = lerp(
+            1.f, cbSSCS.StepScaleFar, saturate(ViewDist / cbSSCS.StepScaleFarDist));
+        const float Thickness = cbSSCS.Thickness + cbSSCS.ThicknessFarScale 
+            * saturate(ViewDist / cbSSCS.ThicknessFarDist);
         
         const float3 N = gi_NormalMap[DTid].xyz;
         const float NoL = dot(N, rayDirection);
-        const float BiasW = gBiasBase + gBiasSlope * (1.f - NoL);
+        const float BiasW = cbSSCS.BiasBase + cbSSCS.BiasSlope * (1.f - NoL);
         
         float3 rayPos = PosW.xyz + N * BiasW;        
         float2 rayTexC = 0.f;        
         bool occluded = false;
-        for (uint stepIndex = 0; stepIndex < gMaxSteps; ++stepIndex) {
+        for (uint stepIndex = 0; stepIndex < cbSSCS.MaxSteps; ++stepIndex) {
             rayPos += RayStep * StepScale * Noise;
             
             float4 viewProjPos = mul(float4(rayPos, 1.f), cbPass.ViewProj);
@@ -82,7 +78,8 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
             
             const float DepthDelta = RayDepthV - ZSampleDepthV;
                     
-            const float Epsilon = gDepthEpsilonBase + gDepthEpsilonScale * abs(RayDepthV);
+            const float Epsilon = cbSSCS.DepthEpsilonBase + 
+                cbSSCS.DepthEpsilonScale * abs(RayDepthV);
             if (DepthDelta > Epsilon && DepthDelta < Thickness) {
                 occluded = true;
                 break;

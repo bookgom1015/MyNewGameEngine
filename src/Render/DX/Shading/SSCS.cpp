@@ -72,15 +72,22 @@ BOOL SSCS::SSCSClass::BuildRootSignatures() {
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ComputeContactShadow::Count] = {};
-		slotRootParameter[RootSignature::ComputeContactShadow::CB_Pass].InitAsConstantBufferView(0);
-		slotRootParameter[RootSignature::ComputeContactShadow::CB_Light].InitAsConstantBufferView(1);
-		slotRootParameter[RootSignature::ComputeContactShadow::RC_Consts].InitAsConstants(
-			ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count, 2);
-		slotRootParameter[RootSignature::ComputeContactShadow::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::ComputeContactShadow::SI_NormalMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::ComputeContactShadow::SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::ComputeContactShadow::UO_ContactShadowMap].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::ComputeContactShadow::UO_DebugMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::CB_Pass]
+			.InitAsConstantBufferView(0);
+		slotRootParameter[RootSignature::ComputeContactShadow::CB_Light]
+			.InitAsConstantBufferView(1);
+		slotRootParameter[RootSignature::ComputeContactShadow::CB_SSCS]
+			.InitAsConstantBufferView(2);
+		slotRootParameter[RootSignature::ComputeContactShadow::SI_PositionMap]
+			.InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::SI_NormalMap]
+			.InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::SI_DepthMap]
+			.InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::UO_ContactShadowMap]
+			.InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ComputeContactShadow::UO_DebugMap]
+			.InitAsDescriptorTable(1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
@@ -193,9 +200,7 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		Foundation::Resource::GpuResource* const pNormalMap,
 		D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
 		Foundation::Resource::GpuResource* const pDepthMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-		UINT maxSteps, FLOAT rayMaxDist, FLOAT thickness,
-		FLOAT biasBase, FLOAT biasSlope, FLOAT depthEpsilonBase, FLOAT depthEpsilonScale) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -205,9 +210,8 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
 
 	{
-		static UINT frame = 0;
-
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_ComputeContactShadow].Get());
+		CmdList->SetComputeRootSignature(
+			mRootSignatures[RootSignature::GR_ComputeContactShadow].Get());
 
 		CmdList->SetComputeRootConstantBufferView(
 			RootSignature::ComputeContactShadow::CB_Pass, 
@@ -215,25 +219,9 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		CmdList->SetComputeRootConstantBufferView(
 			RootSignature::ComputeContactShadow::CB_Light, 
 			pFrameResource->LightCB.CBAddress());
-
-		ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Struct rc;
-		rc.gMaxSteps = maxSteps;
-		rc.gRayMaxDistance = rayMaxDist;
-		rc.gThickness = thickness;
-		rc.gTextureDimX = mInitData.ClientWidth;
-		rc.gFrameCount = frame++;
-		rc.gBiasBase = biasBase;
-		rc.gBiasSlope = biasSlope;
-		rc.gDepthEpsilonBase = depthEpsilonBase;
-		rc.gDepthEpsilonScale = depthEpsilonScale;
-
-		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Struct>(
-			RootSignature::ComputeContactShadow::RC_Consts,
-			ShadingConvention::SSCS::RootConstant::ComputeContactShadow::Count,
-			&rc,
-			0,
-			CmdList,
-			TRUE);
+		CmdList->SetComputeRootConstantBufferView(
+			RootSignature::ComputeContactShadow::CB_SSCS,
+			pFrameResource->ContactShadowCB.CBAddress());
 
 		pPositionMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		pNormalMap->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -245,11 +233,16 @@ BOOL SSCS::SSCSClass::ComputeContactShadow(
 		mDebugMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Foundation::Util::D3D12Util::UavBarrier(CmdList, mDebugMap.get());
 
-		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::SI_PositionMap, si_positionMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::SI_NormalMap, si_normalMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::SI_DepthMap, si_depthMap);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::UO_ContactShadowMap, mhContactShadowMapGpuUav);
-		CmdList->SetComputeRootDescriptorTable(RootSignature::ComputeContactShadow::UO_DebugMap, mhDebugMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::ComputeContactShadow::SI_PositionMap, si_positionMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::ComputeContactShadow::SI_NormalMap, si_normalMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::ComputeContactShadow::SI_DepthMap, si_depthMap);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::ComputeContactShadow::UO_ContactShadowMap, mhContactShadowMapGpuUav);
+		CmdList->SetComputeRootDescriptorTable(
+			RootSignature::ComputeContactShadow::UO_DebugMap, mhDebugMapGpuUav);
 		
 		CmdList->Dispatch(
 			Foundation::Util::D3D12Util::CeilDivide(

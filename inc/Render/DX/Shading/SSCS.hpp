@@ -23,7 +23,7 @@ namespace Render::DX::Shading {
 				enum {
 					CB_Pass = 0,
 					CB_Light,
-					RC_Consts,
+					CB_SSCS,
 					SI_PositionMap,
 					SI_NormalMap,
 					SI_DepthMap,
@@ -87,9 +87,7 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pNormalMap,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_normalMap,
 				Foundation::Resource::GpuResource* const pDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
-				UINT maxSteps, FLOAT rayMaxDist, FLOAT thickness,
-				FLOAT biasBase, FLOAT biasSlope, FLOAT depthEpsilonBase, FLOAT depthEpsilonScale);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap);
 			BOOL ApplyContactShadow(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				Foundation::Resource::GpuResource* const pShadowMap,

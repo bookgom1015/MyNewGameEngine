@@ -889,49 +889,13 @@ namespace ShadingConvention{
 			}
 		}
 
-#ifndef SSCS_ComputeContactShadow_RCSTRUCT 
-#define SSCS_ComputeContactShadow_RCSTRUCT {	\
-		UINT gMaxSteps;							\
-		FLOAT gRayMaxDistance;					\
-		FLOAT gThickness;						\
-		UINT gTextureDimX;						\
-		UINT gFrameCount;						\
-		FLOAT gBiasBase;						\
-		FLOAT gBiasSlope;						\
-		FLOAT gDepthEpsilonBase;				\
-		FLOAT gDepthEpsilonScale;				\
-	};
-#endif
-
 #ifdef _HLSL
-	#ifndef SSCS_ComputeContactShadow_RootConstants
-	#define SSCS_ComputeContactShadow_RootConstants(reg) cbuffer cbRootConstants : register (reg) SSCS_ComputeContactShadow_RCSTRUCT
-	#endif
-
 		typedef uint ContactShadowMapFormat;
 		typedef float4 DebugMapFormat;
 #else
 		const DXGI_FORMAT ContactShadowMapFormat = DXGI_FORMAT_R16_UINT;
 		const DXGI_FORMAT DebugMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 #endif
-
-		namespace RootConstant {
-			namespace ComputeContactShadow {
-				struct Struct SSCS_ComputeContactShadow_RCSTRUCT
-				enum {
-					E_MaxSteps = 0,
-					E_RayMaxDistance,
-					E_Thcikness,
-					E_TextureDimX,
-					E_FrameCount,
-					E_BiasBase,
-					E_BiasSlope,
-					E_DepthEpsilonBase,
-					E_DepthEpsilonScale,
-					Count
-				};
-			}
-		}
 	}
 
 	namespace MotionBlur {
