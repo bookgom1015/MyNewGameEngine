@@ -53,19 +53,16 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 			direction = light.Direction;
 		}
 		else if (light.Type == Common::Render::LightType::E_Tube || light.Type == Common::Render::LightType::E_Rect) {
-			// Tube and rectangular light do not have shadow(depth) map, 
+			// Tube and rectangular light do not have shadow(depth) map for now, 
 			//  so these can not calculate visibility.
 			continue;
 		}
 		else {
-			continue;
 			direction = PosW - light.Position;
 			Ld = length(direction);
 		}
 		
-		//const float3 ToLight = -direction;
 		float visibility = 1.f;
-
 		if (light.Type == Common::Render::LightType::E_Point || light.Type == Common::Render::LightType::E_Tube) {
 			const uint Index = ShaderUtil::GetCubeFaceIndex(direction);
 			const float3 Normalized = normalize(direction);

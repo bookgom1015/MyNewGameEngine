@@ -358,6 +358,17 @@ namespace ShadingConvention{
 	}
 
 	namespace Shadow {
+		static const UINT CascadeCount = 3;
+
+		namespace ShadowMap {
+			enum Type {
+				E_Texture2D = 0,
+				E_Texture2DArray,
+				E_CubeMap,
+				Count
+			};
+		}
+
 		namespace ThreadGroup {
 			namespace DrawShadow {
 				enum {

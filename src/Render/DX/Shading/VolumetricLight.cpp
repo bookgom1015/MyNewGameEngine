@@ -326,13 +326,15 @@ BOOL VolumetricLight::VolumetricLightClass::BuildFog(
 		FLOAT nearZ, FLOAT farZ, FLOAT depth_exp,
 		FLOAT uniformDensity, FLOAT densityScale, 
 		FLOAT anisotropicCoeff,
-		Foundation::Light** ppLights,
 		UINT numLights) {
 	mCurrentFrame = ++mFrameCount % 2 != 0;
 	mPreviousFrame = (mCurrentFrame + 1) % 2;
 
-	CheckReturn(mpLogFile, CalculateScatteringAndDensity(pFrameResource, ppDepthMaps, si_depthMaps, nearZ, farZ, depth_exp, uniformDensity, anisotropicCoeff, ppLights, numLights));
-	CheckReturn(mpLogFile, AccumulateScattering(pFrameResource, nearZ, farZ, depth_exp, densityScale));
+	CheckReturn(mpLogFile, CalculateScatteringAndDensity(
+		pFrameResource, ppDepthMaps, si_depthMaps, 
+		nearZ, farZ, depth_exp, uniformDensity, anisotropicCoeff, numLights));
+	CheckReturn(mpLogFile, AccumulateScattering(
+		pFrameResource, nearZ, farZ, depth_exp, densityScale));
 	CheckReturn(mpLogFile, BlendScattering(pFrameResource));
 
 	return TRUE;
@@ -461,7 +463,6 @@ BOOL VolumetricLight::VolumetricLightClass::CalculateScatteringAndDensity(
 		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMaps,
 		FLOAT nearZ, FLOAT farZ, FLOAT depth_exp,
 		FLOAT uniformDensity, FLOAT anisotropicCoeff,
-		Foundation::Light** ppLights,
 		UINT numLights) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),

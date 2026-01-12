@@ -111,8 +111,8 @@ namespace Render::DX::Shading {
 			BOOL BuildResources();
 			BOOL BuildDescriptors();
 
-			BOOL BuildResource(BOOL bCube);
-			BOOL BuildDescriptor(BOOL bCube);
+			BOOL BuildResource(ShadingConvention::Shadow::ShadowMap::Type type);
+			BOOL BuildDescriptor(ShadingConvention::Shadow::ShadowMap::Type type);
 
 			BOOL DrawZDepth(
 				Foundation::Resource::FrameResource* const pFrameResource,

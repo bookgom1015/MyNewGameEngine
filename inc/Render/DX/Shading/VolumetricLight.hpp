@@ -120,7 +120,6 @@ namespace Render::DX::Shading {
 				FLOAT nearZ, FLOAT farZ, FLOAT depth_exp,
 				FLOAT uniformDensity, FLOAT densityScale, 
 				FLOAT anisotropicCoeff,
-				Foundation::Light** ppLights,
 				UINT numLights);
 			BOOL ApplyFog(
 				Foundation::Resource::FrameResource* const pFrameResource,				
@@ -142,7 +141,6 @@ namespace Render::DX::Shading {
 				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMaps,
 				FLOAT nearZ, FLOAT farZ, FLOAT depth_exp,
 				FLOAT uniformDensity, FLOAT anisotropicCoeff,
-				Foundation::Light** ppLights,
 				UINT numLights);
 			BOOL AccumulateScattering(
 				Foundation::Resource::FrameResource* const pFrameResource,

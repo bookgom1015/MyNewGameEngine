@@ -12,7 +12,7 @@
 #include <Windows.h>
 
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
-#include <dxgi.h>
+#include <dxgi1_6.h>
 #include <DirectXTex.h>
 
 #ifndef ReleaseCom
@@ -74,6 +74,13 @@ namespace Render::DX::Foundation {
 				Core::CommandObject* const pCmdObject,
 				DXGI_SWAP_CHAIN_DESC* pDesc,
 				IDXGISwapChain** ppSwapChain);
+
+			static BOOL CreateSwapChain1(
+				Core::Factory* const pFactory,
+				Core::CommandObject* const pCmdObject,
+				HWND hWnd,
+				DXGI_SWAP_CHAIN_DESC1* pDesc,
+				IDXGISwapChain1** ppSwapChain1);
 
 			static BOOL CalcConstantBufferByteSize(UINT byteSize);
 			static BOOL CreateDefaultBuffer(

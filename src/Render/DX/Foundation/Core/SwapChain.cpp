@@ -87,25 +87,27 @@ BOOL SwapChain::CreateSwapChain() {
 	// Release the previous swapchain we will be recreating.
 	mSwapChain.Reset();
 
-	DXGI_SWAP_CHAIN_DESC sd;
-	sd.BufferDesc.Width = mInitData.ClientWidth;
-	sd.BufferDesc.Height = mInitData.ClientHeight;
-	sd.BufferDesc.RefreshRate.Numerator = 0;
-	sd.BufferDesc.RefreshRate.Denominator = 0;
-	sd.BufferDesc.Format = ShadingConvention::SwapChain::BackBufferFormat;
-	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	sd.SampleDesc.Count = 1;
-	sd.SampleDesc.Quality = 0;
-	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount = SwapChainBufferCount;
-	sd.OutputWindow = mInitData.MainWnd;
-	sd.Windowed = TRUE;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	DXGI_SWAP_CHAIN_DESC1 desc{};
+	desc.Width = mInitData.ClientWidth;
+	desc.Height = mInitData.ClientHeight;
+	desc.Format = ShadingConvention::SwapChain::BackBufferFormat;
+	desc.Stereo = FALSE;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.BufferCount = SwapChainBufferCount;
+	desc.Scaling = DXGI_SCALING_STRETCH;
+	desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 	// Note: Swap chain uses queue to perfrom flush.
-	CheckReturn(mpLogFile, Util::D3D12Util::CreateSwapChain(mInitData.Factory, mInitData.CommandObject, &sd, &mSwapChain));
+	CheckReturn(mpLogFile, Util::D3D12Util::CreateSwapChain1(
+		mInitData.Factory,
+		mInitData.CommandObject,
+		mInitData.MainWnd,
+		&desc,
+		&mSwapChain));
 
 	return TRUE;
 }

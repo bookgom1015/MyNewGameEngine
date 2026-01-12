@@ -64,7 +64,7 @@ namespace Render::DX::Foundation::Core {
 	private:
 		InitData mInitData;
 
-		Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
+		Microsoft::WRL::ComPtr<IDXGISwapChain1> mSwapChain;
 		std::array<std::unique_ptr<Resource::GpuResource>, SwapChainBufferCount> mSwapChainBuffers;
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuSrvs;
 		std::array<D3D12_GPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferGpuSrvs;

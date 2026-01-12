@@ -1951,7 +1951,6 @@ BOOL DxRenderer::ApplyVolumetricLight() {
 		mpShadingArgumentSet->VolumetricLight.UniformDensity,
 		mpShadingArgumentSet->VolumetricLight.DensityScale,
 		mpShadingArgumentSet->VolumetricLight.AnisotropicCoefficient,
-		lights.data(),
 		mShadow->LightCount()));
 
 	CheckReturn(mpLogFile, mVolumetricLight->ApplyFog(

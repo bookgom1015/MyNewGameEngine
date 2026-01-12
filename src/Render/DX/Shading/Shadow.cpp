@@ -12,6 +12,8 @@
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
+#include <format>
+
 // Cascase Shadow
 // https://scahp.tistory.com/39
 
@@ -21,8 +23,16 @@ namespace {
 	const WCHAR* const HLSL_DrawZDepth = L"DrawZDepth.hlsl";
 	const WCHAR* const HLSL_DrawShadow = L"DrawShadow.hlsl";
 
-	BOOL RequiresCubeMap(const Render::DX::Foundation::Light* const light) {
-		return light->Type == Common::Render::LightType::E_Point || light->Type == Common::Render::LightType::E_Tube;
+	ShadingConvention::Shadow::ShadowMap::Type ResolveShadowMapType(
+			const Render::DX::Foundation::Light* const light) {
+		if (light->Type == Common::Render::LightType::E_Point
+			|| light->Type == Common::Render::LightType::E_Tube)
+			return ShadingConvention::Shadow::ShadowMap::E_CubeMap;
+		//else if (light->Type == Common::Render::LightType::E_Directional)
+		//	return Shadow::ShadowMap::E_Texture2DArray;
+		else
+			return ShadingConvention::Shadow::ShadowMap::E_Texture2D;
+
 	}
 }
 
@@ -250,10 +260,10 @@ BOOL Shadow::ShadowClass::Run(
 BOOL Shadow::ShadowClass::AddLight(const std::shared_ptr<Foundation::Light>& light) {
 	if (mLightCount >= MaxLights) ReturnFalse(mpLogFile, L"Can not add light due to the light count limit");
 
-	const BOOL NeedCubeMap = RequiresCubeMap(light.get());
+	const auto ShadowMapType = ResolveShadowMapType(light.get());
 
-	BuildResource(NeedCubeMap);
-	BuildDescriptor(NeedCubeMap);
+	BuildResource(ShadowMapType);
+	BuildDescriptor(ShadowMapType);
 
 	mLights[mLightCount++] = light;
 
@@ -321,7 +331,7 @@ BOOL Shadow::ShadowClass::BuildDescriptors() {
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::BuildResource(BOOL bCube) {
+BOOL Shadow::ShadowClass::BuildResource(ShadingConvention::Shadow::ShadowMap::Type type) {
 	D3D12_RESOURCE_DESC rscDesc;
 	ZeroMemory(&rscDesc, sizeof(D3D12_RESOURCE_DESC));
 	rscDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -340,85 +350,85 @@ BOOL Shadow::ShadowClass::BuildResource(BOOL bCube) {
 	zdepthOptClear.DepthStencil.Depth = 1.f;
 	zdepthOptClear.DepthStencil.Stencil = 0;
 
-	if (bCube) {		
+	std::wstring name;
+	if (type == ShadingConvention::Shadow::ShadowMap::E_CubeMap) {
 		rscDesc.DepthOrArraySize = 6;
-
-		std::wstringstream wsstream;
-		wsstream << L"Shadow_ZDepthCubeMap_" << mLightCount;
-
-		CheckReturn(mpLogFile, mZDepthMaps[mLightCount]->Initialize(
-			mInitData.Device,
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&rscDesc,
-			D3D12_RESOURCE_STATE_DEPTH_READ,
-			&zdepthOptClear,
-			wsstream.str().c_str()));
+		name = std::format(L"Shadow_ZDepthCubeMap_{}", mLightCount);
+	}
+	else if (type == ShadingConvention::Shadow::ShadowMap::E_Texture2DArray) {
+		rscDesc.DepthOrArraySize = ShadingConvention::Shadow::CascadeCount;
+		name = std::format(L"Shadow_ZDepthArray_{}", mLightCount);
 	}
 	else {
-		rscDesc.DepthOrArraySize = 1;
-		
-		std::wstringstream wsstream;
-		wsstream << L"Shadow_ZDepthMap_" << mLightCount;
-
-		CheckReturn(mpLogFile, mZDepthMaps[mLightCount]->Initialize(
-			mInitData.Device,
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&rscDesc,
-			D3D12_RESOURCE_STATE_DEPTH_READ,
-			&zdepthOptClear,
-			wsstream.str().c_str()));
+		rscDesc.DepthOrArraySize = 1;		
+		name = std::format(L"Shadow_ZDepthMap_{}", mLightCount);
 	}
+
+	CheckReturn(mpLogFile, mZDepthMaps[mLightCount]->Initialize(
+		mInitData.Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&rscDesc,
+		D3D12_RESOURCE_STATE_DEPTH_READ,
+		&zdepthOptClear,
+		name.c_str()));
 
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::BuildDescriptor(BOOL bCube) {	
-	if (bCube) {		
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+BOOL Shadow::ShadowClass::BuildDescriptor(ShadingConvention::Shadow::ShadowMap::Type type) {
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+	dsvDesc.Format = ShadingConvention::Shadow::ZDepthMapFormat;
+	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	if (type == ShadingConvention::Shadow::ShadowMap::E_CubeMap) {
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		srvDesc.Texture2DArray.ArraySize = 6;
 		srvDesc.Texture2DArray.FirstArraySlice = 0;
 		srvDesc.Texture2DArray.MipLevels = 1;
 		srvDesc.Texture2DArray.MostDetailedMip = 0;
 		srvDesc.Texture2DArray.PlaneSlice = 0;
-		srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
-
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		srvDesc.Texture2DArray.ResourceMinLODClamp = 0.f;
+		
 		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-		dsvDesc.Format = ShadingConvention::Shadow::ZDepthMapFormat;
 		dsvDesc.Texture2DArray.ArraySize = 6;
 		dsvDesc.Texture2DArray.FirstArraySlice = 0;
-		dsvDesc.Texture2DArray.MipSlice = 0;
-		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+		dsvDesc.Texture2DArray.MipSlice = 0;		
+	}
+	else if (type == ShadingConvention::Shadow::ShadowMap::E_Texture2DArray) {
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+		srvDesc.Texture2DArray.ArraySize = ShadingConvention::Shadow::CascadeCount;
+		srvDesc.Texture2DArray.FirstArraySlice = 0;
+		srvDesc.Texture2DArray.MipLevels = 1;
+		srvDesc.Texture2DArray.MostDetailedMip = 0;
+		srvDesc.Texture2DArray.PlaneSlice = 0;
+		srvDesc.Texture2DArray.ResourceMinLODClamp = 0.f;
 
-		const auto depthMap = mZDepthMaps[mLightCount]->Resource();
-		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, depthMap, &srvDesc, mhZDepthMapCpuSrvs[mLightCount]);
-		Foundation::Util::D3D12Util::CreateDepthStencilView(mInitData.Device, depthMap, &dsvDesc, mhZDepthMapCpuDsvs[mLightCount]);
+		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+		dsvDesc.Texture2DArray.ArraySize = ShadingConvention::Shadow::CascadeCount;
+		dsvDesc.Texture2DArray.FirstArraySlice = 0;
+		dsvDesc.Texture2DArray.MipSlice = 0;
 	}
 	else {
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = 1;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+		srvDesc.Texture2D.ResourceMinLODClamp = 0.f;
 		srvDesc.Texture2D.PlaneSlice = 0;
 
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		dsvDesc.Format = ShadingConvention::Shadow::ZDepthMapFormat;
 		dsvDesc.Texture2D.MipSlice = 0;
-		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+	}
 
-		const auto depthMap = mZDepthMaps[mLightCount]->Resource();
-		Foundation::Util::D3D12Util::CreateShaderResourceView(mInitData.Device, depthMap, &srvDesc, mhZDepthMapCpuSrvs[mLightCount]);
-		Foundation::Util::D3D12Util::CreateDepthStencilView(mInitData.Device, depthMap, &dsvDesc, mhZDepthMapCpuDsvs[mLightCount]);
-	}	
+	const auto depthMap = mZDepthMaps[mLightCount]->Resource();
+	Foundation::Util::D3D12Util::CreateShaderResourceView(
+		mInitData.Device, depthMap, &srvDesc, mhZDepthMapCpuSrvs[mLightCount]);
+	Foundation::Util::D3D12Util::CreateDepthStencilView(
+		mInitData.Device, depthMap, &dsvDesc, mhZDepthMapCpuDsvs[mLightCount]);
 
 	return TRUE;
 }
@@ -515,12 +525,17 @@ BOOL Shadow::ShadowClass::DrawShadow(
 		CmdList->SetComputeRootDescriptorTable(
 			RootSignature::DrawShadow::UIO_ShadowMap, mhShadowMapGpuUav);
 
-		BOOL NeedCubeMap = RequiresCubeMap(mLights[lightIndex].get());
+		const auto ShadowMapType = ResolveShadowMapType(mLights[lightIndex].get());
 
-		if (NeedCubeMap) CmdList->SetComputeRootDescriptorTable(
-			RootSignature::DrawShadow::SI_ZDepthCubeMap, mhZDepthMapGpuSrvs[lightIndex]);
+		if (ShadowMapType == ShadingConvention::Shadow::ShadowMap::E_CubeMap) 
+			CmdList->SetComputeRootDescriptorTable(
+				RootSignature::DrawShadow::SI_ZDepthCubeMap, 
+				mhZDepthMapGpuSrvs[lightIndex]);
+		else if (ShadowMapType == ShadingConvention::Shadow::ShadowMap::E_Texture2DArray)
+			;
 		else CmdList->SetComputeRootDescriptorTable(
-			RootSignature::DrawShadow::SI_ZDepthMap, mhZDepthMapGpuSrvs[lightIndex]);
+			RootSignature::DrawShadow::SI_ZDepthMap, 
+			mhZDepthMapGpuSrvs[lightIndex]);
 
 
 		CmdList->Dispatch(

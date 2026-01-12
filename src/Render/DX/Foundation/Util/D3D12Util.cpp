@@ -52,7 +52,26 @@ BOOL D3D12Util::CreateSwapChain(
 		Core::CommandObject* const pCmdObject,
 		DXGI_SWAP_CHAIN_DESC* pDesc,
 		IDXGISwapChain** ppSwapChain) {
-	CheckHRESULT(mpLogFile, pFactory->mDxgiFactory->CreateSwapChain(pCmdObject->mCommandQueue.Get(), pDesc, ppSwapChain));
+	CheckHRESULT(mpLogFile, pFactory->mDxgiFactory->CreateSwapChain(
+		pCmdObject->mCommandQueue.Get(), 
+		pDesc, 
+		ppSwapChain));
+
+	return TRUE;
+}
+
+BOOL D3D12Util::CreateSwapChain1(
+		Core::Factory* const pFactory,
+		Core::CommandObject* const pCmdObject,
+		HWND hWnd,
+		DXGI_SWAP_CHAIN_DESC1* pDesc,
+		IDXGISwapChain1** ppSwapChain1) {
+	CheckHRESULT(mpLogFile, pFactory->mDxgiFactory->CreateSwapChainForHwnd(
+		pCmdObject->mCommandQueue.Get(),
+		hWnd,
+		pDesc,
+		nullptr, nullptr,
+		ppSwapChain1));
 
 	return TRUE;
 }
