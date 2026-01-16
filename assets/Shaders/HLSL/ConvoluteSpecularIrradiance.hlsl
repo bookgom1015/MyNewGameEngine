@@ -29,11 +29,11 @@ struct GeoOut {
     uint ArrayIndex : SV_RenderTargetArrayIndex;
 };
 
-static const int SAMPLE_COUNT = 8192;
+static const int SAMPLE_COUNT = 16384;
 
 FitToCubeVertexShader
 
-FitToCubeGeometryShader
+FitToCubeGeometryShader(cbProjectToCube)
 
 float ChetanJagsMipLevel(in float3 N, in float3 V, in float3 H, in float roughness) {
     const float D = DistributionGGX(N, H, roughness);

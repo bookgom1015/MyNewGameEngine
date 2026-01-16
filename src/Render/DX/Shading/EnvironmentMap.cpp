@@ -183,8 +183,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_DrawSkySphere]),
-			L"EnvironmentMap_GR_DrawSkySphere"
-		));
+			L"EnvironmentMap_GR_DrawSkySphere"));
 	}
 	// ConvoluteDiffuseIrradiance
 	{
@@ -206,8 +205,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ConvoluteDiffuseIrradiance]),
-			L"EnvironmentMap_GR_ConvoluteDiffuseIrradiance"
-		));
+			L"EnvironmentMap_GR_ConvoluteDiffuseIrradiance"));
 	}
 	// ConvoluteSpecularIrradiance
 	{
@@ -230,8 +228,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_ConvoluteSpecularIrradiance]),
-			L"EnvironmentMap_GR_ConvoluteSpecularIrradiance"
-		));
+			L"EnvironmentMap_GR_ConvoluteSpecularIrradiance"));
 	}
 	// IntegrateBrdf
 	{
@@ -247,8 +244,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 			mInitData.Device,
 			rootSigDesc,
 			IID_PPV_ARGS(&mRootSignatures[RootSignature::GR_IntegrateBrdf]),
-			L"EnvironmentMap_GR_IntegrateBrdf"
-		));
+			L"EnvironmentMap_GR_IntegrateBrdf"));
 	}
 
 	return TRUE;
@@ -368,12 +364,16 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateBrdf].Get();
 			{
-				const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_IntegrateBrdf]);
+				const auto MS = mInitData.ShaderManager->GetShader(
+					mShaderHashes[Shader::MS_IntegrateBrdf]);
 				NullCheck(mpLogFile, MS);
-				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateBrdf]);
+				const auto PS = mInitData.ShaderManager->GetShader(
+					mShaderHashes[Shader::PS_IntegrateBrdf]);
 				NullCheck(mpLogFile, PS);
-				psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+				psoDesc.MS = { 
+					reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
+				psoDesc.PS = { 
+					reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = ShadingConvention::EnvironmentMap::BrdfLutMapFormat;
@@ -390,12 +390,16 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 
 			psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_IntegrateBrdf].Get();
 			{
-				const auto VS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::VS_IntegrateBrdf]);
+				const auto VS = mInitData.ShaderManager->GetShader(
+					mShaderHashes[Shader::VS_IntegrateBrdf]);
 				NullCheck(mpLogFile, VS);
-				const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_IntegrateBrdf]);
+				const auto PS = mInitData.ShaderManager->GetShader(
+					mShaderHashes[Shader::PS_IntegrateBrdf]);
 				NullCheck(mpLogFile, PS);
-				psoDesc.VS = { reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
-				psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
+				psoDesc.VS = { 
+					reinterpret_cast<BYTE*>(VS->GetBufferPointer()), VS->GetBufferSize() };
+				psoDesc.PS = { 
+					reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
 			}
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = ShadingConvention::EnvironmentMap::BrdfLutMapFormat;
@@ -479,7 +483,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawSkySphere(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_DrawSkySphere : PipelineState::GP_DrawSkySphere].Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? 
+		PipelineState::MP_DrawSkySphere : PipelineState::GP_DrawSkySphere].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -1205,7 +1210,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::ConvertEquirectangularMapToCubeMap(
 }
 
 BOOL EnvironmentMap::EnvironmentMapClass::DrawDiffuseIrradianceCubeMap(D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvoluteDiffuseIrradiance].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(
+		mPipelineStates[PipelineState::GP_ConvoluteDiffuseIrradiance].Get()));
 
 	const auto CmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -1234,7 +1240,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawDiffuseIrradianceCubeMap(D3D12_GPU
 }
 
 BOOL EnvironmentMap::EnvironmentMapClass::DrawPrefilteredEnvironmentCubeMap(D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_ConvoluteSpecularIrradiance].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(
+		mPipelineStates[PipelineState::GP_ConvoluteSpecularIrradiance].Get()));
 
 	const auto CmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -1287,7 +1294,9 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawPrefilteredEnvironmentCubeMap(D3D1
 }
 
 BOOL EnvironmentMap::EnvironmentMapClass::DrawBrdfLutMap(D3D12_GPU_VIRTUAL_ADDRESS cbPass) {
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(mPipelineStates[PipelineState::GP_IntegrateBrdf].Get()));
+	CheckReturn(mpLogFile, mInitData.CommandObject->ResetDirectCommandList(
+		mPipelineStates[mInitData.MeshShaderSupported ? 
+		PipelineState::MP_IntegrateBrdf : PipelineState::GP_IntegrateBrdf].Get()));
 
 	const auto CmdList = mInitData.CommandObject->DirectCommandList();
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -1303,10 +1312,15 @@ BOOL EnvironmentMap::EnvironmentMapClass::DrawBrdfLutMap(D3D12_GPU_VIRTUAL_ADDRE
 
 	CmdList->SetGraphicsRootConstantBufferView(RootSignature::IntegrateBrdf::CB_Pass, cbPass);
 
-	CmdList->IASetVertexBuffers(0, 0, nullptr);
-	CmdList->IASetIndexBuffer(nullptr);
-	CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	CmdList->DrawInstanced(6, 1, 0, 0);
+	if (mInitData.MeshShaderSupported) {
+		CmdList->DispatchMesh(1, 1, 1);
+	}
+	else {
+		CmdList->IASetVertexBuffers(0, 0, nullptr);
+		CmdList->IASetIndexBuffer(nullptr);
+		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CmdList->DrawInstanced(6, 1, 0, 0);
+	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteDirectCommandList());
 

@@ -31,18 +31,18 @@ VertexOut VS(in uint vid : SV_VertexID) { \
 #endif // FitToCubeVertexShader
 
 #ifndef FitToCubeGeometryShader
-#define FitToCubeGeometryShader                                                 \
+#define FitToCubeGeometryShader(__cbProjectToCube)                              \
 [maxvertexcount(18)]                                                            \
 void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) { \
     GeoOut gout = (GeoOut) 0;                                                   \
 	[unroll]                                                                    \
     for (uint face = 0; face < 6; ++face) {                                     \
-        const float4x4 view = cbProjectToCube.View[face];                       \
+        const float4x4 view = __cbProjectToCube.Views[face];                    \
 		[unroll]                                                                \
         for (uint i = 0; i < 3; ++i) {                                          \
             const float3 posL = gin[i].PosL;                                    \
             const float4 posV = mul(float4(posL, 1.f), view);                   \
-            const float4 posH = mul(posV, cbProjectToCube.Proj);                \
+            const float4 posH = mul(posV, __cbProjectToCube.Proj);              \
             gout.PosL = posL;                                                   \
             gout.PosH = posH.xyww;                                              \
             gout.ArrayIndex = face;                                             \

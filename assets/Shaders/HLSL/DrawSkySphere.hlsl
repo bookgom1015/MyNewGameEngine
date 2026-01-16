@@ -47,36 +47,47 @@ void MS(
         in uint GTid : SV_GroupThreadID,
         in uint Gid : SV_GroupID,
         out vertices VertexOut verts[MESH_SHADER_MAX_VERTICES],
-        out indices uint3 prims[MESH_SHADER_MAX_PRIMITIVES]) {    
-    SetMeshOutputCounts(MESH_SHADER_MAX_VERTICES, MESH_SHADER_MAX_PRIMITIVES);
-        
+        out indices uint3 prims[MESH_SHADER_MAX_PRIMITIVES]) {            
     const uint TotalPrimCount = gIndexCount / 3;
     const uint GlobalPrimId = Gid * MESH_SHADER_MAX_PRIMITIVES + GTid;
-    const uint VertexBase = GTid * 3;
     
-    if (GlobalPrimId < TotalPrimCount) {
-        const uint3 Index = uint3(
-            ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 0),
-            ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 1),
-            ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 2));
-                
-        prims[GTid] = uint3(VertexBase + 0, VertexBase + 1, VertexBase + 2);        
+    const uint Remaining = TotalPrimCount - Gid * MESH_SHADER_MAX_PRIMITIVES;
+    const uint LocalPrimCount = min(Remaining, MESH_SHADER_MAX_PRIMITIVES);
+    
+    SetMeshOutputCounts(LocalPrimCount * 3, LocalPrimCount);
+    
+    if (GTid >= LocalPrimCount) return;
+    
+    const uint LocalPrimId = GTid;
+    const uint PrimIndex = Gid * MESH_SHADER_MAX_PRIMITIVES + LocalPrimId;
+    
+    const uint3 Indices = uint3(
+        ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 0),
+        ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 1),
+        ShaderUtil::GetIndex16(gi_IndexBuffer, GlobalPrimId * 3 + 2));
         
-        [unroll]
-        for (uint i = 0; i < 3; ++i) {
-            Common::Foundation::Mesh::Vertex vin = gi_VertexBuffer[Index[i]];
+    prims[LocalPrimId] = uint3(
+        LocalPrimId * 3 + 0,
+        LocalPrimId * 3 + 1,
+        LocalPrimId * 3 + 2
+    );
     
-            VertexOut vout = (VertexOut) 0;
-            vout.PosL = vin.Position;
-            
-            float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);
-            // Always center sky about camera.
-            PosW.xyz += cbPass.EyePosW;
-            
-            vout.PosH = mul(PosW, cbPass.ViewProj).xyww;
-         
-            verts[VertexBase + i] = vout;
-        }
+    [unroll]
+    for (uint i = 0; i < 3; ++i) {
+        const uint OutVert = LocalPrimId * 3 + i;
+    
+        Common::Foundation::Mesh::Vertex vin = gi_VertexBuffer[Indices[i]];
+    
+        VertexOut vout = (VertexOut) 0;
+        vout.PosL = vin.Position;
+        
+        float4 PosW = mul(float4(vout.PosL, 1.f), cbObject.World);
+        // Always center sky about camera.
+        PosW.xyz += cbPass.EyePosW;
+        
+        vout.PosH = mul(PosW, cbPass.ViewProj).xyww;
+     
+        verts[OutVert] = vout;
     }
 }
 

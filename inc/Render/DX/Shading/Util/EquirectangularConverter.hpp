@@ -78,7 +78,7 @@ namespace Render::DX::Shading::Util {
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_cubes[],
 				Foundation::Resource::GpuResource* const pEquirect,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
-				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
+				D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube,
 				UINT width, UINT height,
 				UINT maxMipLevel = 0);
 			BOOL ConvertEquirectangularToCube(
@@ -86,7 +86,7 @@ namespace Render::DX::Shading::Util {
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_cube,
 				Foundation::Resource::GpuResource* const pEquirect,
 				D3D12_GPU_DESCRIPTOR_HANDLE si_equirect,
-				D3D12_GPU_VIRTUAL_ADDRESS cbEquirectConv,
+				D3D12_GPU_VIRTUAL_ADDRESS cbProjectToCube,
 				D3D12_VIEWPORT viewport,
 				D3D12_RECT scissorRect,
 				UINT maxMipLevel = 0);

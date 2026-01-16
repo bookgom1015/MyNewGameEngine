@@ -150,7 +150,14 @@ BOOL DxRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
 
-	CheckReturn(mpLogFile, BuildScene());
+	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
+	const FLOAT WidthSquared = 128.f * 128.f;
+	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
+
+	CheckReturn(mpLogFile, BuildSkySphere());
+	CheckReturn(mpLogFile, BuildLights());
+
+	CheckReturn(mpLogFile, mSSAO->BuildRandomVectorTexture());
 
 	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
 
@@ -214,6 +221,12 @@ BOOL DxRenderer::Update(FLOAT deltaTime) {
 }
 
 BOOL DxRenderer::Draw() {
+	static bool OnlyOnce{};
+	if (!OnlyOnce) {
+		OnlyOnce = true;
+		CheckReturn(mpLogFile, BuildScene());
+	}
+
 	const auto skySphere = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].front();
 	const auto& opaques = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque];
 
@@ -699,7 +712,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 
 	// Positive +X
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->View[0],
+		&mProjectToCubeCB->Views[0],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(1.f, 0.f, 0.f, 1.f),
@@ -708,7 +721,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive -X
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->View[1],
+		&mProjectToCubeCB->Views[1],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(-1.f, 0.f, 0.f, 1.f),
@@ -717,7 +730,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive +Y
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->View[2],
+		&mProjectToCubeCB->Views[2],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 1.f, 0.f, 1.f),
@@ -726,7 +739,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive -Y
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->View[3],
+		&mProjectToCubeCB->Views[3],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, -1.f, 0.f, 1.f),
@@ -735,7 +748,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive +Z
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->View[4],
+		&mProjectToCubeCB->Views[4],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 0.f, 1.f, 1.f),
@@ -744,7 +757,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive -Z
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->View[5],
+		&mProjectToCubeCB->Views[5],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 0.f, -1.f, 1.f),
@@ -753,6 +766,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 
 	mpCurrentFrameResource->ProjectToCubeCB.CopyCB(*mProjectToCubeCB.get());
+	mCommandObject->FlushCommandQueue();
 
 	return TRUE;
 }
@@ -1512,18 +1526,6 @@ BOOL DxRenderer::BuildLights() {
 }
 
 BOOL DxRenderer::BuildScene() {
-	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
-	const FLOAT WidthSquared = 128.f * 128.f;
-	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
-
-	// Some of shading objects require particular constant buffers
-	CheckReturn(mpLogFile, UpdateConstantBuffers());	
-
-	CheckReturn(mpLogFile, BuildSkySphere());
-	CheckReturn(mpLogFile, BuildLights());
-
-	CheckReturn(mpLogFile, mSSAO->BuildRandomVectorTexture());
-
 	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(
 		mpCurrentFrameResource,
 		mMipmapGenerator.get(), 

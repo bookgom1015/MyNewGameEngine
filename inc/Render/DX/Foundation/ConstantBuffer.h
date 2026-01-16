@@ -68,7 +68,7 @@ namespace ConstantBuffers {
 
 	struct ProjectToCubeCB {
 		DirectX::XMFLOAT4X4 Proj;
-		DirectX::XMFLOAT4X4 View[6];
+		DirectX::XMFLOAT4X4 Views[6];
 	};
 
 	struct AmbientOcclusionCB {

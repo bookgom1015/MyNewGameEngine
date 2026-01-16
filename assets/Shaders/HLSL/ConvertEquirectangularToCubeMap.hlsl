@@ -34,7 +34,7 @@ VertexOut VS(in uint vid : SV_VertexID) {
     vout.PosL = gVertices[vid];
 
     return vout;
-}
+}                                                                                                                                                                                                                                                                                  
 
 [maxvertexcount(18)]
 void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
@@ -44,7 +44,7 @@ void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
     for (uint face = 0; face < 6; ++face) {
         gout.ArrayIndex = face;
         
-        const float4x4 View = cbProjectToCube.View[face];
+        const float4x4 View = cbProjectToCube.Views[face];
         
 		[unroll]
         for (uint i = 0; i < 3; ++i) {
