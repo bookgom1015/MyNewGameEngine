@@ -44,6 +44,13 @@ struct PixelOut {
     ShadingConvention::GBuffer::PositionMapFormat           Position           : SV_TARGET7;
 };
 
+static const float4x4 gThresholdMatrix = {
+	1.f  / 17.f, 9.f  / 17.f, 3.f  / 17.f, 11.f / 17.f,
+	13.f / 17.f, 5.f  / 17.f, 15.f / 17.f, 7.f  / 17.f,
+	4.f  / 17.f, 12.f / 17.f, 2.f  / 17.f, 10.f / 17.f,
+	16.f / 17.f, 8.f  / 17.f, 14.f / 17.f, 6.f  / 17.f
+};
+
 VertexOut VS(in VertexIn vin) {
     VertexOut vout = (VertexOut) 0;
     
@@ -129,9 +136,22 @@ void MS(
 }
 
 PixelOut PS(in VertexOut pin) {
+    pin.CurrPosH /= pin.CurrPosH.w;
+        
+    const float2 UV = pin.CurrPosH.xy * 0.5f + 0.5f;
+    const uint2 ScreenPos = (uint2)floor(UV * gTexDim);
+    const uint2 ScreenPos_xN = ScreenPos >> 2;
+    const float Threshold = gThresholdMatrix[ScreenPos_xN.y & 3][ScreenPos_xN.x & 3];
+    
+    float4 posV = mul(pin.CurrPosH, cbPass.InvProj);
+	posV /= posV.w;
+
+	const float Dist = (posV.z - gDitheringMinDist) / (gDitheringMaxDist - gDitheringMinDist);
+
+	clip(Dist - Threshold);
+    
     PixelOut pout = (PixelOut) 0;
     
-    pin.CurrPosH /= pin.CurrPosH.w;
     pin.PrevPosH /= pin.PrevPosH.w;
     const float2 Velocity = ShaderUtil::CalcVelocity(pin.CurrPosH, pin.PrevPosH);
     

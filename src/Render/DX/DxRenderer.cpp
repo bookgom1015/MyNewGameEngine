@@ -238,7 +238,8 @@ BOOL DxRenderer::Draw() {
 		mToneMapping->InterMediateMapRtv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(), 
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
-		mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque]));
+		mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque],
+		0.4f, 0.1f));
 
 	CheckReturn(mpLogFile, DrawShadow());
 

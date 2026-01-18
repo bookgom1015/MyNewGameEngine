@@ -252,8 +252,11 @@ namespace ShadingConvention{
 
 #ifndef GBuffer_Default_RCSTRUCT
 #define GBuffer_Default_RCSTRUCT {	\
+		DirectX::XMUINT2 gTexDim;	\
 		UINT gVertexCount;			\
 		UINT gIndexCount;			\
+		FLOAT gDitheringMaxDist;	\
+		FLOAT gDitheringMinDist;	\
 	};
 #endif
 
@@ -306,8 +309,12 @@ namespace ShadingConvention{
 			namespace Default {
 				struct Struct GBuffer_Default_RCSTRUCT
 					enum {
-					E_VertexCount = 0,
+					E_TexDim_X = 0,
+					E_TexDim_Y,
+					E_VertexCount,
 					E_IndexCount,
+					E_MaxDitheringDist,
+					E_MinDitheringDist,
 					Count
 				};
 			}

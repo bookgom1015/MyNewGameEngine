@@ -104,7 +104,8 @@ namespace Render::DX::Shading {
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 				Foundation::Resource::GpuResource* const depthBuffer, 
 				D3D12_CPU_DESCRIPTOR_HANDLE do_depthBuffer,
-				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
+				const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
+				FLOAT ditheringMaxDist, FLOAT ditheringMinDist);
 
 		private:
 			BOOL BuildResources();
@@ -113,7 +114,8 @@ namespace Render::DX::Shading {
 			BOOL DrawRenderItems(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				ID3D12GraphicsCommandList6* const pCmdList,
-				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
+				const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
+				FLOAT ditheringMaxDist, FLOAT ditheringMinDist);
 			BOOL CacheNormalDepth(ID3D12GraphicsCommandList6* const pCmdList);
 
 		private:

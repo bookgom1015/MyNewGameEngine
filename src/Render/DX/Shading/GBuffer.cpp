@@ -218,7 +218,8 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 		Foundation::Resource::GpuResource* const depthBuffer, 
 		D3D12_CPU_DESCRIPTOR_HANDLE do_depthBuffer,
-		const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
+		const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
+		FLOAT ditheringMaxDist, FLOAT ditheringMinDist) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -277,7 +278,7 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 			RootSignature::Default::CB_Pass, 
 			pFrameResource->MainPassCB.CBAddress());
 
-		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems));
+		CheckReturn(mpLogFile, DrawRenderItems(pFrameResource, CmdList, ritems, ditheringMaxDist, ditheringMinDist));
 	}
 
 	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
@@ -559,7 +560,8 @@ BOOL GBuffer::GBufferClass::BuildDescriptors() {
 BOOL GBuffer::GBufferClass::DrawRenderItems(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		ID3D12GraphicsCommandList6* const pCmdList,
-		const std::vector<Render::DX::Foundation::RenderItem*>& ritems) {
+		const std::vector<Render::DX::Foundation::RenderItem*>& ritems,
+		FLOAT ditheringMaxDist, FLOAT ditheringMinDist) {
 	for (size_t i = 0, end = ritems.size(); i < end; ++i) {
 		const auto ri = ritems[i];
 
@@ -571,24 +573,27 @@ BOOL GBuffer::GBufferClass::DrawRenderItems(
 			RootSignature::Default::CB_Material, 
 			pFrameResource->MaterialCB.CBAddress(ri->Material->MaterialCBIndex));
 
+		ShadingConvention::GBuffer::RootConstant::Default::Struct rc;
+		rc.gTexDim = { mInitData.ClientWidth, mInitData.ClientHeight };
+		rc.gVertexCount = ri->Geometry->VertexBufferByteSize / ri->Geometry->VertexByteStride;
+		rc.gIndexCount = ri->Geometry->IndexBufferByteSize / ri->Geometry->IndexByteStride;
+		rc.gDitheringMaxDist = ditheringMaxDist;
+		rc.gDitheringMinDist = ditheringMinDist;
+
+		std::array<std::uint32_t, ShadingConvention::GBuffer::RootConstant::Default::Count> consts;
+		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::GBuffer::RootConstant::Default::Struct));
+
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::GBuffer::RootConstant::Default::Struct>(
+			RootSignature::Default::RC_Consts,
+			ShadingConvention::GBuffer::RootConstant::Default::Count,
+			consts.data(),
+			0,
+			pCmdList,
+			FALSE);
+
 		if (mInitData.MeshShaderSupported) {
 			pCmdList->SetGraphicsRootShaderResourceView(RootSignature::Default::SI_VertexBuffer, ri->Geometry->VertexBufferGPU->GetGPUVirtualAddress());
 			pCmdList->SetGraphicsRootShaderResourceView(RootSignature::Default::SI_IndexBuffer, ri->Geometry->IndexBufferGPU->GetGPUVirtualAddress());
-
-			ShadingConvention::GBuffer::RootConstant::Default::Struct rc;
-			rc.gVertexCount = ri->Geometry->VertexBufferByteSize / ri->Geometry->VertexByteStride;
-			rc.gIndexCount = ri->Geometry->IndexBufferByteSize / ri->Geometry->IndexByteStride;
-
-			std::array<std::uint32_t, ShadingConvention::GBuffer::RootConstant::Default::Count> consts;
-			std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::GBuffer::RootConstant::Default::Struct));
-
-			Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::GBuffer::RootConstant::Default::Struct>(
-				RootSignature::Default::RC_Consts, 
-				ShadingConvention::GBuffer::RootConstant::Default::Count, 
-				consts.data(), 
-				0,
-				pCmdList,
-				FALSE);
 
 			const UINT PrimCount = rc.gIndexCount / 3;
 

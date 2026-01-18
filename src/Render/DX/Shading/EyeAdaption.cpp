@@ -253,6 +253,13 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildPipelineStates() {
 	return TRUE;
 }
 
+BOOL EyeAdaption::EyeAdaptionClass::OnResize(UINT width, UINT height) {
+	mInitData.ClientWidth = width;
+	mInitData.ClientHeight = height;
+
+	return TRUE;
+}
+
 BOOL EyeAdaption::EyeAdaptionClass::ClearHistogram(
 		Foundation::Resource::FrameResource* const pFrameResource) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
