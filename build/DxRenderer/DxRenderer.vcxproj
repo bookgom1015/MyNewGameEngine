@@ -27,6 +27,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\Device.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\Factory.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\pch_d3d12.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h" />
@@ -72,26 +73,83 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\VolumetricLight.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp" />
-    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_dx12.cpp" />
-    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="..\..\externs\imgui\imgui.cpp" />
-    <ClCompile Include="..\..\externs\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="..\..\src\Common\AccelerationStructure\BVH.cpp" />
-    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp" />
+    <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_dx12.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_win32.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\AccelerationStructure\BVH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Camera\GameCamera.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Mesh\Vertex.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp" />
-    <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp" />
+    <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\DxLowRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\DX\DxRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\CommandObject.cpp" />
@@ -99,6 +157,14 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\DescriptorHeap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\Factory.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\pch_d3d12.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)inc\Render\DX\Foundation\Core\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)inc\Render\DX\Foundation\Core\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Render/DX/Foundation/Core/pch_d3d12.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Render/DX/Foundation/Core/pch_d3d12.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\SwapChain.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp" />
@@ -478,6 +544,8 @@
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)externs\CUDA\v13.1\include;$(SolutionDir)externs\ROCm\6.4\include;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Render/DX/Foundation/Core/pch_d3d12.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -503,6 +571,8 @@
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)externs\CUDA\v13.1\include;$(SolutionDir)externs\ROCm\6.4\include;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Render/DX/Foundation/Core/pch_d3d12.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

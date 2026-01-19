@@ -1,20 +1,5 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
-#include <dxgi1_6.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -35,8 +20,8 @@ namespace Render::DX::Foundation {
 			using Adapters = std::vector<std::pair<UINT, IDXGIAdapter*>>;
 
 		public:
-			Factory() = default;
-			virtual ~Factory() = default;
+			Factory();
+			virtual ~Factory();
 
 		public:
 			BOOL Initialize(Common::Debug::LogFile* const pLogFile);
@@ -51,17 +36,17 @@ namespace Render::DX::Foundation {
 			BOOL CreateFactory();
 
 		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
 
 			// Debugging
-			Microsoft::WRL::ComPtr<ID3D12Debug> mDebugController;
+			Microsoft::WRL::ComPtr<ID3D12Debug> mDebugController{};
 
-			Microsoft::WRL::ComPtr<IDXGIFactory4> mDxgiFactory;
-			UINT mdxgiFactoryFlags = 0;
+			Microsoft::WRL::ComPtr<IDXGIFactory4> mDxgiFactory{};
+			UINT mdxgiFactoryFlags{};
 
-			BOOL mbAllowTearing = FALSE;
+			BOOL mbAllowTearing{};
 
-			Adapters mAdapters;
+			Adapters mAdapters{};
 		};
 	}
 }

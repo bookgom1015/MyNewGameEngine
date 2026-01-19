@@ -15,7 +15,7 @@ namespace Render::DX::Foundation::Core {
 
 	public:
 		DepthStencilBuffer();
-		virtual ~DepthStencilBuffer() = default;
+		virtual ~DepthStencilBuffer();
 
 	public:
 		virtual UINT CbvSrvUavDescCount() const override;
@@ -41,12 +41,12 @@ namespace Render::DX::Foundation::Core {
 		BOOL BuildDescriptors();
 
 	private:
-		InitData mInitData;
+		InitData mInitData{};
 
-		std::unique_ptr<Resource::GpuResource> mDepthStencilBuffer;
-		D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuSrv;
-		D3D12_GPU_DESCRIPTOR_HANDLE mhDepthStencilBufferGpuSrv;
-		D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuDsv;
+		std::unique_ptr<Resource::GpuResource> mDepthStencilBuffer{};
+		D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuSrv{};
+		D3D12_GPU_DESCRIPTOR_HANDLE mhDepthStencilBufferGpuSrv{};
+		D3D12_CPU_DESCRIPTOR_HANDLE mhDepthStencilBufferCpuDsv{};
 	};
 }
 

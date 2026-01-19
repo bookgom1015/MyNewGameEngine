@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
 namespace Render::DX::Foundation::Core {
@@ -11,13 +9,13 @@ namespace Render::DX::Foundation::Core {
 
 	public:
 		struct InitData {
-			Factory* Factory;
-			Device* Device;
-			CommandObject* CommandObject;
-			HWND		   MainWnd;
-			UINT		   ClientWidth;
-			UINT		   ClientHeight;
-			BOOL		   AllowTearing;
+			Factory*		Factory;
+			Device*			Device;
+			CommandObject*	CommandObject;
+			HWND			MainWnd;
+			UINT			ClientWidth;
+			UINT			ClientHeight;
+			BOOL			AllowTearing;
 		};
 
 		using InitDataPtr = std::unique_ptr<InitData>;
@@ -62,19 +60,19 @@ namespace Render::DX::Foundation::Core {
 		BOOL BuildDescriptors();
 
 	private:
-		InitData mInitData;
+		InitData mInitData{};
 
-		Microsoft::WRL::ComPtr<IDXGISwapChain1> mSwapChain;
-		std::array<std::unique_ptr<Resource::GpuResource>, SwapChainBufferCount> mSwapChainBuffers;
-		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuSrvs;
-		std::array<D3D12_GPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferGpuSrvs;
-		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuRtvs;
+		Microsoft::WRL::ComPtr<IDXGISwapChain1> mSwapChain{};
+		std::array<std::unique_ptr<Resource::GpuResource>, SwapChainBufferCount> mSwapChainBuffers{};
+		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuSrvs{};
+		std::array<D3D12_GPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferGpuSrvs{};
+		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuRtvs{};
 
-		std::unique_ptr<Resource::GpuResource> mBackBufferCopy;
-		D3D12_CPU_DESCRIPTOR_HANDLE mhBackBufferCopyCpuSrv;
-		D3D12_GPU_DESCRIPTOR_HANDLE mhBackBufferCopyGpuSrv;
+		std::unique_ptr<Resource::GpuResource> mBackBufferCopy{};
+		D3D12_CPU_DESCRIPTOR_HANDLE mhBackBufferCopyCpuSrv{};
+		D3D12_GPU_DESCRIPTOR_HANDLE mhBackBufferCopyGpuSrv{};
 
-		UINT mCurrBackBuffer = 0;
+		UINT mCurrBackBuffer{};
 
 		D3D12_VIEWPORT mScreenViewport = {};
 		D3D12_RECT mScissorRect = {};

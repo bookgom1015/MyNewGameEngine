@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
@@ -6,6 +7,10 @@
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 
 using namespace Render::DX::Foundation::Core;
+
+DescriptorHeap::DescriptorHeap() {}
+
+DescriptorHeap::~DescriptorHeap() {}
 
 BOOL DescriptorHeap::Initialize(
 		Common::Debug::LogFile* const pLogFile,

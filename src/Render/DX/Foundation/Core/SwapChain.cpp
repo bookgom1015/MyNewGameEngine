@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Core/SwapChain.hpp"
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
@@ -10,8 +11,6 @@
 using namespace Render::DX::Foundation::Core;
 
 SwapChain::SwapChain() {
-	mInitData = {};
-
 	for (UINT i = 0; i < SwapChainBufferCount; ++i)
 		mSwapChainBuffers[i] = std::make_unique<Resource::GpuResource>();
 
@@ -136,7 +135,7 @@ BOOL SwapChain::BuildSwapChainBuffers() {
 }
 
 BOOL SwapChain::BuildResources() {
-	D3D12_RESOURCE_DESC rscDesc = {};
+	D3D12_RESOURCE_DESC rscDesc{};
 	rscDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	rscDesc.Alignment = 0;
 	rscDesc.Width = mInitData.ClientWidth;
@@ -162,7 +161,7 @@ BOOL SwapChain::BuildResources() {
 }
 
 BOOL SwapChain::BuildDescriptors() {
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Format = ShadingConvention::SwapChain::BackBufferFormat;

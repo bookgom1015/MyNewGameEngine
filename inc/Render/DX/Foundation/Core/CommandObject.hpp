@@ -1,18 +1,5 @@
 #pragma once
 
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -30,8 +17,8 @@ namespace Render::DX::Foundation {
 			friend class Util::D3D12Util;
 
 		public:
-			CommandObject() = default;
-			virtual ~CommandObject() = default;
+			CommandObject();
+			virtual ~CommandObject();
 
 		public: // Functions that is called only once
 			BOOL Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads);
@@ -71,25 +58,25 @@ namespace Render::DX::Foundation {
 			__forceinline constexpr UINT64 CurrentFence() const noexcept;
 
 		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
-			Device* mpDevice = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
+			Device* mpDevice{};
 
-			UINT mThreadCount = 0;
+			UINT mThreadCount{};
 
 #ifdef _DEBUG
 			// Debugging
-			Microsoft::WRL::ComPtr<ID3D12InfoQueue1> mInfoQueue;
+			Microsoft::WRL::ComPtr<ID3D12InfoQueue1> mInfoQueue{};
 			DWORD mCallbakCookie = 0x01010101;
 #endif
 			
 			// Command objects
-			Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
-			Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
-			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> mDirectCommandList;
-			std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6>> mMultiCommandLists;
+			Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue{};
+			Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc{};
+			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> mDirectCommandList{};
+			std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6>> mMultiCommandLists{};
 
-			Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
-			UINT64 mCurrentFence = 0;
+			Microsoft::WRL::ComPtr<ID3D12Fence> mFence{};
+			UINT64 mCurrentFence{};
 		};
 	}
 }

@@ -1,14 +1,5 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
 
 namespace Common::Debug {
@@ -40,8 +31,8 @@ namespace Render::DX {
 				friend class ImGuiManager::DX::DxImGuiManager;
 
 			public:
-				Device() = default;
-				virtual ~Device() = default;
+				Device();
+				virtual ~Device();
 
 			public:
 				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
@@ -112,9 +103,9 @@ namespace Render::DX {
 					void** const ppStateObject);
 
 			private:
-				Common::Debug::LogFile* mpLogFile = nullptr;
+				Common::Debug::LogFile* mpLogFile{};
 
-				Microsoft::WRL::ComPtr<ID3D12Device5> md3dDevice;
+				Microsoft::WRL::ComPtr<ID3D12Device5> md3dDevice{};
 			};
 		}
 	}

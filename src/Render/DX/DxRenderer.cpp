@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/DxRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
@@ -48,8 +49,6 @@
 #include "Render/DX/Shading/RaytracedShadow.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
-
-#include <d3dcompiler.h>
 
 using namespace Render::DX;
 using namespace DirectX;
@@ -135,7 +134,6 @@ BOOL DxRenderer::Initialize(
 		UINT width, UINT height) {
 
 	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
-	mbInitialized = TRUE;
 
 	CheckReturn(mpLogFile, InitShadingObjects());
 	CheckReturn(mpLogFile, BuildFrameResources());
@@ -165,9 +163,7 @@ BOOL DxRenderer::Initialize(
 }
 
 void DxRenderer::CleanUp() {
-	if (mbInitialized)
-		mCommandObject->FlushCommandQueue();
-
+	mCommandObject->FlushCommandQueue();
 	mpImGuiManager->CleanUpD3D12();
 
 	DxLowRenderer::CleanUp();
@@ -179,7 +175,7 @@ BOOL DxRenderer::OnResize(UINT width, UINT height) {
 	CheckReturn(mpLogFile, mShadingObjectManager->OnResize(width, height));
 
 #ifdef _DEBUG
-	std::cout << "DxRenderer resized (Width: " << width << " Height: " << height << ")" << std::endl;
+	std::cout << std::format("DxRenderer resized (Width: {}, Height: {}", width, height) << std::endl;
 #endif
 
 	return TRUE;

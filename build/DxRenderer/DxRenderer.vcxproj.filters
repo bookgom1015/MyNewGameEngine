@@ -351,6 +351,9 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\RaytracedShadow.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\pch_d3d12.h">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -547,6 +550,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\RaytracedShadow.cpp">
       <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Core\pch_d3d12.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

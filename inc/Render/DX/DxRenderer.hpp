@@ -4,12 +4,6 @@
 #include "Common/Util/HashUtil.hpp"
 #include "Render/DX/DxLowRenderer.hpp"
 
-#include <array>
-#include <map>
-#include <queue>
-
-#include <DirectXCollision.h>
-
 namespace Common::Foundation {
 	namespace Camera {
 		class GameCamera;
@@ -168,67 +162,65 @@ namespace Render {
 			BOOL PresentAndSignal();
 
 		private:
-			BOOL mbInitialized = FALSE;
+			FLOAT mDeltaTime{};
 
-			FLOAT mDeltaTime = 0.f;
-
-			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries;
-			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials;
+			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries{};
+			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials{};
 
 			// Frame resource
-			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources;
-			Foundation::Resource::FrameResource* mpCurrentFrameResource = nullptr;
-			UINT mCurrentFrameResourceIndex = 0;
+			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources{};
+			Foundation::Resource::FrameResource* mpCurrentFrameResource{};
+			UINT mCurrentFrameResourceIndex{};
 
 			// Constant buffers
-			std::unique_ptr<ConstantBuffers::PassCB> mMainPassCB;
-			std::unique_ptr<ConstantBuffers::LightCB> mLightCB;
-			std::unique_ptr<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB;
+			std::unique_ptr<ConstantBuffers::PassCB> mMainPassCB{};
+			std::unique_ptr<ConstantBuffers::LightCB> mLightCB{};
+			std::unique_ptr<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB{};
 
 			// Shading objects
-			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager;
-			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
+			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
+			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};
 
-			std::unique_ptr<Shading::Util::MipmapGenerator::MipmapGeneratorClass> mMipmapGenerator;
-			std::unique_ptr<Shading::Util::EquirectangularConverter::EquirectangularConverterClass> mEquirectangularConverter;
-			std::unique_ptr<Shading::Util::TextureScaler::TextureScalerClass> mTextureScaler;
+			std::unique_ptr<Shading::Util::MipmapGenerator::MipmapGeneratorClass> mMipmapGenerator{};
+			std::unique_ptr<Shading::Util::EquirectangularConverter::EquirectangularConverterClass> mEquirectangularConverter{};
+			std::unique_ptr<Shading::Util::TextureScaler::TextureScalerClass> mTextureScaler{};
 
-			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap;
-			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection;
-			std::unique_ptr<Shading::ToneMapping::ToneMappingClass> mToneMapping;
-			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer;
-			std::unique_ptr<Shading::BRDF::BRDFClass> mBRDF;
-			std::unique_ptr<Shading::Shadow::ShadowClass> mShadow;
-			std::unique_ptr<Shading::TAA::TAAClass> mTAA;
-			std::unique_ptr<Shading::SSAO::SSAOClass> mSSAO;
-			std::unique_ptr<Shading::RTAO::RTAOClass> mRTAO;
-			std::unique_ptr<Shading::RayGen::RayGenClass> mRayGen;
-			std::unique_ptr<Shading::RaySorting::RaySortingClass> mRaySorting;
-			std::unique_ptr<Shading::SVGF::SVGFClass> mSVGF;
-			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter;
-			std::unique_ptr<Shading::VolumetricLight::VolumetricLightClass> mVolumetricLight;
-			std::unique_ptr<Shading::SSCS::SSCSClass> mSSCS;
-			std::unique_ptr<Shading::MotionBlur::MotionBlurClass> mMotionBlur;
-			std::unique_ptr<Shading::Bloom::BloomClass> mBloom;
-			std::unique_ptr<Shading::DOF::DOFClass> mDOF;
-			std::unique_ptr<Shading::EyeAdaption::EyeAdaptionClass> mEyeAdaption;
-			std::unique_ptr<Shading::RaytracedShadow::RaytracedShadowClass> mRaytracedShadow;
+			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap{};
+			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection{};
+			std::unique_ptr<Shading::ToneMapping::ToneMappingClass> mToneMapping{};
+			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer{};
+			std::unique_ptr<Shading::BRDF::BRDFClass> mBRDF{};
+			std::unique_ptr<Shading::Shadow::ShadowClass> mShadow{};
+			std::unique_ptr<Shading::TAA::TAAClass> mTAA{};
+			std::unique_ptr<Shading::SSAO::SSAOClass> mSSAO{};
+			std::unique_ptr<Shading::RTAO::RTAOClass> mRTAO{};
+			std::unique_ptr<Shading::RayGen::RayGenClass> mRayGen{};
+			std::unique_ptr<Shading::RaySorting::RaySortingClass> mRaySorting{};
+			std::unique_ptr<Shading::SVGF::SVGFClass> mSVGF{};
+			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter{};
+			std::unique_ptr<Shading::VolumetricLight::VolumetricLightClass> mVolumetricLight{};
+			std::unique_ptr<Shading::SSCS::SSCSClass> mSSCS{};
+			std::unique_ptr<Shading::MotionBlur::MotionBlurClass> mMotionBlur{};
+			std::unique_ptr<Shading::Bloom::BloomClass> mBloom{};
+			std::unique_ptr<Shading::DOF::DOFClass> mDOF{};
+			std::unique_ptr<Shading::EyeAdaption::EyeAdaptionClass> mEyeAdaption{};
+			std::unique_ptr<Shading::RaytracedShadow::RaytracedShadowClass> mRaytracedShadow{};
 
 			// Render items
-			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems;
-			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs;
-			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups;
-			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRendableItems;
-			BOOL mbMeshGeometryAdded = FALSE;
+			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems{};
+			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs{};
+			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups{};
+			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRendableItems{};
+			BOOL mbMeshGeometryAdded{};
 
 			// Scene bounds
-			DirectX::BoundingSphere mSceneBounds;
+			DirectX::BoundingSphere mSceneBounds{};
 
 			// Acceleration structure manager
-			std::unique_ptr<Shading::Util::AccelerationStructureManager> mAccelerationStructureManager;
+			std::unique_ptr<Shading::Util::AccelerationStructureManager> mAccelerationStructureManager{};
 
 			// Pending lights
-			std::queue<std::shared_ptr<Foundation::Light>> mPendingLights;
+			std::queue<std::shared_ptr<Foundation::Light>> mPendingLights{};
 		};
 	}
 }

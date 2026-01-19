@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Core/DepthStencilBuffer.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"
@@ -8,10 +9,10 @@
 using namespace Render::DX::Foundation::Core;
 
 DepthStencilBuffer::DepthStencilBuffer() {
-	mInitData = {};
 	mDepthStencilBuffer = std::make_unique<Resource::GpuResource>();
-	mhDepthStencilBufferCpuDsv = {};
 }
+
+DepthStencilBuffer::~DepthStencilBuffer() {}
 
 UINT DepthStencilBuffer::CbvSrvUavDescCount() const { return 1; }
 
@@ -56,7 +57,7 @@ BOOL DepthStencilBuffer::OnResize(UINT width, UINT height) {
 
 BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 	// Create the depth/stencil buffer and view.
-	D3D12_RESOURCE_DESC depthStencilDesc;
+	D3D12_RESOURCE_DESC depthStencilDesc{};
 	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Alignment = 0;
 	depthStencilDesc.Width = mInitData.ClientWidth;
@@ -69,7 +70,7 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-	D3D12_CLEAR_VALUE optClear;
+	D3D12_CLEAR_VALUE optClear{};
 	optClear.Format = ShadingConvention::DepthStencilBuffer::DepthStencilBufferFormat;
 	optClear.DepthStencil.Depth = ShadingConvention::DepthStencilBuffer::InvalidDepthValue;
 	optClear.DepthStencil.Stencil = ShadingConvention::DepthStencilBuffer::InvalidStencilValue;
@@ -90,7 +91,7 @@ BOOL DepthStencilBuffer::BuildDepthStencilBuffer() {
 BOOL DepthStencilBuffer::BuildDescriptors() {
 	// Srv
 	{
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Format = ShadingConvention::DepthStencilBuffer::DepthBufferFormat;

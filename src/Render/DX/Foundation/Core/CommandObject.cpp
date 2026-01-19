@@ -1,3 +1,4 @@
+#include "Render/Dx/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
@@ -13,8 +14,6 @@ namespace {
 			LPCSTR pDescription,
 			void* pContext) {
 		if (!pDescription) return;
-
-		std::string str(pDescription);
 
 		const char* sevStr = nullptr;
 		switch (severity) {
@@ -43,6 +42,10 @@ namespace {
 		Logln(pLogFile, buf);
 	}
 }
+
+CommandObject::CommandObject() {}
+
+CommandObject::~CommandObject() {}
 
 BOOL CommandObject::Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads) {
 	mpLogFile = pLogFile;
@@ -177,7 +180,7 @@ BOOL CommandObject::Signal() {
 BOOL CommandObject::CreateDebugObjects() {
 	CheckReturn(mpLogFile, mpDevice->QueryInterface(mInfoQueue));
 	CheckHRESULT(mpLogFile, mInfoQueue->RegisterMessageCallback(D3D12MessageCallback, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, mpLogFile, &mCallbakCookie));
-
+	
 	return TRUE;
 }
 #endif

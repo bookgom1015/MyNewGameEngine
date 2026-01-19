@@ -1,12 +1,16 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
-#include "ImGuiManager/DX/DxImGuiManager.hpp"
 
 using namespace Render::DX::Foundation::Core;
 using namespace Microsoft::WRL;
+
+Device::Device() {}
+
+Device::~Device() {}
 
 BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;

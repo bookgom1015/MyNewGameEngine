@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/DxLowRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
@@ -11,8 +12,6 @@
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
-
-#include <algorithm>
 
 using namespace Microsoft::WRL;
 using namespace Render::DX;
@@ -52,7 +51,7 @@ BOOL DxLowRenderer::Initialize(
 	CheckReturn(mpLogFile, Foundation::Util::D3D12Util::Initialize(mpLogFile));
 
 	CheckReturn(mpLogFile, GetHWInfo());
-	CheckReturn(mpLogFile, InitDirect3D(width, height));
+	CheckReturn(mpLogFile, InitDirect3D());
 	CheckReturn(mpLogFile, BuildDescriptors());
 
 	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
@@ -88,12 +87,14 @@ BOOL DxLowRenderer::CreateDescriptorHeaps() {
 	return TRUE;
 }
 
-BOOL DxLowRenderer::InitDirect3D(UINT width, UINT height) {
+BOOL DxLowRenderer::InitDirect3D() {
 	CheckReturn(mpLogFile, CreateDevice());
 	const auto device = mDevice.get();
 
-	CheckReturn(mpLogFile, mCommandObject->Initialize(mpLogFile, device, static_cast<UINT>(mProcessor->Logical)));
-	CheckReturn(mpLogFile, mDescriptorHeap->Initialize(mpLogFile, device, mSwapChain.get(), mDepthStencilBuffer.get()));
+	CheckReturn(mpLogFile, mCommandObject->Initialize(
+		mpLogFile, device, static_cast<UINT>(mProcessor->Logical)));
+	CheckReturn(mpLogFile, mDescriptorHeap->Initialize(
+		mpLogFile, device, mSwapChain.get(), mDepthStencilBuffer.get()));
 
 	CheckReturn(mpLogFile, CreateSwapChain());
 	CheckReturn(mpLogFile, CreateDepthStencilBuffer());
@@ -110,7 +111,8 @@ BOOL DxLowRenderer::CreateDevice() {
 	CheckReturn(mpLogFile, mFactory->GetAdapters(InitDataPtr->Items));
 	CheckReturn(mpLogFile, mpWindowsManager->SelectDialog(InitDataPtr.get()));
 
-	CheckReturn(mpLogFile, mFactory->SelectAdapter(mDevice.get(), InitDataPtr->SelectedItemIndex, mbRaytracingSupported));
+	CheckReturn(mpLogFile, mFactory->SelectAdapter(
+		mDevice.get(), InitDataPtr->SelectedItemIndex, mbRaytracingSupported));
 	CheckReturn(mpLogFile, mDevice->Initialize(mpLogFile));
 	CheckReturn(mpLogFile, mDevice->CheckMeshShaderSupported(mbMeshShaderSupported));
 
@@ -118,7 +120,7 @@ BOOL DxLowRenderer::CreateDevice() {
 }
 
 BOOL DxLowRenderer::CreateSwapChain() {
-	auto initData = Foundation::Core::SwapChain::MakeInitData();
+	decltype(auto) initData = Foundation::Core::SwapChain::MakeInitData();
 	initData->Factory = mFactory.get();
 	initData->Device = mDevice.get();
 	initData->CommandObject = mCommandObject.get();
@@ -133,7 +135,7 @@ BOOL DxLowRenderer::CreateSwapChain() {
 }
 
 BOOL DxLowRenderer::CreateDepthStencilBuffer() {
-	auto initData = Foundation::Core::DepthStencilBuffer::MakeInitData();
+	decltype(auto) initData = Foundation::Core::DepthStencilBuffer::MakeInitData();
 	initData->ClientWidth = mClientWidth;
 	initData->ClientHeight = mClientHeight;
 	initData->Device = mDevice.get();

@@ -1,16 +1,5 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -30,8 +19,8 @@ namespace Render::DX {
 			friend class ImGuiManager::DX::DxImGuiManager;
 
 		public:
-			DescriptorHeap() = default;
-			virtual ~DescriptorHeap() = default;
+			DescriptorHeap();
+			virtual ~DescriptorHeap();
 
 		public:
 			__forceinline D3D12_CPU_DESCRIPTOR_HANDLE CbvSrvUavCpuOffset(UINT offset);
@@ -55,28 +44,28 @@ namespace Render::DX {
 			BOOL BuildDescriptorSizes();
 
 		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
 
-			Device* mDevice = nullptr;
+			Device* mDevice{};
 
-			SwapChain* mpSwapChain = nullptr;
-			DepthStencilBuffer* mpDepthStencilBuffer = nullptr;
+			SwapChain* mpSwapChain{};
+			DepthStencilBuffer* mpDepthStencilBuffer{};
 
 			// Descriptor heaps
-			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
-			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
-			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mCbvSrvUavHeap;
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap{};
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap{};
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mCbvSrvUavHeap{};
 
 			// Descriptor handle sizes
-			UINT mRtvDescriptorSize = 0;
-			UINT mDsvDescriptorSize = 0;
-			UINT mCbvSrvUavDescriptorSize = 0;
+			UINT mRtvDescriptorSize{};
+			UINT mDsvDescriptorSize{};
+			UINT mCbvSrvUavDescriptorSize{};
 
 			// Descriptor handles
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuCbvSrvUav;
-			CD3DX12_GPU_DESCRIPTOR_HANDLE mhGpuCbvSrvUav;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuDsv;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuRtv;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuCbvSrvUav{};
+			CD3DX12_GPU_DESCRIPTOR_HANDLE mhGpuCbvSrvUav{};
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuDsv{};
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuRtv{};
 		};
 	}
 }

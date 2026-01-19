@@ -27,8 +27,6 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 #endif
 
 	{
-		int* arr = new int[10];
-
 		std::unique_ptr<Common::Debug::LogFile> LogFile = std::make_unique<Common::Debug::LogFile>();
 		const auto logFile = LogFile.get();
 

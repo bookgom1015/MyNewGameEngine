@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
@@ -7,6 +8,10 @@
 
 using namespace Microsoft::WRL;
 using namespace Render::DX::Foundation::Core;
+
+Factory::Factory() {}
+
+Factory::~Factory() {}
 
 BOOL Factory::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
@@ -49,17 +54,15 @@ BOOL Factory::SortAdapters() {
 
 		const UINT sram = static_cast<UINT>(desc.SharedSystemMemory / (1024 * 1024));
 		const UINT vram = static_cast<UINT>(desc.DedicatedVideoMemory / (1024 * 1024));
-#if _DEBUG
-		std::wstringstream wsstream;
-		wsstream << L"    " << desc.Description << L" ( Shared system memory: " << sram << L"MB , Dedicated video memory: " << vram << L"MB )";
-#endif
 		const UINT score = static_cast<UINT>(desc.DedicatedSystemMemory + desc.DedicatedVideoMemory);
 
 		mAdapters.emplace_back(score, adapter);
 		++i;
 
 #if _DEBUG
-		WLogln(mpLogFile, wsstream.str());
+		auto msg = std::format(L"    {} ( Shared system memory: {}MB , Dedicated video memory: {}MB )", 
+			desc.Description, sram, vram);
+		WLogln(mpLogFile, msg);
 #endif
 	}
 
@@ -108,9 +111,8 @@ BOOL Factory::SelectAdapter(Device* const pDevice, UINT adapterIndex, BOOL& bRay
 	const auto featureSupport = pDevice->md3dDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &ops, sizeof(ops));
 	if (FAILED(featureSupport)) {
 		pDevice->md3dDevice = nullptr;
-		std::wstringstream wsstream;
-		wsstream << L"CheckFeatureSupport failed: " << std::hex << featureSupport;
-		ReturnFalse(mpLogFile, wsstream.str().c_str());
+		auto msg = std::format(L"CheckFeatureSupport failed: 0x{:08X}", featureSupport);
+		ReturnFalse(mpLogFile, msg);
 	}
 
 	if (ops.RaytracingTier >= D3D12_RAYTRACING_TIER_1_0) {

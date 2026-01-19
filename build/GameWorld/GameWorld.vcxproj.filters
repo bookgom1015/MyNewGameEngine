@@ -177,6 +177,9 @@
     <ClInclude Include="..\..\inc\GameWorld\Prefab\FineDonut.hpp">
       <Filter>Header Files\Prefab</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\pch_common.h">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">

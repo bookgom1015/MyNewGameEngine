@@ -180,6 +180,7 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Core\GameTimer.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\MemoryManagement.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\pch_common.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\PowerManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.h" />

@@ -1,25 +1,5 @@
 #pragma once
 
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "DirectXTex.lib")
-
-#include <memory>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
-#include <dxgi1_6.h>
-
 #include "Common/Render/Renderer.hpp"
 
 namespace Common::Foundation::Core {
@@ -70,24 +50,24 @@ namespace Render::DX {
 	private: // Functions that is called only once to initialize DirectX
 		BOOL GetHWInfo();
 
-		BOOL InitDirect3D(UINT width, UINT height);
+		BOOL InitDirect3D();
 		BOOL CreateDevice();
 		BOOL CreateSwapChain();
 		BOOL CreateDepthStencilBuffer();
 		BOOL BuildDescriptors();
 
 	protected:
-		UINT mClientWidth = 0;
-		UINT mClientHeight = 0;
+		UINT mClientWidth{};
+		UINT mClientHeight{};
 
-		ImGuiManager::DX::DxImGuiManager* mpImGuiManager = nullptr;
+		ImGuiManager::DX::DxImGuiManager* mpImGuiManager{};
 				
-		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor;
-		std::unique_ptr<Foundation::Core::Factory> mFactory;
-		std::unique_ptr<Foundation::Core::Device> mDevice;
-		std::unique_ptr<Foundation::Core::DescriptorHeap> mDescriptorHeap;
-		std::unique_ptr<Foundation::Core::SwapChain> mSwapChain;
-		std::unique_ptr<Foundation::Core::DepthStencilBuffer> mDepthStencilBuffer;
-		std::unique_ptr<Foundation::Core::CommandObject> mCommandObject;
+		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor{};
+		std::unique_ptr<Foundation::Core::Factory> mFactory{};
+		std::unique_ptr<Foundation::Core::Device> mDevice{};
+		std::unique_ptr<Foundation::Core::DescriptorHeap> mDescriptorHeap{};
+		std::unique_ptr<Foundation::Core::SwapChain> mSwapChain{};
+		std::unique_ptr<Foundation::Core::DepthStencilBuffer> mDepthStencilBuffer{};
+		std::unique_ptr<Foundation::Core::CommandObject> mCommandObject{};
 	};
 }
