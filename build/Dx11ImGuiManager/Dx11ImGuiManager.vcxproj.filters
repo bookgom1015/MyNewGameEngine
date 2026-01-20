@@ -19,6 +19,24 @@
     <Filter Include="External Files\ImGui">
       <UniqueIdentifier>{2a6441bd-4984-41a2-8fd4-8be59f588391}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files">
+      <UniqueIdentifier>{716fdaa1-546e-4bec-bff4-3d16bcdadf39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\ImGuiManager">
+      <UniqueIdentifier>{b73bfcd2-7aa6-4f08-b906-b2c83163d475}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Debug">
+      <UniqueIdentifier>{5bf6b38f-3d52-466b-ae1a-b98fc71413cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation">
+      <UniqueIdentifier>{53285ae2-337c-4812-b1a0-47685c0fb7bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Foundation\Core">
+      <UniqueIdentifier>{4632cc64-4bf6-4dcc-bcf1-2f0669bc6436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Util">
+      <UniqueIdentifier>{9717cf06-0cbd-454f-827d-2148c123db01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\externs\imgui\imgui.cpp">
@@ -45,6 +63,21 @@
     <ClCompile Include="..\..\src\ImGuiManager\DX11\pch_imgui_dx11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\ImGuiManager\ImGuiManager.cpp">
+      <Filter>Common Files\ImGuiManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\ImGuiManager\DX11\Dx11ImGuiManager.hpp">
@@ -52,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\ImGuiManager\DX11\pch_imgui_dx11.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\ImGuiManager\ImGuiManager.hpp">
+      <Filter>Common Files\ImGuiManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

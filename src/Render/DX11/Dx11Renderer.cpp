@@ -1,5 +1,6 @@
 #include "Render/DX11/Foundation/Core/pch_d3d11.h"
 #include "Render/DX11/Dx11Renderer.hpp"
+#include "Common/Debug/Logger.hpp"
 
 using namespace Render::DX11;
 
@@ -27,6 +28,12 @@ BOOL Dx11Renderer::Initialize(
 void Dx11Renderer::CleanUp() {}
 
 BOOL Dx11Renderer::OnResize(UINT width, UINT height) {
+	CheckReturn(mpLogFile, Dx11LowRenderer::OnResize(width, height));
+
+#ifdef _DEBUG
+	std::cout << std::format("Dx11Renderer resized (Width: {}, Height: {}", width, height) << std::endl;
+#endif
+
 	return TRUE;
 }
 

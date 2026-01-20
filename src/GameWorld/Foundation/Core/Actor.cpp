@@ -3,10 +3,7 @@
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
-#include "GameWorld/Foundation/Core/Component.hpp"
 #include "GameWorld/GameWorld.hpp"
-
-#include <algorithm>
 
 using namespace GameWorld::Foundation::Core;
 using namespace DirectX;
@@ -25,8 +22,6 @@ Actor::Actor(
 	GameWorld::GameWorldClass::spGameWorld->ActorManager()->AddActor(this);
 }
 
-Actor::~Actor() {}
-
 Actor::Actor(
 		Common::Debug::LogFile* const pLogFile, 
 		const std::string& name, 
@@ -34,6 +29,8 @@ Actor::Actor(
 	: mpLogFile(pLogFile), mName(name), mTransform(trans) {
 	GameWorld::GameWorldClass::spGameWorld->ActorManager()->AddActor(this);
 }
+
+Actor::~Actor() {}
 
 BOOL Actor::OnInitialzing() { return TRUE; }
 

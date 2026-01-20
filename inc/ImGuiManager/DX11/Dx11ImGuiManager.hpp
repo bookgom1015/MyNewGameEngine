@@ -2,24 +2,22 @@
 
 #include "Common/ImGuiManager/ImGuiManager.hpp"
 
-#include <memory>
-
 namespace ImGuiManager {
 	extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* CreateImGuiManager();
 	extern "C" ImGuiManagerAPI void DestroyImGuiManager(Common::ImGuiManager::ImGuiManager* const imGuiManager);
 
-	namespace VK {
-		class VkImGuiManager : public Common::ImGuiManager::ImGuiManager {
+	namespace DX11 {
+		class Dx11ImGuiManager : public Common::ImGuiManager::ImGuiManager {
 		public:
-			VkImGuiManager() = default;
-			virtual ~VkImGuiManager() = default;
+			Dx11ImGuiManager();
+			virtual ~Dx11ImGuiManager();
 
 		public:
-			BOOL InitializeVulkan();
-			void CleanUpVulkan();
+			BOOL InitializeD3D11();
+			void CleanUpD3D11();
 
 		private:
-			BOOL mbIsVulkanInitialized = FALSE;
+			BOOL mbIsD3D11Initialized{};
 		};
 	}
 }

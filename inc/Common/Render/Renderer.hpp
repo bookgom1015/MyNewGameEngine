@@ -80,14 +80,14 @@ namespace Common {
 			__forceinline void SetCamera(Common::Foundation::Camera::GameCamera* const pCamera);
 
 		protected:
-			Common::Debug::LogFile* mpLogFile = nullptr;
-			Common::Foundation::Core::WindowsManager* mpWindowsManager = nullptr;
-			ShadingArgument::ShadingArgumentSet* mpShadingArgumentSet = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
+			Common::Foundation::Core::WindowsManager* mpWindowsManager{};
+			ShadingArgument::ShadingArgumentSet* mpShadingArgumentSet{};
 
-			Common::Foundation::Camera::GameCamera* mpCamera = nullptr;
+			Common::Foundation::Camera::GameCamera* mpCamera{};
 
-			BOOL mbRaytracingSupported = FALSE;
-			BOOL mbMeshShaderSupported = FALSE;
+			BOOL mbRaytracingSupported{};
+			BOOL mbMeshShaderSupported{};
 		};
 	}
 }

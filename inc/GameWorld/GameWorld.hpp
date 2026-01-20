@@ -1,9 +1,5 @@
 #pragma once
 
-#pragma comment(lib, "Renderer.lib")
-#pragma comment(lib, "InputProcessor.lib")
-#pragma comment(lib, "ImGuiManager.lib")
-
 namespace Common {
 	namespace Debug {
 		struct LogFile;

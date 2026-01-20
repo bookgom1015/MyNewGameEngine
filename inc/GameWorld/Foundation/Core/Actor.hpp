@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common/Foundation/Mesh/Transform.hpp"
+#include "GameWorld/Foundation/Core/Component.hpp"
 
 namespace Common {
 	namespace Debug {
@@ -13,8 +14,6 @@ namespace Common {
 }
 
 namespace GameWorld::Foundation::Core {
-	class Component;
-
 	class Actor {
 	public:
 		Actor(

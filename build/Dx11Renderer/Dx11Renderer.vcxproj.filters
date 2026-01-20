@@ -25,6 +25,15 @@
     <Filter Include="Header Files\Foundation\Core">
       <UniqueIdentifier>{3334b355-3cde-4276-8e15-11d033c58a5e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common Files">
+      <UniqueIdentifier>{4b51837f-85c4-445a-82e6-0a64d26ec937}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Debug">
+      <UniqueIdentifier>{5664120f-c66c-4052-ae89-f816db11b1c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files\Util">
+      <UniqueIdentifier>{04690f5d-56d1-4385-a1e1-0d50b7c2d194}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Render\DX11\Dx11Renderer.cpp">
@@ -35,6 +44,21 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX11\Dx11LowRenderer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
+      <Filter>Common Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp">
+      <Filter>Common Files\Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

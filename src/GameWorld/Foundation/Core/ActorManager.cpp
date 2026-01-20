@@ -2,6 +2,7 @@
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "GameWorld/Foundation/Core/Actor.hpp"
+#include "GameWorld/Foundation/Core/Component.hpp"
 
 using namespace GameWorld::Foundation::Core;
 

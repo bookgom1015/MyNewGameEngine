@@ -12,9 +12,12 @@ extern "C" ImGuiManagerAPI void ImGuiManager::DestroyImGuiManager(Common::ImGuiM
 	delete imGuiManager;
 }
 
-BOOL VkImGuiManager::InitializeVulkan() {
-	ImGui_ImplVulkan_InitInfo initInfo = {};
+VkImGuiManager::VkImGuiManager() {}
 
+VkImGuiManager::~VkImGuiManager() {}
+
+BOOL VkImGuiManager::InitializeVulkan() {
+	ImGui_ImplVulkan_InitInfo initInfo{};
 
 	CheckReturn(mpLogFile, ImGui_ImplVulkan_Init(&initInfo));
 

@@ -9,15 +9,15 @@ namespace ImGuiManager {
 	namespace VK {
 		class VkImGuiManager : public Common::ImGuiManager::ImGuiManager {
 		public:
-			VkImGuiManager() = default;
-			virtual ~VkImGuiManager() = default;
+			VkImGuiManager();
+			virtual ~VkImGuiManager();
 
 		public:
 			BOOL InitializeVulkan();
 			void CleanUpVulkan();
 
 		private:
-			BOOL mbIsVulkanInitialized = FALSE;
+			BOOL mbIsVulkanInitialized{};
 		};
 	}
 }

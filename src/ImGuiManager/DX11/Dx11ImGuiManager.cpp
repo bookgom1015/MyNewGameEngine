@@ -1,24 +1,26 @@
+#include "ImGuiManager/DX11/pch_imgui_dx11.h"
 #include "ImGuiManager/DX11/Dx11ImGuiManager.hpp"
 
+using namespace ImGuiManager::DX11;
+
 extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* ImGuiManager::CreateImGuiManager() {
-	return new VkImGuiManager();
+	return new Dx11ImGuiManager();
 }
 
 extern "C" ImGuiManagerAPI void ImGuiManager::DestroyImGuiManager(Common::ImGuiManager::ImGuiManager* const imGuiManager) {
 	delete imGuiManager;
 }
 
-BOOL VkImGuiManager::InitializeVulkan() {
-	ImGui_ImplVulkan_InitInfo initInfo = {};
+Dx11ImGuiManager::Dx11ImGuiManager() {}
 
+Dx11ImGuiManager::~Dx11ImGuiManager() {}
 
-	CheckReturn(mpLogFile, ImGui_ImplVulkan_Init(&initInfo));
-
-	mbIsVulkanInitialized = TRUE;
+BOOL Dx11ImGuiManager::InitializeD3D11() {
+	mbIsD3D11Initialized = TRUE;
 
 	return TRUE;
 }
 
-void VkImGuiManager::CleanUpVulkan() {
-	if (mbIsVulkanInitialized) ImGui_ImplVulkan_Shutdown();
+void Dx11ImGuiManager::CleanUpD3D11() {
+	if (mbIsD3D11Initialized) {}
 }
