@@ -1,12 +1,13 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/Core/CommandObject.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 
 using namespace Render::VK::Foundation::Core;
 
-CommandObject::~CommandObject() {
-	CleanUp();
-}
+CommandObject::CommandObject() {}
+
+CommandObject::~CommandObject() { CleanUp(); }
 
 BOOL CommandObject::Initialize(
 		Common::Debug::LogFile* const pLogFile,
@@ -62,7 +63,7 @@ BOOL CommandObject::CreateQueues() {
 BOOL CommandObject::CreateCommandPool() {
 	Foundation::Util::QueueFamilyIndices indices = Foundation::Util::QueueFamilyIndices::FindQueueFamilies(mPhysicalDevice, mSurface);
 
-	VkCommandPoolCreateInfo poolInfo = {};
+	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = indices.GetGraphicsFamilyIndex();
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -88,10 +89,10 @@ BOOL CommandObject::CreateCommandBuffer() {
 }
 
 BOOL CommandObject::CreateSyncObjects() {
-	VkSemaphoreCreateInfo semaphoreInfo = {};
+	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	VkFenceCreateInfo fenceInfo = {};
+	VkFenceCreateInfo fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 

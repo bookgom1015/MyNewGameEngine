@@ -1,15 +1,5 @@
 #pragma once
 
-#pragma comment(lib, "vulkan-1.lib")
-
-#include <array>
-#include <memory>
-
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.h>
-
 #include "Common/Render/Renderer.hpp"
 
 namespace Common::Foundation::Core {
@@ -60,20 +50,20 @@ namespace Render::VK {
 		BOOL CreateCommandObjects();
 
 	protected:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
 
-		ImGuiManager::VK::VkImGuiManager* mpImGuiManager = nullptr;
+		ImGuiManager::VK::VkImGuiManager* mpImGuiManager{};
 
-		UINT mClientWidth = 0;
-		UINT mClientHeight = 0;
+		UINT mClientWidth{};
+		UINT mClientHeight{};
 
 	protected:
-		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor;
+		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor{};
 
-		std::unique_ptr<Foundation::Core::Instance> mInstance;
-		std::unique_ptr<Foundation::Core::Surface> mSurface;
-		std::unique_ptr<Foundation::Core::Device> mDevice;
-		std::unique_ptr<Foundation::Core::SwapChain> mSwapChain;
-		std::unique_ptr<Foundation::Core::CommandObject> mCommandObject;
+		std::unique_ptr<Foundation::Core::Instance> mInstance{};
+		std::unique_ptr<Foundation::Core::Surface> mSurface{};
+		std::unique_ptr<Foundation::Core::Device> mDevice{};
+		std::unique_ptr<Foundation::Core::SwapChain> mSwapChain{};
+		std::unique_ptr<Foundation::Core::CommandObject> mCommandObject{};
 	};
 }

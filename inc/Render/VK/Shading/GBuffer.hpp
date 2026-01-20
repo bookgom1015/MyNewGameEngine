@@ -33,10 +33,10 @@ namespace Render::VK::Shading {
 		class GBufferClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Foundation::Core::Device* Device = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				Foundation::Core::Device* Device{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:

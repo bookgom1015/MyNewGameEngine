@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Util/MipmapGenerator.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
@@ -28,6 +29,7 @@ UINT MipmapGenerator::MipmapGeneratorClass::DsvDescCount() const { return 0; }
 BOOL MipmapGenerator::MipmapGeneratorClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -61,12 +63,12 @@ BOOL MipmapGenerator::MipmapGeneratorClass::BuildRootSignatures() {
 
 	// Default
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count]{};
 		slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(
 			ShadingConvention::MipmapGenerator::RootConstant::Default::Count, 0);
 		slotRootParameter[RootSignature::Default::SI_InputMap].InitAsDescriptorTable(1, &texTables[index++]);

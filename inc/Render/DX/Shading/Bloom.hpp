@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
 namespace Render::DX::Shading {
@@ -74,13 +72,13 @@ namespace Render::DX::Shading {
 		class BloomClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				BOOL MeshShaderSupported{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 			using DownSampleFunc = std::function<BOOL(
@@ -148,22 +146,22 @@ namespace Render::DX::Shading {
 		private:
 			InitData mInitData;
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mHighlightMaps;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapCpuSrvs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapGpuSrvs;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapCpuUavs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapGpuUavs;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mHighlightMaps{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapCpuSrvs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapGpuSrvs{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapCpuUavs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhHighlightMapGpuUavs{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mBloomMaps;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapCpuSrvs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapGpuSrvs;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapCpuUavs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapGpuUavs;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mBloomMaps{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapCpuSrvs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapGpuSrvs{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapCpuUavs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Resource::Count> mhBloomMapGpuUavs{};
 		};
 
 		using InitDataPtr = std::unique_ptr<BloomClass::InitData>;

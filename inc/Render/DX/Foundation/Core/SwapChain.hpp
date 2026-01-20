@@ -2,6 +2,9 @@
 
 #include "Render/DX/Foundation/ShadingObject.hpp"
 
+#include <dxgi1_6.h>
+#include <array>
+
 namespace Render::DX::Foundation::Core {
 	class SwapChain : public ShadingObject {
 	public:
@@ -74,8 +77,8 @@ namespace Render::DX::Foundation::Core {
 
 		UINT mCurrBackBuffer{};
 
-		D3D12_VIEWPORT mScreenViewport = {};
-		D3D12_RECT mScissorRect = {};
+		D3D12_VIEWPORT mScreenViewport{};
+		D3D12_RECT mScissorRect{};
 	};
 }
 

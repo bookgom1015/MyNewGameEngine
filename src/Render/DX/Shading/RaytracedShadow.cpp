@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/RaytracedShadow.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -39,6 +40,7 @@ BOOL RaytracedShadow::RaytracedShadowClass::Initialize(
 		Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -59,7 +61,7 @@ BOOL RaytracedShadow::RaytracedShadowClass::CompileShaders() {
 BOOL RaytracedShadow::RaytracedShadowClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 
-	CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[4]{}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3);
@@ -67,7 +69,7 @@ BOOL RaytracedShadow::RaytracedShadowClass::BuildRootSignatures() {
 
 	index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Count] = {};
+	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Count]{};
 	slotRootParameter[RootSignature::CB_Light].
 		InitAsConstantBufferView(0);
 	slotRootParameter[RootSignature::SI_AccelerationStructure].

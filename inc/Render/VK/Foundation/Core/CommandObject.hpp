@@ -1,20 +1,5 @@
 #pragma once
 
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <Windows.h>
-
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-	#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -22,7 +7,7 @@ namespace Common::Debug {
 namespace Render::VK::Foundation::Core {
 	class CommandObject {
 	public:
-		CommandObject() = default;
+		CommandObject();
 		virtual ~CommandObject();
 
 	public:
@@ -44,28 +29,28 @@ namespace Render::VK::Foundation::Core {
 		BOOL CreateSyncObjects();
 
 	private:
-		Common::Debug::LogFile* mpLogFile;
+		Common::Debug::LogFile* mpLogFile{};
 
-		VkPhysicalDevice mPhysicalDevice;
-		VkDevice mDevice;
-		VkSurfaceKHR mSurface;
+		VkPhysicalDevice mPhysicalDevice{};
+		VkDevice mDevice{};
+		VkSurfaceKHR mSurface{};
 
-		UINT mSwapChainImageCount = 0;
+		UINT mSwapChainImageCount{};
 
 		// Command objects;
-		VkCommandPool mCommandPool;
-		VkCommandBuffer mCommandBuffer;
+		VkCommandPool mCommandPool{};
+		VkCommandBuffer mCommandBuffer{};
 
-		VkQueue mGraphicsQueue;
-		VkQueue mPresentQueue;
+		VkQueue mGraphicsQueue{};
+		VkQueue mPresentQueue{};
 
 		// Synchronizing objects
-		std::vector<VkSemaphore> mImageAvailableSemaphores;
-		std::vector<VkSemaphore> mRenderFinishedSemaphores;
-		std::vector<VkFence> mInFlightFences;
-		std::vector<VkFence> mImagesInFlight;
-		UINT mCurentImageIndex = 0;
-		UINT mCurrentFrame = 0;
+		std::vector<VkSemaphore> mImageAvailableSemaphores{};
+		std::vector<VkSemaphore> mRenderFinishedSemaphores{};
+		std::vector<VkFence> mInFlightFences{};
+		std::vector<VkFence> mImagesInFlight{};
+		UINT mCurentImageIndex{};
+		UINT mCurrentFrame{};
 	};
 }
 

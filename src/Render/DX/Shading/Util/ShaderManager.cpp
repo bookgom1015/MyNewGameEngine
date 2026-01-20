@@ -1,10 +1,8 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/StringUtil.hpp"
 #include "Common/Util/TaskQueue.hpp"
-
-#include <fstream>
-#include <filesystem>
 
 using namespace Render::DX::Shading::Util;
 using namespace Microsoft::WRL;
@@ -124,6 +122,10 @@ Render::DX::Shading::Util::ShaderManager::D3D12ShaderInfo& ShaderManager::D3D12S
 
 	return *this;
 }
+
+ShaderManager::ShaderManager() {}
+
+ShaderManager::~ShaderManager() {}
 
 BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, UINT numThreads) {
 	mpLogFile = pLogFile;

@@ -1,3 +1,4 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/VkLowRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"

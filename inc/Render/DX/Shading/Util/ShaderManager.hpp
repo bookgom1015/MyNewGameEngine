@@ -1,24 +1,5 @@
 #pragma once
 
-#pragma comment(lib, "dxcompiler.lib")
-
-#include <memory>
-#include <mutex>
-#include <unordered_map>
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
-#include <dxcapi.h>
-
 #include "Common/Util/HashUtil.hpp"
 
 namespace Common::Debug {
@@ -29,11 +10,11 @@ namespace Render::DX::Shading::Util {
 	class ShaderManager {
 	public:
 		struct D3D12ShaderInfo {
-			LPCWSTR		FileName	  = nullptr;
-			LPCWSTR		EntryPoint	  = nullptr;
-			LPCWSTR		TargetProfile = nullptr;
-			DxcDefine*	Defines		  = nullptr;
-			UINT32		DefineCount	  = 0;
+			LPCWSTR		FileName{};
+			LPCWSTR		EntryPoint{};
+			LPCWSTR		TargetProfile{};
+			DxcDefine*	Defines{};
+			UINT32		DefineCount{};
 
 			D3D12ShaderInfo() = default;
 			D3D12ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile);
@@ -45,8 +26,8 @@ namespace Render::DX::Shading::Util {
 		};
 
 	public:
-		ShaderManager() = default;
-		virtual ~ShaderManager() = default;
+		ShaderManager();
+		virtual ~ShaderManager();
 
 	public:
 		__forceinline IDxcBlob* GetShader(Common::Foundation::Hash hash);
@@ -63,16 +44,16 @@ namespace Render::DX::Shading::Util {
 		BOOL BuildPdb(IDxcResult* const result, LPCWSTR fileName);
 
 	private:
-		Common::Debug::LogFile* mpLogFile = nullptr;
-		UINT mThreadCount = 0;
+		Common::Debug::LogFile* mpLogFile{};
+		UINT mThreadCount{};
 
-		std::vector<Microsoft::WRL::ComPtr<IDxcUtils>> mUtils;
-		std::vector<Microsoft::WRL::ComPtr<IDxcCompiler3>> mCompilers;
-		std::vector<std::unique_ptr<std::mutex>> mCompileMutexes;
+		std::vector<Microsoft::WRL::ComPtr<IDxcUtils>> mUtils{};
+		std::vector<Microsoft::WRL::ComPtr<IDxcCompiler3>> mCompilers{};
+		std::vector<std::unique_ptr<std::mutex>> mCompileMutexes{};
 
-		std::unordered_map<Common::Foundation::Hash, D3D12ShaderInfo> mShaderInfos;
-		std::unordered_map<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>> mShaders;
-		std::vector<std::vector<std::pair<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>>>> mStagingShaders;
+		std::unordered_map<Common::Foundation::Hash, D3D12ShaderInfo> mShaderInfos{};
+		std::unordered_map<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>> mShaders{};
+		std::vector<std::vector<std::pair<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>>>> mStagingShaders{};
 	};
 }
 

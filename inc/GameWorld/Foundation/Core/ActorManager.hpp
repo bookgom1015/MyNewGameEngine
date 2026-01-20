@@ -1,19 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
 namespace Common {
 	namespace Debug {
 		struct LogFile;
@@ -30,7 +16,7 @@ namespace GameWorld::Foundation::Core {
 	class ActorManager {
 	public:
 		ActorManager();
-		virtual ~ActorManager() = default;
+		virtual ~ActorManager();
 
 	public:
 		__forceinline Actor* GetActor(const std::string& name);
@@ -46,16 +32,16 @@ namespace GameWorld::Foundation::Core {
 		void RemoveActor(Actor* const pActor);
 
 	private:
-		BOOL mbUpdating = FALSE;
+		Common::Debug::LogFile* mpLogFile{};
 
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		BOOL mbUpdating{};
 
-		std::vector<std::unique_ptr<Actor>> mActors;
-		std::vector<std::unique_ptr<Actor>> mPendingActors;
+		std::vector<std::unique_ptr<Actor>> mActors{};
+		std::vector<std::unique_ptr<Actor>> mPendingActors{};
 
-		std::vector<Actor*> mDeadActors;
+		std::vector<Actor*> mDeadActors{};
 
-		std::unordered_map<std::string, Actor*> mActorRefs;
+		std::unordered_map<std::string, Actor*> mActorRefs{};
 	};
 }
 

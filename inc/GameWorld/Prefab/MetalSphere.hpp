@@ -27,6 +27,6 @@ namespace GameWorld::Prefab {
 		virtual BOOL UpdateActor(FLOAT delta) override;
 
 	private:
-		GameWorld::Foundation::Mesh::MeshComponent* mpMeshComp;
+		GameWorld::Foundation::Mesh::MeshComponent* mpMeshComp{};
 	};
 }

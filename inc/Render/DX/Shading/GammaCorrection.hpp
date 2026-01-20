@@ -34,14 +34,13 @@ namespace Render::DX::Shading {
 		class GammaCorrectionClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				BOOL MeshShaderSupported{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -72,12 +71,12 @@ namespace Render::DX::Shading {
 				FLOAT gamma);
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes = {};
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 		};
 
 		using InitDataPtr = std::unique_ptr<GammaCorrectionClass::InitData>;

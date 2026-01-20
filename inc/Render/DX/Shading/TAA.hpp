@@ -36,13 +36,13 @@ namespace Render::DX::Shading {
 		class TAAClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				BOOL MeshShaderSupported{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -85,16 +85,16 @@ namespace Render::DX::Shading {
 			BOOL BuildDescriptors();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mHistoryMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhHistoryMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhHistoryMapGpuSrv;
+			std::unique_ptr<Foundation::Resource::GpuResource> mHistoryMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhHistoryMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhHistoryMapGpuSrv{};
 
 			const std::array<DirectX::XMFLOAT2, 16> mHaltonSequence = {
 				DirectX::XMFLOAT2(0.5f, 0.333333f),
@@ -114,7 +114,7 @@ namespace Render::DX::Shading {
 				DirectX::XMFLOAT2(0.9375f, 0.259259f),
 				DirectX::XMFLOAT2(0.03125f, 0.592593f)
 			};
-			std::array<DirectX::XMFLOAT2, 16> mFittedToBakcBufferHaltonSequence;
+			std::array<DirectX::XMFLOAT2, 16> mFittedToBakcBufferHaltonSequence{};
 		};
 
 		using InitDataPtr = std::unique_ptr<TAAClass::InitData>;

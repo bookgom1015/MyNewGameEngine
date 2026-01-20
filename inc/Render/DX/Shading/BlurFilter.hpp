@@ -53,11 +53,11 @@ namespace Render::DX::Shading {
 		class BlurFilterClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
+				BOOL MeshShaderSupported{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
 			};
 
 		public:
@@ -89,10 +89,10 @@ namespace Render::DX::Shading {
 		private:
 			InitData mInitData;
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 		};
 
 		using InitDataPtr = std::unique_ptr<BlurFilterClass::InitData>;

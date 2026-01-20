@@ -1,3 +1,4 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Foundation/Mesh/MeshComponent.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Mesh/Mesh.hpp"

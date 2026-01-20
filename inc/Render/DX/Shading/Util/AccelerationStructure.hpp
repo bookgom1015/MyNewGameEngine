@@ -1,18 +1,5 @@
 #pragma once
 
-#include <unordered_map>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
-
 #include "Common/Util/HashUtil.hpp"
 
 namespace Common::Debug {
@@ -72,7 +59,7 @@ namespace Render::DX {
 		private:
 			Microsoft::WRL::ComPtr<ID3D12Resource> mScratch;
 			Microsoft::WRL::ComPtr<ID3D12Resource> mResult;
-			Microsoft::WRL::ComPtr<ID3D12Resource> mInstanceDesc;	// only used in top-level AS
+			Microsoft::WRL::ComPtr<ID3D12Resource> mInstanceDesc; // only used in top-level AS
 
 			UINT64 mResultDataMaxSizeInBytes;
 
@@ -82,7 +69,7 @@ namespace Render::DX {
 		class AccelerationStructureManager {
 		public:
 			AccelerationStructureManager();
-			virtual ~AccelerationStructureManager() = default;
+			virtual ~AccelerationStructureManager();
 
 		public:
 			__forceinline D3D12_GPU_VIRTUAL_ADDRESS AccelerationStructure() const;
@@ -116,15 +103,15 @@ namespace Render::DX {
 				UINT numRitems);
 
 		private:
-			BOOL mbNeedToRebuildTLAS = FALSE;
+			BOOL mbNeedToRebuildTLAS{};
 
-			Common::Debug::LogFile* mpLogFile = nullptr;
-			Foundation::Core::Device* mpDevice = nullptr;
-			Foundation::Core::CommandObject* mpCommandObject = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
+			Foundation::Core::Device* mpDevice{};
+			Foundation::Core::CommandObject* mpCommandObject{};
 			
-			std::vector<std::unique_ptr<AccelerationStructureBuffer>> mBLASes;
-			std::unordered_map<Common::Foundation::Hash, AccelerationStructureBuffer*> mBLASRefs;
-			std::unique_ptr<AccelerationStructureBuffer> mTLAS;
+			std::vector<std::unique_ptr<AccelerationStructureBuffer>> mBLASes{};
+			std::unordered_map<Common::Foundation::Hash, AccelerationStructureBuffer*> mBLASRefs{};
+			std::unique_ptr<AccelerationStructureBuffer> mTLAS{};
 		};
 	}
 }

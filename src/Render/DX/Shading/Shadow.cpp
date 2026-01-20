@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Shadow.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/RenderItem.hpp"
@@ -11,8 +12,6 @@
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
-
-#include <format>
 
 // Cascase Shadow
 // https://scahp.tistory.com/39
@@ -75,6 +74,7 @@ UINT Shadow::ShadowClass::DsvDescCount() const { return 0
 BOOL Shadow::ShadowClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -110,12 +110,12 @@ BOOL Shadow::ShadowClass::BuildRootSignatures() {
 
 	// DrawZDepth
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, ShadingConvention::GBuffer::MaxNumTextures, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawZDepth::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawZDepth::Count]{};
 		slotRootParameter[RootSignature::DrawZDepth::CB_Light].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DrawZDepth::CB_Object].InitAsConstantBufferView(1);
 		slotRootParameter[RootSignature::DrawZDepth::CB_Material].InitAsConstantBufferView(2);
@@ -135,7 +135,7 @@ BOOL Shadow::ShadowClass::BuildRootSignatures() {
 	}
 	// DrawShadow
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[4]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -143,7 +143,7 @@ BOOL Shadow::ShadowClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawShadow::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawShadow::Count]{};
 		slotRootParameter[RootSignature::DrawShadow::CB_Light].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DrawShadow::RC_Consts].InitAsConstants(ShadingConvention::Shadow::RootConstant::DrawShadow::Count, 1);
 		slotRootParameter[RootSignature::DrawShadow::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -198,7 +198,7 @@ BOOL Shadow::ShadowClass::BuildPipelineStates() {
 	}
 	// DrawShadow
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DrawShadow].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{

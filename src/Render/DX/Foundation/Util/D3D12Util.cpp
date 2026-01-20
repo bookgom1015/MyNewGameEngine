@@ -1,21 +1,21 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Mesh/Vertex.h"
 #include "Render/DX/Foundation/Core/Factory.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
 #include "Render/DX/Foundation/Core/CommandObject.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Render/DX/Foundation/Resource/Texture.hpp"
 
-#include <vector>
-
 #include <DDSTextureLoader.h>
 #include <ResourceUploadBatch.h>
 
 namespace {
 	const D3D12_INPUT_ELEMENT_DESC gInputLayout[] = {
-		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,	0, 0,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,	0, 12,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,	0, 24,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,	0, offsetof(Common::Foundation::Mesh::Vertex, Position),	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,	0, offsetof(Common::Foundation::Mesh::Vertex, Normal),		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,	0, offsetof(Common::Foundation::Mesh::Vertex, TexCoord),	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	const D3D12_INPUT_LAYOUT_DESC gInputLayoutDesc = { gInputLayout, static_cast<UINT>(_countof(gInputLayout)) };

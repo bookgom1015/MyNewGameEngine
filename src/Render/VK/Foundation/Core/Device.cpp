@@ -1,18 +1,19 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/Core/Device.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/StringUtil.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 
-#include <algorithm>
-#include <set>
-
 using namespace Render::VK::Foundation::Core;
 
-Device::~Device() {
-	CleanUp();
-}
+Device::Device() {}
 
-BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile, VkInstance instance, VkSurfaceKHR surface) {
+Device::~Device() {	CleanUp(); }
+
+BOOL Device::Initialize(
+		Common::Debug::LogFile* const pLogFile, 
+		VkInstance instance, 
+		VkSurfaceKHR surface) {
 	mpLogFile = pLogFile;
 	mInstance = instance;
 	mSurface = surface;
@@ -21,8 +22,7 @@ BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile, VkInstance insta
 }
 
 void Device::CleanUp() {
-	if (mDevice != VK_NULL_HANDLE)
-		vkDestroyDevice(mDevice, nullptr);
+	if (mDevice != VK_NULL_HANDLE) vkDestroyDevice(mDevice, nullptr);
 }
 
 BOOL Device::SortPhysicalDevices() {
@@ -54,7 +54,7 @@ BOOL Device::GetPhysicalDevices(std::vector<std::wstring>& physicalDevices) {
 	for (auto begin = mCandidates.begin(), end = mCandidates.end(); begin != end; ++begin) {
 		const auto& physicalDevice = begin->second;
 
-		VkPhysicalDeviceProperties deviceProperties;
+		VkPhysicalDeviceProperties deviceProperties{};
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
 		physicalDevices.push_back(Common::Util::StringUtil::StringToWString(deviceProperties.deviceName));
@@ -66,7 +66,7 @@ BOOL Device::GetPhysicalDevices(std::vector<std::wstring>& physicalDevices) {
 BOOL Device::SelectPhysicalDevices(UINT selectedPhysicalDeviceIndex, BOOL& bRaytracingSupported) {
 	mPhysicalDevice = mCandidates[selectedPhysicalDeviceIndex].second;
 
-	VkPhysicalDeviceProperties deviceProperties;
+	VkPhysicalDeviceProperties deviceProperties{};
 	vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProperties);
 	Logln(mpLogFile, "Selected physical device: ", deviceProperties.deviceName);
 
@@ -87,7 +87,7 @@ BOOL Device::SelectPhysicalDevices(UINT selectedPhysicalDeviceIndex, BOOL& bRayt
 BOOL Device::CreateLogicalDevice() {
 	Foundation::Util::QueueFamilyIndices indices = Foundation::Util::QueueFamilyIndices::FindQueueFamilies(mPhysicalDevice, mSurface);
 
-	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
 	std::set<UINT> uniqueQueueFamilies = {
 		indices.GetGraphicsFamilyIndex(),
 		indices.GetPresentFamilyIndex()
@@ -95,7 +95,7 @@ BOOL Device::CreateLogicalDevice() {
 
 	FLOAT queuePriority = 1.f;
 	for (UINT queueFamily : uniqueQueueFamilies) {
-		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
 		queueCreateInfo.queueCount = 1;
@@ -103,11 +103,11 @@ BOOL Device::CreateLogicalDevice() {
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	VkPhysicalDeviceFeatures deviceFeatures = {};
+	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
 	deviceFeatures.sampleRateShading = VK_TRUE;
 
-	VkDeviceCreateInfo createInfo = {};
+	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.queueCreateInfoCount = static_cast<UINT>(queueCreateInfos.size());

@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/EnvironmentMap.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Mesh/Vertex.h"
@@ -106,6 +107,7 @@ EnvironmentMap::EnvironmentMapClass::EnvironmentMapClass() {
 BOOL EnvironmentMap::EnvironmentMapClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -161,12 +163,12 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 
 	// DrawSkySphere 
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 1);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawSkySphere::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DrawSkySphere::Count]{};
 		slotRootParameter[RootSignature::DrawSkySphere::CB_Pass].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::DrawSkySphere::CB_Object].InitAsConstantBufferView(1);
 		slotRootParameter[RootSignature::DrawSkySphere::RC_Consts].InitAsConstants(ShadingConvention::EnvironmentMap::RootConstant::DrawSkySphere::Count, 2);
@@ -187,12 +189,12 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 	}
 	// ConvoluteDiffuseIrradiance
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvoluteDiffuseIrradiance::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvoluteDiffuseIrradiance::Count]{};
 		slotRootParameter[RootSignature::ConvoluteDiffuseIrradiance::CB_ProjectToCube].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::ConvoluteDiffuseIrradiance::SI_CubeMap].InitAsDescriptorTable(1, &texTables[index++]);
 
@@ -209,12 +211,12 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 	}
 	// ConvoluteSpecularIrradiance
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvoluteSpecularIrradiance::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvoluteSpecularIrradiance::Count]{};
 		slotRootParameter[RootSignature::ConvoluteSpecularIrradiance::CB_ProjectToCube].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::ConvoluteSpecularIrradiance::RC_Consts].InitAsConstants(ShadingConvention::EnvironmentMap::RootConstant::ConvoluteSpecularIrradiance::Count, 1);
 		slotRootParameter[RootSignature::ConvoluteSpecularIrradiance::SI_EnvCubeMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -232,7 +234,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildRootSignatures() {
 	}
 	// IntegrateBrdf
 	{
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::IntegrateBrdf::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::IntegrateBrdf::Count]{};
 		slotRootParameter[RootSignature::IntegrateBrdf::CB_Pass].InitAsConstantBufferView(0);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(

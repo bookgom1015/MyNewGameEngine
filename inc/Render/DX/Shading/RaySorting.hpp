@@ -29,13 +29,13 @@ namespace Render::DX::Shading {
 		class RaySortingClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet = nullptr;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -72,18 +72,18 @@ namespace Render::DX::Shading {
 			BOOL BuildDescriptors();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mRayIndexOffsetMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapGpuSrv;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mRayIndexOffsetMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapGpuSrv{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRayIndexOffsetMapGpuUav{};
 		};
 
 		using InitDataPtr = std::unique_ptr<RaySortingClass::InitData>;

@@ -6,9 +6,9 @@ namespace Render::DX::Foundation::Core {
 	class DepthStencilBuffer : public ShadingObject {
 	public:
 		struct InitData {
-			Device* Device;
-			UINT	ClientWidth;
-			UINT	ClientHeight;
+			Device* Device{};
+			UINT	ClientWidth{};
+			UINT	ClientHeight{};
 		};
 
 		using InitDataPtr = std::unique_ptr<InitData>;

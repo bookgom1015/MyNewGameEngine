@@ -147,6 +147,9 @@
     <ClCompile Include="..\..\src\Render\VK\Foundation\Resource\MeshGeometry.cpp">
       <Filter>Source Files\Foundation\Resource</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\pch_vk.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp">
@@ -172,9 +175,6 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Util\VulkanUtil.hpp">
       <Filter>Header Files\Foundation\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
-      <Filter>Common Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp">
       <Filter>Common Files\Render</Filter>
@@ -206,6 +206,12 @@
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Resource\MeshGeometry.hpp">
       <Filter>Header Files\Foundation\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Render\TonemapperType.h">
+      <Filter>Common Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\pch_vk.h">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\inc\Render\VK\Foundation\Core\Device.inl">
@@ -220,9 +226,6 @@
     <None Include="..\..\inc\Render\VK\Foundation\Surface.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
-    <None Include="..\..\inc\Common\Render\Renderer.inl">
-      <Filter>Common Files\Render</Filter>
-    </None>
     <None Include="..\..\inc\Render\VK\Shading\Util\ShaderManager.inl">
       <Filter>Header Files\Shading Files\Util</Filter>
     </None>
@@ -234,6 +237,9 @@
     </None>
     <None Include="..\..\assets\Shaders\GLSL\GBuffer.glsli">
       <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\VK\Foundation\Core\SwapChain.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
     </None>
   </ItemGroup>
 </Project>

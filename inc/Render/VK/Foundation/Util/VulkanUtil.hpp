@@ -1,22 +1,5 @@
 #pragma once
 
-#include <optional>
-#include <vector>
-#include <array>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <Windows.h>
-
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-	#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.h>
-
 #ifndef vkIsValidHandle
 #define vkIsValidHandle(x) ((x) != VK_NULL_HANDLE)
 #endif
@@ -28,8 +11,8 @@ namespace Common::Debug {
 
 namespace Render::VK::Foundation::Util {
 	struct QueueFamilyIndices {
-		std::optional<UINT> GraphicsFamily;
-		std::optional<UINT> PresentFamily;
+		std::optional<UINT> GraphicsFamily{};
+		std::optional<UINT> PresentFamily{};
 
 		UINT GetGraphicsFamilyIndex();
 		UINT GetPresentFamilyIndex();
@@ -39,9 +22,9 @@ namespace Render::VK::Foundation::Util {
 	};
 
 	struct SwapChainSupportDetails {
-		VkSurfaceCapabilitiesKHR Capabilities;
-		std::vector<VkSurfaceFormatKHR> Formats;
-		std::vector<VkPresentModeKHR> PresentModes;
+		VkSurfaceCapabilitiesKHR Capabilities{};
+		std::vector<VkSurfaceFormatKHR> Formats{};
+		std::vector<VkPresentModeKHR> PresentModes{};
 	};
 
 	class VulkanUtil {

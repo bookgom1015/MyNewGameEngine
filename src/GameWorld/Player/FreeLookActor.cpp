@@ -1,3 +1,4 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Player/FreeLookActor.hpp"
 #include "Common/Input/InputProcessor.hpp"
 #include "GameWorld/Foundation/Camera/CameraComponent.hpp"
@@ -22,6 +23,8 @@ FreeLookActor::FreeLookActor(
 	: Actor(pLogFile, name, trans) {
 	mpCameraComp = new GameWorld::Foundation::Camera::CameraComponent(pLogFile, this);
 }
+
+FreeLookActor::~FreeLookActor() {}
 
 const XMVECTOR& FreeLookActor::CameraForwardVector() const { return mpCameraComp->ForwardVector(); }
 

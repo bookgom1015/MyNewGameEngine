@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Util/EquirectangularConverter.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/Device.hpp"
@@ -19,6 +20,10 @@ namespace {
 EquirectangularConverter::InitDataPtr EquirectangularConverter::MakeInitData() {
 	return std::unique_ptr<EquirectangularConverterClass::InitData>(new EquirectangularConverterClass::InitData());
 }
+
+EquirectangularConverter::EquirectangularConverterClass::EquirectangularConverterClass() {}
+
+EquirectangularConverter::EquirectangularConverterClass::~EquirectangularConverterClass() {}
 
 UINT EquirectangularConverter::EquirectangularConverterClass::CbvSrvUavDescCount() const { return 0; }
 
@@ -61,12 +66,12 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 
 	// ConvEquirectToCube
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvEquirectToCube::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvEquirectToCube::Count]{};
 		slotRootParameter[RootSignature::ConvEquirectToCube::CB_ProjectToCube].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::ConvEquirectToCube::SI_EquirectangularMap].InitAsDescriptorTable(1, &texTables[index++]);
 
@@ -83,12 +88,12 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::BuildRootSignature
 	}
 	// ConvCubeToEquirect
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvCubeToEquirect::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ConvCubeToEquirect::Count]{};
 		slotRootParameter[RootSignature::ConvCubeToEquirect::RC_Consts].InitAsConstants(ShadingConvention::EquirectangularConverter::RootConstant::ConvCubeToEquirect::Count, 0);
 		slotRootParameter[RootSignature::ConvCubeToEquirect::SI_CubeMap].InitAsDescriptorTable(1, &texTables[index++]);
 

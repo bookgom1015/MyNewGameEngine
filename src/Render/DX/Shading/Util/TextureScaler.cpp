@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Util/TextureScaler.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -68,13 +69,13 @@ BOOL TextureScaler::TextureScalerClass::BuildRootSignatures() {
 
 	// DownSample2Nx2N
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DownSample6x6::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::DownSample6x6::Count]{};
 		slotRootParameter[RootSignature::DownSample6x6::RC_Consts].InitAsConstants(
 			ShadingConvention::TextureScaler::RootConstant::DownSample6x6::Count, 0);
 		slotRootParameter[RootSignature::DownSample6x6::SI_InputMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -98,7 +99,7 @@ BOOL TextureScaler::TextureScalerClass::BuildRootSignatures() {
 BOOL TextureScaler::TextureScalerClass::BuildPipelineStates() {
 	// DownSample2Nx2N
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DownSample2Nx2N].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 

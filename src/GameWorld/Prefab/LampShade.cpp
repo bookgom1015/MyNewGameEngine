@@ -1,3 +1,4 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Prefab/LampShade.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
@@ -24,6 +25,8 @@ LampShade::LampShade(
 	: Actor(pLogFile, name, trans) {
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
+
+LampShade::~LampShade() {}
 
 BOOL LampShade::OnInitialzing() {
 	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("field", "./../../../assets/Models/", "obj"));

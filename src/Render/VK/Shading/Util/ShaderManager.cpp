@@ -1,17 +1,20 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Shading/Util/ShaderManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/StringUtil.hpp"
 #include "Common/Util/TaskQueue.hpp"
 #include "Render/VK/Foundation/Core/Device.hpp"
 
-#include <fstream>
-#include <filesystem>
-#include <iostream>
-
 using namespace Render::VK::Shading::Util;
+
+ShaderManager::VkShaderInfo::VkShaderInfo() {}
 
 ShaderManager::VkShaderInfo::VkShaderInfo(LPCSTR fileName, LPCSTR entryPoint) 
 	: FileName(fileName), EntryPoint(entryPoint) {}
+
+ShaderManager::ShaderManager() {}
+
+ShaderManager::~ShaderManager() {}
 
 BOOL ShaderManager::Initialize(
 		Common::Debug::LogFile* const pLogFile, 

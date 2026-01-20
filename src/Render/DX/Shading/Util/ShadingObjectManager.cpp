@@ -1,9 +1,14 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Util/ShadingObjectManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 
 using namespace Render::DX::Shading::Util;
+
+ShadingObjectManager::ShadingObjectManager() {}
+
+ShadingObjectManager::~ShadingObjectManager() {}
 
 BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;

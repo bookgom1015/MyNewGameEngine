@@ -1,12 +1,13 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/Core/SwapChain.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 
 using namespace Render::VK::Foundation::Core;
 
-SwapChain::~SwapChain() {
-	CleanUp();
-}
+SwapChain::SwapChain() {}
+
+SwapChain::~SwapChain() { CleanUp(); }
 
 BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));
@@ -79,7 +80,7 @@ BOOL SwapChain::CreateSwapChain() {
 		ReturnFalse(mpLogFile, L"Swap-chain does not support the specified number of images");
 	}
 
-	VkSwapchainCreateInfoKHR createInfo = {};
+	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	createInfo.surface = mInitData.Surface;
 	createInfo.minImageCount = imageCount;

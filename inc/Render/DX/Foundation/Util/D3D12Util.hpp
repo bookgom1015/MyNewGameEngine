@@ -1,19 +1,6 @@
 #pragma once
 
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
-#include <dxgi1_6.h>
-#include <DirectXTex.h>
+#include <directxtex_desktop_win10.2025.3.25.2/include/DirectXTex.h>
 
 #ifndef ReleaseCom
 #define ReleaseCom(x) { if (x){ x->Release(); x = NULL; } }
@@ -47,8 +34,8 @@ namespace Render::DX::Foundation {
 				UINT64					Alignment	= 0;
 				D3D12_HEAP_TYPE			HeapType	= D3D12_HEAP_TYPE_DEFAULT;
 				D3D12_HEAP_FLAGS		HeapFlags	= D3D12_HEAP_FLAG_NONE;
-				D3D12_RESOURCE_FLAGS	Flags	= D3D12_RESOURCE_FLAG_NONE;
-				D3D12_RESOURCE_STATES	State	= D3D12_RESOURCE_STATE_COMMON;
+				D3D12_RESOURCE_FLAGS	Flags		= D3D12_RESOURCE_FLAG_NONE;
+				D3D12_RESOURCE_STATES	State		= D3D12_RESOURCE_STATE_COMMON;
 
 				D3D12BufferCreateInfo();
 				D3D12BufferCreateInfo(UINT64 size, D3D12_RESOURCE_FLAGS flags);

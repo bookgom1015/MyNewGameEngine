@@ -1,18 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
 #include "Common/Foundation/Mesh/Transform.hpp"
 
 namespace Common {
@@ -40,7 +27,7 @@ namespace GameWorld::Foundation::Core {
 			Common::Debug::LogFile* const pLogFile, 
 			const std::string& name, 
 			const Common::Foundation::Mesh::Transform& trans);
-		virtual ~Actor() = default;
+		virtual ~Actor();
 
 	public:
 		__forceinline constexpr const std::string& Name() const;
@@ -88,19 +75,18 @@ namespace GameWorld::Foundation::Core {
 		void SetScale(const DirectX::XMVECTOR& scale);
 
 	protected:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
 
 	private:
+		BOOL mbInitialized{};
+		BOOL mbIsDead{};
+		BOOL mbNeedToUpdate{ TRUE };
 
-		BOOL mbInitialized = FALSE;
-		BOOL mbIsDead = FALSE;
-		BOOL mbNeedToUpdate = TRUE;
+		std::string mName{};
 
-		std::string mName;
+		Common::Foundation::Mesh::Transform mTransform{};
 
-		Common::Foundation::Mesh::Transform mTransform;
-
-		std::vector<std::unique_ptr<Component>> mComponents;
+		std::vector<std::unique_ptr<Component>> mComponents{};
 	};
 }
 

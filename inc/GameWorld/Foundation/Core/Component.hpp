@@ -3,15 +3,6 @@
 #include "Common/Foundation/Mesh/Transform.hpp"
 #include "Common/Util/HashUtil.hpp"
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
 namespace Common {
 	namespace Debug {
 		struct LogFile;
@@ -28,7 +19,7 @@ namespace GameWorld::Foundation::Core {
 	class Component {
 	public:
 		Component(Common::Debug::LogFile* const pLogFile, Actor* const pOwner);
-		virtual ~Component() = default;
+		virtual ~Component();
 
 	public:
 		virtual BOOL OnInitialzing() = 0;
@@ -42,7 +33,7 @@ namespace GameWorld::Foundation::Core {
 		const Common::Foundation::Mesh::Transform& ActorTransform();
 
 	protected:
-		Common::Debug::LogFile* mpLogFile = nullptr;
-		Actor* mpOwner = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
+		Actor* mpOwner{};
 	};
 }

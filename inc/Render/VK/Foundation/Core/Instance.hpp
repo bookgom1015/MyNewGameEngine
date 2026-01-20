@@ -1,10 +1,5 @@
 #pragma once
 
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-	#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -12,7 +7,7 @@ namespace Common::Debug {
 namespace Render::VK::Foundation::Core {
 	class Instance {
 	public:
-		Instance() = default;
+		Instance();
 		virtual ~Instance();
 
 	public:
@@ -26,11 +21,11 @@ namespace Render::VK::Foundation::Core {
 		BOOL CreateInstance();
 
 	private:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
 
-		VkInstance mInstance;
+		VkInstance mInstance{};
 
-		VkDebugUtilsMessengerEXT mDebugMessenger;
+		VkDebugUtilsMessengerEXT mDebugMessenger{};
 	};
 }
 

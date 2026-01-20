@@ -67,10 +67,10 @@ namespace Render {
 				Foundation::Resource::MeshGeometry*& pMeshGeo);
 
 		private:
-			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager;
-			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager;
+			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
+			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};
 
-			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer;
+			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer{};
 		};
 	}
 }

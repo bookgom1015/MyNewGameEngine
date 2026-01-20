@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/DOF.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -39,6 +40,7 @@ UINT DOF::DOFClass::DsvDescCount() const { return 0; }
 BOOL DOF::DOFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -102,12 +104,12 @@ BOOL DOF::DOFClass::BuildRootSignatures() {
 
 	// CalcFocalDistance
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CalcFocalDistance::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CalcFocalDistance::Count]{};
 		slotRootParameter[RootSignature::CalcFocalDistance::CB_Pass].
 			InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::CalcFocalDistance::SI_PositionMap].
@@ -128,13 +130,13 @@ BOOL DOF::DOFClass::BuildRootSignatures() {
 	}
 	// CircleOfConfusion
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CircleOfConfusion::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CircleOfConfusion::Count]{};
 		slotRootParameter[RootSignature::CircleOfConfusion::CB_Pass].
 			InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::CircleOfConfusion::RC_Consts].
@@ -159,13 +161,13 @@ BOOL DOF::DOFClass::BuildRootSignatures() {
 	}
 	// Bokeh
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Bokeh::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Bokeh::Count]{};
 		slotRootParameter[RootSignature::Bokeh::RC_Consts].
 			InitAsConstants(ShadingConvention::DOF::RootConstant::Bokeh::Count, 0);
 		slotRootParameter[RootSignature::Bokeh::SI_BackBuffer].
@@ -186,13 +188,13 @@ BOOL DOF::DOFClass::BuildRootSignatures() {
 	}
 	// BokehBlur3x3
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BokehBlurNxN::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BokehBlurNxN::Count]{};
 		slotRootParameter[RootSignature::BokehBlurNxN::RC_Consts].
 			InitAsConstants(ShadingConvention::DOF::RootConstant::BokehBlur3x3::Count, 0);
 		slotRootParameter[RootSignature::BokehBlurNxN::SI_InputMap].
@@ -218,7 +220,7 @@ BOOL DOF::DOFClass::BuildRootSignatures() {
 BOOL DOF::DOFClass::BuildPipelineStates() {
 	// CalcFocalDistance
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalcFocalDistance].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{
@@ -235,7 +237,7 @@ BOOL DOF::DOFClass::BuildPipelineStates() {
 	}
 	// CircleOfConfusion
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CircleOfConfusion].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{

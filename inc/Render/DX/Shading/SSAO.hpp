@@ -81,12 +81,12 @@ namespace Render::DX::Shading {
 		class SSAOClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -146,38 +146,38 @@ namespace Render::DX::Shading {
 			void BuildOffsetVecotrs();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mRandomVectorMap;
-			std::unique_ptr<Foundation::Resource::GpuResource> mRandomVectorMapUploadBuffer;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhRandomVectorMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhRandomVectorMapGpuSrv;
+			std::unique_ptr<Foundation::Resource::GpuResource> mRandomVectorMap{};
+			std::unique_ptr<Foundation::Resource::GpuResource> mRandomVectorMapUploadBuffer{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRandomVectorMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRandomVectorMapGpuSrv{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::AO::Count> mAOResources;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceCpus;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceGpus;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::AO::Count> mAOResources{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceCpus{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::AO::Count> mhAOResourceGpus{};
 
-			std::array<std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::TemporalCache::Count>, 2> mTemporalCaches;
-			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheCpus;
-			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheGpus;
+			std::array<std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::TemporalCache::Count>, 2> mTemporalCaches{};
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheCpus{};
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalCache::Count>, 2> mhTemporalCacheGpus{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mTemporalAOResources;
-			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceCpus;
-			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceGpus;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mTemporalAOResources{};
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceCpus{};
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::TemporalAO::Count>, 2> mhTemporalAOResourceGpus{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav{};
 
-			DirectX::XMFLOAT4 mOffsets[14];
+			DirectX::XMFLOAT4 mOffsets[14]{};
 
-			UINT mCurrentTemporalCacheFrameIndex = 0;
-			UINT mCurrentTemporalAOFrameIndex = 0;
+			UINT mCurrentTemporalCacheFrameIndex{};
+			UINT mCurrentTemporalAOFrameIndex{};
 		};
 
 		using InitDataPtr = std::unique_ptr<SSAOClass::InitData>;

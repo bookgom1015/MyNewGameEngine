@@ -1,20 +1,5 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -38,17 +23,17 @@ namespace Render::DX {
 			BOOL MapCpuWriteOnly(std::uint8_t*& pData);
 
 		protected:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
 
-			Microsoft::WRL::ComPtr<ID3D12Resource> mResource;
+			Microsoft::WRL::ComPtr<ID3D12Resource> mResource{};
 		};
 
 		// Shader record = {{Shader ID}, {RootArguments}}
 		class ShaderRecord {
 		public:
 			struct PointerWithSize {
-				void* Ptr;
-				UINT Size;
+				void* Ptr{};
+				UINT Size{};
 
 				PointerWithSize();
 				PointerWithSize(void* const ptr, UINT size);
@@ -62,8 +47,8 @@ namespace Render::DX {
 			void CopyTo(void* const dest) const;
 
 		public:
-			PointerWithSize mShaderIdentifier;
-			PointerWithSize mLocalRootArguments;
+			PointerWithSize mShaderIdentifier{};
+			PointerWithSize mLocalRootArguments{};
 		};
 
 		// Shader table = {{ ShaderRecord 1}, {ShaderRecord 2}, ...}
@@ -87,15 +72,15 @@ namespace Render::DX {
 			void DebugPrint(std::unordered_map<void*, std::wstring>& shaderIdToStringMap);
 
 		protected:
-			Foundation::Core::Device* mpDevice = nullptr;
+			Foundation::Core::Device* mpDevice{};
 
-			std::uint8_t* mMappedShaderRecords;
-			UINT mShaderRecordSize;
-			UINT mBufferSize;
+			std::uint8_t* mMappedShaderRecords{};
+			UINT mShaderRecordSize{};
+			UINT mBufferSize{};
 
 			// Debug support
-			std::wstring mName;
-			std::vector<ShaderRecord> mShaderRecords;
+			std::wstring mName{};
+			std::vector<ShaderRecord> mShaderRecords{};
 		};
 	}
 }

@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/BRDF.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -31,6 +32,7 @@ UINT BRDF::BRDFClass::DsvDescCount() const { return 0; }
 BOOL BRDF::BRDFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -83,7 +85,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures() {
 
 	// ComputeBRDF
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[7] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[7]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -94,7 +96,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ComputeBRDF::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ComputeBRDF::Count]{};
 		slotRootParameter[RootSignature::ComputeBRDF::CB_Pass].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::ComputeBRDF::CB_Light].InitAsConstantBufferView(1);
 		slotRootParameter[RootSignature::ComputeBRDF::RC_Consts].InitAsConstants(ShadingConvention::BRDF::RootConstant::ComputeBRDF::Count, 2);
@@ -120,7 +122,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures() {
 	}
 	// IntegrateIrradiance
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[12] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[12]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -136,7 +138,7 @@ BOOL BRDF::BRDFClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::IntegrateIrradiance::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::IntegrateIrradiance::Count]{};
 		slotRootParameter[RootSignature::IntegrateIrradiance::CB_Pass].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::IntegrateIrradiance::RC_Consts].InitAsConstants(ShadingConvention::BRDF::RootConstant::IntegrateIrradiance::Count, 1);
 		slotRootParameter[RootSignature::IntegrateIrradiance::SI_BackBuffer].InitAsDescriptorTable(1, &texTables[index++]);

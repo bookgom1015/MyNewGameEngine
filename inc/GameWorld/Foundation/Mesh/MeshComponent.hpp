@@ -25,9 +25,9 @@ namespace GameWorld::Foundation {
 			BOOL LoadMesh(LPCSTR fileName, LPCSTR baseDir, LPCSTR extension);
 
 		private:
-			BOOL mbAddedMesh = FALSE;
+			BOOL mbAddedMesh{};
 
-			Common::Foundation::Hash mMeshHash;
+			Common::Foundation::Hash mMeshHash{};
 		};
 	}
 }

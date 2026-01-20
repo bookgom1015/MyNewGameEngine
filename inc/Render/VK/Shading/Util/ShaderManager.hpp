@@ -1,14 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <mutex>
-#include <unordered_map>
-
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.h>
-
 #include "Common/Util/HashUtil.hpp"
 
 namespace Common::Debug {
@@ -24,16 +15,16 @@ namespace Render::VK {
 		class ShaderManager {
 		public:
 			struct VkShaderInfo {
-				LPCSTR FileName = nullptr;
-				LPCSTR EntryPoint = nullptr;
+				LPCSTR FileName{};
+				LPCSTR EntryPoint{};
 
-				VkShaderInfo() = default;
+				VkShaderInfo();
 				VkShaderInfo(LPCSTR fileName, LPCSTR entryPoint);
 			};
 
 		public:
-			ShaderManager() = default;
-			virtual ~ShaderManager() = default;
+			ShaderManager();
+			virtual ~ShaderManager();
 
 		public:
 			__forceinline VkShaderModule GetShader(Common::Foundation::Hash hash);
@@ -61,15 +52,15 @@ namespace Render::VK {
 			BOOL CommitShaders();
 
 		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
-			Foundation::Core::Device* mpDevice = nullptr;
-			UINT mThreadCount = 0;
+			Common::Debug::LogFile* mpLogFile{};
+			Foundation::Core::Device* mpDevice{};
+			UINT mThreadCount{};
 
-			std::vector<std::unique_ptr<std::mutex>> mCompileMutexes;
+			std::vector<std::unique_ptr<std::mutex>> mCompileMutexes{};
 
-			std::unordered_map<Common::Foundation::Hash, VkShaderInfo> mShaderInfos;
-			std::unordered_map<Common::Foundation::Hash, VkShaderModule> mShaders;
-			std::vector<std::vector<std::pair<Common::Foundation::Hash, VkShaderModule>>> mStagingShaders;
+			std::unordered_map<Common::Foundation::Hash, VkShaderInfo> mShaderInfos{};
+			std::unordered_map<Common::Foundation::Hash, VkShaderModule> mShaders{};
+			std::vector<std::vector<std::pair<Common::Foundation::Hash, VkShaderModule>>> mStagingShaders{};
 		};
 	}
 }

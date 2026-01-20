@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"

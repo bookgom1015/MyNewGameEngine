@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Bloom.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -42,6 +43,7 @@ UINT Bloom::BloomClass::DsvDescCount() const { return 0; }
 BOOL Bloom::BloomClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -78,12 +80,12 @@ BOOL Bloom::BloomClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 	// ExtractHighlights
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ExtractHighlights::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ExtractHighlights::Count]{};
 		slotRootParameter[RootSignature::ExtractHighlights::RC_Consts].InitAsConstants(
 			ShadingConvention::Bloom::RootConstant::ExtractHighlights::Count, 0);
 		slotRootParameter[RootSignature::ExtractHighlights::UIO_HighlightMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -101,13 +103,13 @@ BOOL Bloom::BloomClass::BuildRootSignatures() {
 	}
 	// BlendBloomWithDownSampled
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BlendBloomWithDownSampled::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BlendBloomWithDownSampled::Count]{};
 		slotRootParameter[RootSignature::BlendBloomWithDownSampled::RC_Consts].InitAsConstants(
 			ShadingConvention::Bloom::RootConstant::BlendBloomWithDownSampled::Count, 0);
 		slotRootParameter[RootSignature::BlendBloomWithDownSampled::SI_LowerScaleMap].InitAsDescriptorTable(
@@ -134,13 +136,13 @@ BOOL Bloom::BloomClass::BuildRootSignatures() {
 	}
 	// ApplyBloom
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyBloom::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyBloom::Count]{};
 		slotRootParameter[RootSignature::ApplyBloom::SI_BackBuffer].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::ApplyBloom::SI_BloomMap].InitAsDescriptorTable(1, &texTables[index++]);
 
@@ -162,7 +164,7 @@ BOOL Bloom::BloomClass::BuildRootSignatures() {
 BOOL Bloom::BloomClass::BuildPipelineStates() {
 	// ExtractHighlights
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ExtractHighlights].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{
@@ -179,7 +181,7 @@ BOOL Bloom::BloomClass::BuildPipelineStates() {
 	}
 	// BlendBloomWithDownSampled
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BlendBloomWithDownSampled].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{

@@ -306,9 +306,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\StructuredBuffer.hpp">
       <Filter>Header Files\Foundation\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Sampler\Sampler.hpp">
-      <Filter>Common Files\Foundation\Sampler</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\VolumetricLight.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
@@ -353,6 +350,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\pch_d3d12.h">
       <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -515,9 +515,6 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\RayGen.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\VolumetricLight.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
@@ -554,11 +551,17 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\pch_d3d12.cpp">
       <Filter>Source Files\Foundation\Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp">
+      <Filter>Common Files\Foundation\Sampler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Light.cpp">
+      <Filter>Source Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX\Foundation\ConstantBuffer.cpp">
+      <Filter>Source Files\Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\inc\Common\Render\Renderer.inl">
-      <Filter>Common Files\Render</Filter>
-    </None>
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli">
       <Filter>Shader Files\Foundation</Filter>
     </None>
@@ -850,6 +853,12 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\RaytracedShadow.hlsl">
       <Filter>Shader Files\RaytracedShadow</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Foundation\Util\UploadBufferWrapper.inl">
+      <Filter>Header Files\Foundation\Util</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\RaytracedShadow.inl">
+      <Filter>Header Files\Shading Files</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,3 +1,4 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Foundation/Core/Actor.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
@@ -23,6 +24,8 @@ Actor::Actor(
 
 	GameWorld::GameWorldClass::spGameWorld->ActorManager()->AddActor(this);
 }
+
+Actor::~Actor() {}
 
 Actor::Actor(
 		Common::Debug::LogFile* const pLogFile, 
@@ -99,7 +102,6 @@ void Actor::AddComponent(Component* const pComponent) {
 	const auto& iter = std::find_if(begin, end, [&](std::unique_ptr<Component>& p) {
 		return p.get() == pComponent;
 	});
-
 	if (iter != end) return;
 
 	mComponents.push_back(std::unique_ptr<Component>(pComponent));

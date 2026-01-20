@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Util/ShaderTable.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
@@ -5,8 +6,7 @@
 using namespace Render::DX::Shading::Util;
 
 GpuUploadBuffer::~GpuUploadBuffer() {
-	if (mResource.Get())
-		mResource->Unmap(0, nullptr);
+	if (mResource.Get()) mResource->Unmap(0, nullptr);
 }
 
 GpuUploadBuffer::GpuUploadBuffer(Common::Debug::LogFile* const pLogFile) 

@@ -20,7 +20,7 @@ namespace GameWorld {
 				Common::Debug::LogFile* const pLogFile, 
 				const std::string& name, 
 				const Common::Foundation::Mesh::Transform& trans);
-			virtual ~FreeLookActor() = default;
+			virtual ~FreeLookActor();
 
 		public:
 			__forceinline const DirectX::XMVECTOR& CameraForwardVector() const;
@@ -34,21 +34,21 @@ namespace GameWorld {
 			virtual BOOL UpdateActor(FLOAT delta) override;
 
 		public:
-			Foundation::Camera::CameraComponent* mpCameraComp = nullptr;
+			Foundation::Camera::CameraComponent* mpCameraComp{};
 
-			FLOAT mForwardSpeed = 0.f;
-			FLOAT mStrapeSpeed = 0.f;
+			FLOAT mForwardSpeed{};
+			FLOAT mStrapeSpeed{};
 
-			FLOAT mWalkSpeed = 4.f;
-			FLOAT mActualWalkSpeed = 4.f;
+			FLOAT mWalkSpeed{ 4.f };
+			FLOAT mActualWalkSpeed{ 4.f };
 
-			FLOAT mLookUpSpeed = 0.f;
-			FLOAT mTurnSpeed = 0.f;
+			FLOAT mLookUpSpeed{};
+			FLOAT mTurnSpeed{};
 
-			FLOAT mLookSensitivity = 0.004f;
-			FLOAT mTurnSensitivity = 0.004f;
+			FLOAT mLookSensitivity{ 0.004f };
+			FLOAT mTurnSensitivity{ 0.004f };
 
-			DirectX::XMFLOAT2 mPrevMousePos = { 0.f, 0.f };
+			DirectX::XMFLOAT2 mPrevMousePos{};
 		};
 	}
 }

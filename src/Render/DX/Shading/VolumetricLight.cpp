@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/VolumetricLight.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
@@ -9,8 +10,6 @@
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
-
-#include <DirectXColors.h>
 
 using namespace Render::DX::Shading;
 
@@ -43,6 +42,7 @@ UINT VolumetricLight::VolumetricLightClass::DsvDescCount() const { return 0; }
 BOOL VolumetricLight::VolumetricLightClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -95,14 +95,14 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures() {
 
 	// CalculateScatteringAndDensity
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[3] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[3]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxLights, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxLights, 0, 1);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CalculateScatteringAndDensity::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::CalculateScatteringAndDensity::Count]{};
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::CB_Pass].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::CB_Light].InitAsConstantBufferView(1);
 		slotRootParameter[RootSignature::CalculateScatteringAndDensity::RC_Consts].InitAsConstants(
@@ -124,12 +124,12 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures() {
 	}
 	// AccumulateScattering
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::AccumulateScattering::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::AccumulateScattering::Count]{};
 		slotRootParameter[RootSignature::AccumulateScattering::RC_Consts].InitAsConstants(ShadingConvention::VolumetricLight::RootConstant::AccumulateScattering::Count, 0);
 		slotRootParameter[RootSignature::AccumulateScattering::UIO_FrustumVolumeMap].InitAsDescriptorTable(1, &texTables[index++]);
 
@@ -146,13 +146,13 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures() {
 	}
 	// BlendScattering
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BlendScattering::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::BlendScattering::Count]{};
 		slotRootParameter[RootSignature::BlendScattering::SI_PreviousScattering].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[RootSignature::BlendScattering::UIO_CurrentScattering].InitAsDescriptorTable(1, &texTables[index++]);
 
@@ -169,13 +169,13 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures() {
 	}
 	// ApplyFog
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyFog::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyFog::Count]{};
 		slotRootParameter[RootSignature::ApplyFog::CB_Pass].InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::ApplyFog::RC_Consts].InitAsConstants(ShadingConvention::VolumetricLight::RootConstant::ApplyFog::Count, 1);
 		slotRootParameter[RootSignature::ApplyFog::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -199,7 +199,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildRootSignatures() {
 BOOL VolumetricLight::VolumetricLightClass::BuildPipelineStates() {
 	// CalculateScatteringAndDensity
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalculateScatteringAndDensity].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{
@@ -216,7 +216,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildPipelineStates() {
 	}
 	// AccumulateScattering
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_AccumulateScattering].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{
@@ -233,7 +233,7 @@ BOOL VolumetricLight::VolumetricLightClass::BuildPipelineStates() {
 	}
 	// BlendScattering
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_BlendScattering].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{

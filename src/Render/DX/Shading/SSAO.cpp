@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/SSAO.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
@@ -9,8 +10,6 @@
 #include "Render/DX/Foundation/Util/D3D12Util.hpp"
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
-
-#include <DirectXColors.h>
 
 using namespace Render::DX::Shading;
 using namespace DirectX;
@@ -59,6 +58,7 @@ UINT SSAO::SSAOClass::DsvDescCount() const { return 0; }
 BOOL SSAO::SSAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -80,7 +80,7 @@ BOOL SSAO::SSAOClass::CompileShaders() {
 BOOL SSAO::SSAOClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 
-	CD3DX12_DESCRIPTOR_RANGE texTables[6] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[6]{}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -90,7 +90,7 @@ BOOL SSAO::SSAOClass::BuildRootSignatures() {
 
 	index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
+	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count]{};
 	slotRootParameter[RootSignature::Default::CB_AO].InitAsConstantBufferView(0);
 	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(
 		ShadingConvention::SSAO::RootConstant::Default::Count, 1);
@@ -116,7 +116,7 @@ BOOL SSAO::SSAOClass::BuildRootSignatures() {
 }
 
 BOOL SSAO::SSAOClass::BuildPipelineStates() {
-	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.pRootSignature = mRootSignature.Get();
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	{

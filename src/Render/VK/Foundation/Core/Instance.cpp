@@ -1,12 +1,13 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/Core/Instance.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 
 using namespace Render::VK::Foundation::Core;
 
-Instance::~Instance() {
-	CleanUp();
-}
+Instance::Instance() {}
+
+Instance::~Instance() {	CleanUp(); }
 	
 BOOL Instance::Initalize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
@@ -33,7 +34,7 @@ BOOL Instance::CreateInstance() {
 	CheckReturn(mpLogFile, Foundation::Util::VulkanUtil::CheckValidationLayersSupport(mpLogFile));
 #endif
 
-	VkApplicationInfo appInfo = {};
+	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "MyNewGameEngine";
 	appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
@@ -41,7 +42,7 @@ BOOL Instance::CreateInstance() {
 	appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 
-	VkInstanceCreateInfo createInfo = {};
+	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
@@ -55,7 +56,6 @@ BOOL Instance::CreateInstance() {
 
 	std::vector<const CHAR*> missingExtensions;
 	BOOL status = TRUE;
-
 
 	for (const auto& requiredExt : Foundation::Util::VulkanUtil::RequiredExtensions) {
 		BOOL supported = FALSE;
@@ -85,7 +85,7 @@ BOOL Instance::CreateInstance() {
 	createInfo.ppEnabledExtensionNames = Foundation::Util::VulkanUtil::RequiredExtensions.data();
 
 #ifdef _DEBUG
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
 	createInfo.enabledLayerCount = static_cast<UINT>(Foundation::Util::VulkanUtil::ValidationLayers.size());
 	createInfo.ppEnabledLayerNames = Foundation::Util::VulkanUtil::ValidationLayers.data();

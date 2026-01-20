@@ -1,3 +1,4 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/Resource/MeshGeometry.hpp"
 
 using namespace Render::VK::Foundation::Resource;

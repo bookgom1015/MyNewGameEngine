@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/Util/AccelerationStructure.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/RenderItem.hpp"
@@ -20,7 +21,7 @@ BOOL AccelerationStructureBuffer::BuildBLAS(
 		Foundation::Core::Device* const pDevice, 
 		ID3D12GraphicsCommandList6* const pCmdList, 
 		Foundation::Resource::MeshGeometry* const pMeshGeo) {
-	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
+	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc{};
 	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 	geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 	geometryDesc.Triangles.VertexCount = pMeshGeo->VertexBufferByteSize / pMeshGeo->VertexByteStride;
@@ -37,14 +38,14 @@ BOOL AccelerationStructureBuffer::BuildBLAS(
 
 	// Get the size requirements for the BLAS buffers
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs{};
 	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 	inputs.pGeometryDescs = &geometryDesc;
 	inputs.NumDescs = 1;
 	inputs.Flags = buildFlags;
 
-	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo = {};
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo{};
 	pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuildInfo);
 
 	prebuildInfo.ScratchDataSizeInBytes = Align(D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT, prebuildInfo.ScratchDataSizeInBytes);
@@ -61,7 +62,7 @@ BOOL AccelerationStructureBuffer::BuildBLAS(
 	CheckReturn(pLogFile, Foundation::Util::D3D12Util::CreateBuffer(pDevice, bufferInfo, IID_PPV_ARGS(&mResult)));
 
 	// Describe and build the bottom level acceleration structure
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc{};
 	buildDesc.Inputs = inputs;
 	buildDesc.ScratchAccelerationStructureData = mScratch->GetGPUVirtualAddress();
 	buildDesc.DestAccelerationStructureData = mResult->GetGPUVirtualAddress();
@@ -94,14 +95,14 @@ BOOL AccelerationStructureBuffer::BuildTLAS(
 
 	// Get the size requirements for the TLAS buffers
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs{};
 	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 	inputs.InstanceDescs = mInstanceDesc->GetGPUVirtualAddress();
 	inputs.NumDescs = numInstanceDescs;
 	inputs.Flags = buildFlags;
 
-	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo = {};
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo{};
 	pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuildInfo);
 
 	prebuildInfo.ResultDataMaxSizeInBytes = Align(D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT, prebuildInfo.ResultDataMaxSizeInBytes);
@@ -121,7 +122,7 @@ BOOL AccelerationStructureBuffer::BuildTLAS(
 	CheckReturn(pLogFile, Foundation::Util::D3D12Util::CreateBuffer(pDevice, bufferInfo, IID_PPV_ARGS(&mResult)));
 
 	// Describe and build the TLAS
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc{};
 	buildDesc.Inputs = inputs;
 	buildDesc.ScratchAccelerationStructureData = mScratch->GetGPUVirtualAddress();
 	buildDesc.DestAccelerationStructureData = mResult->GetGPUVirtualAddress();
@@ -141,14 +142,14 @@ BOOL AccelerationStructureBuffer::UpdateTLAS(
 	std::memcpy(mpMappedData, instanceDescs, numInstanceDescs * sizeof(D3D12_RAYTRACING_INSTANCE_DESC));
 
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs{};
 	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 	inputs.InstanceDescs = mInstanceDesc->GetGPUVirtualAddress();
 	inputs.NumDescs = numInstanceDescs;
 	inputs.Flags = buildFlags;
 
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc{};
 	buildDesc.Inputs = inputs;
 	buildDesc.ScratchAccelerationStructureData = mScratch->GetGPUVirtualAddress();
 	buildDesc.DestAccelerationStructureData = mResult->GetGPUVirtualAddress();
@@ -160,6 +161,8 @@ BOOL AccelerationStructureBuffer::UpdateTLAS(
 AccelerationStructureManager::AccelerationStructureManager() {
 	mTLAS = std::make_unique<AccelerationStructureBuffer>();
 }
+
+AccelerationStructureManager::~AccelerationStructureManager() {}
 
 BOOL AccelerationStructureManager::Initialize(
 		Common::Debug::LogFile* const pLogFile,
@@ -264,7 +267,7 @@ BOOL AccelerationStructureManager::BuildInstanceDescriptors(
 		const auto Hash = Foundation::Resource::MeshGeometry::Hash(ri->Geometry);
 		if (mBLASRefs.find(Hash) == mBLASRefs.end()) ReturnFalse(mpLogFile, L"Failed to find BLAS");
 
-		D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
+		D3D12_RAYTRACING_INSTANCE_DESC instanceDesc{};
 		instanceDesc.InstanceID = 0;
 		instanceDesc.InstanceContributionToHitGroupIndex = HitGroupIndex;
 		instanceDesc.InstanceMask = 0xFF;

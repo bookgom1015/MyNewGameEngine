@@ -1,16 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <array>
-
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-
-#include <dxgi1_6.h>
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
-
 #include "Common/Util/HashUtil.hpp"
 #include "Render/DX/Foundation/HlslCompaction.h"
 
@@ -56,7 +45,7 @@ namespace Render::DX {
 			virtual BOOL Update();
 
 		protected:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
 		};
 	}
 }

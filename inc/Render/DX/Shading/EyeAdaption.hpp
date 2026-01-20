@@ -64,13 +64,13 @@ namespace Render::DX::Shading {
 		class EyeAdaptionClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				BOOL MeshShaderSupported{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -112,19 +112,19 @@ namespace Render::DX::Shading {
 			BOOL BuildResources();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
 			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, 
-				RootSignature::Count> mRootSignatures;
+				RootSignature::Count> mRootSignatures{};
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, 
-				PipelineState::Count> mPipelineStates;
+				PipelineState::Count> mPipelineStates{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mHistogramBuffer;
-			std::unique_ptr<Foundation::Resource::GpuResource> mAvgLogLuminance;
-			std::unique_ptr<Foundation::Resource::GpuResource> mPrevLuminance;
-			std::unique_ptr<Foundation::Resource::GpuResource> mSmoothedLuminance;
+			std::unique_ptr<Foundation::Resource::GpuResource> mHistogramBuffer{};
+			std::unique_ptr<Foundation::Resource::GpuResource> mAvgLogLuminance{};
+			std::unique_ptr<Foundation::Resource::GpuResource> mPrevLuminance{};
+			std::unique_ptr<Foundation::Resource::GpuResource> mSmoothedLuminance{};
 		};
 
 		using InitDataPtr = std::unique_ptr<EyeAdaptionClass::InitData>;

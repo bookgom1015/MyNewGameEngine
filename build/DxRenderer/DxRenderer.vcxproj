@@ -16,7 +16,7 @@
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\BVH.h" />
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\Geometry.h" />
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\LinearAlgebra.h" />
-    <ClInclude Include="..\..\inc\Common\Foundation\Sampler\Sampler.hpp" />
+    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\TonemapperType.h" />
     <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp" />
@@ -129,7 +129,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp" />
+    <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -166,6 +169,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Render/DX/Foundation/Core/pch_d3d12.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\SwapChain.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\Light.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\GpuResource.cpp" />
@@ -226,7 +230,6 @@
     <None Include="..\..\assets\Shaders\HLSL\SVGF.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\ValuePackaging.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\VolumetricLight.hlsli" />
-    <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\CommandObject.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\DepthStencilBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Core\DescriptorHeap.inl" />
@@ -238,12 +241,14 @@
     <None Include="..\..\inc\Render\DX\Foundation\Resource\StructuredBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Foundation\Util\D3D12Util.inl" />
+    <None Include="..\..\inc\Render\DX\Foundation\Util\UploadBufferWrapper.inl" />
     <None Include="..\..\inc\Render\DX\Shading\BlurFilter.inl" />
     <None Include="..\..\inc\Render\DX\Shading\EnvironmentMap.inl" />
     <None Include="..\..\inc\Render\DX\Shading\EyeAdaption.inl" />
     <None Include="..\..\inc\Render\DX\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RayGen.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RaySorting.inl" />
+    <None Include="..\..\inc\Render\DX\Shading\RaytracedShadow.inl" />
     <None Include="..\..\inc\Render\DX\Shading\RTAO.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Shadow.inl" />
     <None Include="..\..\inc\Render\DX\Shading\SSAO.inl" />
@@ -253,6 +258,9 @@
     <None Include="..\..\inc\Render\DX\Shading\Util\AccelerationStructure.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Util\ShaderManager.inl" />
     <None Include="..\..\inc\Render\DX\Shading\Util\ShaderTable.inl" />
+    <ClCompile Include="..\..\src\Render\DX\Foundation\ConstantBuffer.cpp">
+      <FileType>CppCode</FileType>
+    </ClCompile>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -528,12 +536,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)bin\$(Platform)\DxDebug\</OutDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\D3D12Debug\</OutDir>
     <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)bin\$(Platform)\DxRelease\</OutDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\D3D12Release\</OutDir>
     <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -550,7 +558,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\DxDebug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\D3D12Debug</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -579,7 +587,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\DxRelease</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\D3D12Release</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>

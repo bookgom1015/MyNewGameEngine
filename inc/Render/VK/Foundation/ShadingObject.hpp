@@ -1,21 +1,5 @@
 #pragma once
 
-#include <array>
-#include <memory>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <Windows.h>
-
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-	#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.h>
-
 #include "Common/Util/HashUtil.hpp"
 
 namespace Common::Debug {
@@ -52,7 +36,7 @@ namespace Render::VK {
 			virtual BOOL OnResize(UINT width, UINT height);
 
 		protected:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
 		};
 	}
 }

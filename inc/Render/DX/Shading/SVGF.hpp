@@ -202,12 +202,12 @@ namespace Render::DX::Shading {
 		class SVGFClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -310,20 +310,20 @@ namespace Render::DX::Shading {
 			BOOL BuildDescriptors();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
-			std::array < Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures{};
+			std::array < Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mResources;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::Count> mhCpuDecs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::Count> mhGpuDecs;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mResources{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::Count> mhCpuDecs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::Count> mhGpuDecs{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mDebugMaps;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2> mhDebugMapCpuUavs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, 2> mhDebugMapGpuUavs;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mDebugMaps{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2> mhDebugMapCpuUavs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, 2> mhDebugMapGpuUavs{};
 		};
 
 		using InitDataPtr = std::unique_ptr<SVGFClass::InitData>;

@@ -1,7 +1,6 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/GameWorld.hpp"
 #include "Common/Debug/Logger.hpp"
-
-#include <memory>
 
 void CreateDebuggingConsole() {
 	AllocConsole();

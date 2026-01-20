@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/ToneMapping.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -37,6 +38,7 @@ UINT ToneMapping::ToneMappingClass::DsvDescCount() const { return 0; }
 BOOL ToneMapping::ToneMappingClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -59,12 +61,12 @@ BOOL ToneMapping::ToneMappingClass::CompileShaders() {
 BOOL ToneMapping::ToneMappingClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 
-	CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 	index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
+	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count]{};
 	slotRootParameter[RootSignature::Default::RC_Cosnts]
 		.InitAsConstants(ShadingConvention::ToneMapping::RootConstant::Default::Count, 0);
 	slotRootParameter[RootSignature::Default::SI_Intermediate]

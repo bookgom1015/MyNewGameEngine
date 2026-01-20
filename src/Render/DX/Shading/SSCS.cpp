@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/SSCS.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -34,6 +35,7 @@ UINT SSCS::SSCSClass::DsvDescCount() const { return 0; }
 BOOL SSCS::SSCSClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -62,7 +64,7 @@ BOOL SSCS::SSCSClass::BuildRootSignatures() {
 
 	// ComputeContactShadow
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[5] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[5]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -71,7 +73,7 @@ BOOL SSCS::SSCSClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ComputeContactShadow::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ComputeContactShadow::Count]{};
 		slotRootParameter[RootSignature::ComputeContactShadow::CB_Pass]
 			.InitAsConstantBufferView(0);
 		slotRootParameter[RootSignature::ComputeContactShadow::CB_Light]
@@ -102,13 +104,13 @@ BOOL SSCS::SSCSClass::BuildRootSignatures() {
 	}
 	// ApplyContactShadow
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyContactShadow::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyContactShadow::Count]{};
 		slotRootParameter[RootSignature::ApplyContactShadow::UI_ContactShadowMap].InitAsDescriptorTable(
 			1, &texTables[index++]);
 		slotRootParameter[RootSignature::ApplyContactShadow::UIO_ShadowMap].InitAsDescriptorTable(
@@ -132,7 +134,7 @@ BOOL SSCS::SSCSClass::BuildRootSignatures() {
 BOOL SSCS::SSCSClass::BuildPipelineStates() {
 	// ComputeContactShadow
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ComputeContactShadow].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{
@@ -149,7 +151,7 @@ BOOL SSCS::SSCSClass::BuildPipelineStates() {
 	}
 	// ApplyContactShadow
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_ApplyContactShadow].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 		{

@@ -1,11 +1,12 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/Core/Surface.hpp"
 #include "Common/Debug/Logger.hpp"
 
 using namespace Render::VK::Foundation::Core;
 
-Surface::~Surface() {
-	CleanUp();
-}
+Surface::Surface() {}
+
+Surface::~Surface() { CleanUp(); }
 
 BOOL Surface::Initalize(Common::Debug::LogFile* const pLogFile, HWND hWnd, VkInstance instance) {
 	mpLogFile = pLogFile;
@@ -18,7 +19,7 @@ BOOL Surface::Initalize(Common::Debug::LogFile* const pLogFile, HWND hWnd, VkIns
 }
 
 BOOL Surface::CreateSurface() {
-	VkWin32SurfaceCreateInfoKHR createInfo = {};
+	VkWin32SurfaceCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	createInfo.hwnd = mhMainWnd;
 	createInfo.hinstance = GetModuleHandle(nullptr);

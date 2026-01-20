@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/BlurFilter.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
@@ -167,13 +168,13 @@ BOOL BlurFilter::BlurFilterClass::CompileShaders() {
 BOOL BlurFilter::BlurFilterClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 
-	CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 	index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
+	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count]{};
 	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(ShadingConvention::BlurFilter::RootConstant::Default::Count, 0);
 	slotRootParameter[RootSignature::Default::SI_InputMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::Default::UO_OutputMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -194,7 +195,7 @@ BOOL BlurFilter::BlurFilterClass::BuildRootSignatures() {
 }
 
 BOOL BlurFilter::BlurFilterClass::BuildPipelineStates() {
-	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.pRootSignature = mRootSignature.Get();
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 

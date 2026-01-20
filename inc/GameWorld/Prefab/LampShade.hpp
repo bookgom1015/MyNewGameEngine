@@ -19,7 +19,7 @@ namespace GameWorld::Prefab {
 			Common::Debug::LogFile* const pLogFile, 
 			const std::string& name, 
 			const Common::Foundation::Mesh::Transform& trans);
-		virtual ~LampShade() = default;
+		virtual ~LampShade();
 
 	protected:
 		virtual BOOL OnInitialzing() override;
@@ -27,6 +27,6 @@ namespace GameWorld::Prefab {
 		virtual BOOL UpdateActor(FLOAT delta) override;
 
 	private:
-		GameWorld::Foundation::Mesh::MeshComponent* mpMeshComp;
+		GameWorld::Foundation::Mesh::MeshComponent* mpMeshComp{};
 	};
 }

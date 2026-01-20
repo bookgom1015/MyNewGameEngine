@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/RTAO.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
@@ -59,6 +60,7 @@ UINT RTAO::RTAOClass::DsvDescCount() const { return 0; }
 BOOL RTAO::RTAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -79,7 +81,7 @@ BOOL RTAO::RTAOClass::CompileShaders() {
 BOOL RTAO::RTAOClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 
-	CD3DX12_DESCRIPTOR_RANGE texTables[7] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[7]{}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3);
@@ -90,7 +92,7 @@ BOOL RTAO::RTAOClass::BuildRootSignatures() {
 
 	index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Count] = {};
+	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Count]{};
 	slotRootParameter[RootSignature::SI_AccelerationStructure].InitAsShaderResourceView(0);
 	slotRootParameter[RootSignature::CB_AO].InitAsConstantBufferView(0);
 	slotRootParameter[RootSignature::SI_PositionMap].InitAsDescriptorTable(1, &texTables[index++]);

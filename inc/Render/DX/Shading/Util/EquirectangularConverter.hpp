@@ -50,15 +50,15 @@ namespace Render::DX::Shading::Util {
 		class EquirectangularConverterClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
 			};
 
 		public:
-			EquirectangularConverterClass() = default;
-			virtual ~EquirectangularConverterClass() = default;
+			EquirectangularConverterClass();
+			virtual ~EquirectangularConverterClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -100,12 +100,12 @@ namespace Render::DX::Shading::Util {
 				UINT mipLevel = 0);
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes = {};
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures = {};
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates = {};
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 		};
 
 		using InitDataPtr = std::unique_ptr<EquirectangularConverterClass::InitData>;

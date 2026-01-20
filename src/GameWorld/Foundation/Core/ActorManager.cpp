@@ -1,12 +1,13 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "GameWorld/Foundation/Core/Actor.hpp"
 
-#include <algorithm>
-
 using namespace GameWorld::Foundation::Core;
 
 ActorManager::ActorManager() {}
+
+ActorManager::~ActorManager() {}
 
 BOOL ActorManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;

@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/RaySorting.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Render/ShadingArgument.hpp"
@@ -33,6 +34,7 @@ UINT RaySorting::RaySortingClass::DsvDescCount() const { return 0; }
 BOOL RaySorting::RaySortingClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -51,13 +53,13 @@ BOOL RaySorting::RaySortingClass::CompileShaders() {
 BOOL RaySorting::RaySortingClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 
-	CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[4]{}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 	index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
+	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count]{};
 	slotRootParameter[RootSignature::Default::CB_RaySorting].InitAsConstantBufferView(0);
 	slotRootParameter[RootSignature::Default::SI_NormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
 	slotRootParameter[RootSignature::Default::UO_RayIndexOffsetMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -77,7 +79,7 @@ BOOL RaySorting::RaySortingClass::BuildRootSignatures() {
 }
 
 BOOL RaySorting::RaySortingClass::BuildPipelineStates() {
-	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.pRootSignature = mRootSignature.Get();
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	{

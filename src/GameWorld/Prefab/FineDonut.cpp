@@ -1,3 +1,4 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Prefab/FineDonut.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
@@ -25,6 +26,8 @@ FineDonut::FineDonut(
 	: Actor(pLogFile, name, trans) {
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
+
+FineDonut::~FineDonut() {}
 
 BOOL FineDonut::OnInitialzing() {
 	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("fine_donut", "./../../../assets/Models/", "obj"));

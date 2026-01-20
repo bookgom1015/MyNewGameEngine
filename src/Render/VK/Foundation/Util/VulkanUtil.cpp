@@ -1,11 +1,7 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/Util/VulkanUtil.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Mesh/Vertex.h"
-
-#include <set>
-
-#undef min
-#undef max
 
 using namespace Render::VK::Foundation::Util;
 
@@ -39,7 +35,7 @@ UINT QueueFamilyIndices::GetPresentFamilyIndex() { return PresentFamily.value();
 BOOL QueueFamilyIndices::IsComplete() { return GraphicsFamily.has_value() && PresentFamily.has_value(); }
 
 QueueFamilyIndices QueueFamilyIndices::FindQueueFamilies(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface) {
-	QueueFamilyIndices indices = {};
+	QueueFamilyIndices indices{};
 
 	UINT queueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -171,7 +167,7 @@ BOOL VulkanUtil::CheckDeviceExtensionsSupport(const VkPhysicalDevice& physicalDe
 }
 
 SwapChainSupportDetails VulkanUtil::QuerySwapChainSupport(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface) {
-	SwapChainSupportDetails details = {};
+	SwapChainSupportDetails details{};
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.Capabilities);
 
@@ -358,7 +354,7 @@ BOOL VulkanUtil::BeginSingleTimeCommands(
 	if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS)
 		ReturnFalse(pLogFile, L"Failed to allocate command buffers");
 
-	VkCommandBufferBeginInfo beginInfo = {};
+	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
@@ -376,7 +372,7 @@ BOOL VulkanUtil::EndSingleTimeCommands(
 		VkCommandBuffer& commandBuffer) {
 	vkEndCommandBuffer(commandBuffer);
 
-	VkSubmitInfo submitInfo = {};
+	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
@@ -414,7 +410,7 @@ BOOL VulkanUtil::CreateBuffer(
 		const VkMemoryPropertyFlags& properties,
 		VkBuffer& buffer,
 		VkDeviceMemory& bufferMemory) {
-	VkBufferCreateInfo bufferInfo = {};
+	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = size;
 	bufferInfo.usage = usage;
@@ -427,7 +423,7 @@ BOOL VulkanUtil::CreateBuffer(
 	VkMemoryRequirements memRequirements;
 	vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
 
-	VkMemoryAllocateInfo allocInfo = {};
+	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = FindMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
@@ -475,7 +471,7 @@ BOOL VulkanUtil::CopyBufferToImage(
 	VkCommandBuffer commandBuffer; 
 	CheckReturn(pLogFile, BeginSingleTimeCommands(pLogFile, device, commandPool, commandBuffer));
 
-	VkBufferImageCopy region = {};
+	VkBufferImageCopy region{};
 	region.bufferOffset = 0;
 	region.bufferRowLength = 0;
 	region.bufferImageHeight = 0;
@@ -513,7 +509,7 @@ BOOL VulkanUtil::CreateImage(
 		const VkMemoryPropertyFlags& properties,
 		VkImage& image,
 		VkDeviceMemory& imageMemory) {
-	VkImageCreateInfo imageInfo = {};
+	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
 	imageInfo.extent.width = static_cast<UINT>(width);
@@ -535,7 +531,7 @@ BOOL VulkanUtil::CreateImage(
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(device, image, &memRequirements);
 
-	VkMemoryAllocateInfo allocInfo = {};
+	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = FindMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
@@ -557,7 +553,7 @@ BOOL VulkanUtil::CreateImageView(
 		UINT mipLevles,
 		const VkImageAspectFlags& aspectFlags,
 		VkImageView& imageView) {
-	VkImageViewCreateInfo viewInfo = {};
+	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = image;
 	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -575,7 +571,7 @@ BOOL VulkanUtil::CreateImageView(
 }
 
 VkVertexInputBindingDescription VulkanUtil::GetVertexBindingDescription() {
-	VkVertexInputBindingDescription bindingDescription = {};
+	VkVertexInputBindingDescription bindingDescription{};
 	bindingDescription.binding = 0;
 	bindingDescription.stride = sizeof(Common::Foundation::Mesh::Vertex);
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -584,7 +580,7 @@ VkVertexInputBindingDescription VulkanUtil::GetVertexBindingDescription() {
 }
 
 std::array<VkVertexInputAttributeDescription, 3> VulkanUtil::GetVertexAttributeDescriptions() {
-	std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
+	std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
 	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;

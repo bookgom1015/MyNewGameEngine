@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/EyeAdaption.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
@@ -41,6 +42,7 @@ BOOL EyeAdaption::EyeAdaptionClass::Initialize(
 		void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -86,12 +88,12 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures() {
 
 	// LuminanceHistogram
 	{
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::LuminanceHistogram::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::LuminanceHistogram::Count]{};
 		slotRootParameter[RootSignature::LuminanceHistogram::RC_Consts]
 			.InitAsConstants(
 				ShadingConvention::EyeAdaption::RootConstant::LuminanceHistogram::Count,
@@ -114,7 +116,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures() {
 	}
 	// PercentileExtract
 	{
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::PercentileExtract::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::PercentileExtract::Count]{};
 		slotRootParameter[RootSignature::PercentileExtract::RC_Consts]
 			.InitAsConstants(
 				ShadingConvention::EyeAdaption::RootConstant::PercentileExtract::Count,
@@ -137,7 +139,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures() {
 	}
 	// TemporalSmoothing
 	{
-		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::TemporalSmoothing::Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::TemporalSmoothing::Count]{};
 		slotRootParameter[RootSignature::TemporalSmoothing::RC_Consts]
 			.InitAsConstants(
 				ShadingConvention::EyeAdaption::RootConstant::TemporalSmoothing::Count,
@@ -167,7 +169,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildRootSignatures() {
 BOOL EyeAdaption::EyeAdaptionClass::BuildPipelineStates() {
 	// ClearHistogram
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[
 			RootSignature::GR_LuminanceHistogram].Get();
 			psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
@@ -188,7 +190,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildPipelineStates() {
 	}
 	// LuminanceHistogram
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[
 			RootSignature::GR_LuminanceHistogram].Get();
 		psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
@@ -209,7 +211,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildPipelineStates() {
 	}
 	// PercentileExtract
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[
 			RootSignature::GR_PercentileExtract].Get();
 			psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
@@ -230,7 +232,7 @@ BOOL EyeAdaption::EyeAdaptionClass::BuildPipelineStates() {
 	}
 	// TemporalSmoothing
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[
 			RootSignature::GR_TemporalSmoothing].Get();
 			psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;

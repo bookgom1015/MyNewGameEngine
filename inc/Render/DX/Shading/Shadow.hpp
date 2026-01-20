@@ -57,15 +57,15 @@ namespace Render::DX::Shading {
 		class ShadowClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
-				UINT TexWidth = 0;
-				UINT TexHeight = 0;
+				BOOL MeshShaderSupported{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
+				UINT TexWidth{};
+				UINT TexHeight{};
 			};
 
 		public:
@@ -130,30 +130,30 @@ namespace Render::DX::Shading {
 				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
 
 		public:
-			InitData mInitData;
+			InitData mInitData{};
 
-			D3D12_VIEWPORT mViewport;
-			D3D12_RECT mScissorRect;
+			D3D12_VIEWPORT mViewport{};
+			D3D12_RECT mScissorRect{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, MaxLights> mZDepthMaps;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, MaxLights> mhZDepthMapCpuSrvs;
-			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, MaxLights> mhZDepthMapGpuSrvs;
-			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, MaxLights> mhZDepthMapCpuDsvs;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, MaxLights> mZDepthMaps{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, MaxLights> mhZDepthMapCpuSrvs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, MaxLights> mhZDepthMapGpuSrvs{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, MaxLights> mhZDepthMapCpuDsvs{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mShadowMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhShadowMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhShadowMapGpuSrv;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhShadowMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhShadowMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mShadowMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhShadowMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhShadowMapGpuSrv{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhShadowMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhShadowMapGpuUav{};
 
 			// Lights
-			std::array<std::shared_ptr<Foundation::Light>, MaxLights> mLights;
-			UINT mLightCount = 0;
+			std::array<std::shared_ptr<Foundation::Light>, MaxLights> mLights{};
+			UINT mLightCount{};
 		};
 
 		using InitDataPtr = std::unique_ptr<ShadowClass::InitData>;

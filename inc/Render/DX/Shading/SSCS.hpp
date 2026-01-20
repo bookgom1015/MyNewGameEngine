@@ -53,12 +53,12 @@ namespace Render::DX::Shading {
 		class SSCSClass : public Render::DX::Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -99,22 +99,22 @@ namespace Render::DX::Shading {
 			BOOL BuildDescriptors();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mContactShadowMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhContactShadowMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhContactShadowMapGpuSrv;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhContactShadowMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhContactShadowMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mContactShadowMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhContactShadowMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhContactShadowMapGpuSrv{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhContactShadowMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhContactShadowMapGpuUav{};
 		};
 
 		using InitDataPtr = std::unique_ptr<SSCSClass::InitData>;

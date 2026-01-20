@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/SVGF.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/MathUtil.hpp"
@@ -47,6 +48,7 @@ UINT SVGF::SVGFClass::DsvDescCount() const { return 0; }
 BOOL SVGF::SVGFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -108,7 +110,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 	{
 		using namespace RootSignature::TemporalSupersamplingReverseReproject;
 
-		CD3DX12_DESCRIPTOR_RANGE texTables[13] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[13]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);
@@ -125,7 +127,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count]{};
 		slotRootParameter[CB_CrossBilateralFilter].InitAsConstantBufferView(0);
 		slotRootParameter[RC_Consts].InitAsConstants(
 			ShadingConvention::SVGF::RootConstant::TemporalSupersamplingReverseReproject::Count, 1);
@@ -157,7 +159,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 	{
 		using namespace RootSignature::TemporalSupersamplingBlendWithCurrentFrame;
 
-		CD3DX12_DESCRIPTOR_RANGE texTables[10] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[10]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -171,7 +173,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count]{};
 		slotRootParameter[CB_TSPPBlendWithCurrentFrame].InitAsConstantBufferView(0);
 		slotRootParameter[SI_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[SI_LocalMeanVaraince].InitAsDescriptorTable(1, &texTables[index++]);
@@ -198,13 +200,13 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 	{
 		using namespace RootSignature::CalcDepthPartialDerivative;
 
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count]{};
 		slotRootParameter[RC_Consts].InitAsConstants(
 			ShadingConvention::SVGF::RootConstant::CalcDepthPartialDerivative::Count, 0, 0);
 		slotRootParameter[SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -224,13 +226,13 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 	{
 		using namespace RootSignature::CalcLocalMeanVariance;
 
-		CD3DX12_DESCRIPTOR_RANGE texTables[2] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[2]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count]{};
 		slotRootParameter[CB_LocalMeanVariance].InitAsConstantBufferView(0, 0);
 		slotRootParameter[SI_AOCoefficient].InitAsDescriptorTable(1, &texTables[index++]);
 		slotRootParameter[UO_LocalMeanVariance].InitAsDescriptorTable(1, &texTables[index++]);
@@ -249,12 +251,12 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 	{
 		using namespace RootSignature::FillInCheckerboard;
 
-		CD3DX12_DESCRIPTOR_RANGE texTables[1] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[1]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count]{};
 		slotRootParameter[CB_LocalMeanVariance].InitAsConstantBufferView(0, 0);
 		slotRootParameter[UIO_LocalMeanVariance].InitAsDescriptorTable(1, &texTables[index++]);
 
@@ -272,7 +274,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 	{
 		using namespace RootSignature::AtrousWaveletTransformFilter;
 
-		CD3DX12_DESCRIPTOR_RANGE texTables[7] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[7]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -283,7 +285,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count]{};
 		slotRootParameter[CB_AtrousFilter].InitAsConstantBufferView(0, 0);
 		slotRootParameter[RC_Consts].InitAsConstants(
 			ShadingConvention::SVGF::RootConstant::AtrousWaveletTransformFilter::Count, 1);
@@ -309,7 +311,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 	{
 		using namespace RootSignature::DisocclusionBlur;
 
-		CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
+		CD3DX12_DESCRIPTOR_RANGE texTables[4]{}; UINT index = 0;
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 		texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
@@ -317,7 +319,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 
 		index = 0;
 
-		CD3DX12_ROOT_PARAMETER slotRootParameter[Count] = {};
+		CD3DX12_ROOT_PARAMETER slotRootParameter[Count]{};
 		slotRootParameter[RC_Consts].InitAsConstants(
 			ShadingConvention::SVGF::RootConstant::DisocclusionBlur::Count, 0);
 		slotRootParameter[SI_DepthMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -342,7 +344,7 @@ BOOL SVGF::SVGFClass::BuildRootSignatures() {
 BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	// CalcDepthPartialDerivative
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalcDepthPartialDerivative].Get();
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(
@@ -359,7 +361,7 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	}
 	// CalcLocalMeanVariance
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_CalcLocalMeanVariance].Get();
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_CalcLocalMeanVariance]);
@@ -375,7 +377,7 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	}
 	// FillinCheckerboard
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_FillInCheckerboard].Get();
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_FillinCheckerboard]);
@@ -391,7 +393,7 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	}
 	// TemporalSupersamplingReverseReproject
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_TemporalSupersamplingReverseReproject].Get();
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(
@@ -408,7 +410,7 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	}
 	// TemporalSupersamplingBlendWithCurrentFrame
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_TemporalSupersamplingBlendWithCurrentFrame].Get();
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(
@@ -425,7 +427,7 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	}
 	// E_EdgeStoppingFilterGaussian3x3
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_AtrousWaveletTransformFilter].Get();
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(
@@ -442,7 +444,7 @@ BOOL SVGF::SVGFClass::BuildPipelineStates() {
 	}
 	// DisocclusionBlur3x3_Contrast
 	{
-		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 		psoDesc.pRootSignature = mRootSignatures[RootSignature::GR_DisocclusionBlur].Get();
 		{
 			const auto CS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::CS_DisocclusionBlur3x3]);

@@ -1,3 +1,4 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Prefab/MetalSphere.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "GameWorld/Foundation/Core/ActorManager.hpp"

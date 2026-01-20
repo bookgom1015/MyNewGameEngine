@@ -1,10 +1,5 @@
 #pragma once
 
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -12,7 +7,7 @@ namespace Common::Debug {
 namespace Render::VK::Foundation::Core {
 	class Surface {
 	public:
-		Surface() = default;
+		Surface();
 		virtual ~Surface();
 
 	public:
@@ -26,13 +21,13 @@ namespace Render::VK::Foundation::Core {
 		BOOL CreateSurface();
 
 	private:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
 
-		HWND mhMainWnd;
+		HWND mhMainWnd{};
 
-		VkInstance mInstance;
+		VkInstance mInstance{};
 
-		VkSurfaceKHR mSurface;
+		VkSurfaceKHR mSurface{};
 	};
 }
 

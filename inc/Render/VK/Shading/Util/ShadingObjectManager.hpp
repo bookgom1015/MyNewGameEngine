@@ -1,16 +1,5 @@
 #pragma once
 
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -28,8 +17,8 @@ namespace Render::VK {
 		namespace Util {
 			class ShadingObjectManager {
 			public:
-				ShadingObjectManager() = default;
-				virtual ~ShadingObjectManager() = default;
+				ShadingObjectManager();
+				virtual ~ShadingObjectManager();
 
 			public:
 				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
@@ -51,9 +40,9 @@ namespace Render::VK {
 				BOOL OnResize(UINT width, UINT height);
 
 			private:
-				Common::Debug::LogFile* mpLogFile = nullptr;
+				Common::Debug::LogFile* mpLogFile{};
 
-				std::vector<Foundation::ShadingObject*> mShadingObjects;
+				std::vector<Foundation::ShadingObject*> mShadingObjects{};
 			};
 		}
 	}

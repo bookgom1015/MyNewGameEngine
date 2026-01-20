@@ -1,7 +1,5 @@
 #pragma once
 
-#include <random>
-
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Render/DX/Foundation/Resource/StructuredBuffer.hpp"
 
@@ -43,18 +41,18 @@ namespace Render::DX::Shading {
 		class RayGenClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet = nullptr;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
-				UINT MaxSamplesPerPixel;
-				UINT* SamplesPerPixel;
-				UINT MaxSampleSetDistributedAcrossPixels;
-				UINT* SampleSetDistributedAcrossPixels;
-				UINT* CurrentFrameIndex;
+				Common::Render::ShadingArgument::ShadingArgumentSet* ShadingArgumentSet{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
+				UINT MaxSamplesPerPixel{};
+				UINT* SamplesPerPixel{};
+				UINT MaxSampleSetDistributedAcrossPixels{};
+				UINT* SampleSetDistributedAcrossPixels{};
+				UINT* CurrentFrameIndex{};
 			};
 		public:
 			RayGenClass();
@@ -101,28 +99,28 @@ namespace Render::DX::Shading {
 			BOOL BuildDescriptors();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::unique_ptr<Common::Foundation::MultiJittered> mRandomSampler;
-			std::mt19937 mGeneratorURNG;
+			std::unique_ptr<Common::Foundation::MultiJittered> mRandomSampler{};
+			std::mt19937 mGeneratorURNG{};
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			Microsoft::WRL::ComPtr<ID3D12PipelineState> mPipelineState{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			Foundation::Resource::StructuredBuffer<ShadingConvention::RayGen::AlignedUnitSquareSample2D> mSamplesGPUBuffer;
-			Foundation::Resource::StructuredBuffer<ShadingConvention::RayGen::AlignedHemisphereSample3D> mHemisphereSamplesGPUBuffer;
+			Foundation::Resource::StructuredBuffer<ShadingConvention::RayGen::AlignedUnitSquareSample2D> mSamplesGPUBuffer{};
+			Foundation::Resource::StructuredBuffer<ShadingConvention::RayGen::AlignedHemisphereSample3D> mHemisphereSamplesGPUBuffer{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mRayDirectionOriginDepthMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapGpuSrv;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mRayDirectionOriginDepthMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapGpuSrv{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhRayDirectionOriginDepthMapGpuUav{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav;
+			std::unique_ptr<Foundation::Resource::GpuResource> mDebugMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhDebugMapCpuUav{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhDebugMapGpuUav{};
 		};
 
 		using InitDataPtr = std::unique_ptr<RayGenClass::InitData>;

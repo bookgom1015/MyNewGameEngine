@@ -1,3 +1,4 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Foundation/ShadingObject.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/VK/Foundation/Core/Device.hpp"

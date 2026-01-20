@@ -86,13 +86,13 @@ namespace Render::DX::Shading {
 		class VolumetricLightClass : public Render::DX::Foundation::ShadingObject {
 		public:
 			struct InitData {
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-				UINT TextureWidth = 0;
-				UINT TextureHeight = 0;
-				UINT TextureDepth = 0;
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT TextureWidth{};
+				UINT TextureHeight{};
+				UINT TextureDepth{};
 			};
 
 		public:
@@ -148,20 +148,20 @@ namespace Render::DX::Shading {
 			BOOL BlendScattering(Foundation::Resource::FrameResource* const pFrameResource);
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes;
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mFrustumVolumeMaps;
-			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2>, Descriptor::FrustumVolumeMap::Count> mhFrustumVolumeMapCpus;
-			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, 2>, Descriptor::FrustumVolumeMap::Count> mhFrustumVolumeMapGpus;
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, 2> mFrustumVolumeMaps{};
+			std::array<std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2>, Descriptor::FrustumVolumeMap::Count> mhFrustumVolumeMapCpus{};
+			std::array<std::array<D3D12_GPU_DESCRIPTOR_HANDLE, 2>, Descriptor::FrustumVolumeMap::Count> mhFrustumVolumeMapGpus{};
 
-			UINT mFrameCount = 0;
-			UINT mCurrentFrame = 0;
-			UINT mPreviousFrame = 0;
+			UINT mFrameCount{};
+			UINT mCurrentFrame{};
+			UINT mPreviousFrame{};
 		};
 
 		using InitDataPtr = std::unique_ptr<VolumetricLightClass::InitData>;

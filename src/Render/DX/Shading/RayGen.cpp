@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Shading/RayGen.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Sampler/Sampler.hpp"
@@ -45,6 +46,7 @@ UINT RayGen::RayGenClass::DsvDescCount() const { return 0; }
 BOOL RayGen::RayGenClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
+	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 
@@ -81,7 +83,7 @@ BOOL RayGen::RayGenClass::CompileShaders() {
 BOOL RayGen::RayGenClass::BuildRootSignatures() {
 	decltype(auto) samplers = Util::SamplerUtil::GetStaticSamplers();
 
-	CD3DX12_DESCRIPTOR_RANGE texTables[4] = {}; UINT index = 0;
+	CD3DX12_DESCRIPTOR_RANGE texTables[4]{}; UINT index = 0;
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
 	texTables[index++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
@@ -89,7 +91,7 @@ BOOL RayGen::RayGenClass::BuildRootSignatures() {
 
 	index = 0;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count] = {};
+	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count]{};
 	slotRootParameter[RootSignature::Default::CB_RayGen].InitAsConstantBufferView(0);
 	slotRootParameter[RootSignature::Default::SB_SampleSets].InitAsShaderResourceView(0);
 	slotRootParameter[RootSignature::Default::SI_NormalDepthMap].InitAsDescriptorTable(1, &texTables[index++]);
@@ -113,7 +115,7 @@ BOOL RayGen::RayGenClass::BuildRootSignatures() {
 }
 
 BOOL RayGen::RayGenClass::BuildPipelineStates() {
-	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.pRootSignature = mRootSignature.Get();
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	{

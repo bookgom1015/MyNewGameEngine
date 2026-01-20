@@ -35,14 +35,13 @@ namespace Render::DX::Shading {
 		class ToneMappingClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
-				BOOL MeshShaderSupported = FALSE;
-				Foundation::Core::Device* Device = nullptr;
-				Foundation::Core::CommandObject* CommandObject = nullptr;
-				Foundation::Core::DescriptorHeap* DescriptorHeap = nullptr;
-				Util::ShaderManager* ShaderManager = nullptr;
-
-				UINT ClientWidth = 0;
-				UINT ClientHeight = 0;
+				BOOL MeshShaderSupported{};
+				Foundation::Core::Device* Device{};
+				Foundation::Core::CommandObject* CommandObject{};
+				Foundation::Core::DescriptorHeap* DescriptorHeap{};
+				Util::ShaderManager* ShaderManager{};
+				UINT ClientWidth{};
+				UINT ClientHeight{};
 			};
 
 		public:
@@ -86,21 +85,21 @@ namespace Render::DX::Shading {
 			BOOL BuildDescriptors();
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
-			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes = {};
+			std::array<Common::Foundation::Hash, Shader::Count> mShaderHashes{};
 
-			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature;
-			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates;
+			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
+			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mIntermediateMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhIntermediateMapGpuSrv;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuRtv;
+			std::unique_ptr<Foundation::Resource::GpuResource> mIntermediateMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhIntermediateMapGpuSrv{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateMapCpuRtv{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mIntermediateCopyMap;
-			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapGpuSrv;
+			std::unique_ptr<Foundation::Resource::GpuResource> mIntermediateCopyMap{};
+			D3D12_CPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhIntermediateCopyMapGpuSrv{};
 		};
 
 		using InitDataPtr = std::unique_ptr<ToneMappingClass::InitData>;

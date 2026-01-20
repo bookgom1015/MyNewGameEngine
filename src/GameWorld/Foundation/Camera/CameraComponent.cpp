@@ -1,3 +1,4 @@
+#include "GameWorld/Foundation/Core/pch_world.h"
 #include "GameWorld/Foundation/Camera/CameraComponent.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
@@ -11,6 +12,8 @@ CameraComponent::CameraComponent(Common::Debug::LogFile* const pLogFile, Core::A
 	: Component(pLogFile, pOwner) {
 	mCamera = std::make_unique<Common::Foundation::Camera::GameCamera>(GameWorld::GameWorldClass::spGameWorld->WindowsManager());
 }
+
+CameraComponent::~CameraComponent() {}
 
 BOOL CameraComponent::OnInitialzing() {
 	GameWorldClass::spGameWorld->Renderer()->SetCamera(mCamera.get());

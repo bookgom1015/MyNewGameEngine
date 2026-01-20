@@ -1,3 +1,4 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/VkRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"

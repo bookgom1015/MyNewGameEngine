@@ -1,3 +1,4 @@
+#include "Render/DX/Foundation/Core/pch_d3d12.h"
 #include "Render/DX/Foundation/ShadingObject.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/DX/Foundation/Core/DescriptorHeap.hpp"

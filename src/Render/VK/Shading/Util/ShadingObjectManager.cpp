@@ -1,9 +1,14 @@
+#include "Render/VK/Foundation/Core/pch_vk.h"
 #include "Render/VK/Shading/Util/ShadingObjectManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Render/VK/Foundation/ShadingObject.hpp"
 #include "Render/VK/Shading/Util/ShaderManager.hpp"
 
 using namespace Render::VK::Shading::Util;
+
+ShadingObjectManager::ShadingObjectManager() {}
+
+ShadingObjectManager::~ShadingObjectManager() {}
 
 BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;

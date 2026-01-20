@@ -15,9 +15,6 @@
     <Filter Include="Common Files\Debug">
       <UniqueIdentifier>{39c89507-c893-46cf-9333-053ef38f80f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common Files\Render">
-      <UniqueIdentifier>{a8c27547-a82a-4597-afe3-a2b328240f52}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common Files\Util">
       <UniqueIdentifier>{e108967a-5d7b-4cc8-b779-830abe0c9f16}</UniqueIdentifier>
     </Filter>
@@ -57,9 +54,6 @@
     <Filter Include="Source Files\Foundation\Camera">
       <UniqueIdentifier>{39e80c25-9775-4d2c-bdf3-f0897c9d2476}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common Files\Input">
-      <UniqueIdentifier>{0f0bff99-d2ba-4c1f-a728-f51b88ca5edc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Prefab">
       <UniqueIdentifier>{ad2ebd80-f50c-42c8-87f7-73a3cf9241c6}</UniqueIdentifier>
     </Filter>
@@ -75,20 +69,50 @@
     <Filter Include="External Files">
       <UniqueIdentifier>{ca52b64d-e7e9-4f50-9078-8a67d248ab6e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External Files\tinyobjloader">
-      <UniqueIdentifier>{159b7991-5abf-4962-a7ea-1b855fd99059}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Common Files\ImGuiManager">
-      <UniqueIdentifier>{3f8ee9f9-7857-42ff-b7d3-31d338555e5c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp">
-      <Filter>Common Files\Render</Filter>
+    <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\Actor.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\GameWorld.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\Component.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\ActorManager.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Player\FreeLookActor.hpp">
+      <Filter>Header Files\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Foundation\Camera\CameraComponent.hpp">
+      <Filter>Header Files\Foundation\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Prefab\LampShade.hpp">
+      <Filter>Header Files\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Foundation\Mesh\MeshComponent.hpp">
+      <Filter>Header Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Prefab\MetalSphere.hpp">
+      <Filter>Header Files\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\GameWorld\Prefab\FineDonut.hpp">
+      <Filter>Header Files\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
+      <Filter>Common Files\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp">
+      <Filter>Common Files\Foundation\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\DataStructure.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Core\GameTimer.hpp">
       <Filter>Common Files\Foundation\Core</Filter>
@@ -96,20 +120,29 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp">
       <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp">
-      <Filter>Common Files\Foundation\Mesh</Filter>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\MemoryManagement.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h">
-      <Filter>Common Files\Foundation\Mesh</Filter>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\pch_common.h">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.h">
-      <Filter>Common Files\Foundation\Mesh</Filter>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\PowerManager.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp">
       <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Camera\GameCamera.hpp">
-      <Filter>Common Files\Foundation\Camera</Filter>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.h">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Transform.hpp">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Vertex.h">
+      <Filter>Common Files\Foundation\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Common\Util\HashUtil.hpp">
       <Filter>Common Files\Util</Filter>
@@ -123,62 +156,8 @@
     <ClInclude Include="..\..\inc\Common\Util\TaskQueue.hpp">
       <Filter>Common Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\Actor.hpp">
+    <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\pch_world.h">
       <Filter>Header Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\GameWorld.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\Component.hpp">
-      <Filter>Header Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Transform.hpp">
-      <Filter>Common Files\Foundation\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\ActorManager.hpp">
-      <Filter>Header Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Player\FreeLookActor.hpp">
-      <Filter>Header Files\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Foundation\Camera\CameraComponent.hpp">
-      <Filter>Header Files\Foundation\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Input\InputProcessor.hpp">
-      <Filter>Common Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Prefab\LampShade.hpp">
-      <Filter>Header Files\Prefab</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Foundation\Mesh\MeshComponent.hpp">
-      <Filter>Header Files\Foundation\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\externs\tinyobjloader\tiny_obj_loader.h">
-      <Filter>External Files\tinyobjloader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Prefab\MetalSphere.hpp">
-      <Filter>Header Files\Prefab</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\ImGuiManager\ImGuiManager.hpp">
-      <Filter>Common Files\ImGuiManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp">
-      <Filter>Common Files\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\PowerManager.hpp">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\DataStructure.hpp">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\MemoryManagement.hpp">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\GameWorld\Prefab\FineDonut.hpp">
-      <Filter>Header Files\Prefab</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Common\Foundation\Core\pch_common.h">
-      <Filter>Common Files\Foundation\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -257,17 +236,11 @@
     <ClCompile Include="..\..\src\GameWorld\Prefab\FineDonut.cpp">
       <Filter>Source Files\Prefab</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\GameWorld\Foundation\Core\pch_world.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl">
-      <Filter>Common Files\Foundation\Core</Filter>
-    </None>
-    <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl">
-      <Filter>Common Files\Foundation\Camera</Filter>
-    </None>
-    <None Include="..\..\inc\Common\Util\MathUtil.inl">
-      <Filter>Common Files\Util</Filter>
-    </None>
     <None Include="..\..\inc\GameWorld\GameWorld.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -280,17 +253,26 @@
     <None Include="..\..\inc\GameWorld\Foundation\Core\Component.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
-    <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl">
-      <Filter>Common Files\Foundation\Mesh</Filter>
-    </None>
-    <None Include="..\..\inc\Common\Foundation\Core\PowerManager.inl">
-      <Filter>Common Files\Foundation\Core</Filter>
+    <None Include="..\..\inc\Common\Foundation\Camera\GameCamera.inl">
+      <Filter>Common Files\Foundation\Camera</Filter>
     </None>
     <None Include="..\..\inc\Common\Foundation\Core\DataStructure.inl">
       <Filter>Common Files\Foundation\Core</Filter>
     </None>
     <None Include="..\..\inc\Common\Foundation\Core\MemoryManagement.inl">
       <Filter>Common Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Foundation\Core\PowerManager.inl">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Foundation\Core\WindowsManager.inl">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Foundation\Mesh\Mesh.inl">
+      <Filter>Common Files\Foundation\Mesh</Filter>
+    </None>
+    <None Include="..\..\inc\Common\Util\MathUtil.inl">
+      <Filter>Common Files\Util</Filter>
     </None>
   </ItemGroup>
 </Project>

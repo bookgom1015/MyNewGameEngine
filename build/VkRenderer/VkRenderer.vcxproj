@@ -61,6 +61,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)externs\CUDA\v13.1\include;$(SolutionDir)externs\ROCm\6.4\include;$(SolutionDir)externs\VulkanSDK\1.3.250.0\Include;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Render/VK/Foundation/Core/pch_vk.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -82,6 +84,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)externs;$(SolutionDir)externs\imgui;$(SolutionDir)externs\CUDA\v13.1\include;$(SolutionDir)externs\ROCm\6.4\include;$(SolutionDir)externs\VulkanSDK\1.3.250.0\Include;$(SolutionDir)packages;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Render/VK/Foundation/Core/pch_vk.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -99,11 +103,12 @@
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\BVH.h" />
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\Geometry.h" />
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\LinearAlgebra.h" />
-    <ClInclude Include="..\..\inc\Common\Render\Renderer.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
+    <ClInclude Include="..\..\inc\Common\Render\TonemapperType.h" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\CommandObject.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Device.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Instance.hpp" />
+    <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\pch_vk.h" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\Surface.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\Core\SwapChain.hpp" />
     <ClInclude Include="..\..\inc\Render\VK\Foundation\RenderItem.hpp" />
@@ -117,18 +122,49 @@
     <ClInclude Include="..\..\inc\Render\VK\VkRenderer.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Common\AccelerationStructure\BVH.cpp" />
-    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp" />
-    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp" />
-    <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp" />
+    <ClCompile Include="..\..\src\Common\AccelerationStructure\BVH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\HWInfo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\HashUtil.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\MathUtil.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\StringUtil.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\CommandObject.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Instance.cpp" />
+    <ClCompile Include="..\..\src\Render\VK\Foundation\Core\pch_vk.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Surface.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\SwapChain.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\RenderItem.cpp" />
@@ -145,10 +181,10 @@
     <None Include="..\..\assets\Shaders\GLSL\GBuffer.frag" />
     <None Include="..\..\assets\Shaders\GLSL\GBuffer.glsli" />
     <None Include="..\..\assets\Shaders\GLSL\GBuffer.vert" />
-    <None Include="..\..\inc\Common\Render\Renderer.inl" />
     <None Include="..\..\inc\Render\VK\Foundation\Core\Device.inl" />
     <None Include="..\..\inc\Render\VK\Foundation\Core\Instance.inl" />
     <None Include="..\..\inc\Render\VK\Foundation\Core\Surface.inl" />
+    <None Include="..\..\inc\Render\VK\Foundation\Core\SwapChain.inl" />
     <None Include="..\..\inc\Render\VK\Foundation\Surface.inl" />
     <None Include="..\..\inc\Render\VK\Shading\Util\ShaderManager.inl" />
   </ItemGroup>

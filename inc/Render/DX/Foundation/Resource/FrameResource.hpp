@@ -1,16 +1,5 @@
 #pragma once
 
-#include <vector>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
 #include "Render/DX/Foundation/Util/UploadBufferWrapper.hpp"
 
 namespace Common::Debug {
@@ -55,30 +44,30 @@ namespace Render::DX::Foundation {
 				UINT numMaterials);
 
 		public:
-			UINT64 mFence = 0;
+			UINT64 mFence{};
 
 		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
-			Core::Device* mpDevice = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
+			Core::Device* mpDevice{};
 
-			std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> mCmdAllocators;
+			std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> mCmdAllocators{};
 
-			UINT mThreadCount = 0;
+			UINT mThreadCount{};
 
 		public:
-			UploadBufferWrapper<ConstantBuffers::PassCB> MainPassCB;
-			UploadBufferWrapper<ConstantBuffers::LightCB> LightCB;
-			UploadBufferWrapper<ConstantBuffers::ObjectCB> ObjectCB;
-			UploadBufferWrapper<ConstantBuffers::MaterialCB> MaterialCB;
-			UploadBufferWrapper<ConstantBuffers::ProjectToCubeCB> ProjectToCubeCB;
-			UploadBufferWrapper<ConstantBuffers::AmbientOcclusionCB> AmbientOcclusionCB;
-			UploadBufferWrapper<ConstantBuffers::RayGenCB> RayGenCB;
-			UploadBufferWrapper<ConstantBuffers::RaySortingCB> RaySortingCB;
-			UploadBufferWrapper<ConstantBuffers::SVGF::CrossBilateralFilterCB> CrossBilateralFilterCB;
-			UploadBufferWrapper<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> CalcLocalMeanVarianceCB;
-			UploadBufferWrapper<ConstantBuffers::SVGF::BlendWithCurrentFrameCB> BlendWithCurrentFrameCB;
-			UploadBufferWrapper<ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB> AtrousWaveletTransformFilterCB;
-			UploadBufferWrapper<ConstantBuffers::ContactShadowCB> ContactShadowCB;
+			UploadBufferWrapper<ConstantBuffers::PassCB> MainPassCB{};
+			UploadBufferWrapper<ConstantBuffers::LightCB> LightCB{};
+			UploadBufferWrapper<ConstantBuffers::ObjectCB> ObjectCB{};
+			UploadBufferWrapper<ConstantBuffers::MaterialCB> MaterialCB{};
+			UploadBufferWrapper<ConstantBuffers::ProjectToCubeCB> ProjectToCubeCB{};
+			UploadBufferWrapper<ConstantBuffers::AmbientOcclusionCB> AmbientOcclusionCB{};
+			UploadBufferWrapper<ConstantBuffers::RayGenCB> RayGenCB{};
+			UploadBufferWrapper<ConstantBuffers::RaySortingCB> RaySortingCB{};
+			UploadBufferWrapper<ConstantBuffers::SVGF::CrossBilateralFilterCB> CrossBilateralFilterCB{};
+			UploadBufferWrapper<ConstantBuffers::SVGF::CalcLocalMeanVarianceCB> CalcLocalMeanVarianceCB{};
+			UploadBufferWrapper<ConstantBuffers::SVGF::BlendWithCurrentFrameCB> BlendWithCurrentFrameCB{};
+			UploadBufferWrapper<ConstantBuffers::SVGF::AtrousWaveletTransformFilterCB> AtrousWaveletTransformFilterCB{};
+			UploadBufferWrapper<ConstantBuffers::ContactShadowCB> ContactShadowCB{};
 		};
 	}
 }
