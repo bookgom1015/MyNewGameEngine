@@ -1,3 +1,4 @@
+#include "ImGuiManager/DX/pch_imgui_dx.h"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
@@ -12,9 +13,6 @@
 #include "Render/DX/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX/Foundation/Resource/GpuResource.hpp"
 
-#include <imgui/backends/imgui_impl_win32.h>
-#include <imgui/backends/imgui_impl_dx12.h>
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 using namespace ImGuiManager::DX;
@@ -27,6 +25,10 @@ extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* ImGuiManager::Cre
 extern "C" ImGuiManagerAPI void ImGuiManager::DestroyImGuiManager(Common::ImGuiManager::ImGuiManager* const imGuiManager) {
 	delete imGuiManager;
 }
+
+DxImGuiManager::DxImGuiManager() {}
+
+DxImGuiManager::~DxImGuiManager() {}
 
 BOOL DxImGuiManager::InitializeD3D12(
 		Render::DX::Foundation::Core::Device* const pDevice, 

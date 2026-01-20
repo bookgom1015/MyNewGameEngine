@@ -1,8 +1,4 @@
-#include "ImGuiManager/VK/pch_imgui_vk.h"
-#include "ImGuiManager/VK/VkImGuiManager.hpp"
-#include "Common/Debug/Logger.hpp"
-
-using namespace ImGuiManager::VK;
+#include "ImGuiManager/DX11/Dx11ImGuiManager.hpp"
 
 extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* ImGuiManager::CreateImGuiManager() {
 	return new VkImGuiManager();

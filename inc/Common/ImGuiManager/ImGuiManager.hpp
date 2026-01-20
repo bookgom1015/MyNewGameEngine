@@ -1,14 +1,5 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <wrl.h>
-#include <Windows.h>
-
 #ifdef _DLLEXPORT
 	#ifndef ImGuiManagerAPI
 	#define ImGuiManagerAPI __declspec(dllexport)
@@ -36,10 +27,10 @@ namespace Common::ImGuiManager {
 		ImGuiManagerAPI virtual void CleanUp();
 
 	protected:
-		BOOL mbIsWin32Initialized = FALSE;
+		BOOL mbIsWin32Initialized{};
 
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
 
-		ImGuiContext* mpContext = nullptr;
+		ImGuiContext* mpContext{};
 	};
 }

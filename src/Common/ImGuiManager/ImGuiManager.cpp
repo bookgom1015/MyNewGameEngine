@@ -1,8 +1,6 @@
+#include "Common/ImGuiManager/pch_imgui_common.h"
 #include "Common/ImGuiManager/ImGuiManager.hpp"
 #include "Common/Debug/Logger.hpp"
-
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_win32.h>
 
 using namespace Common::ImGuiManager;
 

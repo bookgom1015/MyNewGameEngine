@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\inc\Common\ImGuiManager\ImGuiManager.hpp">
       <Filter>Common Files\ImGuiManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\ImGuiManager\DX\pch_imgui_dx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp">
@@ -85,6 +88,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
       <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ImGuiManager\DX\pch_imgui_dx.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -2,6 +2,8 @@
 
 #include "Common/ImGuiManager/ImGuiManager.hpp"
 
+#include <memory>
+
 namespace ImGuiManager {
 	extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* CreateImGuiManager();
 	extern "C" ImGuiManagerAPI void DestroyImGuiManager(Common::ImGuiManager::ImGuiManager* const imGuiManager);

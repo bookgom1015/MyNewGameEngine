@@ -2,11 +2,6 @@
 
 #include "Common/ImGuiManager/ImGuiManager.hpp"
 
-#include <memory>
-#include <queue>
-
-#include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
-
 namespace Common::Foundation::Core {
 	class WindowsManager;
 }
@@ -37,8 +32,8 @@ namespace ImGuiManager {
 	namespace DX {
 		class DxImGuiManager : public Common::ImGuiManager::ImGuiManager {
 		public:
-			DxImGuiManager() = default;
-			virtual ~DxImGuiManager() = default;
+			DxImGuiManager();
+			virtual ~DxImGuiManager();
 
 		public:
 			BOOL InitializeD3D12(
@@ -92,10 +87,10 @@ namespace ImGuiManager {
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:
-			BOOL mbIsD3D12Initialized = FALSE;
+			BOOL mbIsD3D12Initialized{};
 
-			D3D12_CPU_DESCRIPTOR_HANDLE mhImGuiCpuSrv;
-			D3D12_GPU_DESCRIPTOR_HANDLE mhImGuiGpuSrv;
+			D3D12_CPU_DESCRIPTOR_HANDLE mhImGuiCpuSrv{};
+			D3D12_GPU_DESCRIPTOR_HANDLE mhImGuiGpuSrv{};
 		};
 	}
 }

@@ -8,7 +8,15 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)bin\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='D3D11Debug|x64'">
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)bin\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='D3D12Release|x64'">
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)bin\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='D3D11Release|x64'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)bin\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
