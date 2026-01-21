@@ -23,18 +23,6 @@ namespace Render::DX {
 				virtual ~ShadingObjectManager();
 
 			public:
-				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
-				void CleanUp();
-
-				template <typename T>
-				requires std::is_base_of_v<Foundation::ShadingObject, T>
-				__forceinline void Add();
-
-				template <typename T>
-				requires std::is_base_of_v<Foundation::ShadingObject, T>
-				__forceinline T* Get();
-
-			public:
 				UINT CbvSrvUavDescCount() const;
 				UINT RtvDescCount() const;
 				UINT DsvDescCount() const;
@@ -47,6 +35,18 @@ namespace Render::DX {
 				BOOL OnResize(UINT width, UINT height);
 				BOOL BuildShaderTables(UINT numRitems);
 				BOOL Update();
+
+			public:
+				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+				void CleanUp();
+
+				template <typename T>
+					requires std::is_base_of_v<Foundation::ShadingObject, T>
+				__forceinline void Add();
+
+				template <typename T>
+					requires std::is_base_of_v<Foundation::ShadingObject, T>
+				__forceinline T* Get();
 
 			private:
 				Common::Debug::LogFile* mpLogFile{};

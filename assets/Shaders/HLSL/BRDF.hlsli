@@ -34,7 +34,7 @@ float DistributionGGX_Modified(in float3 N, in float3 H, in float roughness, in 
 
 // Smith's method with Schlick-GGX 
 // 
-// k is a remapping of ¥á based on whether using the geometry function 
+// k is a remapping of ï¿½ï¿½ based on whether using the geometry function 
 //  for either direct lighting or IBL lighting.
 float GeometryShlickGGX(in float NdotV, in float roughness) {
     const float a = (roughness + 1.f);

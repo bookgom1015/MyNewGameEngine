@@ -1,9 +1,12 @@
 #include "Render/DX11/Foundation/Core/pch_d3d11.h"
 #include "Render/DX11/Dx11Renderer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Render/DX11/Foundation/Core/SwapChain.hpp"
+#include "Render/DX11/Shading/Util/ShadingObjectManager.hpp"
+#include "Render/DX11/Shading/Util/ShaderManager.hpp"
 
 using namespace Render::DX11;
 
@@ -15,7 +18,10 @@ extern "C" RendererAPI void Render::DestroyRenderer(Common::Render::Renderer* co
 	delete renderer;
 }
 
-Dx11Renderer::Dx11Renderer() {}
+Dx11Renderer::Dx11Renderer() {
+	mShadingObjectManager = std::make_unique<Shading::Util::ShadingObjectManager>();
+	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
+}
 
 Dx11Renderer::~Dx11Renderer() {}
 
@@ -28,10 +34,16 @@ BOOL Dx11Renderer::Initialize(
 	CheckReturn(pLogFile, Dx11LowRenderer::Initialize(
 		pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
+	CheckReturn(mpLogFile, mShadingObjectManager->Initialize(mpLogFile));
+	CheckReturn(mpLogFile, mShaderManager->Initialize(mpLogFile, static_cast<UINT>(mProcessor->Logical)));
+
 	return TRUE;
 }
 
 void Dx11Renderer::CleanUp() {
+	mShaderManager->CleanUp();
+	mShadingObjectManager->CleanUp();
+
 	Dx11LowRenderer::CleanUp();
 }
 

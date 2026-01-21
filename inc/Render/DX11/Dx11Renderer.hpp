@@ -7,6 +7,13 @@ namespace Render {
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
 
 	namespace DX11 {
+		namespace Shading {
+			namespace Util {
+				class ShaderManager;
+				class ShadingObjectManager;
+			}
+		}
+
 		class Dx11Renderer : public Dx11LowRenderer {
 		public:
 			Dx11Renderer();
@@ -32,6 +39,10 @@ namespace Render {
 			RendererAPI virtual BOOL AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) override;
 			RendererAPI virtual BOOL UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foundation::Mesh::Transform* const pTransform) override;
 			RendererAPI virtual void RemoveMesh(Common::Foundation::Hash hash) override;
+
+		private:
+			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
+			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};
 		};
 	}
 }

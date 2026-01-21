@@ -2,6 +2,10 @@
 
 #include "Common/Render/Renderer.hpp"
 
+namespace Common::Foundation::Core {
+	struct Processor;
+}
+
 namespace Render::DX11 {
 	namespace Foundation::Core {
 		class Device;
@@ -30,8 +34,9 @@ namespace Render::DX11 {
 		RendererAPI virtual BOOL Draw() override;
 
 	protected:
+		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor{};
 		std::unique_ptr<Foundation::Core::Device> mDevice{};
-		//std::unique_ptr<Foundation::Core::SwapChain> mSwapChain{};
+		std::unique_ptr<Foundation::Core::SwapChain> mSwapChain{};
 
 	protected:
 		UINT mClientWidth{};

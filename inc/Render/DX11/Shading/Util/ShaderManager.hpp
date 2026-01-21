@@ -6,23 +6,23 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
-namespace Render::DX::Shading::Util {
+namespace Render::DX11::Shading::Util {
 	class ShaderManager {
 	public:
-		struct D3D12ShaderInfo {
+		struct D3D11ShaderInfo {
 			LPCWSTR		FileName{};
 			LPCWSTR		EntryPoint{};
 			LPCWSTR		TargetProfile{};
 			DxcDefine*	Defines{};
 			UINT32		DefineCount{};
 
-			D3D12ShaderInfo() = default;
-			D3D12ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile);
-			D3D12ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile, DxcDefine* defines, UINT32 defCount);
-			D3D12ShaderInfo(const D3D12ShaderInfo& ref);
-			~D3D12ShaderInfo();
+			D3D11ShaderInfo() = default;
+			D3D11ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile);
+			D3D11ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile, DxcDefine* defines, UINT32 defCount);
+			D3D11ShaderInfo(const D3D11ShaderInfo& ref);
+			~D3D11ShaderInfo();
 
-			D3D12ShaderInfo& operator=(const D3D12ShaderInfo& ref);
+			D3D11ShaderInfo& operator=(const D3D11ShaderInfo& ref);
 		};
 
 	public:
@@ -37,7 +37,7 @@ namespace Render::DX::Shading::Util {
 		void CleanUp();
 
 	public:
-		BOOL AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash);
+		BOOL AddShader(const D3D11ShaderInfo& shaderInfo, Common::Foundation::Hash& hash);
 		BOOL CompileShaders(LPCWSTR baseDir);
 
 	private:
@@ -53,10 +53,10 @@ namespace Render::DX::Shading::Util {
 		std::vector<Microsoft::WRL::ComPtr<IDxcCompiler3>> mCompilers{};
 		std::vector<std::unique_ptr<std::mutex>> mCompileMutexes{};
 
-		std::unordered_map<Common::Foundation::Hash, D3D12ShaderInfo> mShaderInfos{};
+		std::unordered_map<Common::Foundation::Hash, D3D11ShaderInfo> mShaderInfos{};
 		std::unordered_map<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>> mShaders{};
 		std::vector<std::vector<std::pair<Common::Foundation::Hash, Microsoft::WRL::ComPtr<IDxcBlob>>>> mStagingShaders{};
 	};
 }
 
-#include "Render/DX/Shading/Util/ShaderManager.inl"
+#include "ShaderManager.inl"

@@ -1,6 +1,7 @@
 #include "Render/DX11/Foundation/Core/pch_d3d11.h"
 #include "Render/DX11/Dx11LowRenderer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Render/DX11/Foundation/Core/SwapChain.hpp"
@@ -8,8 +9,9 @@
 using namespace Render::DX11;
 
 Dx11LowRenderer::Dx11LowRenderer() {
+	mProcessor = std::make_unique<Common::Foundation::Core::Processor>();
 	mDevice = std::make_unique<Foundation::Core::Device>();
-	//mSwapChain = std::make_unique<Foundation::Core::SwapChain>();
+	mSwapChain = std::make_unique<Foundation::Core::SwapChain>();
 }
 
 Dx11LowRenderer::~Dx11LowRenderer() {}
@@ -24,21 +26,24 @@ BOOL Dx11LowRenderer::Initialize(
 	mClientWidth = width;
 	mClientHeight = height;
 
+	CheckReturn(mpLogFile, Common::Foundation::Core::HWInfo::GetCoreInfo(mpLogFile, *mProcessor.get()));
+
 	CheckReturn(mpLogFile, mDevice->Initialize(pLogFile));
 	// SwapChain
-	//{
-	//	decltype(auto) initData = Foundation::Core::SwapChain::MakeInitData();
-	//	initData->Width = width;
-	//	initData->Height = height;
-	//	initData->WindowHandle = pWndManager->MainWindowHandle();
-	//	initData->Device = mDevice.get();
-	//	CheckReturn(mpLogFile, mSwapChain->Initialize(pLogFile, initData.get()));
-	//}
+	{
+		decltype(auto) initData = Foundation::Core::SwapChain::MakeInitData();
+		initData->Width = width;
+		initData->Height = height;
+		initData->WindowHandle = pWndManager->MainWindowHandle();
+		initData->Device = mDevice.get();
+		CheckReturn(mpLogFile, mSwapChain->Initialize(pLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
 
 void Dx11LowRenderer::CleanUp() {
+	mSwapChain.reset();
 	mDevice.reset();
 }
 

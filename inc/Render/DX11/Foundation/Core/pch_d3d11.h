@@ -4,6 +4,7 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "DirectXTex.lib")
 
 #include "Common/Foundation/Core/pch_common.h"

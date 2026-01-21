@@ -1,25 +1,25 @@
-#include "Render/DX/Foundation/Core/pch_d3d12.h"
-#include "Render/DX/Shading/Util/ShaderManager.hpp"
+#include "Render/DX11/Foundation/Core/pch_d3d11.h"
+#include "Render/DX11/Shading/Util/ShaderManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/StringUtil.hpp"
 #include "Common/Util/TaskQueue.hpp"
 
-using namespace Render::DX::Shading::Util;
+using namespace Render::DX11::Shading::Util;
 using namespace Microsoft::WRL;
 
-ShaderManager::D3D12ShaderInfo::D3D12ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile) {
+ShaderManager::D3D11ShaderInfo::D3D11ShaderInfo(LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile) {
 	FileName = fileName;
 	EntryPoint = entryPoint;
 	TargetProfile = profile;
 }
 
-ShaderManager::D3D12ShaderInfo::D3D12ShaderInfo(
+ShaderManager::D3D11ShaderInfo::D3D11ShaderInfo(
 		LPCWSTR fileName, LPCWSTR entryPoint, LPCWSTR profile, DxcDefine* defines, UINT32 defCount) {
 	FileName = fileName;
 	EntryPoint = entryPoint;
 	TargetProfile = profile;
 	DefineCount = defCount;
-	
+
 	Defines = new DxcDefine[defCount];
 	for (UINT32 i = 0; i < defCount; ++i) {
 		{
@@ -44,7 +44,7 @@ ShaderManager::D3D12ShaderInfo::D3D12ShaderInfo(
 	}
 }
 
-ShaderManager::D3D12ShaderInfo::D3D12ShaderInfo(const D3D12ShaderInfo& ref) {
+ShaderManager::D3D11ShaderInfo::D3D11ShaderInfo(const D3D11ShaderInfo& ref) {
 	FileName = ref.FileName;
 	EntryPoint = ref.EntryPoint;
 	TargetProfile = ref.TargetProfile;
@@ -77,20 +77,20 @@ ShaderManager::D3D12ShaderInfo::D3D12ShaderInfo(const D3D12ShaderInfo& ref) {
 	}
 }
 
-ShaderManager::D3D12ShaderInfo::~D3D12ShaderInfo() {
+ShaderManager::D3D11ShaderInfo::~D3D11ShaderInfo() {
 	if (Defines != nullptr) {
 		for (UINT32 i = 0; i < DefineCount; ++i) {
-	
+
 			delete[] Defines[i].Name;
 			if (Defines[i].Value != nullptr) delete[] Defines[i].Value;
 		}
-	
+
 		delete[] Defines;
 	}
 }
 
-Render::DX::Shading::Util::ShaderManager::D3D12ShaderInfo& ShaderManager::D3D12ShaderInfo::operator=(
-		const D3D12ShaderInfo& ref) {
+Render::DX11::Shading::Util::ShaderManager::D3D11ShaderInfo& ShaderManager::D3D11ShaderInfo::operator=(
+		const D3D11ShaderInfo& ref) {
 	if (this != &ref) {
 		FileName = ref.FileName;
 		EntryPoint = ref.EntryPoint;
@@ -152,7 +152,7 @@ void ShaderManager::CleanUp() {
 		mCompileMutexes[i].reset();
 		mCompilers[i].Reset();
 		mUtils[i].Reset();
-	}	
+	}
 	mStagingShaders.clear();
 	mShaderInfos.clear();
 	mShaders.clear();
@@ -161,8 +161,8 @@ void ShaderManager::CleanUp() {
 	mUtils.clear();
 }
 
-BOOL ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash) {
-	std::hash<D3D12ShaderInfo> hasher{};
+BOOL ShaderManager::AddShader(const D3D11ShaderInfo& shaderInfo, Common::Foundation::Hash& hash) {
+	std::hash<D3D11ShaderInfo> hasher{};
 	hash = hasher(shaderInfo);
 
 	if (mShaders.find(hash) != mShaders.end())
@@ -176,7 +176,7 @@ BOOL ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundat
 BOOL ShaderManager::CompileShaders(LPCWSTR baseDir) {
 	Common::Util::TaskQueue taskQueue{};
 
-	for (const auto& shaderInfo : mShaderInfos) 
+	for (const auto& shaderInfo : mShaderInfos)
 		taskQueue.AddTask([&]() -> BOOL { return CompileShader(shaderInfo.first, baseDir); });
 
 	CheckReturn(mpLogFile, taskQueue.ExecuteTasks(mpLogFile, mThreadCount));
@@ -194,17 +194,17 @@ BOOL ShaderManager::CompileShader(Common::Foundation::Hash hash, LPCWSTR baseDir
 	std::wstring filePath = wsstream.str();
 
 	std::ifstream fin(filePath.c_str(), std::ios::ate | std::ios::binary);
-	if (!fin.is_open()) { 
+	if (!fin.is_open()) {
 		std::wstring msg(L"Failed to open shader file: ");
 		msg.append(filePath.c_str());
 		ReturnFalse(mpLogFile, msg);
 	}
-	
+
 	size_t fileSize = static_cast<size_t>(fin.tellg());
 	if (fileSize == 0) ReturnFalse(mpLogFile, "Shader file is empty");
 
 	std::vector<CHAR> data(fileSize);
-	
+
 	fin.seekg(0);
 	fin.read(data.data(), fileSize);
 	fin.close();
@@ -296,7 +296,7 @@ BOOL ShaderManager::CommitShaders() {
 	for (UINT i = 0; i < mThreadCount; ++i) {
 		auto& shaders = mStagingShaders[i];
 
-		for (auto& shader : shaders) 
+		for (auto& shader : shaders)
 			mShaders[shader.first] = shader.second;
 	}
 

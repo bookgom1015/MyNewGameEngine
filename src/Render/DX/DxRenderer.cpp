@@ -117,11 +117,6 @@ BOOL DxRenderer::Initialize(
 
 	CheckReturn(mpLogFile, mAccelerationStructureManager->Initialize(mpLogFile, mDevice.get(), mCommandObject.get()));
 
-	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
-	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
-	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
-	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
-
 	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
 	const FLOAT WidthSquared = 128.f * 128.f;
 	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
@@ -135,6 +130,7 @@ BOOL DxRenderer::Initialize(
 }
 
 void DxRenderer::CleanUp() {
+	mShaderManager->CleanUp();
 	mShadingObjectManager->CleanUp();
 
 	mCommandObject->FlushCommandQueue();
@@ -1451,6 +1447,11 @@ BOOL DxRenderer::InitShadingObjects() {
 		const auto obj = mShadingObjectManager->Get<Shading::RaytracedShadow::RaytracedShadowClass>();
 		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
+
+	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildDescriptors(mDescriptorHeap.get()));
 
 	return TRUE;
 }
