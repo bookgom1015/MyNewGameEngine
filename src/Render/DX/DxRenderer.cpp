@@ -65,55 +65,30 @@ DxRenderer::DxRenderer() {
 	// Shading objets
 	mShadingObjectManager = std::make_unique<Shading::Util::ShadingObjectManager>();
 	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
-
-	mMipmapGenerator = std::make_unique<Shading::Util::MipmapGenerator::MipmapGeneratorClass>();
-	mEquirectangularConverter = std::make_unique<Shading::Util::EquirectangularConverter::EquirectangularConverterClass>();
-	mTextureScaler = std::make_unique<Shading::Util::TextureScaler::TextureScalerClass>();
-
-	mEnvironmentMap = std::make_unique<Shading::EnvironmentMap::EnvironmentMapClass>();
-	mGammaCorrection = std::make_unique<Shading::GammaCorrection::GammaCorrectionClass>();
-	mToneMapping = std::make_unique<Shading::ToneMapping::ToneMappingClass>();
-	mGBuffer = std::make_unique<Shading::GBuffer::GBufferClass>();
-	mBRDF = std::make_unique<Shading::BRDF::BRDFClass>();
-	mShadow = std::make_unique<Shading::Shadow::ShadowClass>();
-	mTAA = std::make_unique<Shading::TAA::TAAClass>();
-	mSSAO= std::make_unique<Shading::SSAO::SSAOClass>();
-	mRTAO = std::make_unique<Shading::RTAO::RTAOClass>();
-	mRayGen = std::make_unique<Shading::RayGen::RayGenClass>();
-	mRaySorting = std::make_unique<Shading::RaySorting::RaySortingClass>();
-	mSVGF = std::make_unique<Shading::SVGF::SVGFClass>();
-	mBlurFilter = std::make_unique<Shading::BlurFilter::BlurFilterClass>();
-	mVolumetricLight = std::make_unique<Shading::VolumetricLight::VolumetricLightClass>();
-	mSSCS = std::make_unique<Shading::SSCS::SSCSClass>();
-	mMotionBlur = std::make_unique<Shading::MotionBlur::MotionBlurClass>();
-	mBloom = std::make_unique<Shading::Bloom::BloomClass>();
-	mDOF = std::make_unique<Shading::DOF::DOFClass>();
-	mEyeAdaption = std::make_unique<Shading::EyeAdaption::EyeAdaptionClass>();
-	mRaytracedShadow = std::make_unique<Shading::RaytracedShadow::RaytracedShadowClass>();
-
-	mShadingObjectManager->AddShadingObject(mMipmapGenerator.get());
-	mShadingObjectManager->AddShadingObject(mEquirectangularConverter.get());
-	mShadingObjectManager->AddShadingObject(mTextureScaler.get());
-	mShadingObjectManager->AddShadingObject(mEnvironmentMap.get());
-	mShadingObjectManager->AddShadingObject(mGammaCorrection.get());
-	mShadingObjectManager->AddShadingObject(mToneMapping.get());
-	mShadingObjectManager->AddShadingObject(mGBuffer.get());
-	mShadingObjectManager->AddShadingObject(mBRDF.get());
-	mShadingObjectManager->AddShadingObject(mShadow.get());
-	mShadingObjectManager->AddShadingObject(mTAA.get());
-	mShadingObjectManager->AddShadingObject(mSSAO.get());
-	mShadingObjectManager->AddShadingObject(mRTAO.get());
-	mShadingObjectManager->AddShadingObject(mRayGen.get());
-	mShadingObjectManager->AddShadingObject(mRaySorting.get());
-	mShadingObjectManager->AddShadingObject(mSVGF.get());
-	mShadingObjectManager->AddShadingObject(mBlurFilter.get());
-	mShadingObjectManager->AddShadingObject(mVolumetricLight.get());
-	mShadingObjectManager->AddShadingObject(mSSCS.get());
-	mShadingObjectManager->AddShadingObject(mMotionBlur.get());
-	mShadingObjectManager->AddShadingObject(mBloom.get());
-	mShadingObjectManager->AddShadingObject(mDOF.get());
-	mShadingObjectManager->AddShadingObject(mEyeAdaption.get());
-	mShadingObjectManager->AddShadingObject(mRaytracedShadow.get());
+	
+	mShadingObjectManager->Add<Shading::Util::MipmapGenerator::MipmapGeneratorClass>();
+	mShadingObjectManager->Add<Shading::Util::EquirectangularConverter::EquirectangularConverterClass>();
+	mShadingObjectManager->Add<Shading::Util::TextureScaler::TextureScalerClass>();
+	mShadingObjectManager->Add<Shading::EnvironmentMap::EnvironmentMapClass>();
+	mShadingObjectManager->Add<Shading::GammaCorrection::GammaCorrectionClass>();
+	mShadingObjectManager->Add<Shading::ToneMapping::ToneMappingClass>();
+	mShadingObjectManager->Add<Shading::GBuffer::GBufferClass>();
+	mShadingObjectManager->Add<Shading::BRDF::BRDFClass>();
+	mShadingObjectManager->Add<Shading::Shadow::ShadowClass>();
+	mShadingObjectManager->Add<Shading::TAA::TAAClass>();
+	mShadingObjectManager->Add<Shading::SSAO::SSAOClass>();
+	mShadingObjectManager->Add<Shading::RTAO::RTAOClass>();
+	mShadingObjectManager->Add<Shading::RayGen::RayGenClass>();
+	mShadingObjectManager->Add<Shading::RaySorting::RaySortingClass>();
+	mShadingObjectManager->Add<Shading::SVGF::SVGFClass>();
+	mShadingObjectManager->Add<Shading::BlurFilter::BlurFilterClass>();
+	mShadingObjectManager->Add<Shading::VolumetricLight::VolumetricLightClass>();
+	mShadingObjectManager->Add<Shading::SSCS::SSCSClass>();
+	mShadingObjectManager->Add<Shading::MotionBlur::MotionBlurClass>();
+	mShadingObjectManager->Add<Shading::Bloom::BloomClass>();
+	mShadingObjectManager->Add<Shading::DOF::DOFClass>();
+	mShadingObjectManager->Add<Shading::EyeAdaption::EyeAdaptionClass>();
+	mShadingObjectManager->Add<Shading::RaytracedShadow::RaytracedShadowClass>();
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -132,7 +107,6 @@ BOOL DxRenderer::Initialize(
 		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
-
 	CheckReturn(mpLogFile, DxLowRenderer::Initialize(pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
 	CheckReturn(mpLogFile, InitShadingObjects());
@@ -155,14 +129,14 @@ BOOL DxRenderer::Initialize(
 	CheckReturn(mpLogFile, BuildSkySphere());
 	CheckReturn(mpLogFile, BuildLights());
 
-	CheckReturn(mpLogFile, mSSAO->BuildRandomVectorTexture());
-
 	CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
 
 	return TRUE;
 }
 
 void DxRenderer::CleanUp() {
+	mShadingObjectManager->CleanUp();
+
 	mCommandObject->FlushCommandQueue();
 	mpImGuiManager->CleanUpD3D12();
 
@@ -226,12 +200,14 @@ BOOL DxRenderer::Draw() {
 	const auto skySphere = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].front();
 	const auto& opaques = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque];
 
-	CheckReturn(mpLogFile, mGBuffer->DrawGBuffer(
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
+	CheckReturn(mpLogFile, gbuffer->DrawGBuffer(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(), 
 		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(), 
-		mToneMapping->InterMediateMapRtv(),
+		tone->InterMediateMapResource(), 
+		tone->InterMediateMapRtv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(), 
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque],
@@ -242,7 +218,8 @@ BOOL DxRenderer::Draw() {
 	if (mpShadingArgumentSet->SSCS.Enabled) 
 		CheckReturn(mpLogFile, ApplyContactShadow());
 
-	CheckReturn(mpLogFile, mSVGF->CalculateDepthParticalDerivative(
+	const auto svgf = mShadingObjectManager->Get<Shading::SVGF::SVGFClass>();
+	CheckReturn(mpLogFile, svgf->CalculateDepthParticalDerivative(
 		mpCurrentFrameResource,
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferSrv()));
@@ -250,38 +227,42 @@ BOOL DxRenderer::Draw() {
 	if (mpShadingArgumentSet->AOEnabled)
 		CheckReturn(mpLogFile, DrawAO());
 
-	CheckReturn(mpLogFile, mBRDF->ComputeBRDF(
+	const auto brdf = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	const auto rayShadow = mShadingObjectManager->Get<Shading::RaytracedShadow::RaytracedShadowClass>();
+	CheckReturn(mpLogFile, brdf->ComputeBRDF(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mGBuffer->AlbedoMap(),
-		mGBuffer->AlbedoMapSrv(),
-		mGBuffer->NormalMap(),
-		mGBuffer->NormalMapSrv(),
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapRtv(),
+		gbuffer->AlbedoMap(),
+		gbuffer->AlbedoMapSrv(),
+		gbuffer->NormalMap(),
+		gbuffer->NormalMapSrv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferSrv(),
-		mGBuffer->SpecularMap(),
-		mGBuffer->SpecularMapSrv(),
-		mGBuffer->RoughnessMetalnessMap(),
-		mGBuffer->RoughnessMetalnessMapSrv(),
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv(),
+		gbuffer->SpecularMap(),
+		gbuffer->SpecularMapSrv(),
+		gbuffer->RoughnessMetalnessMap(),
+		gbuffer->RoughnessMetalnessMapSrv(),
+		gbuffer->PositionMap(),
+		gbuffer->PositionMapSrv(),
 		mpShadingArgumentSet->RaytracingEnabled ?
-			mRaytracedShadow->ShadowMap() : mShadow->ShadowMap(),
+			rayShadow->ShadowMap() : shadow->ShadowMap(),
 		mpShadingArgumentSet->RaytracingEnabled ?
-			mRaytracedShadow->ShadowMapSrv() : mShadow->ShadowMapSrv(),
+			rayShadow->ShadowMapSrv() : shadow->ShadowMapSrv(),
 		mpShadingArgumentSet->ShadowEnabled));
 
 	CheckReturn(mpLogFile, IntegrateIrradiance());
 
-	CheckReturn(mpLogFile, mEnvironmentMap->DrawSkySphere(
+	const auto env = mShadingObjectManager->Get<Shading::EnvironmentMap::EnvironmentMapClass>();
+	CheckReturn(mpLogFile, env->DrawSkySphere(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapRtv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(), 
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		skySphere));
@@ -297,32 +278,35 @@ BOOL DxRenderer::Draw() {
 		CheckReturn(mpLogFile, ApplyDOF());
 
 	if (mpShadingArgumentSet->TAA.Enabled) {
-		CheckReturn(mpLogFile, mTAA->ApplyTAA(
+		const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
+		CheckReturn(mpLogFile, taa->ApplyTAA(
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->ScissorRect(),
-			mToneMapping->InterMediateMapResource(),
-			mToneMapping->InterMediateMapRtv(),
-			mToneMapping->InterMediateCopyMapResource(),
-			mToneMapping->InterMediateCopyMapSrv(),
-			mGBuffer->VelocityMap(),
-			mGBuffer->VelocityMapSrv(),
+			tone->InterMediateMapResource(),
+			tone->InterMediateMapRtv(),
+			tone->InterMediateCopyMapResource(),
+			tone->InterMediateCopyMapSrv(),
+			gbuffer->VelocityMap(),
+			gbuffer->VelocityMapSrv(),
 			mpShadingArgumentSet->TAA.ModulationFactor));
 	}
 
-	CheckReturn(mpLogFile, mToneMapping->Resolve(
+	const auto eye = mShadingObjectManager->Get<Shading::EyeAdaption::EyeAdaptionClass>();
+	CheckReturn(mpLogFile, tone->Resolve(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mSwapChain->BackBuffer(),
 		mSwapChain->BackBufferRtv(),
-		mEyeAdaption->Luminance(),
+		eye->Luminance(),
 		mpShadingArgumentSet->ToneMapping.Exposure,
 		mpShadingArgumentSet->ToneMapping.MiddleGrayKey,
 		mpShadingArgumentSet->ToneMapping.TonemapperType));
 	
 	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
-		CheckReturn(mpLogFile, mGammaCorrection->ApplyCorrection(
+		const auto gamma = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
+		CheckReturn(mpLogFile, gamma->ApplyCorrection(
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->ScissorRect(),
@@ -334,7 +318,8 @@ BOOL DxRenderer::Draw() {
 	}
 
 	if (mpShadingArgumentSet->MotionBlur.Enabled) {
-		mMotionBlur->ApplyMotionBlur(
+		const auto motion = mShadingObjectManager->Get<Shading::MotionBlur::MotionBlurClass>();
+		motion->ApplyMotionBlur(
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->ScissorRect(),
@@ -344,8 +329,8 @@ BOOL DxRenderer::Draw() {
 			mSwapChain->BackBufferCopySrv(),
 			mDepthStencilBuffer->GetDepthStencilBuffer(),
 			mDepthStencilBuffer->DepthStencilBufferSrv(),
-			mGBuffer->VelocityMap(),
-			mGBuffer->VelocityMapSrv(),
+			gbuffer->VelocityMap(),
+			gbuffer->VelocityMapSrv(),
 			mpShadingArgumentSet->MotionBlur.Intensity,
 			mpShadingArgumentSet->MotionBlur.Limit,
 			mpShadingArgumentSet->MotionBlur.DepthBias,
@@ -495,9 +480,12 @@ BOOL DxRenderer::UpdateMainPassCB() {
 	XMStoreFloat4x4(&mMainPassCB->ViewProjTex, XMMatrixTranspose(viewProjTex));
 	XMStoreFloat3(&mMainPassCB->EyePosW, mpCamera->Position());
 
+	const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
+
 	if (mpShadingArgumentSet->TAA.Enabled) {
-		const auto OffsetIndex = static_cast<UINT>(mCommandObject->CurrentFence() % mTAA->HaltonSequenceSize());
-		mMainPassCB->JitteredOffset = mTAA->HaltonSequence(OffsetIndex);
+		const auto OffsetIndex = static_cast<UINT>(
+			mCommandObject->CurrentFence() % taa->HaltonSequenceSize());
+		mMainPassCB->JitteredOffset = taa->HaltonSequence(OffsetIndex);
 	}
 	else {
 		mMainPassCB->JitteredOffset = { 0.f, 0.f };
@@ -509,7 +497,8 @@ BOOL DxRenderer::UpdateMainPassCB() {
 }
 
 BOOL DxRenderer::UpdateLightCB() {
-	const auto LightCount = mShadow->LightCount();
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	const auto LightCount = shadow->LightCount();
 
 	mLightCB->LightCount = LightCount;
 
@@ -521,7 +510,7 @@ BOOL DxRenderer::UpdateLightCB() {
 	);
 
 	for (UINT i = 0; i < LightCount; ++i) {
-		const auto light = mShadow->Light(i);
+		const auto light = shadow->Light(i);
 
 		if (light->Type == Common::Render::LightType::E_Directional) {
 			const XMVECTOR lightDir = XMLoadFloat3(&light->Direction);
@@ -769,6 +758,8 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 }
 
 BOOL DxRenderer::UpdateAmbientOcclusionCB() {
+	const auto ssao = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
+
 	ConstantBuffers::AmbientOcclusionCB aoCB;
 	aoCB.View = mMainPassCB->View;
 	aoCB.Proj = mMainPassCB->Proj;
@@ -784,7 +775,7 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 	);
 	XMStoreFloat4x4(&aoCB.ProjTex, XMMatrixTranspose(P * T));
 
-	mSSAO->GetOffsetVectors(aoCB.OffsetVectors);
+	ssao->GetOffsetVectors(aoCB.OffsetVectors);
 
 	if (mpShadingArgumentSet->RaytracingEnabled) {
 		const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
@@ -821,18 +812,20 @@ BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 }
 
 BOOL DxRenderer::UpdateRayGenCB() {
+	const auto raygen = mShadingObjectManager->Get<Shading::RayGen::RayGenClass>();
+
 	ConstantBuffers::RayGenCB rayGenCB;
 
 	const BOOL CheckboardRayGeneration = mpShadingArgumentSet->RTAO.CheckboardRayGeneration;
 	const UINT PixelStepX = CheckboardRayGeneration ? 2 : 1;
 
 	rayGenCB.TextureDim = { Foundation::Util::D3D12Util::CeilDivide(mClientWidth, PixelStepX), mClientHeight };
-	rayGenCB.NumSamplesPerSet = mRayGen->NumSamples();
-	rayGenCB.NumSampleSets = mRayGen->NumSampleSets();
+	rayGenCB.NumSamplesPerSet = raygen->NumSamples();
+	rayGenCB.NumSampleSets = raygen->NumSampleSets();
 	rayGenCB.NumPixelsPerDimPerSet = mpShadingArgumentSet->RTAO.SampleSetSize;
 	rayGenCB.CheckerboardRayGenEnabled = CheckboardRayGeneration;
 	rayGenCB.CheckerboardGenerateRaysForEvenPixels = mpShadingArgumentSet->RTAO.CheckerboardGenerateRaysForEvenPixels;
-	rayGenCB.Seed = mpShadingArgumentSet->RTAO.RandomFrameSeed ? mRayGen->Seed() : 1879;
+	rayGenCB.Seed = mpShadingArgumentSet->RTAO.RandomFrameSeed ? raygen->Seed() : 1879;
 
 	mpCurrentFrameResource->RayGenCB.CopyCB(rayGenCB);
 
@@ -973,9 +966,11 @@ BOOL DxRenderer::UpdateContactShadowCB() {
 }
 
 BOOL DxRenderer::ResolvePendingLights() {
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+
 	for (UINT i = 0, end = static_cast<UINT>(mPendingLights.size()); i < end; ++i) {
 		const auto& light = mPendingLights.front();
-		mShadow->AddLight(light);
+		shadow->AddLight(light);
 
 		mPendingLights.pop();
 	}
@@ -1176,7 +1171,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
 		initData->ShaderManager = mShaderManager.get();
-		CheckReturn(mpLogFile, mMipmapGenerator->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::Util::MipmapGenerator::MipmapGeneratorClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// EquirectangularConverter
 	{
@@ -1185,7 +1181,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
 		initData->ShaderManager = mShaderManager.get();
-		CheckReturn(mpLogFile, mEquirectangularConverter->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::Util::EquirectangularConverter::EquirectangularConverterClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// TextureScaler
 	{
@@ -1194,7 +1191,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
 		initData->ShaderManager = mShaderManager.get();
-		CheckReturn(mpLogFile, mTextureScaler->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::Util::TextureScaler::TextureScalerClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// EnvironmentMap
 	{
@@ -1204,7 +1202,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
 		initData->ShaderManager = mShaderManager.get();
-		CheckReturn(mpLogFile, mEnvironmentMap->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::EnvironmentMap::EnvironmentMapClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// GammaCorrection
 	{
@@ -1216,7 +1215,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mGammaCorrection->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// ToneMapping
 	{
@@ -1228,7 +1228,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mToneMapping->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// GBuffer
 	{
@@ -1240,7 +1241,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mGBuffer->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// BRDF
 	{
@@ -1252,7 +1254,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mBRDF->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// Shadow
 	{
@@ -1266,7 +1269,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		initData->TexWidth = 2048;
 		initData->TexHeight = 2048;
-		CheckReturn(mpLogFile, mShadow->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// TAA
 	{
@@ -1278,7 +1282,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mTAA->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// SSAO
 	{
@@ -1289,7 +1294,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mSSAO->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// RTAO
 	{
@@ -1301,7 +1307,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mRTAO->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::RTAO::RTAOClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// RayGen
 	{
@@ -1315,10 +1322,11 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ClientHeight = mClientHeight;
 		initData->SamplesPerPixel = &mpShadingArgumentSet->RTAO.SampleCount;
 		initData->MaxSamplesPerPixel = mpShadingArgumentSet->RTAO.MaxSampleCount;
-		initData->SampleSetDistributedAcrossPixels= &mpShadingArgumentSet->RTAO.SampleSetSize;
+		initData->SampleSetDistributedAcrossPixels = &mpShadingArgumentSet->RTAO.SampleSetSize;
 		initData->MaxSampleSetDistributedAcrossPixels = mpShadingArgumentSet->RTAO.MaxSampleSetSize;
 		initData->CurrentFrameIndex = &mCurrentFrameResourceIndex;
-		CheckReturn(mpLogFile, mRayGen->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::RayGen::RayGenClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// RaySorting
 	{
@@ -1330,7 +1338,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mRaySorting->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::RaySorting::RaySortingClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// SVGF
 	{
@@ -1341,7 +1350,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mSVGF->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::SVGF::SVGFClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// BlurFilter
 	{
@@ -1351,7 +1361,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->CommandObject = mCommandObject.get();
 		initData->DescriptorHeap = mDescriptorHeap.get();
 		initData->ShaderManager = mShaderManager.get();
-		CheckReturn(mpLogFile, mBlurFilter->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::BlurFilter::BlurFilterClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// VolumetricLight
 	{
@@ -1363,7 +1374,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->TextureWidth = 160;
 		initData->TextureHeight = 90;
 		initData->TextureDepth = 128;
-		CheckReturn(mpLogFile, mVolumetricLight->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::VolumetricLight::VolumetricLightClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// SSCS
 	{
@@ -1374,7 +1386,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mSSCS->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::SSCS::SSCSClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// MotionBlur
 	{
@@ -1385,7 +1398,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mMotionBlur->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::MotionBlur::MotionBlurClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// Bloom
 	{
@@ -1397,7 +1411,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mBloom->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::Bloom::BloomClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// DOF
 	{
@@ -1408,7 +1423,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mDOF->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::DOF::DOFClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// EyeAdaption
 	{
@@ -1419,7 +1435,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mEyeAdaption->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::EyeAdaption::EyeAdaptionClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 	// RaytracedShadow
 	{
@@ -1431,7 +1448,8 @@ BOOL DxRenderer::InitShadingObjects() {
 		initData->ShaderManager = mShaderManager.get();
 		initData->ClientWidth = mClientWidth;
 		initData->ClientHeight = mClientHeight;
-		CheckReturn(mpLogFile, mRaytracedShadow->Initialize(mpLogFile, initData.get()));
+		const auto obj = mShadingObjectManager->Get<Shading::RaytracedShadow::RaytracedShadowClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 
 	return TRUE;
@@ -1500,6 +1518,7 @@ BOOL DxRenderer::BuildSkySphere() {
 }
 
 BOOL DxRenderer::BuildLights() {
+	auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
 	// Directional light 1
 	{
 		std::shared_ptr<Foundation::Light> light = std::make_shared<Foundation::Light>();
@@ -1507,7 +1526,7 @@ BOOL DxRenderer::BuildLights() {
 		light->Direction = { 0.577f, -0.577f, 0.577f };
 		light->Color = { 240.f / 255.f, 235.f / 255.f, 223.f / 255.f };
 		light->Intensity = 1.802f;
-		mShadow->AddLight(light);
+		shadow->AddLight(light);
 	}
 	// Directional light 2
 	{
@@ -1516,17 +1535,20 @@ BOOL DxRenderer::BuildLights() {
 		light->Direction = { 0.067f, -0.701f, -0.836f };
 		light->Color = { 149.f / 255.f, 142.f / 255.f, 100.f / 255.f };
 		light->Intensity = 1.534f;
-		mShadow->AddLight(light);
+		shadow->AddLight(light);
 	}
 
 	return TRUE;
 }
 
 BOOL DxRenderer::BuildScene() {
-	CheckReturn(mpLogFile, mEnvironmentMap->SetEnvironmentMap(
+	auto env = mShadingObjectManager->Get<Shading::EnvironmentMap::EnvironmentMapClass>();
+	auto mipmap = mShadingObjectManager->Get<Shading::Util::MipmapGenerator::MipmapGeneratorClass>();
+	auto converter = mShadingObjectManager->Get<Shading::Util::EquirectangularConverter::EquirectangularConverterClass>();
+	CheckReturn(mpLogFile, env->SetEnvironmentMap(
 		mpCurrentFrameResource,
-		mMipmapGenerator.get(), 
-		mEquirectangularConverter.get(), 
+		mipmap,
+		converter,
 		L"forest_hdr", L"./../../../assets/textures/"));
 
 	return TRUE;
@@ -1548,14 +1570,16 @@ BOOL DxRenderer::DrawImGui() {
 
 	CmdList->OMSetRenderTargets(1, &mSwapChain->BackBufferRtv(), TRUE, nullptr);
 
+	auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+
 	std::vector<Foundation::Light*> lights;
-	mShadow->Lights(lights);
+	shadow->Lights(lights);
 
 	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
 		CmdList, 
 		mpShadingArgumentSet, 
 		lights.data(),
-		mShadow->LightCount(),
+		shadow->LightCount(),
 		mPendingLights,
 		mClientWidth, 
 		mClientHeight, 
@@ -1567,22 +1591,26 @@ BOOL DxRenderer::DrawImGui() {
 }
 
 BOOL DxRenderer::DrawShadow() {
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	const auto rayShadow = mShadingObjectManager->Get<Shading::RaytracedShadow::RaytracedShadowClass>();
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+
 	if (mpShadingArgumentSet->RaytracingEnabled) {
-		CheckReturn(mpLogFile, mRaytracedShadow->CalcShadow(
+		CheckReturn(mpLogFile, rayShadow->CalcShadow(
 			mpCurrentFrameResource,
 			mAccelerationStructureManager->AccelerationStructure(),
-			mGBuffer->PositionMap(),
-			mGBuffer->PositionMapSrv(),
-			mGBuffer->NormalMap(),
-			mGBuffer->NormalMapSrv(),
+			gbuffer->PositionMap(),
+			gbuffer->PositionMapSrv(),
+			gbuffer->NormalMap(),
+			gbuffer->NormalMapSrv(),
 			mDepthStencilBuffer->GetDepthStencilBuffer(),
 			mDepthStencilBuffer->DepthStencilBufferSrv()));
 	}
 	else {
-		CheckReturn(mpLogFile, mShadow->Run(
+		CheckReturn(mpLogFile, shadow->Run(
 			mpCurrentFrameResource,
-			mGBuffer->PositionMap(),
-			mGBuffer->PositionMapSrv(),
+			gbuffer->PositionMap(),
+			gbuffer->PositionMapSrv(),
 			mRendableItems[Common::Foundation::Mesh::RenderType::E_Opaque]));
 	}
 
@@ -1590,51 +1618,62 @@ BOOL DxRenderer::DrawShadow() {
 }
 
 BOOL DxRenderer::ApplyContactShadow() {
-	CheckReturn(mpLogFile, mSSCS->ComputeContactShadow(
+	const auto sscs = mShadingObjectManager->Get<Shading::SSCS::SSCSClass>();
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+
+	CheckReturn(mpLogFile, sscs->ComputeContactShadow(
 		mpCurrentFrameResource,
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv(),
-		mGBuffer->NormalMap(),
-		mGBuffer->NormalMapSrv(),
+		gbuffer->PositionMap(),
+		gbuffer->PositionMapSrv(),
+		gbuffer->NormalMap(),
+		gbuffer->NormalMapSrv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferSrv()));
 
-	CheckReturn(mpLogFile, mSSCS->ApplyContactShadow(
+	CheckReturn(mpLogFile, sscs->ApplyContactShadow(
 		mpCurrentFrameResource,
-		mShadow->ShadowMap(),
-		mShadow->ShadowMapUav()));
+		shadow->ShadowMap(),
+		shadow->ShadowMapUav()));
 
 	return TRUE;
 }
 
 BOOL DxRenderer::DrawAO() {
+	const auto raygen = mShadingObjectManager->Get<Shading::RayGen::RayGenClass>();
+	const auto raysorting = mShadingObjectManager->Get<Shading::RaySorting::RaySortingClass>();
+	const auto rtao = mShadingObjectManager->Get<Shading::RTAO::RTAOClass>();
+	const auto svgf = mShadingObjectManager->Get<Shading::SVGF::SVGFClass>();
+	const auto ssao = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+
 	if (mpShadingArgumentSet->RaytracingEnabled) {		
 		if (mpShadingArgumentSet->RTAO.RaySortingEnabled) {
-			CheckReturn(mpLogFile, mRayGen->GenerateRays(
+			CheckReturn(mpLogFile, raygen->GenerateRays(
 				mpCurrentFrameResource,
-				mGBuffer->NormalDepthMap(),
-				mGBuffer->NormalDepthMapSrv(),
-				mGBuffer->PositionMap(),
-				mGBuffer->PositionMapSrv(),
+				gbuffer->NormalDepthMap(),
+				gbuffer->NormalDepthMapSrv(),
+				gbuffer->PositionMap(),
+				gbuffer->PositionMapSrv(),
 				mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 
-			CheckReturn(mpLogFile, mRaySorting->CalcRayIndexOffset(
+			CheckReturn(mpLogFile, raysorting->CalcRayIndexOffset(
 				mpCurrentFrameResource,
-				mGBuffer->NormalDepthMap(),
-				mGBuffer->NormalDepthMapSrv()));
+				gbuffer->NormalDepthMap(),
+				gbuffer->NormalDepthMapSrv()));
 		}
 
-		CheckReturn(mpLogFile, mRTAO->DrawAO(
+		CheckReturn(mpLogFile, rtao->DrawAO(
 			mpCurrentFrameResource,
 			mAccelerationStructureManager->AccelerationStructure(),
-			mGBuffer->PositionMap(),
-			mGBuffer->PositionMapSrv(),
-			mGBuffer->NormalDepthMap(),
-			mGBuffer->NormalDepthMapSrv(),
-			mRayGen->RayDirectionOriginDepthMap(),
-			mRayGen->RayDirectionOriginDepthMapSrv(),
-			mRaySorting->RayIndexOffsetMap(),
-			mRaySorting->RayIndexOffsetMapSrv(),
+			gbuffer->PositionMap(),
+			gbuffer->PositionMapSrv(),
+			gbuffer->NormalDepthMap(),
+			gbuffer->NormalDepthMapSrv(),
+			raygen->RayDirectionOriginDepthMap(),
+			raygen->RayDirectionOriginDepthMapSrv(),
+			raysorting->RayIndexOffsetMap(),
+			raysorting->RayIndexOffsetMapSrv(),
 			mpShadingArgumentSet->RTAO.RaySortingEnabled,
 			mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 
@@ -1644,70 +1683,70 @@ BOOL DxRenderer::DrawAO() {
 			{
 				// Stage 1: Reverse reprojection
 				{
-					const auto PrevTemporalCacheFrameIndex = mRTAO->CurrentTemporalCacheFrameIndex();
-					const auto CurrTemporalCacheFrameIndex = mRTAO->MoveToNextTemporalCacheFrame();
+					const auto PrevTemporalCacheFrameIndex = rtao->CurrentTemporalCacheFrameIndex();
+					const auto CurrTemporalCacheFrameIndex = rtao->MoveToNextTemporalCacheFrame();
 
-					const auto PrevTemporalAOFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
-					const auto CurrTemporalAOFrameIndex = mRTAO->MoveToNextTemporalAOFrame();
+					const auto PrevTemporalAOFrameIndex = rtao->CurrentTemporalAOFrameIndex();
+					const auto CurrTemporalAOFrameIndex = rtao->MoveToNextTemporalAOFrame();
 
 					// Retrieves values from previous frame via reverse reprojection.
-					CheckReturn(mpLogFile, mSVGF->ReverseReprojectPreviousFrame(
+					CheckReturn(mpLogFile, svgf->ReverseReprojectPreviousFrame(
 						mpCurrentFrameResource,
-						mGBuffer->NormalDepthMap(),
-						mGBuffer->NormalDepthMapSrv(),
-						mGBuffer->ReprojectedNormalDepthMap(),
-						mGBuffer->ReprojectedNormalDepthMapSrv(),
-						mGBuffer->CachedNormalDepthMap(),
-						mGBuffer->CachedNormalDepthMapSrv(),
-						mGBuffer->VelocityMap(),
-						mGBuffer->VelocityMapSrv(),
-						mRTAO->TemporalAOCoefficientResource(PrevTemporalAOFrameIndex),
-						mRTAO->TemporalAOCoefficientSrv(PrevTemporalAOFrameIndex),
-						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, PrevTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_RayHitDistance, PrevTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, PrevTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_TSPP, PrevTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+						gbuffer->NormalDepthMap(),
+						gbuffer->NormalDepthMapSrv(),
+						gbuffer->ReprojectedNormalDepthMap(),
+						gbuffer->ReprojectedNormalDepthMapSrv(),
+						gbuffer->CachedNormalDepthMap(),
+						gbuffer->CachedNormalDepthMapSrv(),
+						gbuffer->VelocityMap(),
+						gbuffer->VelocityMapSrv(),
+						rtao->TemporalAOCoefficientResource(PrevTemporalAOFrameIndex),
+						rtao->TemporalAOCoefficientSrv(PrevTemporalAOFrameIndex),
+						rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, PrevTemporalCacheFrameIndex),
+						rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_RayHitDistance, PrevTemporalCacheFrameIndex),
+						rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, PrevTemporalCacheFrameIndex),
+						rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_TSPP, PrevTemporalCacheFrameIndex),
+						rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
 						Shading::SVGF::Value::E_Contrast));
 				}
 				// Stage 2: Blending current frame value with the reprojected cached value.
 				{
 					// Calculate local mean and variance for clamping during the blending operation.
-					CheckReturn(mpLogFile, mSVGF->CalculateLocalMeanVariance(
+					CheckReturn(mpLogFile, svgf->CalculateLocalMeanVariance(
 						mpCurrentFrameResource,
-						mRTAO->AOCoefficientResource(Shading::RTAO::Resource::AO::E_AOCoefficient),
-						mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_AOCoefficient),
+						rtao->AOCoefficientResource(Shading::RTAO::Resource::AO::E_AOCoefficient),
+						rtao->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_AOCoefficient),
 						Shading::SVGF::Value::E_Contrast,
 						mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 					// Interpolate the variance for the inactive cells from the valid checkerboard cells.
 					if (mpShadingArgumentSet->RTAO.CheckboardRayGeneration) {
-						CheckReturn(mpLogFile, mSVGF->FillInCheckerboard(
+						CheckReturn(mpLogFile, svgf->FillInCheckerboard(
 							mpCurrentFrameResource,
 							mpShadingArgumentSet->RTAO.CheckboardRayGeneration));
 					}
 					// Blends reprojected values with current frame values.
 					// Inactive pixels are filtered from active neighbors on checkerboard sampling before the blending operation.
 					{
-						const auto CurrTemporalCacheFrameIndex = mRTAO->MoveToNextTemporalCacheFrame();
-						const auto CurrAOResourceFrameIndex = mRTAO->MoveToNextTemporalAOFrame();
+						const auto CurrTemporalCacheFrameIndex = rtao->MoveToNextTemporalCacheFrame();
+						const auto CurrAOResourceFrameIndex = rtao->MoveToNextTemporalAOFrame();
 
-						CheckReturn(mpLogFile, mSVGF->BlendWithCurrentFrame(
+						CheckReturn(mpLogFile, svgf->BlendWithCurrentFrame(
 							mpCurrentFrameResource,
-							mRTAO->AOCoefficientResource(Shading::RTAO::Resource::AO::E_AOCoefficient),
-							mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_AOCoefficient),
-							mRTAO->AOCoefficientResource(Shading::RTAO::Resource::AO::E_RayHitDistance),
-							mRTAO->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_RayHitDistance),
-							mRTAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
-							mRTAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
-							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
-							mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
-							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
-							mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_RayHitDistance, CurrTemporalCacheFrameIndex),
-							mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
-							mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+							rtao->AOCoefficientResource(Shading::RTAO::Resource::AO::E_AOCoefficient),
+							rtao->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_AOCoefficient),
+							rtao->AOCoefficientResource(Shading::RTAO::Resource::AO::E_RayHitDistance),
+							rtao->AOCoefficientDescriptor(Shading::RTAO::Descriptor::AO::ES_RayHitDistance),
+							rtao->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+							rtao->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
+							rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+							rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_RayHitDistance, CurrTemporalCacheFrameIndex),
+							rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+							rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
 							Shading::SVGF::Value::E_Contrast));
 					}
 				}
@@ -1716,9 +1755,9 @@ BOOL DxRenderer::DrawAO() {
 			{
 				// Stage 1: Applies a single pass of a Atrous wavelet transform filter.
 				if (mpShadingArgumentSet->RTAO.Denoiser.FullscreenBlurEnabaled) {
-					const auto CurrTemporalCacheFrameIndex = mRTAO->CurrentTemporalCacheFrameIndex();
-					const auto InputAOResourceFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
-					const auto OutputAOResourceFrameIndex = mRTAO->MoveToNextTemporalAOFrame();
+					const auto CurrTemporalCacheFrameIndex = rtao->CurrentTemporalCacheFrameIndex();
+					const auto InputAOResourceFrameIndex = rtao->CurrentTemporalAOFrameIndex();
+					const auto OutputAOResourceFrameIndex = rtao->MoveToNextTemporalAOFrame();
 				
 					const FLOAT RayHitDistToKernelWidthScale = 22 / mpShadingArgumentSet->RTAO.OcclusionRadius *
 						mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleFactor;
@@ -1727,34 +1766,34 @@ BOOL DxRenderer::DrawAO() {
 						mpShadingArgumentSet->RTAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleExponent,
 						Foundation::Util::D3D12Util::RelativeCoef(mpShadingArgumentSet->RTAO.OcclusionRadius, 4, 22));
 
-					CheckReturn(mpLogFile, mSVGF->ApplyAtrousWaveletTransformFilter(
+					CheckReturn(mpLogFile, svgf->ApplyAtrousWaveletTransformFilter(
 						mpCurrentFrameResource,
-						mGBuffer->NormalDepthMap(),
-						mGBuffer->NormalDepthMapSrv(),
-						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_RayHitDistance, CurrTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
-						mRTAO->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_TSPP, CurrTemporalCacheFrameIndex),
-						mRTAO->TemporalAOCoefficientResource(InputAOResourceFrameIndex),
-						mRTAO->TemporalAOCoefficientSrv(InputAOResourceFrameIndex),
-						mRTAO->TemporalAOCoefficientResource(OutputAOResourceFrameIndex),
-						mRTAO->TemporalAOCoefficientUav(OutputAOResourceFrameIndex),
+						gbuffer->NormalDepthMap(),
+						gbuffer->NormalDepthMapSrv(),
+						rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+						rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_RayHitDistance, CurrTemporalCacheFrameIndex),
+						rtao->TemporalCacheResource(Shading::RTAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						rtao->TemporalCacheDescriptor(Shading::RTAO::Descriptor::TemporalCache::ES_TSPP, CurrTemporalCacheFrameIndex),
+						rtao->TemporalAOCoefficientResource(InputAOResourceFrameIndex),
+						rtao->TemporalAOCoefficientSrv(InputAOResourceFrameIndex),
+						rtao->TemporalAOCoefficientResource(OutputAOResourceFrameIndex),
+						rtao->TemporalAOCoefficientUav(OutputAOResourceFrameIndex),
 						Shading::SVGF::Value::E_Contrast,
 						RayHitDistToKernelWidthScale,
 						RayHitDistToKernelSizeScaleExp));
 				}
 				// Stage 2: 3x3 multi-pass disocclusion blur (with more relaxed depth-aware constraints for such pixels).
 				if (mpShadingArgumentSet->RTAO.Denoiser.DisocclusionBlurEnabled) {
-					const auto CurrAOResourceFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
+					const auto CurrAOResourceFrameIndex = rtao->CurrentTemporalAOFrameIndex();
 
-					CheckReturn(mpLogFile, mSVGF->BlurDisocclusion(
+					CheckReturn(mpLogFile, svgf->BlurDisocclusion(
 						mpCurrentFrameResource,
 						mDepthStencilBuffer->GetDepthStencilBuffer(),
 						mDepthStencilBuffer->DepthStencilBufferSrv(),
-						mGBuffer->RoughnessMetalnessMap(),
-						mGBuffer->RoughnessMetalnessMapSrv(),
-						mRTAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
-						mRTAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
+						gbuffer->RoughnessMetalnessMap(),
+						gbuffer->RoughnessMetalnessMapSrv(),
+						rtao->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+						rtao->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
 						Shading::SVGF::Value::E_Contrast,
 						mpShadingArgumentSet->RTAO.Denoiser.LowTsppBlurPassCount));
 				}
@@ -1762,12 +1801,12 @@ BOOL DxRenderer::DrawAO() {
 		}
 	}
 	else {
-		CheckReturn(mpLogFile, mSSAO->DrawAO(
+		CheckReturn(mpLogFile, ssao->DrawAO(
 			mpCurrentFrameResource,
-			mGBuffer->NormalDepthMap(),
-			mGBuffer->NormalDepthMapSrv(),
-			mGBuffer->PositionMap(),
-			mGBuffer->PositionMapSrv()));
+			gbuffer->NormalDepthMap(),
+			gbuffer->NormalDepthMapSrv(),
+			gbuffer->PositionMap(),
+			gbuffer->PositionMapSrv()));
 
 		// Denosing(Spatio - Temporal Variance Guided Filtering)
 		{
@@ -1775,65 +1814,65 @@ BOOL DxRenderer::DrawAO() {
 			{
 				// Stage 1: Reverse reprojection
 				{
-					const auto PrevTemporalCacheFrameIndex = mSSAO->CurrentTemporalCacheFrameIndex();
-					const auto CurrTemporalCacheFrameIndex = mSSAO->MoveToNextTemporalCacheFrame();
+					const auto PrevTemporalCacheFrameIndex = ssao->CurrentTemporalCacheFrameIndex();
+					const auto CurrTemporalCacheFrameIndex = ssao->MoveToNextTemporalCacheFrame();
 		
-					const auto PrevTemporalAOFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
-					const auto CurrTemporalAOFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
+					const auto PrevTemporalAOFrameIndex = ssao->CurrentTemporalAOFrameIndex();
+					const auto CurrTemporalAOFrameIndex = ssao->MoveToNextTemporalAOFrame();
 		
 					// Retrieves values from previous frame via reverse reprojection.
-					CheckReturn(mpLogFile, mSVGF->ReverseReprojectPreviousFrame(
+					CheckReturn(mpLogFile, svgf->ReverseReprojectPreviousFrame(
 						mpCurrentFrameResource,
-						mGBuffer->NormalDepthMap(),
-						mGBuffer->NormalDepthMapSrv(),
-						mGBuffer->ReprojectedNormalDepthMap(),
-						mGBuffer->ReprojectedNormalDepthMapSrv(),
-						mGBuffer->CachedNormalDepthMap(),
-						mGBuffer->CachedNormalDepthMapSrv(),
-						mGBuffer->VelocityMap(),
-						mGBuffer->VelocityMapSrv(),
-						mSSAO->TemporalAOCoefficientResource(PrevTemporalAOFrameIndex),
-						mSSAO->TemporalAOCoefficientSrv(PrevTemporalAOFrameIndex),
-						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, PrevTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_RayHitDistance, PrevTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, PrevTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_TSPP, PrevTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+						gbuffer->NormalDepthMap(),
+						gbuffer->NormalDepthMapSrv(),
+						gbuffer->ReprojectedNormalDepthMap(),
+						gbuffer->ReprojectedNormalDepthMapSrv(),
+						gbuffer->CachedNormalDepthMap(),
+						gbuffer->CachedNormalDepthMapSrv(),
+						gbuffer->VelocityMap(),
+						gbuffer->VelocityMapSrv(),
+						ssao->TemporalAOCoefficientResource(PrevTemporalAOFrameIndex),
+						ssao->TemporalAOCoefficientSrv(PrevTemporalAOFrameIndex),
+						ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_AOCoefficientSquaredMean, PrevTemporalCacheFrameIndex),
+						ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, PrevTemporalCacheFrameIndex),
+						ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_RayHitDistance, PrevTemporalCacheFrameIndex),
+						ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, PrevTemporalCacheFrameIndex),
+						ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_TSPP, PrevTemporalCacheFrameIndex),
+						ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
 						Shading::SVGF::Value::E_Contrast));
 				}
 				// Stage 2: Blending current frame value with the reprojected cached value.
 				{
 					// Calculate local mean and variance for clamping during the blending operation.
-					CheckReturn(mpLogFile, mSVGF->CalculateLocalMeanVariance(
+					CheckReturn(mpLogFile, svgf->CalculateLocalMeanVariance(
 						mpCurrentFrameResource,
-						mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
-						mSSAO->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_AOCoefficient),
+						ssao->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
+						ssao->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_AOCoefficient),
 						Shading::SVGF::Value::E_Contrast,
 						FALSE));
 					
 					// Blends reprojected values with current frame values.
 					// Inactive pixels are filtered from active neighbors on checkerboard sampling before the blending operation.
 					{
-						const auto CurrTemporalCacheFrameIndex = mSSAO->MoveToNextTemporalCacheFrame();
-						const auto CurrAOResourceFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
+						const auto CurrTemporalCacheFrameIndex = ssao->MoveToNextTemporalCacheFrame();
+						const auto CurrAOResourceFrameIndex = ssao->MoveToNextTemporalAOFrame();
 		
-						CheckReturn(mpLogFile, mSVGF->BlendWithCurrentFrame(
+						CheckReturn(mpLogFile, svgf->BlendWithCurrentFrame(
 							mpCurrentFrameResource,
-							mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
-							mSSAO->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_AOCoefficient),
-							mSSAO->AOCoefficientResource(Shading::SSAO::Resource::AO::E_RayHitDistance),
-							mSSAO->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_RayHitDistance),
-							mSSAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
-							mSSAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
-							mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
-							mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
-							mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
-							mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_RayHitDistance, CurrTemporalCacheFrameIndex),
-							mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
-							mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
+							ssao->AOCoefficientResource(Shading::SSAO::Resource::AO::E_AOCoefficient),
+							ssao->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_AOCoefficient),
+							ssao->AOCoefficientResource(Shading::SSAO::Resource::AO::E_RayHitDistance),
+							ssao->AOCoefficientDescriptor(Shading::SSAO::Descriptor::AO::ES_RayHitDistance),
+							ssao->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+							ssao->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
+							ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_AOCoefficientSquaredMean, CurrTemporalCacheFrameIndex),
+							ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+							ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_RayHitDistance, CurrTemporalCacheFrameIndex),
+							ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+							ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::EU_TSPP, CurrTemporalCacheFrameIndex),
 							Shading::SVGF::Value::E_Contrast));
 					}
 				}
@@ -1842,9 +1881,9 @@ BOOL DxRenderer::DrawAO() {
 			{
 				// Stage 1: Applies a single pass of a Atrous wavelet transform filter.
 				if (mpShadingArgumentSet->SSAO.Denoiser.FullscreenBlurEnabaled) {
-					const auto CurrTemporalCacheFrameIndex = mSSAO->CurrentTemporalCacheFrameIndex();
-					const auto InputAOResourceFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
-					const auto OutputAOResourceFrameIndex = mSSAO->MoveToNextTemporalAOFrame();
+					const auto CurrTemporalCacheFrameIndex = ssao->CurrentTemporalCacheFrameIndex();
+					const auto InputAOResourceFrameIndex = ssao->CurrentTemporalAOFrameIndex();
+					const auto OutputAOResourceFrameIndex = ssao->MoveToNextTemporalAOFrame();
 			
 					const FLOAT RayHitDistToKernelWidthScale = 22 / mpShadingArgumentSet->SSAO.OcclusionRadius *
 						mpShadingArgumentSet->SSAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleFactor;
@@ -1853,34 +1892,34 @@ BOOL DxRenderer::DrawAO() {
 						mpShadingArgumentSet->SSAO.AtrousWaveletTransformFilter.AdaptiveKernelSizeRayHitDistanceScaleExponent,
 						Foundation::Util::D3D12Util::RelativeCoef(mpShadingArgumentSet->SSAO.OcclusionRadius, 4, 22));
 			
-					CheckReturn(mpLogFile, mSVGF->ApplyAtrousWaveletTransformFilter(
+					CheckReturn(mpLogFile, svgf->ApplyAtrousWaveletTransformFilter(
 						mpCurrentFrameResource,
-						mGBuffer->NormalDepthMap(),
-						mGBuffer->NormalDepthMapSrv(),
-						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_RayHitDistance, CurrTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
-						mSSAO->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_TSPP, CurrTemporalCacheFrameIndex),
-						mSSAO->TemporalAOCoefficientResource(InputAOResourceFrameIndex),
-						mSSAO->TemporalAOCoefficientSrv(InputAOResourceFrameIndex),
-						mSSAO->TemporalAOCoefficientResource(OutputAOResourceFrameIndex),
-						mSSAO->TemporalAOCoefficientUav(OutputAOResourceFrameIndex),
+						gbuffer->NormalDepthMap(),
+						gbuffer->NormalDepthMapSrv(),
+						ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_RayHitDistance, CurrTemporalCacheFrameIndex),
+						ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_RayHitDistance, CurrTemporalCacheFrameIndex),
+						ssao->TemporalCacheResource(Shading::SSAO::Resource::TemporalCache::E_TSPP, CurrTemporalCacheFrameIndex),
+						ssao->TemporalCacheDescriptor(Shading::SSAO::Descriptor::TemporalCache::ES_TSPP, CurrTemporalCacheFrameIndex),
+						ssao->TemporalAOCoefficientResource(InputAOResourceFrameIndex),
+						ssao->TemporalAOCoefficientSrv(InputAOResourceFrameIndex),
+						ssao->TemporalAOCoefficientResource(OutputAOResourceFrameIndex),
+						ssao->TemporalAOCoefficientUav(OutputAOResourceFrameIndex),
 						Shading::SVGF::Value::E_Contrast,
 						RayHitDistToKernelWidthScale,
 						RayHitDistToKernelSizeScaleExp));
 				}
 				// Stage 2: 3x3 multi-pass disocclusion blur (with more relaxed depth-aware constraints for such pixels).
 				if (mpShadingArgumentSet->SSAO.Denoiser.DisocclusionBlurEnabled) {
-					const auto CurrAOResourceFrameIndex = mSSAO->CurrentTemporalAOFrameIndex();
+					const auto CurrAOResourceFrameIndex = ssao->CurrentTemporalAOFrameIndex();
 			
-					CheckReturn(mpLogFile, mSVGF->BlurDisocclusion(
+					CheckReturn(mpLogFile, svgf->BlurDisocclusion(
 						mpCurrentFrameResource,
 						mDepthStencilBuffer->GetDepthStencilBuffer(),
 						mDepthStencilBuffer->DepthStencilBufferSrv(),
-						mGBuffer->RoughnessMetalnessMap(),
-						mGBuffer->RoughnessMetalnessMapSrv(),
-						mSSAO->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
-						mSSAO->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
+						gbuffer->RoughnessMetalnessMap(),
+						gbuffer->RoughnessMetalnessMapSrv(),
+						ssao->TemporalAOCoefficientResource(CurrAOResourceFrameIndex),
+						ssao->TemporalAOCoefficientUav(CurrAOResourceFrameIndex),
 						Shading::SVGF::Value::E_Contrast,
 						mpShadingArgumentSet->SSAO.Denoiser.LowTsppBlurPassCount));
 				}
@@ -1892,72 +1931,84 @@ BOOL DxRenderer::DrawAO() {
 }
 
 BOOL DxRenderer::IntegrateIrradiance() {
-	const auto CurrTemporalAOFrameIndex = mRTAO->CurrentTemporalAOFrameIndex();
+	const auto rtao = mShadingObjectManager->Get<Shading::RTAO::RTAOClass>();
+	const auto ssao = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
+	const auto brdf = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
+	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();	
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+	const auto env = mShadingObjectManager->Get<Shading::EnvironmentMap::EnvironmentMapClass>();
+	
+	const auto CurrTemporalAOFrameIndex = rtao->CurrentTemporalAOFrameIndex();
 	const auto AOMap = mpShadingArgumentSet->RaytracingEnabled 
-		? mRTAO->TemporalAOCoefficientResource(mRTAO->CurrentTemporalAOFrameIndex()) 
-		: mSSAO->TemporalAOCoefficientResource(mSSAO->CurrentTemporalAOFrameIndex());
+		? rtao->TemporalAOCoefficientResource(rtao->CurrentTemporalAOFrameIndex()) 
+		: ssao->TemporalAOCoefficientResource(ssao->CurrentTemporalAOFrameIndex());
 	const auto AOSrv = mpShadingArgumentSet->RaytracingEnabled 
-		? mRTAO->TemporalAOCoefficientSrv(mRTAO->CurrentTemporalAOFrameIndex()) 
-		: mSSAO->TemporalAOCoefficientSrv(mSSAO->CurrentTemporalAOFrameIndex());
+		? rtao->TemporalAOCoefficientSrv(rtao->CurrentTemporalAOFrameIndex()) 
+		: ssao->TemporalAOCoefficientSrv(ssao->CurrentTemporalAOFrameIndex());
 
-	CheckReturn(mpLogFile, mBRDF->IntegrateIrradiance(
+	CheckReturn(mpLogFile, brdf->IntegrateIrradiance(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv(),
-		mGBuffer->AlbedoMap(),
-		mGBuffer->AlbedoMapSrv(),
-		mGBuffer->NormalMap(),
-		mGBuffer->NormalMapSrv(),
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapRtv(),
+		tone->InterMediateCopyMapResource(),
+		tone->InterMediateCopyMapSrv(),
+		gbuffer->AlbedoMap(),
+		gbuffer->AlbedoMapSrv(),
+		gbuffer->NormalMap(),
+		gbuffer->NormalMapSrv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferSrv(),
-		mGBuffer->SpecularMap(),
-		mGBuffer->SpecularMapSrv(),
-		mGBuffer->RoughnessMetalnessMap(),
-		mGBuffer->RoughnessMetalnessMapSrv(),
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv(),
+		gbuffer->SpecularMap(),
+		gbuffer->SpecularMapSrv(),
+		gbuffer->RoughnessMetalnessMap(),
+		gbuffer->RoughnessMetalnessMapSrv(),
+		gbuffer->PositionMap(),
+		gbuffer->PositionMapSrv(),
 		AOMap,
 		AOSrv,
-		mEnvironmentMap->DiffuseIrradianceCubeMap(),
-		mEnvironmentMap->DiffuseIrradianceCubeMapSrv(),
-		mEnvironmentMap->BrdfLutMap(),
-		mEnvironmentMap->BrdfLutMapSrv(),
-		mEnvironmentMap->PrefilteredEnvironmentCubeMap(),
-		mEnvironmentMap->PrefilteredEnvironmentCubeMapSrv(),
+		env->DiffuseIrradianceCubeMap(),
+		env->DiffuseIrradianceCubeMapSrv(),
+		env->BrdfLutMap(),
+		env->BrdfLutMapSrv(),
+		env->PrefilteredEnvironmentCubeMap(),
+		env->PrefilteredEnvironmentCubeMapSrv(),
 		mpShadingArgumentSet->AOEnabled));
 
 	return TRUE;
 }
 
 BOOL DxRenderer::ApplyVolumetricLight() {
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	const auto volume = mShadingObjectManager->Get<Shading::VolumetricLight::VolumetricLightClass>();
+	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+
 	std::vector<Foundation::Light*> lights;
 	std::vector<Foundation::Resource::GpuResource*> depthMaps;
 
-	mShadow->Lights(lights);
-	mShadow->ZDepthMaps(depthMaps);
+	shadow->Lights(lights);
+	shadow->ZDepthMaps(depthMaps);
 
-	CheckReturn(mpLogFile, mVolumetricLight->BuildFog(
+	CheckReturn(mpLogFile, volume->BuildFog(
 		mpCurrentFrameResource,
 		depthMaps.data(),
-		mShadow->ZDepthMapSrv(),
+		shadow->ZDepthMapSrv(),
 		mpCamera->NearZ(),
 		mpCamera->FarZ(),
 		mpShadingArgumentSet->VolumetricLight.DepthExponent,
 		mpShadingArgumentSet->VolumetricLight.UniformDensity,
 		mpShadingArgumentSet->VolumetricLight.DensityScale,
 		mpShadingArgumentSet->VolumetricLight.AnisotropicCoefficient,
-		mShadow->LightCount()));
+		shadow->LightCount()));
 
-	CheckReturn(mpLogFile, mVolumetricLight->ApplyFog(
+	CheckReturn(mpLogFile, volume->ApplyFog(
 		mpCurrentFrameResource,
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv(),
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapRtv(),
+		gbuffer->PositionMap(),
+		gbuffer->PositionMapSrv(),
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
 		mpCamera->NearZ(), mpCamera->FarZ(), mpShadingArgumentSet->VolumetricLight.DepthExponent,
@@ -1967,18 +2018,21 @@ BOOL DxRenderer::ApplyVolumetricLight() {
 }
 
 BOOL DxRenderer::ApplyEyeAdaption() {
-	CheckReturn(mpLogFile, mEyeAdaption->ClearHistogram(
+	const auto eye = mShadingObjectManager->Get<Shading::EyeAdaption::EyeAdaptionClass>();
+	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
+
+	CheckReturn(mpLogFile, eye->ClearHistogram(
 		mpCurrentFrameResource));
 
-	CheckReturn(mpLogFile, mEyeAdaption->BuildLuminanceHistogram(
+	CheckReturn(mpLogFile, eye->BuildLuminanceHistogram(
 		mpCurrentFrameResource,
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapSrv()));
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapSrv()));
 
-	CheckReturn(mpLogFile, mEyeAdaption->PercentileExtract(
+	CheckReturn(mpLogFile, eye->PercentileExtract(
 		mpCurrentFrameResource));
 
-	CheckReturn(mpLogFile, mEyeAdaption->TemporalSmoothing(
+	CheckReturn(mpLogFile, eye->TemporalSmoothing(
 		mpCurrentFrameResource,
 		mDeltaTime));
 
@@ -1986,97 +2040,107 @@ BOOL DxRenderer::ApplyEyeAdaption() {
 }
 
 BOOL DxRenderer::ApplyDOF() {
-	CheckReturn(mpLogFile, mDOF->CalcFocalDistance(
-		mpCurrentFrameResource,
-		mGBuffer->PositionMap(),
-		mGBuffer->PositionMapSrv()));
+	const auto dof = mShadingObjectManager->Get<Shading::DOF::DOFClass>();
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
 
-	CheckReturn(mpLogFile, mDOF->CircleOfConfusion(
+	CheckReturn(mpLogFile, dof->CalcFocalDistance(
+		mpCurrentFrameResource,
+		gbuffer->PositionMap(),
+		gbuffer->PositionMapSrv()));
+
+	CheckReturn(mpLogFile, dof->CircleOfConfusion(
 		mpCurrentFrameResource,
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
 		mDepthStencilBuffer->DepthStencilBufferSrv()));
 
-	CheckReturn(mpLogFile, mDOF->Bokeh(
+	CheckReturn(mpLogFile, dof->Bokeh(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv(),
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapRtv(),
+		tone->InterMediateCopyMapResource(),
+		tone->InterMediateCopyMapSrv(),
 		mpShadingArgumentSet->DOF.BokehSampleCount,
 		mpShadingArgumentSet->DOF.BokehRadius,
 		mpShadingArgumentSet->DOF.BokehThreshold,
 		mpShadingArgumentSet->DOF.HighlightPower));
 
-	CheckReturn(mpLogFile, mDOF->BokehBlur(
+	CheckReturn(mpLogFile, dof->BokehBlur(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv()));
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapRtv(),
+		tone->InterMediateCopyMapResource(),
+		tone->InterMediateCopyMapSrv()));
 
 	return TRUE;
 }
 
 BOOL DxRenderer::ApplyBloom() {
 	const auto downSampleFunc = [&](
-		Foundation::Resource::GpuResource* const pInputMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
-		Foundation::Resource::GpuResource* const pOutputMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE uo_outputMap,
-		UINT srcTexDimX, UINT srcTexDimY, UINT dstTexDimX, UINT dstTexDimY,
-		UINT kernelRadius) -> BOOL {
-			CheckReturn(mpLogFile, mTextureScaler->DownSample2Nx2N(
-				mpCurrentFrameResource,
-				pInputMap,
-				si_inputMap,
-				pOutputMap,
-				uo_outputMap,
-				srcTexDimX, srcTexDimY, dstTexDimX, dstTexDimY,
-				kernelRadius));
+			Foundation::Resource::GpuResource* const pInputMap,
+			D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
+			Foundation::Resource::GpuResource* const pOutputMap,
+			D3D12_GPU_DESCRIPTOR_HANDLE uo_outputMap,
+			UINT srcTexDimX, UINT srcTexDimY, UINT dstTexDimX, UINT dstTexDimY,
+			UINT kernelRadius) -> BOOL {
+		const auto scaler = mShadingObjectManager->Get<Shading::Util::TextureScaler::TextureScalerClass>();
+		CheckReturn(mpLogFile, scaler->DownSample2Nx2N(
+			mpCurrentFrameResource,
+			pInputMap,
+			si_inputMap,
+			pOutputMap,
+			uo_outputMap,
+			srcTexDimX, srcTexDimY, dstTexDimX, dstTexDimY,
+			kernelRadius));
 
-			return TRUE;
-		};
+		return TRUE;
+	};
 
 	const auto blurFunc = [&](
-		Foundation::Resource::GpuResource* const pInputMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
-		Foundation::Resource::GpuResource* const pOutputMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE uo_outputMap,
-		UINT width, UINT height) -> BOOL {
-			CheckReturn(mpLogFile, mBlurFilter->GaussianBlur(
-				mpCurrentFrameResource,
-				Shading::BlurFilter::PipelineState::CP_GaussianBlurFilterRGBANxN9x9,
-				pInputMap,
-				si_inputMap,
-				pOutputMap,
-				uo_outputMap,
-				width, height));
+			Foundation::Resource::GpuResource* const pInputMap,
+			D3D12_GPU_DESCRIPTOR_HANDLE si_inputMap,
+			Foundation::Resource::GpuResource* const pOutputMap,
+			D3D12_GPU_DESCRIPTOR_HANDLE uo_outputMap,
+			UINT width, UINT height) -> BOOL {
+		const auto blurFilter = mShadingObjectManager->Get<Shading::BlurFilter::BlurFilterClass>();
+		CheckReturn(mpLogFile, blurFilter->GaussianBlur(
+			mpCurrentFrameResource,
+			Shading::BlurFilter::PipelineState::CP_GaussianBlurFilterRGBANxN9x9,
+			pInputMap,
+			si_inputMap,
+			pOutputMap,
+			uo_outputMap,
+			width, height));
 
-			return TRUE;
-		};
+		return TRUE;
+	};
 
-	CheckReturn(mpLogFile, mBloom->ExtractHighlights(
+	const auto bloom = mShadingObjectManager->Get<Shading::Bloom::BloomClass>();
+	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
+
+	CheckReturn(mpLogFile, bloom->ExtractHighlights(
 		mpCurrentFrameResource,
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapSrv(),
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapSrv(),
 		mpShadingArgumentSet->Bloom.Threshold,
 		mpShadingArgumentSet->Bloom.SoftKnee,
 		downSampleFunc));
 
-	CheckReturn(mpLogFile, mBloom->BlurHighlights(mpCurrentFrameResource, downSampleFunc, blurFunc));
+	CheckReturn(mpLogFile, bloom->BlurHighlights(
+		mpCurrentFrameResource, downSampleFunc, blurFunc));
 
-	CheckReturn(mpLogFile, mBloom->ApplyBloom(
+	CheckReturn(mpLogFile, bloom->ApplyBloom(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mToneMapping->InterMediateMapResource(),
-		mToneMapping->InterMediateMapRtv(),
-		mToneMapping->InterMediateCopyMapResource(),
-		mToneMapping->InterMediateCopyMapSrv()));
+		tone->InterMediateMapResource(),
+		tone->InterMediateMapRtv(),
+		tone->InterMediateCopyMapResource(),
+		tone->InterMediateCopyMapSrv()));
 
 	return TRUE;
 }

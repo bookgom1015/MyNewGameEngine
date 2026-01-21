@@ -261,6 +261,7 @@
     <ClCompile Include="..\..\src\Render\DX\Foundation\ConstantBuffer.cpp">
       <FileType>CppCode</FileType>
     </ClCompile>
+    <None Include="..\..\inc\Render\DX\Shading\Util\ShadingObjectManager.inl" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

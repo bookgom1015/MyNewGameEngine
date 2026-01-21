@@ -49,7 +49,6 @@ UINT GBuffer::GBufferClass::DsvDescCount() const { return 0; }
 BOOL GBuffer::GBufferClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
-	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 

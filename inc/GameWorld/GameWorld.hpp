@@ -103,6 +103,8 @@ namespace GameWorld {
 
 		// Renderer
 		std::unique_ptr<Common::Render::Renderer, RendererDeleter> mRenderer{ nullptr, nullptr };
+		HMODULE mhRendererLibModule{};
+
 		std::unique_ptr<Common::Render::ShadingArgument::ShadingArgumentSet> mArgumentSet{};
 
 		// Timer
@@ -110,9 +112,11 @@ namespace GameWorld {
 
 		// Input processor
 		std::unique_ptr<Common::Input::InputProcessor, InputProcessorDeleter> mInputProcessor{ nullptr, nullptr };
+		HMODULE mhInputProcessorLibModule{};
 
 		// ImGui manager
 		std::unique_ptr<Common::ImGuiManager::ImGuiManager, ImGuiManagerDeleter> mImGuiManager{ nullptr, nullptr };
+		HMODULE mhImGuiManagerLibModule{};
 	};
 }
 

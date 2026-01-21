@@ -28,10 +28,10 @@ namespace Common {
 		class WindowsManager {
 		public:
 			struct SelectDialogInitData {
-				HINSTANCE InstanceHandle;
-				std::vector<std::wstring> Items;
-				UINT SelectedItemIndex;
-				BOOL Halted = FALSE;
+				HINSTANCE InstanceHandle{};
+				std::vector<std::wstring> Items{};
+				UINT SelectedItemIndex{};
+				BOOL Halted{};
 			};
 
 			using OnResizeFunc = std::function<void(UINT, UINT)>;
@@ -43,7 +43,7 @@ namespace Common {
 
 		public:
 			WindowsManager();
-			virtual ~WindowsManager() = default;
+			virtual ~WindowsManager();
 
 		public:
 			__forceinline constexpr BOOL AppPaused() const;
@@ -69,12 +69,14 @@ namespace Common {
 			BOOL Initialize(Common::Debug::LogFile* const pLogFile, HINSTANCE hInstance, UINT wndWidth, UINT wndHeight);
 
 			void RegisterOnResizeFunc(const OnResizeFunc& func);
+			void UnregisterOnResizeFunc();
+
 			void DestroyWindow();
 
 			void RegisterInputProcessor(Common::Input::InputProcessor* const pInputProc);
 
 			void HookMsgCallback(const MsgCallBackFunc& func);
-
+			void UnhookMsgCallback();
 		public:
 			BOOL SelectDialog(SelectDialogInitData* const pInitData);
 
@@ -89,31 +91,31 @@ namespace Common {
 			static INT DialogBaseUnits;
 
 		private:
-			Common::Debug::LogFile* mpLogFile = nullptr;
+			Common::Debug::LogFile* mpLogFile{};
 
-			Common::Input::InputProcessor* mpInputProcessor = nullptr;
-			BOOL mbInputProcessorRegistered = FALSE;
+			Common::Input::InputProcessor* mpInputProcessor{};
+			BOOL mbInputProcessorRegistered{};
 
-			std::unique_ptr<PowerManager> mPowerManager;
+			std::unique_ptr<PowerManager> mPowerManager{};
 
-			HINSTANCE mhInst = NULL;
-			HWND mhMainWnd = NULL;
+			HINSTANCE mhInst{};
+			HWND mhMainWnd{};
 
-			BOOL mbAppPaused = FALSE;		
-			BOOL mbMinimized = FALSE;		
-			BOOL mbMaximized = FALSE;		
-			BOOL mbResizing = FALSE;		
-			BOOL mbFullscreenState = FALSE;	
-			BOOL mbDestroyed = FALSE;
+			BOOL mbAppPaused{};
+			BOOL mbMinimized{};
+			BOOL mbMaximized{};
+			BOOL mbResizing{};
+			BOOL mbFullscreenState{};
+			BOOL mbDestroyed{};
 
 			OnResizeFunc mOnResizeFunc;
-			BOOL mbRegisteredOnResizeFunc = FALSE;
+			BOOL mbRegisteredOnResizeFunc{};
 
-			UINT mMainWndWidth = 0;
-			UINT mMainWndHeight = 0;
+			UINT mMainWndWidth{};
+			UINT mMainWndHeight{};
 
 			MsgCallBackFunc mMsgCallBackFunc;
-			BOOL mbMsgCallbackHooked = FALSE;
+			BOOL mbMsgCallbackHooked{};
 		};
 	}
 }

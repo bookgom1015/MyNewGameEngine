@@ -860,5 +860,8 @@
     <None Include="..\..\inc\Render\DX\Shading\RaytracedShadow.inl">
       <Filter>Header Files\Shading Files</Filter>
     </None>
+    <None Include="..\..\inc\Render\DX\Shading\Util\ShadingObjectManager.inl">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -59,10 +59,13 @@ BOOL GameWorldClass::Initialize(Common::Debug::LogFile* const pLogFile, HINSTANC
 	CheckReturn(mpLogFile, CreateInputProcessor());
 	CheckReturn(mpLogFile, InitActorManager());
 
-	mWindowsManager->RegisterOnResizeFunc(std::bind(&GameWorldClass::OnResize, this, std::placeholders::_1, std::placeholders::_2));
+	mWindowsManager->RegisterOnResizeFunc(
+		std::bind(&GameWorldClass::OnResize, this, 
+			std::placeholders::_1, std::placeholders::_2));
 	mWindowsManager->RegisterInputProcessor(mInputProcessor.get());
 
-	mGameTimer->SetFrameTimeLimit(Common::Foundation::Core::GameTimer::FrameTimeLimits::E_Unlimited);
+	mGameTimer->SetFrameTimeLimit(
+		Common::Foundation::Core::GameTimer::FrameTimeLimits::E_Unlimited);
 
 	bInitialized = TRUE;
 
@@ -135,9 +138,45 @@ BOOL GameWorldClass::RunLoop() {
 }
 
 void GameWorldClass::CleanUp() {
-	mActorManager->CleanUp();
-	if (mRenderer != nullptr) mRenderer->CleanUp();	
-	if (mImGuiManager != nullptr) mImGuiManager->CleanUp();
+	mWindowsManager->UnhookMsgCallback();
+	mWindowsManager->UnregisterOnResizeFunc();
+
+	if (mActorManager) {
+		mActorManager->CleanUp();
+		mActorManager.reset();
+	}	
+	if (mInputProcessor) {
+		mInputProcessor->CleanUp();
+		mInputProcessor.reset();
+
+		if (mhInputProcessorLibModule) {
+			FreeLibrary(mhInputProcessorLibModule);
+			mhInputProcessorLibModule = nullptr;
+		}
+	}
+	if (mRenderer) {
+		mRenderer->CleanUp();
+		mRenderer.reset();
+	
+		//if (mhRendererLibModule) {
+		//	FreeLibrary(mhRendererLibModule);
+		//	mhRendererLibModule = nullptr;
+		//}
+	}
+	if (mArgumentSet) mArgumentSet.reset();
+	if (mImGuiManager) {
+		mImGuiManager->CleanUp();
+		mImGuiManager.reset();
+	
+		if (mhImGuiManagerLibModule) {
+			FreeLibrary(mhImGuiManagerLibModule);
+			mhImGuiManagerLibModule = nullptr;
+		}
+	}
+	if (mWindowsManager) {
+		mWindowsManager.reset();
+	}
+	if (mGameTimer) mGameTimer.reset();
 }
 
 BOOL GameWorldClass::BuildHWInfo() {
@@ -173,48 +212,64 @@ BOOL GameWorldClass::BuildHWInfo() {
 }
 
 BOOL GameWorldClass::InitWindowsManager(HINSTANCE hInstance) {
-	CheckReturn(mpLogFile, mWindowsManager->Initialize(mpLogFile, hInstance, InitClientWidth, InitClientHeight));
+	CheckReturn(mpLogFile, mWindowsManager->Initialize(
+		mpLogFile, hInstance, InitClientWidth, InitClientHeight));
 
 	return TRUE;
 }
 
 BOOL GameWorldClass::CreateImGuiManager() {
-	const auto hInputDLL = LoadLibraryW(L"ImGuiManager.dll");
-	if (!hInputDLL) ReturnFalse(mpLogFile, L"Failed to load ImGuiManager.dll");
+	mhImGuiManagerLibModule = LoadLibraryW(L"ImGuiManager.dll");
+	if (!mhImGuiManagerLibModule) 
+		ReturnFalse(mpLogFile, L"Failed to load ImGuiManager.dll");
 
-	CreateImGuiManagerFunc createFunc = (CreateImGuiManagerFunc)GetProcAddress(hInputDLL, "CreateImGuiManager");
-	DestroyImGuiManagerFunc destroyFunc = (DestroyImGuiManagerFunc)GetProcAddress(hInputDLL, "DestroyImGuiManager");
-	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find ImGuiManager.dll functions");
+	CreateImGuiManagerFunc createFunc = (CreateImGuiManagerFunc)GetProcAddress(
+		mhImGuiManagerLibModule, "CreateImGuiManager");
+	DestroyImGuiManagerFunc destroyFunc = (DestroyImGuiManagerFunc)GetProcAddress(
+		mhImGuiManagerLibModule, "DestroyImGuiManager");
+	if (!createFunc || !destroyFunc) 
+		ReturnFalse(mpLogFile, L"Failed to find ImGuiManager.dll functions");
 
 	mImGuiManager = std::unique_ptr<Common::ImGuiManager::ImGuiManager, 
 		ImGuiManagerDeleter>(createFunc(), destroyFunc);
-	CheckReturn(mpLogFile, mImGuiManager->Initialize(mpLogFile, mWindowsManager->MainWindowHandle()));
+	CheckReturn(mpLogFile, mImGuiManager->Initialize(
+		mpLogFile, mWindowsManager->MainWindowHandle()));
 
 	return TRUE;
 }
 
 BOOL GameWorldClass::CreateRenderer() {
-	const auto hRendererDLL = LoadLibraryW(L"Renderer.dll");
-	if (!hRendererDLL) ReturnFalse(mpLogFile, L"Failed to load Renderer.dll");
+	mhRendererLibModule = LoadLibraryW(L"Renderer.dll");
+	if (!mhRendererLibModule) 
+		ReturnFalse(mpLogFile, L"Failed to load Renderer.dll");
 
-	CreateRendererFunc createFunc = (CreateRendererFunc)GetProcAddress(hRendererDLL, "CreateRenderer");
-	DestroyRendererFunc destroyFunc = (DestroyRendererFunc)GetProcAddress(hRendererDLL, "DestroyRenderer");
-	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
+	CreateRendererFunc createFunc = (CreateRendererFunc)GetProcAddress(
+		mhRendererLibModule, "CreateRenderer");
+	DestroyRendererFunc destroyFunc = (DestroyRendererFunc)GetProcAddress(
+		mhRendererLibModule, "DestroyRenderer");
+	if (!createFunc || !destroyFunc) 
+		ReturnFalse(mpLogFile, L"Failed to find Renderer.dll functions");
 
 	mRenderer = std::unique_ptr<Common::Render::Renderer, RendererDeleter>(
 		createFunc(), destroyFunc);
-	CheckReturn(mpLogFile, mRenderer->Initialize(mpLogFile, mWindowsManager.get(), mImGuiManager.get(), mArgumentSet.get(), InitClientWidth, InitClientHeight));
+	CheckReturn(mpLogFile, mRenderer->Initialize(
+		mpLogFile, mWindowsManager.get(), mImGuiManager.get(), mArgumentSet.get(),
+		InitClientWidth, InitClientHeight));
 
 	return TRUE;
 }
 
 BOOL GameWorldClass::CreateInputProcessor() {
-	const auto hInputDLL = LoadLibraryW(L"InputProcessor.dll");
-	if (!hInputDLL) ReturnFalse(mpLogFile, L"Failed to load InputProcessor.dll");
+	mhInputProcessorLibModule = LoadLibraryW(L"InputProcessor.dll");
+	if (!mhInputProcessorLibModule) 
+		ReturnFalse(mpLogFile, L"Failed to load InputProcessor.dll");
 
-	CreateInputProcessorFunc createFunc = (CreateInputProcessorFunc)GetProcAddress(hInputDLL, "CreateInputProcessor");
-	DestroyInputProcessorFunc destroyFunc = (DestroyInputProcessorFunc)GetProcAddress(hInputDLL, "DestroyInputProcessor");
-	if (!createFunc || !destroyFunc) ReturnFalse(mpLogFile, L"Failed to find InputProcessor.dll functions");
+	CreateInputProcessorFunc createFunc = (CreateInputProcessorFunc)GetProcAddress(
+		mhInputProcessorLibModule, "CreateInputProcessor");
+	DestroyInputProcessorFunc destroyFunc = (DestroyInputProcessorFunc)GetProcAddress(
+		mhInputProcessorLibModule, "DestroyInputProcessor");
+	if (!createFunc || !destroyFunc) 
+		ReturnFalse(mpLogFile, L"Failed to find InputProcessor.dll functions");
 
 	mInputProcessor = std::unique_ptr<Common::Input::InputProcessor, 
 		InputProcessorDeleter>(createFunc(), destroyFunc);

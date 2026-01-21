@@ -38,7 +38,6 @@ UINT ToneMapping::ToneMappingClass::DsvDescCount() const { return 0; }
 BOOL ToneMapping::ToneMappingClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
-	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 

@@ -60,6 +60,15 @@
     <ClCompile Include="..\..\src\Common\Util\TaskQueue.cpp">
       <Filter>Common Files\Util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\Device.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\SwapChain.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\ShadingObject.cpp">
+      <Filter>Source Files\Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp">
@@ -71,5 +80,29 @@
     <ClInclude Include="..\..\inc\Render\DX11\Dx11LowRenderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\Device.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\SwapChain.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\HlslCompaction.h">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingConvention.h">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingObject.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="..\..\inc\Render\DX11\Foundation\Core\SwapChain.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Foundation\Core\Device.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </None>
   </ItemGroup>
 </Project>

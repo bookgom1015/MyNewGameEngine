@@ -107,7 +107,6 @@ EnvironmentMap::EnvironmentMapClass::EnvironmentMapClass() {
 BOOL EnvironmentMap::EnvironmentMapClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));
 
-	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 

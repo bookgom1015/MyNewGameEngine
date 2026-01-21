@@ -181,31 +181,6 @@ namespace Render {
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};
 
-			std::unique_ptr<Shading::Util::MipmapGenerator::MipmapGeneratorClass> mMipmapGenerator{};
-			std::unique_ptr<Shading::Util::EquirectangularConverter::EquirectangularConverterClass> mEquirectangularConverter{};
-			std::unique_ptr<Shading::Util::TextureScaler::TextureScalerClass> mTextureScaler{};
-
-			std::unique_ptr<Shading::EnvironmentMap::EnvironmentMapClass> mEnvironmentMap{};
-			std::unique_ptr<Shading::GammaCorrection::GammaCorrectionClass> mGammaCorrection{};
-			std::unique_ptr<Shading::ToneMapping::ToneMappingClass> mToneMapping{};
-			std::unique_ptr<Shading::GBuffer::GBufferClass> mGBuffer{};
-			std::unique_ptr<Shading::BRDF::BRDFClass> mBRDF{};
-			std::unique_ptr<Shading::Shadow::ShadowClass> mShadow{};
-			std::unique_ptr<Shading::TAA::TAAClass> mTAA{};
-			std::unique_ptr<Shading::SSAO::SSAOClass> mSSAO{};
-			std::unique_ptr<Shading::RTAO::RTAOClass> mRTAO{};
-			std::unique_ptr<Shading::RayGen::RayGenClass> mRayGen{};
-			std::unique_ptr<Shading::RaySorting::RaySortingClass> mRaySorting{};
-			std::unique_ptr<Shading::SVGF::SVGFClass> mSVGF{};
-			std::unique_ptr<Shading::BlurFilter::BlurFilterClass> mBlurFilter{};
-			std::unique_ptr<Shading::VolumetricLight::VolumetricLightClass> mVolumetricLight{};
-			std::unique_ptr<Shading::SSCS::SSCSClass> mSSCS{};
-			std::unique_ptr<Shading::MotionBlur::MotionBlurClass> mMotionBlur{};
-			std::unique_ptr<Shading::Bloom::BloomClass> mBloom{};
-			std::unique_ptr<Shading::DOF::DOFClass> mDOF{};
-			std::unique_ptr<Shading::EyeAdaption::EyeAdaptionClass> mEyeAdaption{};
-			std::unique_ptr<Shading::RaytracedShadow::RaytracedShadowClass> mRaytracedShadow{};
-
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems{};
 			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs{};

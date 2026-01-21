@@ -137,6 +137,8 @@ WindowsManager::WindowsManager() {
 	mPowerManager = std::make_unique<PowerManager>();
 }
 
+WindowsManager::~WindowsManager() {}
+
 INT WindowsManager::ToDLUsWidth(INT width) { return (width * 4) / LOWORD(DialogBaseUnits); }
 
 INT WindowsManager::ToDLUsHeight(INT height) { return (height * 8) / HIWORD(DialogBaseUnits); }
@@ -295,6 +297,11 @@ void WindowsManager::RegisterOnResizeFunc(const OnResizeFunc& func) {
 	mbRegisteredOnResizeFunc = TRUE;
 }
 
+void WindowsManager::UnregisterOnResizeFunc() {
+	mOnResizeFunc = {};
+	mbRegisteredOnResizeFunc = FALSE;
+}
+
 void WindowsManager::DestroyWindow() {
 	mbDestroyed = TRUE;
 	PostQuitMessage(0);
@@ -310,13 +317,18 @@ void WindowsManager::HookMsgCallback(const MsgCallBackFunc& func) {
 	mbMsgCallbackHooked = TRUE;
 }
 
+void WindowsManager::UnhookMsgCallback() {
+	mMsgCallBackFunc = {};
+	mbMsgCallbackHooked = FALSE;
+}
+
 BOOL WindowsManager::SelectDialog(SelectDialogInitData* const pInitData) {
 	DLGTEMPLATE* dialogTemplate;
 
 	BYTE dlgBuffer[1024] = { 0 };
 	dialogTemplate = (DLGTEMPLATE*)dlgBuffer;
 
-	RECT rc;
+	RECT rc{};
 	if (!GetClientRect(mhMainWnd, &rc)) rc = { 0, 0, 0, 0 };
 
 	const INT parentW = rc.right - rc.left;
@@ -346,7 +358,7 @@ BOOL WindowsManager::InitMainWnd(UINT wndWidth, UINT wndHeight) {
 	mMainWndWidth = wndWidth;
 	mMainWndHeight = wndHeight;
 
-	WNDCLASS wc;
+	WNDCLASS wc{};
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = MainWndProc;
 	wc.cbClsExtra = 0;

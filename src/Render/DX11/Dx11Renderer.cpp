@@ -1,6 +1,9 @@
 #include "Render/DX11/Foundation/Core/pch_d3d11.h"
 #include "Render/DX11/Dx11Renderer.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Common/Foundation/Core/WindowsManager.hpp"
+#include "Render/DX11/Foundation/Core/Device.hpp"
+#include "Render/DX11/Foundation/Core/SwapChain.hpp"
 
 using namespace Render::DX11;
 
@@ -22,10 +25,15 @@ BOOL Dx11Renderer::Initialize(
 		Common::ImGuiManager::ImGuiManager* const pImGuiManager,
 		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 		UINT width, UINT height) {
+	CheckReturn(pLogFile, Dx11LowRenderer::Initialize(
+		pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
+
 	return TRUE;
 }
 
-void Dx11Renderer::CleanUp() {}
+void Dx11Renderer::CleanUp() {
+	Dx11LowRenderer::CleanUp();
+}
 
 BOOL Dx11Renderer::OnResize(UINT width, UINT height) {
 	CheckReturn(mpLogFile, Dx11LowRenderer::OnResize(width, height));

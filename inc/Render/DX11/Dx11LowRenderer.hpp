@@ -3,6 +3,11 @@
 #include "Common/Render/Renderer.hpp"
 
 namespace Render::DX11 {
+	namespace Foundation::Core {
+		class Device;
+		class SwapChain;
+	}
+
 	class Dx11LowRenderer : public Common::Render::Renderer {
 	public:
 		Dx11LowRenderer();
@@ -23,5 +28,13 @@ namespace Render::DX11 {
 	public: // Functions that is called in every frame
 		RendererAPI virtual BOOL Update(FLOAT deltaTime) override;
 		RendererAPI virtual BOOL Draw() override;
+
+	protected:
+		std::unique_ptr<Foundation::Core::Device> mDevice{};
+		//std::unique_ptr<Foundation::Core::SwapChain> mSwapChain{};
+
+	protected:
+		UINT mClientWidth{};
+		UINT mClientHeight{};
 	};
 }

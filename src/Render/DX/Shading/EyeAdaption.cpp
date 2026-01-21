@@ -42,7 +42,6 @@ BOOL EyeAdaption::EyeAdaptionClass::Initialize(
 		void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
 
-	NullCheck(pLogFile, pData);
 	const auto initData = reinterpret_cast<InitData*>(pData);
 	mInitData = *initData;
 

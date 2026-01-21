@@ -7,7 +7,7 @@ using namespace Render::DX::Foundation;
 
 BOOL ShadingObject::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	mpLogFile = pLogFile;
-	if (pData == nullptr) ReturnFalse(mpLogFile, L"InitData is nullptr");
+	NullCheck(mpLogFile, pData);
 
 	return TRUE;
 }

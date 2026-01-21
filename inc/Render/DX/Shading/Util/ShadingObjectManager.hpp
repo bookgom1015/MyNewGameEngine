@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Render/DX/Foundation/ShadingObject.hpp"
+
 namespace Common::Debug {
 	struct LogFile;
 }
@@ -9,12 +11,8 @@ namespace Render::DX {
 		class ShaderManager;
 	}
 
-	namespace Foundation {
-		class ShadingObject;
-
-		namespace Core {
-			class DescriptorHeap;
-		}
+	namespace Foundation::Core {
+		class DescriptorHeap;
 	}
 
 	namespace Shading {
@@ -26,8 +24,15 @@ namespace Render::DX {
 
 			public:
 				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+				void CleanUp();
 
-				void AddShadingObject(Foundation::ShadingObject* const pShadingObject);
+				template <typename T>
+				requires std::is_base_of_v<Foundation::ShadingObject, T>
+				__forceinline void Add();
+
+				template <typename T>
+				requires std::is_base_of_v<Foundation::ShadingObject, T>
+				__forceinline T* Get();
 
 			public:
 				UINT CbvSrvUavDescCount() const;
@@ -46,8 +51,11 @@ namespace Render::DX {
 			private:
 				Common::Debug::LogFile* mpLogFile{};
 
-				std::vector<Foundation::ShadingObject*> mShadingObjects{};
+				std::vector<std::unique_ptr<Foundation::ShadingObject>> mShadingObjects{};
+				std::unordered_map<std::type_index, Foundation::ShadingObject*> mShadingObjectRefs{};
 			};
 		}
 	}
 }
+
+#include "ShadingObjectManager.inl"

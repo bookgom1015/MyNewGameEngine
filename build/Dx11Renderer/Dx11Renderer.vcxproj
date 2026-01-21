@@ -41,15 +41,28 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX11\Dx11LowRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Dx11Renderer.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\pch_d3d11.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\SwapChain.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\ShadingObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX11\Dx11LowRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\Device.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\pch_d3d11.h" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\SwapChain.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\HlslCompaction.h" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingConvention.h" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingObject.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\inc\Render\DX11\Foundation\Core\Device.inl" />
+    <None Include="..\..\inc\Render\DX11\Foundation\Core\SwapChain.inl" />
+    <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
@@ -187,5 +200,12 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets'))" />
+  </Target>
 </Project>
