@@ -51,8 +51,9 @@ BOOL DxImGuiManager::InitializeD3D12(
 	return TRUE;
 }
 
-void DxImGuiManager::CleanUpD3D12() {
+void DxImGuiManager::CleanUp() {	
 	if (mbIsD3D12Initialized) ImGui_ImplDX12_Shutdown();
+	ImGuiManager::CleanUp();
 }
 
 void DxImGuiManager::HookMsgCallback(Common::Foundation::Core::WindowsManager* const pWndManager) {
@@ -367,6 +368,8 @@ void DxImGuiManager::ShadingObjectHeader(Common::Render::ShadingArgument::Shadin
 		BloomTree(pArgSet);
 		// DOF
 		DOFTree(pArgSet);
+		// ChromaticAberration
+		ChromaticAberrationTree(pArgSet);
 	}
 }
 
@@ -684,6 +687,12 @@ void DxImGuiManager::DOFTree(Common::Render::ShadingArgument::ShadingArgumentSet
 	if (ImGui::TreeNode("Depth of Field")) {
 		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->DOF.Enabled));
 
+		ImGui::Text("Focus Range");
+		ImGui::SliderFloat("##Focus Range",
+			&pArgSet->DOF.FocusRange,
+			pArgSet->DOF.MinFocusRange,
+			pArgSet->DOF.MaxFocusRange);
+
 		ImGui::Text("Bokeh");
 		ImGui::Indent();
 		{
@@ -712,6 +721,45 @@ void DxImGuiManager::DOFTree(Common::Render::ShadingArgument::ShadingArgumentSet
 				pArgSet->DOF.MaxHighlightPower);
 		}
 		ImGui::Unindent();
+
+		ImGui::TreePop();
+	}
+}
+
+void DxImGuiManager::ChromaticAberrationTree(
+		Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
+	if (ImGui::TreeNode("Chromatic Aberration")) {
+		ImGui::Checkbox("Enabled", reinterpret_cast<bool*>(&pArgSet->ChromaticAberration.Enabled));
+
+		ImGui::Text("Strength");
+		ImGui::SliderFloat("##Strength",
+			&pArgSet->ChromaticAberration.Strength,
+			pArgSet->ChromaticAberration.MinStrength,
+			pArgSet->ChromaticAberration.MaxStrength);
+
+		ImGui::Text("Threshold");
+		ImGui::SliderFloat("##Threshold",
+			&pArgSet->ChromaticAberration.Threshold,
+			pArgSet->ChromaticAberration.MinThreshold,
+			pArgSet->ChromaticAberration.MaxThreshold);
+
+		ImGui::Text("Feather");
+		ImGui::SliderFloat("##Feather",
+			&pArgSet->ChromaticAberration.Feather,
+			pArgSet->ChromaticAberration.MinFeather,
+			pArgSet->ChromaticAberration.MaxFeather);
+
+		ImGui::Text("Exponent");
+		ImGui::SliderFloat("##Exponent",
+			&pArgSet->ChromaticAberration.Exponent,
+			pArgSet->ChromaticAberration.MinExponent,
+			pArgSet->ChromaticAberration.MaxExponent);
+
+		ImGui::Text("Max Shift Pixel");
+		ImGui::SliderInt("##Max Shift Pixel",
+			reinterpret_cast<int*>(&pArgSet->ChromaticAberration.ShiftPx),
+			pArgSet->ChromaticAberration.MinShiftPx,
+			pArgSet->ChromaticAberration.MaxShiftPx);
 
 		ImGui::TreePop();
 	}

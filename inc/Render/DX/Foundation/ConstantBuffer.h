@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CONSTANTBUFFER_H__
+#define __CONSTANTBUFFER_H__
 
 #ifdef _HLSL
 	#include "./../../../inc/Render/DX/Foundation/Light.h"
@@ -196,3 +197,5 @@ namespace ConstantBuffers {
 		UINT __ConstantPad2__;
 	};
 }
+
+#endif // __CONSTANTBUFFER_H__

@@ -72,6 +72,19 @@ BOOL RayGen::RayGenClass::Initialize(Common::Debug::LogFile* const pLogFile, voi
 	return TRUE;
 }
 
+void RayGen::RayGenClass::CleanUp() {
+	mSamplesGPUBuffer.CleanUp();
+	mHemisphereSamplesGPUBuffer.CleanUp();
+
+	if (mDebugMap) mDebugMap.reset();
+	if (mRayDirectionOriginDepthMap) mRayDirectionOriginDepthMap.reset();
+
+	mPipelineState.Reset();
+	mRootSignature.Reset();
+
+	if (mRandomSampler) mRandomSampler.reset();
+}
+
 BOOL RayGen::RayGenClass::CompileShaders() {
 	const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_RayGen, L"CS", L"cs_6_5");
 	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_RayGen]));

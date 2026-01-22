@@ -50,27 +50,6 @@ namespace Render {
 				namespace EquirectangularConverter { class EquirectangularConverterClass; }
 				namespace TextureScaler { class TextureScalerClass; }
 			}
-
-			namespace EnvironmentMap { class EnvironmentMapClass; }
-			namespace GammaCorrection { class GammaCorrectionClass; }
-			namespace ToneMapping { class ToneMappingClass; }
-			namespace GBuffer { class GBufferClass; }
-			namespace BRDF { class BRDFClass; }
-			namespace Shadow { class ShadowClass; }
-			namespace TAA { class TAAClass; }
-			namespace SSAO { class SSAOClass; }
-			namespace RTAO { class RTAOClass; }
-			namespace RayGen { class RayGenClass; }
-			namespace RaySorting { class RaySortingClass; }
-			namespace SVGF { class SVGFClass; }
-			namespace BlurFilter { class BlurFilterClass; }
-			namespace VolumetricLight { class VolumetricLightClass; }
-			namespace SSCS { class SSCSClass; }
-			namespace MotionBlur { class MotionBlurClass; }
-			namespace Bloom { class BloomClass; }
-			namespace DOF { class DOFClass; }
-			namespace EyeAdaption { class EyeAdaptionClass; }
-			namespace RaytracedShadow { class RaytracedShadowClass; }
 		}
 
 		class DxRenderer : public DxLowRenderer {

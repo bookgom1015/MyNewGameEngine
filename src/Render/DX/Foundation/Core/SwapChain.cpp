@@ -17,7 +17,7 @@ SwapChain::SwapChain() {
 	mBackBufferCopy = std::make_unique<Resource::GpuResource>();
 }
 
-SwapChain::~SwapChain() {}
+SwapChain::~SwapChain() { CleanUp(); }
 
 UINT SwapChain::CbvSrvUavDescCount() const { return SwapChainBufferCount + 1; }
 
@@ -43,6 +43,17 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 	CheckReturn(mpLogFile, BuildResources());
 
 	return TRUE;
+}
+
+void SwapChain::CleanUp() {
+	if (mBackBufferCopy) mBackBufferCopy.reset();
+
+	for (UINT i = 0; i < SwapChainBufferCount; ++i) {
+		auto& buffer = mSwapChainBuffers[i];
+		if (buffer) buffer.reset();
+	}
+
+	if (mSwapChain) mSwapChain.Reset();
 }
 
 BOOL SwapChain::BuildDescriptors(DescriptorHeap* const pDescHeap) {

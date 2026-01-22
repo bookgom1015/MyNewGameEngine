@@ -154,25 +154,25 @@ void GameWorldClass::CleanUp() {
 			mhInputProcessorLibModule = nullptr;
 		}
 	}
-	if (mRenderer) {
-		mRenderer->CleanUp();
-		mRenderer.reset();
-	
-		//if (mhRendererLibModule) {
-		//	FreeLibrary(mhRendererLibModule);
-		//	mhRendererLibModule = nullptr;
-		//}
-	}
-	if (mArgumentSet) mArgumentSet.reset();
 	if (mImGuiManager) {
 		mImGuiManager->CleanUp();
 		mImGuiManager.reset();
-	
+
 		if (mhImGuiManagerLibModule) {
 			FreeLibrary(mhImGuiManagerLibModule);
 			mhImGuiManagerLibModule = nullptr;
 		}
 	}
+	if (mRenderer) {
+		mRenderer->CleanUp();
+		mRenderer.reset();
+	
+		if (mhRendererLibModule) {
+			FreeLibrary(mhRendererLibModule);
+			mhRendererLibModule = nullptr;
+		}
+	}
+	if (mArgumentSet) mArgumentSet.reset();
 	if (mWindowsManager) {
 		mWindowsManager.reset();
 	}

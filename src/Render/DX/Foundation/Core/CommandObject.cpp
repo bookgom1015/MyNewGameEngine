@@ -45,7 +45,7 @@ namespace {
 
 CommandObject::CommandObject() {}
 
-CommandObject::~CommandObject() {}
+CommandObject::~CommandObject() { CleanUp(); }
 
 BOOL CommandObject::Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads) {
 	mpLogFile = pLogFile;
@@ -63,6 +63,25 @@ BOOL CommandObject::Initialize(Common::Debug::LogFile* const pLogFile, Device* c
 	CheckReturn(mpLogFile, CreateFence());
 
 	return TRUE;
+}
+
+void CommandObject::CleanUp() {
+	FlushCommandQueue();
+
+	if (mFence) mFence.Reset();
+
+	for (UINT i = 0; i < mThreadCount; ++i) {
+		auto& cmdList = mMultiCommandLists[i];
+		if (cmdList) cmdList.Reset();
+	}
+	mMultiCommandLists.clear();
+
+	if (mDirectCommandList) mDirectCommandList.Reset();
+	if (mDirectCmdListAlloc) mDirectCmdListAlloc.Reset();
+	if (mCommandQueue) mCommandQueue.Reset();	
+#ifdef _DEBUG
+	if (mInfoQueue) mInfoQueue.Reset();
+#endif
 }
 
 BOOL CommandObject::FlushCommandQueue() {

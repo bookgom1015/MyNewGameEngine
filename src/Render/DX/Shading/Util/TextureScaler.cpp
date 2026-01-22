@@ -35,6 +35,14 @@ BOOL TextureScaler::TextureScalerClass::Initialize(Common::Debug::LogFile* const
 	return TRUE;
 }
 
+void TextureScaler::TextureScalerClass::CleanUp() {
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL TextureScaler::TextureScalerClass::CompileShaders() {
 	// DownSample2x2
 	{

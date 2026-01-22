@@ -39,6 +39,13 @@ BOOL BlurFilter::BlurFilterClass::Initialize(Common::Debug::LogFile* const pLogF
 	return TRUE;
 }
 
+void BlurFilter::BlurFilterClass::CleanUp() {
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	mRootSignature.Reset();
+}
+
 BOOL BlurFilter::BlurFilterClass::CompileShaders() {
 	// GaussianBlurFilter3x3
 	{

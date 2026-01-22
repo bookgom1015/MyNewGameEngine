@@ -42,6 +42,13 @@ BOOL RaySorting::RaySortingClass::Initialize(Common::Debug::LogFile* const pLogF
 	return TRUE;
 }
 
+void RaySorting::RaySortingClass::CleanUp() {
+	if (mRayIndexOffsetMap) mRayIndexOffsetMap.reset();
+
+	mPipelineState.Reset();
+	mRootSignature.Reset();
+}
+
 BOOL RaySorting::RaySortingClass::CompileShaders() {
 	const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_CountingSort_Rays_64x128, L"CS", L"cs_6_5");
 	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_CountingSort]));

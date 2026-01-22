@@ -17,8 +17,8 @@ namespace Render::DX::Foundation {
 			static const UINT Count = 3;
 
 		public:
-			FrameResource() = default;
-			virtual ~FrameResource() = default;
+			FrameResource();
+			virtual ~FrameResource();
 
 		public:
 			__forceinline ID3D12CommandAllocator* CommandAllocator(UINT index) const;
@@ -32,6 +32,7 @@ namespace Render::DX::Foundation {
 				UINT numPasses, 
 				UINT numObjects,
 				UINT numMaterials);
+			void CleanUp();
 
 		public:
 			BOOL ResetCommandListAllocators();

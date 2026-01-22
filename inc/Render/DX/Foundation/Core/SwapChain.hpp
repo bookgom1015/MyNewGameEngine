@@ -47,6 +47,7 @@ namespace Render::DX::Foundation::Core {
 
 	public:
 		virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
+		virtual void CleanUp() override;
 
 		virtual BOOL BuildDescriptors(DescriptorHeap* const pDescHeap) override;
 		virtual BOOL OnResize(UINT width, UINT height) override;

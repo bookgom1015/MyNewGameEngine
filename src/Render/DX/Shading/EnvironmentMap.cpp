@@ -116,6 +116,21 @@ BOOL EnvironmentMap::EnvironmentMapClass::Initialize(Common::Debug::LogFile* con
 	return TRUE;
 }
 
+void EnvironmentMap::EnvironmentMapClass::CleanUp() {
+	if (mBrdfLutMap) mBrdfLutMap.reset();
+	if (mPrefilteredEnvironmentCubeMap) mPrefilteredEnvironmentCubeMap.reset();
+	if (mDiffuseIrradianceCubeMap) mDiffuseIrradianceCubeMap.reset();
+	if (mEnvironmentCubeMap) mEnvironmentCubeMap.reset();
+	if (mEquirectangularMap) mEquirectangularMap.reset();
+	if (mTemporaryEquirectangularMap) mTemporaryEquirectangularMap.reset();
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL EnvironmentMap::EnvironmentMapClass::CompileShaders() {
 	// DrawSkySphere
 	{

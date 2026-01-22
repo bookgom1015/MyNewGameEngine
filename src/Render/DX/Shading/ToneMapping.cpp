@@ -46,6 +46,16 @@ BOOL ToneMapping::ToneMappingClass::Initialize(Common::Debug::LogFile* const pLo
 	return TRUE;
 }
 
+void ToneMapping::ToneMappingClass::CleanUp() {
+	if (mIntermediateCopyMap) mIntermediateCopyMap.reset();
+	if (mIntermediateMap) mIntermediateMap.reset();
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	mRootSignature.Reset();
+}
+
 BOOL ToneMapping::ToneMappingClass::CompileShaders() {
 	const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ToneMapping, L"VS", L"vs_6_5");
 	const auto MS = Util::ShaderManager::D3D12ShaderInfo(HLSL_ToneMapping, L"MS", L"ms_6_5");

@@ -10,12 +10,18 @@ using namespace Microsoft::WRL;
 
 Device::Device() {}
 
-Device::~Device() {}
+Device::~Device() { CleanUp(); }
 
 BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
 
 	return TRUE;
+}
+
+void Device::CleanUp() {
+	if (md3dDevice) md3dDevice.Reset();
+
+	mpLogFile = nullptr;
 }
 
 BOOL Device::QueryInterface(Microsoft::WRL::ComPtr<ID3D12InfoQueue1>& pInfoQueue) {

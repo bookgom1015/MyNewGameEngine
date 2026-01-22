@@ -50,6 +50,15 @@ BOOL TAA::TAAClass::Initialize(Common::Debug::LogFile* const pLogFile, void* con
 	return TRUE;
 }
 
+void TAA::TAAClass::CleanUp() {
+	if (mHistoryMap) mHistoryMap.reset();
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	mRootSignature.Reset();
+}
+
 BOOL TAA::TAAClass::CompileShaders() {
 	const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_TAA, L"VS", L"vs_6_5");
 	const auto MS = Util::ShaderManager::D3D12ShaderInfo(HLSL_TAA, L"MS", L"ms_6_5");

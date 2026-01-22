@@ -43,8 +43,8 @@ BOOL Dx11LowRenderer::Initialize(
 }
 
 void Dx11LowRenderer::CleanUp() {
-	mSwapChain.reset();
-	mDevice.reset();
+	if (mSwapChain) mSwapChain.reset();
+	if (mDevice) mDevice.reset();
 }
 
 BOOL Dx11LowRenderer::OnResize(UINT width, UINT height) {

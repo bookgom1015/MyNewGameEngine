@@ -37,13 +37,26 @@ BOOL GammaCorrection::GammaCorrectionClass::Initialize(Common::Debug::LogFile* c
 	return TRUE;
 }
 
+void GammaCorrection::GammaCorrectionClass::CleanUp() {
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	mRootSignature.Reset();
+}
+
 BOOL GammaCorrection::GammaCorrectionClass::CompileShaders() {
-	const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_GammaCorrection, L"VS", L"vs_6_5");
-	const auto MS = Util::ShaderManager::D3D12ShaderInfo(HLSL_GammaCorrection, L"MS", L"ms_6_5");
-	const auto PS = Util::ShaderManager::D3D12ShaderInfo(HLSL_GammaCorrection, L"PS", L"ps_6_5");
-	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(VS, mShaderHashes[Shader::VS_GammaCorrect]));
-	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(MS, mShaderHashes[Shader::MS_GammaCorrect]));
-	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(PS, mShaderHashes[Shader::PS_GammaCorrect]));
+	const auto VS = Util::ShaderManager::D3D12ShaderInfo(
+		HLSL_GammaCorrection, L"VS", L"vs_6_5");
+	const auto MS = Util::ShaderManager::D3D12ShaderInfo(
+		HLSL_GammaCorrection, L"MS", L"ms_6_5");
+	const auto PS = Util::ShaderManager::D3D12ShaderInfo(
+		HLSL_GammaCorrection, L"PS", L"ps_6_5");
+	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
+		VS, mShaderHashes[Shader::VS_GammaCorrect]));
+	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
+		MS, mShaderHashes[Shader::MS_GammaCorrect]));
+	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(
+		PS, mShaderHashes[Shader::PS_GammaCorrect]));
 
 	return TRUE;
 }
@@ -57,8 +70,10 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildRootSignatures() {
 	index = 0;
 
 	CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::Default::Count]{};
-	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(ShadingConvention::GammaCorrection::RootConstant::Default::Count, 0);
-	slotRootParameter[RootSignature::Default::SI_BackBuffer].InitAsDescriptorTable(1, &texTables[index++]);
+	slotRootParameter[RootSignature::Default::RC_Consts].InitAsConstants(
+		ShadingConvention::GammaCorrection::RootConstant::Default::Count, 0);
+	slotRootParameter[RootSignature::Default::SI_BackBuffer].InitAsDescriptorTable(
+		1, &texTables[index++]);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 		_countof(slotRootParameter), slotRootParameter,
@@ -80,9 +95,11 @@ BOOL GammaCorrection::GammaCorrectionClass::BuildPipelineStates() {
 		auto psoDesc = Foundation::Util::D3D12Util::FitToScreenMeshPsoDesc();
 		psoDesc.pRootSignature = mRootSignature.Get();
 		{
-			const auto MS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::MS_GammaCorrect]);
+			const auto MS = mInitData.ShaderManager->GetShader(
+				mShaderHashes[Shader::MS_GammaCorrect]);
 			NullCheck(mpLogFile, MS);
-			const auto PS = mInitData.ShaderManager->GetShader(mShaderHashes[Shader::PS_GammaCorrect]);
+			const auto PS = mInitData.ShaderManager->GetShader(
+				mShaderHashes[Shader::PS_GammaCorrect]);
 			NullCheck(mpLogFile, PS);
 			psoDesc.MS = { reinterpret_cast<BYTE*>(MS->GetBufferPointer()), MS->GetBufferSize() };
 			psoDesc.PS = { reinterpret_cast<BYTE*>(PS->GetBufferPointer()), PS->GetBufferSize() };
@@ -130,7 +147,8 @@ BOOL GammaCorrection::GammaCorrectionClass::ApplyCorrection(
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
-		mPipelineStates[mInitData.MeshShaderSupported ? PipelineState::MP_GammaCorrect : PipelineState::GP_GammaCorrect].Get()));
+		mPipelineStates[mInitData.MeshShaderSupported ? 
+		PipelineState::MP_GammaCorrect : PipelineState::GP_GammaCorrect].Get()));
 
 	const auto CmdList = mInitData.CommandObject->CommandList(0);
 	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
@@ -154,10 +172,15 @@ BOOL GammaCorrection::GammaCorrectionClass::ApplyCorrection(
 		ShadingConvention::GammaCorrection::RootConstant::Default::Struct rc;
 		rc.gGamma = gamma;
 
-		std::array<std::uint32_t, ShadingConvention::GammaCorrection::RootConstant::Default::Count> consts;
-		std::memcpy(consts.data(), &rc, sizeof(ShadingConvention::GammaCorrection::RootConstant::Default::Struct));
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<
+			ShadingConvention::GammaCorrection::RootConstant::Default::Struct>(
+				RootSignature::Default::RC_Consts,
+				ShadingConvention::GammaCorrection::RootConstant::Default::Count,
+				&rc,
+				0,
+				CmdList,
+				FALSE);
 
-		CmdList->SetGraphicsRoot32BitConstants(RootSignature::Default::RC_Consts, ShadingConvention::GammaCorrection::RootConstant::Default::Count, consts.data(), 0);
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::Default::SI_BackBuffer, si_backBufferCopy);
 
 		if (mInitData.MeshShaderSupported) {

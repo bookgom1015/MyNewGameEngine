@@ -35,10 +35,12 @@ namespace Render::DX {
 			friend class AccelerationStructureManager;
 
 		public:
-			AccelerationStructureBuffer() = default;
+			AccelerationStructureBuffer();
 			virtual ~AccelerationStructureBuffer();
 
 		private:
+			void CleanUp();
+
 			BOOL BuildBLAS(
 				Common::Debug::LogFile* const pLogFile, 
 				Foundation::Core::Device* const pDevice, 
@@ -79,6 +81,7 @@ namespace Render::DX {
 				Common::Debug::LogFile* const pLogFile,
 				Foundation::Core::Device* const pDevice,
 				Foundation::Core::CommandObject* const pCmdObject);
+			void CleanUp();
 
 			BOOL BuildBLAS(
 				ID3D12GraphicsCommandList6* const pCmdList,

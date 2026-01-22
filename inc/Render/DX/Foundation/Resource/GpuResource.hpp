@@ -12,8 +12,8 @@ namespace Render::DX::Foundation {
 	namespace Resource {
 		class GpuResource {
 		public:
-			GpuResource() = default;
-			virtual ~GpuResource() = default;
+			GpuResource();
+			virtual ~GpuResource();
 
 		public:
 			static BOOL Initialize(Common::Debug::LogFile* const pLogFile);
@@ -27,6 +27,7 @@ namespace Render::DX::Foundation {
 				D3D12_RESOURCE_STATES initialState,
 				const D3D12_CLEAR_VALUE* const pOptClear,
 				LPCWSTR pName = nullptr);
+			void CleanUp();
 
 			BOOL OnResize(IDXGISwapChain* const pSwapChain, UINT index);
 

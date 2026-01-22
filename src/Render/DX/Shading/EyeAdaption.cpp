@@ -36,7 +36,6 @@ UINT EyeAdaption::EyeAdaptionClass::RtvDescCount() const { return 0; }
 
 UINT EyeAdaption::EyeAdaptionClass::DsvDescCount() const { return 0; }
 
-
 BOOL EyeAdaption::EyeAdaptionClass::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
 		void* const pData) {
@@ -48,6 +47,19 @@ BOOL EyeAdaption::EyeAdaptionClass::Initialize(
 	CheckReturn(mpLogFile, BuildResources());
 
 	return TRUE;
+}
+
+void EyeAdaption::EyeAdaptionClass::CleanUp() {
+	if (mSmoothedLuminance) mSmoothedLuminance.reset();
+	if (mPrevLuminance) mPrevLuminance.reset();
+	if (mAvgLogLuminance) mAvgLogLuminance.reset();
+	if (mHistogramBuffer) mHistogramBuffer.reset();
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
 }
 
 BOOL EyeAdaption::EyeAdaptionClass::CompileShaders() {

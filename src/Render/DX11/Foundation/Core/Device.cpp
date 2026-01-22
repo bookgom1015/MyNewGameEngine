@@ -143,14 +143,14 @@ void Device::CleanUp() {
 	}
 
 	mContext.Reset();
-
-	DumpRefCount(mpLogFile, mDevice.Get(), L"ID3D11Device (after context reset)");
+	mFactory.Reset();
 
 #ifdef _DEBUG
 	ReportLiveObjects();
 #endif
 
-	mFactory.Reset();
+	DumpRefCount(mpLogFile, mDevice.Get(), L"ID3D11Device (after context reset)");
+
 	mDevice.Reset();
 }
 

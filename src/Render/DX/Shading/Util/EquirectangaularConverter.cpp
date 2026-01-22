@@ -40,6 +40,14 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::Initialize(Common:
 	return TRUE;
 }
 
+void EquirectangularConverter::EquirectangularConverterClass::CleanUp() {
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL EquirectangularConverter::EquirectangularConverterClass::CompileShaders() {
 	// ConvertEquirectangularToCubeMap
 	{

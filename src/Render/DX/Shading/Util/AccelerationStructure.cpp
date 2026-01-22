@@ -11,9 +11,18 @@
 
 using namespace Render::DX::Shading::Util;
 
-AccelerationStructureBuffer::~AccelerationStructureBuffer() {
-	if (mInstanceDesc != nullptr) mInstanceDesc->Unmap(0, nullptr);
-	mpMappedData = nullptr;
+AccelerationStructureBuffer::AccelerationStructureBuffer() {}
+
+AccelerationStructureBuffer::~AccelerationStructureBuffer() { CleanUp(); }
+
+void AccelerationStructureBuffer::CleanUp() {
+	if (mInstanceDesc) {
+		mInstanceDesc->Unmap(0, nullptr);
+		mInstanceDesc.Reset();
+		mpMappedData = nullptr;
+	}
+	if (mResult) mResult.Reset();
+	if (mScratch) mScratch.Reset();
 }
 
 BOOL AccelerationStructureBuffer::BuildBLAS(
@@ -162,7 +171,7 @@ AccelerationStructureManager::AccelerationStructureManager() {
 	mTLAS = std::make_unique<AccelerationStructureBuffer>();
 }
 
-AccelerationStructureManager::~AccelerationStructureManager() {}
+AccelerationStructureManager::~AccelerationStructureManager() { CleanUp(); }
 
 BOOL AccelerationStructureManager::Initialize(
 		Common::Debug::LogFile* const pLogFile,
@@ -173,6 +182,20 @@ BOOL AccelerationStructureManager::Initialize(
 	mpCommandObject = pCmdObject;
 
 	return TRUE;
+}
+
+void AccelerationStructureManager::CleanUp() {
+	if (mTLAS) mTLAS.reset();
+
+	mBLASRefs.clear();
+	
+	for (auto& blas : mBLASes)
+		blas.reset();
+	mBLASes.clear();
+	
+	mpCommandObject = nullptr;
+	mpDevice = nullptr;
+	mpLogFile = nullptr;
 }
 
 BOOL AccelerationStructureManager::BuildBLAS(

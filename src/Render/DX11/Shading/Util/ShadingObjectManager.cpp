@@ -7,7 +7,7 @@ using namespace Render::DX11::Shading::Util;
 
 ShadingObjectManager::ShadingObjectManager() {}
 
-ShadingObjectManager::~ShadingObjectManager() {}
+ShadingObjectManager::~ShadingObjectManager() { CleanUp(); }
 
 BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
@@ -16,6 +16,9 @@ BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void ShadingObjectManager::CleanUp() {
+	for (const auto& obj : mShadingObjects)
+		obj->CleanUp();
+
 	mShadingObjectRefs.clear();
 	mShadingObjects.clear();
 }
@@ -32,13 +35,6 @@ BOOL ShadingObjectManager::CompileShaders(Shading::Util::ShaderManager* const pS
 BOOL ShadingObjectManager::BuildPipelineStates() {
 	for (const auto& obj : mShadingObjects)
 		CheckReturn(mpLogFile, obj->BuildPipelineStates());
-
-	return TRUE;
-}
-
-BOOL ShadingObjectManager::BuildDescriptors() {
-	for (const auto& obj : mShadingObjects)
-		CheckReturn(mpLogFile, obj->BuildDescriptors());
 
 	return TRUE;
 }

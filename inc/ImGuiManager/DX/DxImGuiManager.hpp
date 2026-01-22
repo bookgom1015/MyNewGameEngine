@@ -39,7 +39,7 @@ namespace ImGuiManager {
 			BOOL InitializeD3D12(
 				Render::DX::Foundation::Core::Device* const pDevice, 
 				Render::DX::Foundation::Core::DescriptorHeap* const pDescriptorHeap);
-			void CleanUpD3D12();
+			virtual void CleanUp() override;
 
 			void HookMsgCallback(
 				Common::Foundation::Core::WindowsManager* const pWndManager);
@@ -84,6 +84,8 @@ namespace ImGuiManager {
 			void BloomTree(
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 			void DOFTree(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void ChromaticAberrationTree(
 				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 		private:

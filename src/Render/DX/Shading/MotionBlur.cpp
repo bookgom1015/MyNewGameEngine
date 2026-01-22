@@ -38,6 +38,13 @@ BOOL MotionBlur::MotionBlurClass::Initialize(Common::Debug::LogFile* const pLogF
 	return TRUE;
 }
 
+void MotionBlur::MotionBlurClass::CleanUp() {
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	mRootSignature.Reset();
+}
+
 BOOL MotionBlur::MotionBlurClass::CompileShaders() {
 	const auto VS = Util::ShaderManager::D3D12ShaderInfo(HLSL_MotionBlur, L"VS", L"vs_6_5");
 	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(VS, mShaderHashes[Shader::VS_MotionBlur]));

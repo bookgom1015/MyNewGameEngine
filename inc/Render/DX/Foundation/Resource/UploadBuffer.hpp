@@ -29,6 +29,7 @@ namespace Render::DX::Foundation {
 				UINT instanceCount,
 				BOOL isConstantBuffer,
 				LPCWSTR name = nullptr);
+			virtual void CleanUp();
 
 			__forceinline ID3D12Resource* Resource() const;
 

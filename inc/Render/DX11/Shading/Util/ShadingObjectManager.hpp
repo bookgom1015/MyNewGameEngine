@@ -17,7 +17,6 @@ namespace Render::DX11::Shading::Util {
 	public:
 		BOOL CompileShaders(Shading::Util::ShaderManager* const pShaderManager, LPCWSTR baseDir);
 		BOOL BuildPipelineStates();
-		BOOL BuildDescriptors();
 		BOOL OnResize(UINT width, UINT height);
 		BOOL Update();
 

@@ -46,6 +46,7 @@
     <ClInclude Include="..\..\inc\Render\DX\Shading\Bloom.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\BlurFilter.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\BRDF.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX\Shading\ChromaticAberration.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\DOF.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Shading\EyeAdaption.hpp" />
@@ -182,6 +183,7 @@
     <ClCompile Include="..\..\src\Render\DX\Shading\Bloom.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\BlurFilter.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\BRDF.cpp" />
+    <ClCompile Include="..\..\src\Render\DX\Shading\ChromaticAberration.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\DOF.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Shading\EyeAdaption.cpp" />
@@ -499,6 +501,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL\RaytracedShadow.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL\ChromaticAberration.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

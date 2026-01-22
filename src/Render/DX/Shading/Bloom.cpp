@@ -51,6 +51,20 @@ BOOL Bloom::BloomClass::Initialize(Common::Debug::LogFile* const pLogFile, void*
 	return TRUE;
 }
 
+void Bloom::BloomClass::CleanUp() {
+	for (auto& resource : mBloomMaps) 
+		if (resource) resource.reset();
+
+	for (auto& resource : mHighlightMaps)
+		if (resource) resource.reset();
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL Bloom::BloomClass::CompileShaders() {
 	// ExtractHighlights
 	{

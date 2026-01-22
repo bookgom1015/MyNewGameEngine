@@ -127,7 +127,7 @@ Render::DX::Shading::Util::ShaderManager::D3D12ShaderInfo& ShaderManager::D3D12S
 
 ShaderManager::ShaderManager() {}
 
-ShaderManager::~ShaderManager() {}
+ShaderManager::~ShaderManager() { CleanUp(); }
 
 BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, UINT numThreads) {
 	mpLogFile = pLogFile;
@@ -150,15 +150,22 @@ BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, UINT numT
 void ShaderManager::CleanUp() {
 	for (UINT i = 0; i < mThreadCount; ++i) {
 		mCompileMutexes[i].reset();
-		mCompilers[i].Reset();
-		mUtils[i].Reset();
+
+		auto& compiler = mCompilers[i];
+		if (compiler) compiler.Reset();
+
+		auto& util = mUtils[i];
+		if (util) util.Reset();
 	}	
+
 	mStagingShaders.clear();
 	mShaderInfos.clear();
 	mShaders.clear();
 	mCompileMutexes.clear();
 	mCompilers.clear();
 	mUtils.clear();
+
+	mpLogFile = nullptr;
 }
 
 BOOL ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash) {

@@ -49,6 +49,17 @@ BOOL DOF::DOFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* con
 	return TRUE;
 }
 
+void DOF::DOFClass::CleanUp() {
+	if (mCircleOfConfusionMap) mCircleOfConfusionMap.reset();
+	if (mFocalDistanceBuffer) mFocalDistanceBuffer.reset();
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL DOF::DOFClass::CompileShaders() {
 	// CaclFocalDistance
 	{
@@ -417,7 +428,8 @@ BOOL DOF::DOFClass::CalcFocalDistance(
 BOOL DOF::DOFClass::CircleOfConfusion(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		Foundation::Resource::GpuResource* const pDepthMap,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+		FLOAT focusRange) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -435,7 +447,7 @@ BOOL DOF::DOFClass::CircleOfConfusion(
 			pFrameResource->MainPassCB.CBAddress());
 
 		ShadingConvention::DOF::RootConstant::CircleOfConfusion::Struct rc;
-		rc.gFocusRange = 16.f;
+		rc.gFocusRange = focusRange;
 
 		Foundation::Util::D3D12Util::SetRoot32BitConstants<
 			ShadingConvention::DOF::RootConstant::CircleOfConfusion::Struct>(

@@ -12,7 +12,7 @@ DepthStencilBuffer::DepthStencilBuffer() {
 	mDepthStencilBuffer = std::make_unique<Resource::GpuResource>();
 }
 
-DepthStencilBuffer::~DepthStencilBuffer() {}
+DepthStencilBuffer::~DepthStencilBuffer() { CleanUp(); }
 
 UINT DepthStencilBuffer::CbvSrvUavDescCount() const { return 1; }
 
@@ -33,6 +33,10 @@ BOOL DepthStencilBuffer::Initialize(Common::Debug::LogFile* const pLogFile, void
 	CheckReturn(mpLogFile, BuildDepthStencilBuffer());
 
 	return TRUE;
+}
+
+void DepthStencilBuffer::CleanUp() {
+	if (mDepthStencilBuffer) mDepthStencilBuffer.reset();
 }
 
 BOOL DepthStencilBuffer::BuildDescriptors(DescriptorHeap* const pDescHeap) {

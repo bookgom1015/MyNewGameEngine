@@ -47,6 +47,7 @@
 #include "Render/DX/Shading/DOF.hpp"
 #include "Render/DX/Shading/EyeAdaption.hpp"
 #include "Render/DX/Shading/RaytracedShadow.hpp"
+#include "Render/DX/Shading/ChromaticAberration.hpp"
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
@@ -89,6 +90,7 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->Add<Shading::DOF::DOFClass>();
 	mShadingObjectManager->Add<Shading::EyeAdaption::EyeAdaptionClass>();
 	mShadingObjectManager->Add<Shading::RaytracedShadow::RaytracedShadowClass>();
+	mShadingObjectManager->Add<Shading::ChromaticAberration::ChromaticAberrationClass>();
 
 	// Constant buffers
 	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
@@ -130,11 +132,25 @@ BOOL DxRenderer::Initialize(
 }
 
 void DxRenderer::CleanUp() {
-	mShaderManager->CleanUp();
-	mShadingObjectManager->CleanUp();
-
 	mCommandObject->FlushCommandQueue();
-	mpImGuiManager->CleanUpD3D12();
+
+	if (mAccelerationStructureManager) mAccelerationStructureManager.reset();
+
+	mRenderItemRefs.clear();
+	mRenderItems.clear();
+
+	mMeshGeometries.clear();
+	mMaterials.clear();
+
+	mMainPassCB.reset();
+	mLightCB.reset();
+	mProjectToCubeCB.reset();
+
+	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; ++i)
+		mFrameResources[i].reset();
+
+	if (mShaderManager) mShaderManager.reset();
+	if (mShadingObjectManager) mShadingObjectManager.reset();
 
 	DxLowRenderer::CleanUp();
 }
@@ -269,6 +285,23 @@ BOOL DxRenderer::Draw() {
 		CheckReturn(mpLogFile, ApplyBloom());
 
 	CheckReturn(mpLogFile, ApplyEyeAdaption());
+
+	if (mpShadingArgumentSet->ChromaticAberration.Enabled) {
+		const auto chromatic = mShadingObjectManager->Get<Shading::ChromaticAberration::ChromaticAberrationClass>();
+		CheckReturn(mpLogFile, chromatic->ApplyChromaticAberration(
+			mpCurrentFrameResource,
+			mSwapChain->ScreenViewport(),
+			mSwapChain->ScissorRect(),
+			tone->InterMediateMapResource(),
+			tone->InterMediateMapRtv(),
+			tone->InterMediateCopyMapResource(),
+			tone->InterMediateCopyMapSrv(),
+			mpShadingArgumentSet->ChromaticAberration.Strength,
+			mpShadingArgumentSet->ChromaticAberration.Threshold,
+			mpShadingArgumentSet->ChromaticAberration.Feather,
+			mpShadingArgumentSet->ChromaticAberration.ShiftPx,
+			mpShadingArgumentSet->ChromaticAberration.Exponent));
+	}
 
 	if (mpShadingArgumentSet->DOF.Enabled)
 		CheckReturn(mpLogFile, ApplyDOF());
@@ -1447,6 +1480,19 @@ BOOL DxRenderer::InitShadingObjects() {
 		const auto obj = mShadingObjectManager->Get<Shading::RaytracedShadow::RaytracedShadowClass>();
 		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
+	// GammaCorrection
+	{
+		auto initData = Shading::ChromaticAberration::MakeInitData();
+		initData->MeshShaderSupported = mbMeshShaderSupported;
+		initData->Device = mDevice.get();
+		initData->CommandObject = mCommandObject.get();
+		initData->DescriptorHeap = mDescriptorHeap.get();
+		initData->ShaderManager = mShaderManager.get();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		const auto obj = mShadingObjectManager->Get<Shading::ChromaticAberration::ChromaticAberrationClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
 
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\HLSL\\"));
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildRootSignatures());
@@ -2053,7 +2099,8 @@ BOOL DxRenderer::ApplyDOF() {
 	CheckReturn(mpLogFile, dof->CircleOfConfusion(
 		mpCurrentFrameResource,
 		mDepthStencilBuffer->GetDepthStencilBuffer(),
-		mDepthStencilBuffer->DepthStencilBufferSrv()));
+		mDepthStencilBuffer->DepthStencilBufferSrv(),
+		mpShadingArgumentSet->DOF.FocusRange));
 
 	CheckReturn(mpLogFile, dof->Bokeh(
 		mpCurrentFrameResource,

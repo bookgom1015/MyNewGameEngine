@@ -68,6 +68,34 @@ BOOL RTAO::RTAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 	return TRUE;
 }
 
+void RTAO::RTAOClass::CleanUp() {
+	if (mDebugMap) mDebugMap.reset();
+
+	for (UINT i = 0; i < 2; ++i) {
+		auto& resource = mTemporalAOResources[i];
+		if (resource) resource.reset();
+	}
+
+	for (UINT i = 0; i < Resource::TemporalCache::Count; ++i) {
+		for (UINT j = 0; j < 2; ++j) {
+			auto& resource = mTemporalCaches[j][i];
+			if (resource) resource.reset();
+		}
+	}
+
+	for (UINT i = 0; i < Resource::AO::Count; ++i) {
+		auto& resource = mAOResources[i];
+		if (resource) resource.reset();
+	}
+
+	for (UINT i = 0; i < ShaderTable::Count; ++i)
+		mShaderTables[i].Reset();
+
+	mStateObjectProp.Reset();
+	mStateObject.Reset();
+	mRootSignature.Reset();
+}
+
 BOOL RTAO::RTAOClass::CompileShaders() {
 	const auto Lib = Util::ShaderManager::D3D12ShaderInfo(
 		HLSL_RTAO, L"", L"lib_6_5");

@@ -5,6 +5,10 @@
 
 using namespace Render::DX::Foundation::Resource;
 
+FrameResource::FrameResource() {}
+
+FrameResource::~FrameResource() { CleanUp(); }
+
 BOOL FrameResource::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
 		Core::Device* const pDevice, 
@@ -23,6 +27,17 @@ BOOL FrameResource::Initialize(
 	CheckReturn(mpLogFile, BuildConstantBuffres(numPasses, numObjects, numMaterials));
 
 	return TRUE;
+}
+
+void FrameResource::CleanUp() {
+	for (UINT i = 0; i < Count; ++i) {
+		auto& allocator = mCmdAllocators[i];
+		if (allocator) allocator.Reset();
+	}
+	mCmdAllocators.clear();
+
+	mpDevice = nullptr;
+	mpLogFile = nullptr;
 }
 
 BOOL FrameResource::ResetCommandListAllocators() {

@@ -11,7 +11,7 @@ using namespace Render::DX::Foundation::Core;
 
 Factory::Factory() {}
 
-Factory::~Factory() {}
+Factory::~Factory() { CleanUp(); }
 
 BOOL Factory::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
@@ -19,6 +19,20 @@ BOOL Factory::Initialize(Common::Debug::LogFile* const pLogFile) {
 	CheckReturn(mpLogFile, CreateFactory());
 
 	return TRUE;
+}
+
+void Factory::CleanUp() {
+	for (auto& adapter : mAdapters)
+		adapter.second.Reset();
+	mAdapters.clear();
+
+	if (mDxgiFactory) mDxgiFactory.Reset();
+
+#ifdef _DEBUG
+	if (mDebugController) mDebugController.Reset();
+#endif
+
+	mpLogFile = nullptr;
 }
 
 BOOL Factory::CreateFactory() {
@@ -31,7 +45,7 @@ BOOL Factory::CreateFactory() {
 
 	CheckHRESULT(mpLogFile, CreateDXGIFactory2(mdxgiFactoryFlags, IID_PPV_ARGS(&mDxgiFactory)));
 
-	ComPtr<IDXGIFactory5> factory5;
+	ComPtr<IDXGIFactory5> factory5{};
 	CheckHRESULT(mpLogFile, mDxgiFactory.As(&factory5));
 
 	const auto supported = factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &mbAllowTearing, sizeof(mbAllowTearing));
@@ -41,26 +55,28 @@ BOOL Factory::CreateFactory() {
 }
 
 BOOL Factory::SortAdapters() {
-	UINT i = 0;
-	IDXGIAdapter* adapter = nullptr;
+	mAdapters.clear();
 
 #if _DEBUG
 	WLogln(mpLogFile, L"Adapters:");
 #endif
 
-	while (mDxgiFactory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND) {
-		DXGI_ADAPTER_DESC desc;
-		if (FAILED(adapter->GetDesc(&desc))) continue;
+	for (UINT i = 0;; ++i) {
+		Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter{};
+		if (mDxgiFactory->EnumAdapters1(i, &adapter) == DXGI_ERROR_NOT_FOUND)
+			break;
+
+		DXGI_ADAPTER_DESC1 desc{};
+		if (FAILED(adapter->GetDesc1(&desc)))
+			continue;
 
 		const UINT sram = static_cast<UINT>(desc.SharedSystemMemory / (1024 * 1024));
 		const UINT vram = static_cast<UINT>(desc.DedicatedVideoMemory / (1024 * 1024));
 		const UINT score = static_cast<UINT>(desc.DedicatedSystemMemory + desc.DedicatedVideoMemory);
-
-		mAdapters.emplace_back(score, adapter);
-		++i;
+		mAdapters.emplace_back(score, adapter); 
 
 #if _DEBUG
-		auto msg = std::format(L"    {} ( Shared system memory: {}MB , Dedicated video memory: {}MB )", 
+		auto msg = std::format(L"    {} ( Shared system memory: {}MB , Dedicated video memory: {}MB )",
 			desc.Description, sram, vram);
 		WLogln(mpLogFile, msg);
 #endif
@@ -78,8 +94,8 @@ BOOL Factory::GetAdapters(std::vector<std::wstring>& adapters) {
 	for (const auto& pair : mAdapters) {
 		auto adapter = pair.second;
 
-		DXGI_ADAPTER_DESC desc;
-		if (FAILED(adapter->GetDesc(&desc))) continue;
+		DXGI_ADAPTER_DESC1 desc{};
+		if (FAILED(adapter->GetDesc1(&desc))) continue;
 		
 		adapters.push_back(desc.Description);
 	}
@@ -88,16 +104,13 @@ BOOL Factory::GetAdapters(std::vector<std::wstring>& adapters) {
 }
 
 BOOL Factory::SelectAdapter(Device* const pDevice, UINT adapterIndex, BOOL& bRaytracingSupported) {
-	const auto adapter = mAdapters[adapterIndex].second;
+	const auto& adapter = mAdapters[adapterIndex].second;
 
 	// Try to create hardware device.
 	const HRESULT hr = D3D12CreateDevice(
-		adapter,
+		adapter.Get(),
 		D3D_FEATURE_LEVEL_12_1,
-		__uuidof(ID3D12Device5), 
-		static_cast<void**>(&pDevice->md3dDevice)
-	);
-		
+		IID_PPV_ARGS(pDevice->md3dDevice.GetAddressOf()));		
 	if (FAILED(hr)) ReturnFalse(mpLogFile, L"Failed to create device");
 
 	DXGI_ADAPTER_DESC desc;

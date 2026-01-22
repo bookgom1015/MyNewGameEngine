@@ -36,6 +36,13 @@ BOOL MipmapGenerator::MipmapGeneratorClass::Initialize(Common::Debug::LogFile* c
 	return TRUE;
 }
 
+void MipmapGenerator::MipmapGeneratorClass::CleanUp() {
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	mRootSignature.Reset();
+}
+
 BOOL MipmapGenerator::MipmapGeneratorClass::CompileShaders() {
 	// GenerateMipmap
 	{

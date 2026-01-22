@@ -42,7 +42,7 @@ BOOL DxLowRenderer::Initialize(
 	mpWindowsManager = pWndManager;
 	mpShadingArgumentSet = pShadingArgSet;
 
-	mpImGuiManager = dynamic_cast<ImGuiManager::DX::DxImGuiManager*>(pImGuiManager);
+	mpImGuiManager = static_cast<ImGuiManager::DX::DxImGuiManager*>(pImGuiManager);
 
 	mClientWidth = width;
 	mClientHeight = height;
@@ -59,7 +59,19 @@ BOOL DxLowRenderer::Initialize(
 	return TRUE;
 }
 
-void DxLowRenderer::CleanUp() {}
+void DxLowRenderer::CleanUp() {
+	if (mSwapChain) mSwapChain.reset();
+	if (mDepthStencilBuffer) mDepthStencilBuffer.reset();
+	if (mDescriptorHeap) mDescriptorHeap.reset();
+	if (mCommandObject) mCommandObject.reset();
+	if (mDevice) mDevice.reset();
+	if (mFactory) mFactory.reset();
+	if (mProcessor) mProcessor.reset();
+
+#ifdef _DEBUG
+	ReportLiveDXGIObjects();
+#endif 
+}
 
 BOOL DxLowRenderer::GetHWInfo() {
 	CheckReturn(mpLogFile, Common::Foundation::Core::HWInfo::GetCoreInfo(mpLogFile, *mProcessor.get()));
@@ -153,4 +165,14 @@ BOOL DxLowRenderer::BuildDescriptors() {
 	CheckReturn(mpLogFile, mDepthStencilBuffer->BuildDescriptors(pDescHeap));
 
 	return TRUE;
+}
+
+void DxLowRenderer::ReportLiveDXGIObjects() {
+	ComPtr<IDXGIDebug1> dxgiDebug{};
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)))) {
+		dxgiDebug->ReportLiveObjects(
+			DXGI_DEBUG_ALL,
+			DXGI_DEBUG_RLO_ALL
+		);
+	}
 }

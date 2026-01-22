@@ -22,6 +22,7 @@ namespace Render::DX::Foundation {
 
 		public: // Functions that is called only once
 			BOOL Initialize(Common::Debug::LogFile* const pLogFile, Device* const pDevice, UINT numThreads);
+			void CleanUp();
 
 		public: // Functions that is called whenever a renderer calls
 			BOOL FlushCommandQueue();

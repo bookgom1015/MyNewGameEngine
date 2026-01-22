@@ -8,6 +8,10 @@ using namespace Render::DX::Foundation::Resource;
 
 Common::Debug::LogFile* GpuResource::mpLogFile = nullptr;
 
+GpuResource::GpuResource() {}
+
+GpuResource::~GpuResource() {}
+
 BOOL GpuResource::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
 
@@ -35,6 +39,10 @@ BOOL GpuResource::Initialize(
 	mCurrState = initialState;
 
 	return TRUE;
+}
+
+void GpuResource::CleanUp() {
+	if (mResource) mResource.Reset();
 }
 
 BOOL GpuResource::OnResize(IDXGISwapChain* const pSwapChain, UINT index) {

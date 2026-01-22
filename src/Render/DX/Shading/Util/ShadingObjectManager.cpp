@@ -7,7 +7,7 @@ using namespace Render::DX::Shading::Util;
 
 ShadingObjectManager::ShadingObjectManager() {}
 
-ShadingObjectManager::~ShadingObjectManager() {}
+ShadingObjectManager::~ShadingObjectManager() { CleanUp(); }
 
 BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
@@ -16,8 +16,13 @@ BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void ShadingObjectManager::CleanUp() {
+	for (const auto& object : mShadingObjects)
+		object->CleanUp();
+
 	mShadingObjectRefs.clear();
 	mShadingObjects.clear();
+
+	mpLogFile = nullptr;
 }
 
 UINT ShadingObjectManager::CbvSrvUavDescCount() const {

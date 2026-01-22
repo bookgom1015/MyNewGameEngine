@@ -56,6 +56,24 @@ BOOL SVGF::SVGFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 	return TRUE;
 }
 
+void SVGF::SVGFClass::CleanUp() {
+	for (UINT i = 0; i < 2; ++i) {
+		auto& resource = mDebugMaps[i];
+		if (resource) resource.reset();
+	}
+
+	for (UINT i = 0; i < Resource::Count; ++i) {
+		auto& resource = mResources[i];
+		if (resource) resource.reset();
+	}
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL SVGF::SVGFClass::CompileShaders() {
 	// CalcParticalDepthDerivative
 	{

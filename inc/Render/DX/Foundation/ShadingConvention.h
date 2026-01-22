@@ -1241,6 +1241,41 @@ namespace ShadingConvention{
 			}
 		}
 	}
+
+	namespace ChromaticAberration {
+#ifndef ChromaticAberration_Default_RCSTRUCT
+#define ChromaticAberration_Default_RCSTRUCT {									  \
+		DirectX::XMFLOAT2 gInvTexDim;											  \
+		FLOAT  gStrength;	/* overall chroma strength (e.g. 1.0 ~ 5.0)			*/\
+		FLOAT  gThreshold;	/* 0~1 : effect starts at this normalized radius	*/\
+		FLOAT  gFeather;	/* 0~1 : smooth transition width (e.g. 0.1)			*/\
+		UINT  gMaxShiftPx;	/* max shift in pixels at extreme edge (e.g. 2~8)	*/\
+		FLOAT  gExponent;	/* curve control (e.g. 1~3)							*/\
+	};
+#endif
+
+#ifdef _HLSL
+	#ifndef ChromaticAberration_Default_RootConstants
+	#define ChromaticAberration_Default_RootConstants(reg) cbuffer cbRootConstants : register(reg) ChromaticAberration_Default_RCSTRUCT
+	#endif
+#else
+		namespace RootConstant {
+			namespace Default {
+				struct Struct ChromaticAberration_Default_RCSTRUCT
+					enum {
+					E_InvTexDim_X = 0,
+					E_InvTexDim_Y,
+					E_Strength,
+					E_Threshold,
+					E_Feather,
+					E_MaxShiftPx,
+					E_Exponent,
+					Count
+				};
+			}
+		}
+#endif
+	}
 }
 
 #endif // __SHADINGCONVENTION_H__

@@ -13,8 +13,8 @@ namespace ImGuiManager {
 			virtual ~VkImGuiManager();
 
 		public:
-			BOOL InitializeVulkan();
-			void CleanUpVulkan();
+			BOOL InitializeVulkan(const VkInstance& instance);
+			virtual void CleanUp() override;
 
 		private:
 			BOOL mbIsVulkanInitialized{};

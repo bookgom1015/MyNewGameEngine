@@ -48,6 +48,17 @@ BOOL RaytracedShadow::RaytracedShadowClass::Initialize(
 	return TRUE;
 }
 
+void RaytracedShadow::RaytracedShadowClass::CleanUp() {
+	if (mShadowMap) mShadowMap.reset();
+
+	for (UINT i = 0; i < ShaderTable::Count; ++i)
+		mShaderTables[i].Reset();
+
+	mStateObjectProp.Reset();
+	mStateObject.Reset();
+	mRootSignature.Reset();
+}
+
 BOOL RaytracedShadow::RaytracedShadowClass::CompileShaders() {
 	const auto Lib = Util::ShaderManager::D3D12ShaderInfo(
 		HLSL_RaytracedShadow, L"", L"lib_6_5");

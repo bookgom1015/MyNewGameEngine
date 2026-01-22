@@ -76,6 +76,12 @@
     <Filter Include="Source Files\Foundation\Resource">
       <UniqueIdentifier>{cf3ded32-2e16-458d-a5b8-cd3ca1375950}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External Files\ImGuiManager">
+      <UniqueIdentifier>{a0627b0c-3d88-4465-908f-bc934eb01a9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files\ImGui">
+      <UniqueIdentifier>{5a3d8530-5f1b-4aa3-a125-70399440f379}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -149,6 +155,27 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\pch_vk.cpp">
       <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ImGuiManager\VK\VkImGuiManager.cpp">
+      <Filter>External Files\ImGuiManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_draw.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_vulkan.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>External Files\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

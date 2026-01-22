@@ -12,6 +12,8 @@ BOOL ShadingObject::Initialize(Common::Debug::LogFile* const pLogFile, void* con
 	return TRUE;
 }
 
+void ShadingObject::CleanUp() {}
+
 BOOL ShadingObject::CompileShaders() { return TRUE; }
 
 BOOL ShadingObject::BuildRootSignatures() { return TRUE; }

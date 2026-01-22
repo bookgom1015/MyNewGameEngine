@@ -35,6 +35,7 @@ namespace Render::DX {
 
 		public:
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData);
+			virtual void CleanUp();
 
 			virtual BOOL CompileShaders();
 			virtual BOOL BuildRootSignatures();

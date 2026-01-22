@@ -1,13 +1,5 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-#include <Windows.h>
-
 namespace Common::Render {
 	namespace ShadingArgument {
 		struct GammaCorrectionArguments {
@@ -238,6 +230,34 @@ namespace Common::Render {
 			const float MaxHighlightPower = 8.f;
 			const float MinHighlightPower = 1.f;
 			float HighlightPower = 2.f;
+
+			const float MaxFocusRange = 64.f;
+			const float MinFocusRange = 1.f;
+			float FocusRange = 16.f;
+		};
+
+		struct ChromaticAberrationArguments {
+			bool Enabled = true;
+
+			const float MaxStrength = 4.f;
+			const float MinStrength = 1.f;
+			float Strength = 1.77f;
+
+			const float MaxThreshold = 0.9f;
+			const float MinThreshold = 0.1f;
+			float Threshold = 0.635f;
+
+			const float MaxFeather = 0.2f;
+			const float MinFeather = 0.05f;
+			float Feather = 0.13f;
+
+			const std::uint32_t MaxShiftPx = 8;
+			const std::uint32_t MinShiftPx = 2;
+			std::uint32_t ShiftPx = 4;
+
+			const float MaxExponent = 2.5f;
+			const float MinExponent = 1.5f;
+			float Exponent = 2.f;
 		};
 
 		struct ShadingArgumentSet {
@@ -252,6 +272,7 @@ namespace Common::Render {
 			MotionBlurArguments MotionBlur;
 			BloomArguments Bloom;
 			DOFArguments DOF;
+			ChromaticAberrationArguments ChromaticAberration;
 
 			bool ShadowEnabled = true;
 			bool AOEnabled = true;

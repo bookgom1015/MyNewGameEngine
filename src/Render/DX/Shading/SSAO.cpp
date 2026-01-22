@@ -70,6 +70,33 @@ BOOL SSAO::SSAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 	return TRUE;
 }
 
+void SSAO::SSAOClass::CleanUp() {
+	if (mDebugMap) mDebugMap.reset();
+
+	for (UINT i = 0; i < 2; ++i) {
+		auto& resource = mTemporalAOResources[i];
+		if (resource) resource.reset();
+	}
+
+	for (UINT i = 0; i < Resource::TemporalCache::Count; ++i) {
+		for (UINT j = 0; j < 2; ++j) {
+			auto& resource = mTemporalCaches[j][i];
+			if (resource) resource.reset();
+		}
+	}
+
+	for (UINT i = 0; i < Resource::AO::Count; ++i) {
+		auto& resource = mAOResources[i];
+		if (resource) resource.reset();
+	}
+
+	if (mRandomVectorMapUploadBuffer) mRandomVectorMapUploadBuffer.reset();
+	if (mRandomVectorMap) mRandomVectorMap.reset();
+
+	mPipelineState.Reset();
+	mRootSignature.Reset();
+}
+
 BOOL SSAO::SSAOClass::CompileShaders() {
 	const auto CS = Util::ShaderManager::D3D12ShaderInfo(HLSL_SSAO, L"CS", L"cs_6_5");
 	CheckReturn(mpLogFile, mInitData.ShaderManager->AddShader(CS, mShaderHashes[Shader::CS_SSAO]));

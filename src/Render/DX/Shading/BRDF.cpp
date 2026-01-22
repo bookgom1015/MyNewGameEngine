@@ -38,6 +38,14 @@ BOOL BRDF::BRDFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 	return TRUE;
 }
 
+void BRDF::BRDFClass::CleanUp() {
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL BRDF::BRDFClass::CompileShaders() {
 	// ComputeBRDF
 	{

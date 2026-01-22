@@ -50,6 +50,19 @@ BOOL VolumetricLight::VolumetricLightClass::Initialize(Common::Debug::LogFile* c
 	return TRUE;
 }
 
+void VolumetricLight::VolumetricLightClass::CleanUp() {
+	for (UINT i = 0; i < 2; ++i) {
+		auto& resource = mFrustumVolumeMaps[i];
+		if (resource) resource.reset();
+	}
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL VolumetricLight::VolumetricLightClass::CompileShaders() {
 	// CalculateScatteringAndDensity
 	{

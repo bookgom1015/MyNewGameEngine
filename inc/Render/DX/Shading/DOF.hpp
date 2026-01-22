@@ -101,6 +101,7 @@ namespace Render::DX::Shading {
 
 		public:
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
+			virtual void CleanUp() override;
 
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildRootSignatures() override;
@@ -116,7 +117,8 @@ namespace Render::DX::Shading {
 			BOOL CircleOfConfusion(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				Foundation::Resource::GpuResource* const pDepthMap,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_depthMap,
+				FLOAT focusRange);
 			BOOL Bokeh(
 				Foundation::Resource::FrameResource* const pFrameResource,
 				D3D12_VIEWPORT viewport,

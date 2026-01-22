@@ -11,7 +11,7 @@ std::unique_ptr<SwapChain::InitData> SwapChain::MakeInitData() {
 
 SwapChain::SwapChain() {}
 
-SwapChain::~SwapChain() {}
+SwapChain::~SwapChain() { CleanUp(); }
 
 BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));

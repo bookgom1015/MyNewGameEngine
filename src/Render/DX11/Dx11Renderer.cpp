@@ -7,6 +7,7 @@
 #include "Render/DX11/Foundation/Core/SwapChain.hpp"
 #include "Render/DX11/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/DX11/Shading/Util/ShaderManager.hpp"
+#include "Render/DX11/Shading/GBuffer.hpp"
 
 using namespace Render::DX11;
 
@@ -21,6 +22,8 @@ extern "C" RendererAPI void Render::DestroyRenderer(Common::Render::Renderer* co
 Dx11Renderer::Dx11Renderer() {
 	mShadingObjectManager = std::make_unique<Shading::Util::ShadingObjectManager>();
 	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
+
+	//mShadingObjectManager->Add<Shading::GBuffer::GBufferClass>();
 }
 
 Dx11Renderer::~Dx11Renderer() {}
@@ -35,20 +38,37 @@ BOOL Dx11Renderer::Initialize(
 		pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
 	CheckReturn(mpLogFile, mShadingObjectManager->Initialize(mpLogFile));
-	CheckReturn(mpLogFile, mShaderManager->Initialize(mpLogFile, static_cast<UINT>(mProcessor->Logical)));
+	CheckReturn(mpLogFile, mShaderManager->Initialize(mpLogFile));
+
+	//// GBuffer
+	//{
+	//	auto initData = Shading::GBuffer::MakeInitData();
+	//	initData->Width = mClientWidth;
+	//	initData->Height = mClientHeight;
+	//	initData->Device = mDevice.get();
+	//	initData->ShaderManager = mShaderManager.get();
+	//	const auto obj = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+	//	CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	//}
+
+	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders(
+		mShaderManager.get(), L".\\..\\..\\..\\assets\\Shaders\\HLSL5\\"));
+	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 
 	return TRUE;
 }
 
 void Dx11Renderer::CleanUp() {
-	mShaderManager->CleanUp();
-	mShadingObjectManager->CleanUp();
+	if (mShaderManager) mShaderManager.reset();
+	if (mShadingObjectManager) mShadingObjectManager.reset();
 
 	Dx11LowRenderer::CleanUp();
 }
 
 BOOL Dx11Renderer::OnResize(UINT width, UINT height) {
 	CheckReturn(mpLogFile, Dx11LowRenderer::OnResize(width, height));
+
+	CheckReturn(mpLogFile, mShadingObjectManager->OnResize(width, height));
 
 #ifdef _DEBUG
 	std::cout << std::format("Dx11Renderer resized (Width: {}, Height: {}", width, height) << std::endl;
@@ -58,6 +78,8 @@ BOOL Dx11Renderer::OnResize(UINT width, UINT height) {
 }
 
 BOOL Dx11Renderer::Update(FLOAT deltaTime) {
+	CheckReturn(mpLogFile, mShadingObjectManager->Update());
+
 	return TRUE;
 }
 

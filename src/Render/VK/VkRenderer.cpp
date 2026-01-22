@@ -8,6 +8,7 @@
 #include "Render/VK/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/VK/Shading/Util/ShaderManager.hpp"
 #include "Render/VK/Shading/GBuffer.hpp"
+#include "ImGuiManager/VK/VkImGuiManager.hpp"
 
 using namespace Render::VK;
 
@@ -52,6 +53,8 @@ BOOL VkRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildRenderPass());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildFramebuffers());
+
+	CheckReturn(mpLogFile, mpImGuiManager->InitializeVulkan());
 
 	return TRUE;
 }

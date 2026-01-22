@@ -85,6 +85,21 @@ BOOL Shadow::ShadowClass::Initialize(Common::Debug::LogFile* const pLogFile, voi
 	return TRUE;
 }
 
+void Shadow::ShadowClass::CleanUp() {
+	if (mShadowMap) mShadowMap.reset();
+
+	for (UINT i = 0; i < MaxLights; ++i) {
+		auto& resource = mZDepthMaps[i];
+		if (resource) resource.reset();
+	}
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL Shadow::ShadowClass::CompileShaders() {
 	// DrawZDepth
 	{

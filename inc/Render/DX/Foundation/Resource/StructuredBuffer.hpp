@@ -28,6 +28,7 @@ namespace Render::DX::Foundation::Resource {
 			UINT instanceCount,
 			BOOL isConstantBuffer,
 			LPCWSTR name = nullptr) override;
+		virtual void CleanUp() override;
 
 		void CopyStagingToGpu(UINT instanceIndex);
 

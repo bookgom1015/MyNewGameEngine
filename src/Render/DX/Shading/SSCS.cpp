@@ -43,6 +43,17 @@ BOOL SSCS::SSCSClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 	return TRUE;
 }
 
+void SSCS::SSCSClass::CleanUp() {
+	if (mContactShadowMap) mContactShadowMap.reset();
+	if (mDebugMap) mDebugMap.reset();
+
+	for (UINT i = 0; i < PipelineState::Count; ++i)
+		mPipelineStates[i].Reset();
+
+	for (UINT i = 0; i < RootSignature::Count; ++i)
+		mRootSignatures[i].Reset();
+}
+
 BOOL SSCS::SSCSClass::CompileShaders() {
 	// ComputeContactShadow
 	{

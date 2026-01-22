@@ -10,7 +10,7 @@ using namespace Render::DX::Foundation::Core;
 
 DescriptorHeap::DescriptorHeap() {}
 
-DescriptorHeap::~DescriptorHeap() {}
+DescriptorHeap::~DescriptorHeap() { CleanUp(); }
 
 BOOL DescriptorHeap::Initialize(
 		Common::Debug::LogFile* const pLogFile,
@@ -26,6 +26,12 @@ BOOL DescriptorHeap::Initialize(
 	CheckReturn(mpLogFile, BuildDescriptorSizes());
 
 	return TRUE;
+}
+
+void DescriptorHeap::CleanUp() {
+	mRtvHeap.Reset();
+	mDsvHeap.Reset();
+	mCbvSrvUavHeap.Reset();
 }
 
 BOOL DescriptorHeap::CreateDescriptorHeaps(UINT numCbvSrvUav, UINT numRtv, UINT numDsv) {

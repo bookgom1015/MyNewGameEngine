@@ -34,6 +34,7 @@ namespace Render::DX {
 				Device* const pDevice,
 				SwapChain* const pSwapChain,
 				DepthStencilBuffer* const pDepthStencilBuffer);
+			void CleanUp();
 
 			BOOL CreateDescriptorHeaps(UINT numCbvSrvUav, UINT numRtv, UINT numDsv);
 			BOOL BuildDescriptors();

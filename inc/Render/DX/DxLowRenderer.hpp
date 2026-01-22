@@ -56,6 +56,8 @@ namespace Render::DX {
 		BOOL CreateDepthStencilBuffer();
 		BOOL BuildDescriptors();
 
+		void ReportLiveDXGIObjects();
+
 	protected:
 		UINT mClientWidth{};
 		UINT mClientHeight{};

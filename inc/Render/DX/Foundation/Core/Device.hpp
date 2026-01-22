@@ -36,6 +36,7 @@ namespace Render::DX {
 
 			public:
 				BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+				void CleanUp();
 
 			public:
 				BOOL QueryInterface(Microsoft::WRL::ComPtr<ID3D12InfoQueue1>& pInfoQueue);

@@ -55,6 +55,7 @@ namespace Render::DX::Shading::Util {
 
 		public:
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
+			virtual void CleanUp() override;
 
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildRootSignatures() override;

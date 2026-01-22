@@ -17,7 +17,7 @@ namespace Render::DX::Foundation {
 			friend class Util::D3D12Util;
 
 		public:
-			using Adapters = std::vector<std::pair<UINT, IDXGIAdapter*>>;
+			using Adapters = std::vector<std::pair<UINT, Microsoft::WRL::ComPtr<IDXGIAdapter1>>>;
 
 		public:
 			Factory();
@@ -25,6 +25,8 @@ namespace Render::DX::Foundation {
 
 		public:
 			BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+			void CleanUp();
+
 			BOOL SortAdapters();
 			BOOL GetAdapters(std::vector<std::wstring>& adapters);
 			BOOL SelectAdapter(Device* const pDevice, UINT adapterIndex, BOOL& bRaytracingSupported);

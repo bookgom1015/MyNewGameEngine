@@ -16,9 +16,11 @@ VkImGuiManager::VkImGuiManager() {}
 
 VkImGuiManager::~VkImGuiManager() {}
 
-BOOL VkImGuiManager::InitializeVulkan() {
-	ImGui_ImplVulkan_InitInfo initInfo{};
+BOOL VkImGuiManager::InitializeVulkan(const VkInstance& instance) {
+	ImGui::SetCurrentContext(mpContext);
 
+	ImGui_ImplVulkan_InitInfo initInfo{};
+	initInfo.Instance = instance;
 	CheckReturn(mpLogFile, ImGui_ImplVulkan_Init(&initInfo));
 
 	mbIsVulkanInitialized = TRUE;
@@ -26,6 +28,7 @@ BOOL VkImGuiManager::InitializeVulkan() {
 	return TRUE;
 }
 
-void VkImGuiManager::CleanUpVulkan() {
+void VkImGuiManager::CleanUp() {
 	if (mbIsVulkanInitialized) ImGui_ImplVulkan_Shutdown();
+	ImGuiManager::CleanUp();
 }

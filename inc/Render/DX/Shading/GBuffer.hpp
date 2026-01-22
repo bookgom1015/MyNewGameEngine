@@ -36,6 +36,52 @@ namespace Render::DX::Shading {
 			};
 		}
 
+		namespace Resource {
+			enum Type {
+				E_Albedo = 0,
+				E_Normal,
+				E_NormalDepth,
+				E_ReprojNormalDepth,
+				E_CachedNormalDepth,
+				E_Specular,
+				E_RoughnessMetalness,
+				E_Velcity,
+				E_Position,
+				Count
+			};
+		}
+
+		namespace Descriptor {
+			namespace Srv {
+				enum Type {
+					E_Albedo = 0,
+					E_Normal,
+					E_NormalDepth,
+					E_ReprojNormalDepth,
+					E_CachedNormalDepth,
+					E_Specular,
+					E_RoughnessMetalness,
+					E_Velocity,
+					E_Position,
+					Count
+				};
+			}
+
+			namespace Rtv {
+				enum Type {
+					E_Albedo = 0,
+					E_Normal,
+					E_NormalDepth,
+					E_ReprojNormalDepth,
+					E_Specular,
+					E_RoughnessMetalness,
+					E_Velocity,
+					E_Position,
+					Count
+				};
+			}
+		}
+
 		class GBufferClass : public Foundation::ShadingObject {
 		public:
 			struct InitData {
@@ -87,6 +133,7 @@ namespace Render::DX::Shading {
 
 		public:
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) override;
+			virtual void CleanUp() override;
 
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildRootSignatures() override;
@@ -125,49 +172,10 @@ namespace Render::DX::Shading {
 			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};
 
-			std::unique_ptr<Foundation::Resource::GpuResource> mAlbedoMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhAlbedoMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhAlbedoMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhAlbedoMapCpuRtv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mNormalMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhNormalMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalMapCpuRtv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mNormalDepthMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalDepthMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhNormalDepthMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhNormalDepthMapCpuRtv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mReprojNormalDepthMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhReprojNormalDepthMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhReprojNormalDepthMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhReprojNormalDepthMapCpuRtv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mCachedNormalDepthMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhCachedNormalDepthMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhCachedNormalDepthMapGpuSrv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mSpecularMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhSpecularMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhSpecularMapCpuRtv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mRoughnessMetalnessMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhRoughnessMetalnessMapCpuRtv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mVelocityMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhVelocityMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhVelocityMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhVelocityMapCpuRtv{};
-
-			std::unique_ptr<Foundation::Resource::GpuResource> mPositionMap{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuSrv{};
-			D3D12_GPU_DESCRIPTOR_HANDLE mhPositionMapGpuSrv{};
-			D3D12_CPU_DESCRIPTOR_HANDLE mhPositionMapCpuRtv{};
+			std::array<std::unique_ptr<Foundation::Resource::GpuResource>, Resource::Count> mResources{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::Srv::Count> mhCpuSrvs{};
+			std::array<D3D12_GPU_DESCRIPTOR_HANDLE, Descriptor::Srv::Count> mhGpuSrvs{};
+			std::array<D3D12_CPU_DESCRIPTOR_HANDLE, Descriptor::Rtv::Count> mhCpuRtvs{};		
 		};
 
 		using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;

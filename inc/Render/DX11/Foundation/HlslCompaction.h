@@ -2,7 +2,7 @@
 #define __HLSLCOMPACTION_H__
 
 #ifdef _HLSL
-	//#include "./../../../assets/Shaders/HLSL/HlslCompaction.hlsli" 
+	#include "./../../../assets/Shaders/HLSL/HlslCompaction.hlsli" 
 	//#include "./../../../inc/Render/DX/Foundation/ConstantBuffer.h"
 	//#include "./../../../assets/Shaders/HLSL/HardCodedCoordinates.hlsli"
 	//#include "./../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
