@@ -29,9 +29,13 @@ BOOL DescriptorHeap::Initialize(
 }
 
 void DescriptorHeap::CleanUp() {
+	if (mbCleanedUp) return;
+
 	mRtvHeap.Reset();
 	mDsvHeap.Reset();
 	mCbvSrvUavHeap.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL DescriptorHeap::CreateDescriptorHeaps(UINT numCbvSrvUav, UINT numRtv, UINT numDsv) {

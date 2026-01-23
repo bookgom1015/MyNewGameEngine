@@ -46,6 +46,7 @@
     <ClCompile Include="..\..\src\Render\DX11\Dx11LowRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Dx11Renderer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\ConstantBuffer.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\DepthStencilBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\pch_d3d11.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -53,7 +54,13 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\SwapChain.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Light.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\RenderItem.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\FrameResource.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\MaterialData.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\MeshGeometry.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\UploadBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\ShadingObject.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Util\D3D11Util.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\GBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\Util\ShaderManager.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\Util\ShadingObjectManager.cpp" />
@@ -62,21 +69,31 @@
     <ClInclude Include="..\..\inc\Render\DX11\Dx11LowRenderer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\ConstantBuffer.h" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\DepthStencilBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\Device.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\pch_d3d11.h" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\SwapChain.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\HlslCompaction.h" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Light.h" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\RenderItem.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\FrameResource.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\MaterialData.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\MeshGeometry.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\UploadBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingConvention.h" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingObject.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\GBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Util\ShaderManager.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Util\ShadingObjectManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL5\HlslCompaction.hlsli" />
+    <None Include="..\..\inc\Render\DX11\Foundation\Core\DepthStencilBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Core\Device.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Core\SwapChain.inl" />
+    <None Include="..\..\inc\Render\DX11\Foundation\Resource\MeshGeometry.inl" />
+    <None Include="..\..\inc\Render\DX11\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Util\ShaderManager.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Util\ShadingObjectManager.inl" />
     <None Include="packages.config" />
@@ -187,7 +204,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_DLLEXPORT;DX11RENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Render/DX11/Foundation/Core/pch_d3d11.h</PrecompiledHeaderFile>
@@ -207,7 +224,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_DLLEXPORT;DX11RENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Render/DX11/Foundation/Core/pch_d3d11.h</PrecompiledHeaderFile>

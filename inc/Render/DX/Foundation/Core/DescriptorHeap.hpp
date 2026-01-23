@@ -45,6 +45,7 @@ namespace Render::DX {
 			BOOL BuildDescriptorSizes();
 
 		private:
+			BOOL mbCleanedUp{};
 			Common::Debug::LogFile* mpLogFile{};
 
 			Device* mDevice{};

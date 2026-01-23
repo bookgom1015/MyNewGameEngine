@@ -16,6 +16,8 @@ BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void ShadingObjectManager::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (const auto& object : mShadingObjects)
 		object->CleanUp();
 
@@ -23,6 +25,7 @@ void ShadingObjectManager::CleanUp() {
 	mShadingObjects.clear();
 
 	mpLogFile = nullptr;
+	mbCleanedUp = TRUE;
 }
 
 UINT ShadingObjectManager::CbvSrvUavDescCount() const {

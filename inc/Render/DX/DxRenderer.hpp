@@ -143,9 +143,6 @@ namespace Render {
 		private:
 			FLOAT mDeltaTime{};
 
-			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries{};
-			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials{};
-
 			// Frame resource
 			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources{};
 			Foundation::Resource::FrameResource* mpCurrentFrameResource{};
@@ -159,6 +156,10 @@ namespace Render {
 			// Shading objects
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};
+
+			// Meshes
+			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries{};
+			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials{};
 
 			// Render items
 			std::vector<std::unique_ptr<Foundation::RenderItem>> mRenderItems{};

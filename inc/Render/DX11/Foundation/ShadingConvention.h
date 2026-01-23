@@ -11,6 +11,17 @@ namespace ShadingConvention {
 		const DXGI_FORMAT NormalMapFormat				= DXGI_FORMAT_R8G8B8A8_SNORM;
 		const DXGI_FORMAT PositionMapFormat				= DXGI_FORMAT_R16G16B16A16_FLOAT;
 		const DXGI_FORMAT RoughnessMetalnessMapFormat	= DXGI_FORMAT_R16G16_UNORM;
+
+		const FLOAT AlbedoMapClearValues[4]{ 0.f, 0.f, 0.f, -1.f };		
+		const FLOAT NormalMapClearValues[4]{ 0.f, 0.f, 0.f, -1.f };
+		const FLOAT PositionMapClearValues[4]{ 0.f, 0.f, 0.f, -1.f };
+		const FLOAT RoughnessMapClearValues[4]{ 0.f, 0.f, 0.f, 0.f };
+	}
+
+	namespace DepthStencilBuffer {
+		const DXGI_FORMAT DepthStencilBufferFormat = DXGI_FORMAT_R24G8_TYPELESS;
+		const DXGI_FORMAT DepthStencilViewFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		const DXGI_FORMAT ShaderResourceViewFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	}
 }
 

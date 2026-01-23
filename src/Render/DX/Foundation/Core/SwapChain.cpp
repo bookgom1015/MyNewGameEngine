@@ -46,6 +46,8 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 }
 
 void SwapChain::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mBackBufferCopy) mBackBufferCopy.reset();
 
 	for (UINT i = 0; i < SwapChainBufferCount; ++i) {
@@ -54,6 +56,8 @@ void SwapChain::CleanUp() {
 	}
 
 	if (mSwapChain) mSwapChain.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL SwapChain::BuildDescriptors(DescriptorHeap* const pDescHeap) {

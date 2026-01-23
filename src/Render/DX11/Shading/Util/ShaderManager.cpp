@@ -3,6 +3,7 @@
 #include "Common/Debug/Logger.hpp"
 #include "Common/Util/StringUtil.hpp"
 #include "Common/Util/TaskQueue.hpp"
+#include "Render/DX11/Foundation/Core/Device.hpp"
 
 using namespace Render::DX11::Shading::Util;
 using namespace Microsoft::WRL;
@@ -11,35 +12,108 @@ ShaderManager::ShaderManager() {}
 
 ShaderManager::~ShaderManager() { CleanUp(); }
 
-BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile) {
+BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, LPCWSTR baseDir) {
 	mpLogFile = pLogFile;
+	mpBaseDir = baseDir;
 
 	return TRUE;
 }
 
 void ShaderManager::CleanUp() {
+	if (mbCleanedUp) return;
+
+	for (auto& shader : mShaders) 
+		shader.second.Reset();
 	mShaders.clear();
+
+	mbCleanedUp = TRUE;
 }
 
-BOOL ShaderManager::AddShader(
-		const D3D11ShaderInfo& shaderInfo, Common::Foundation::Hash& hash) {
+BOOL ShaderManager::CompileVertexShader(
+		Foundation::Core::Device* const pDevice,
+		const D3D11ShaderInfo& shaderInfo,
+		Common::Foundation::Hash& hash,
+		ID3D11VertexShader** ppShader) {
+	std::hash<D3D11ShaderInfo> hasher{};
+	hash = hasher(shaderInfo);
 
+	auto& blob = mShaders[hash];
+
+	CheckReturn(mpLogFile, CompileShader(shaderInfo, &blob));
+
+	CheckReturn(mpLogFile, pDevice->CreateVertexShader(
+		blob->GetBufferPointer(),
+		blob->GetBufferSize(),
+		shaderInfo.ClassLinkage,
+		ppShader));
 
 	return TRUE;
 }
 
-BOOL ShaderManager::CompileShaders(LPCWSTR baseDir) {
+BOOL ShaderManager::CompileGeometryShader(
+		Foundation::Core::Device* const pDevice,
+		const D3D11ShaderInfo& shaderInfo,
+		Common::Foundation::Hash& hash,
+		ID3D11GeometryShader** ppShader) {
+	std::hash<D3D11ShaderInfo> hasher{};
+	hash = hasher(shaderInfo);
 
+	auto& blob = mShaders[hash];
+
+	CheckReturn(mpLogFile, CompileShader(shaderInfo, &blob));
+
+	CheckReturn(mpLogFile, pDevice->CreateGeometryShader(
+		blob->GetBufferPointer(),
+		blob->GetBufferSize(),
+		shaderInfo.ClassLinkage,
+		ppShader));
+
+	return TRUE;
+}
+BOOL ShaderManager::CompilePixelShader(
+		Foundation::Core::Device* const pDevice,
+		const D3D11ShaderInfo& shaderInfo,
+		Common::Foundation::Hash& hash,
+		ID3D11PixelShader** ppShader) {
+	std::hash<D3D11ShaderInfo> hasher{};
+	hash = hasher(shaderInfo);
+
+	auto& blob = mShaders[hash];
+
+	CheckReturn(mpLogFile, CompileShader(shaderInfo, &blob));
+
+	CheckReturn(mpLogFile, pDevice->CreatePixelShader(
+		blob->GetBufferPointer(),
+		blob->GetBufferSize(),
+		shaderInfo.ClassLinkage,
+		ppShader));
+
+	return TRUE;
+}
+BOOL ShaderManager::CompileComputeShader(
+		Foundation::Core::Device* const pDevice,
+		const D3D11ShaderInfo& shaderInfo,
+		Common::Foundation::Hash& hash,
+		ID3D11ComputeShader** ppShader) {
+	std::hash<D3D11ShaderInfo> hasher{};
+	hash = hasher(shaderInfo);
+
+	auto& blob = mShaders[hash];
+
+	CheckReturn(mpLogFile, CompileShader(shaderInfo, &blob));
+
+	CheckReturn(mpLogFile, pDevice->CreateComputeShader(
+		blob->GetBufferPointer(),
+		blob->GetBufferSize(),
+		shaderInfo.ClassLinkage,
+		ppShader));
 
 	return TRUE;
 }
 
 BOOL ShaderManager::CompileShader(
-		LPCWSTR filePath,
-		D3D_SHADER_MACRO* defines,
-		LPCSTR entryPoint,
-		LPCSTR target,
-		ID3DBlob** ppShaderByteCode) {
+		const D3D11ShaderInfo& shaderInfo,
+		ID3DBlob** ppShaderBlob) {
 #if defined(_DEBUG)  
 	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #else
@@ -47,9 +121,20 @@ BOOL ShaderManager::CompileShader(
 #endif
 	HRESULT hr = S_OK;
 
+	std::wstring filePath(mpBaseDir);
+	filePath.append(shaderInfo.FileName);
+
 	ComPtr<ID3DBlob> errors;
-	hr = D3DCompileFromFile(filePath, defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		entryPoint, target, compileFlags, 0, ppShaderByteCode, &errors);
+	hr = D3DCompileFromFile(
+		filePath.c_str(),
+		shaderInfo.Defines,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		shaderInfo.EntryPoint,
+		shaderInfo.Target,
+		compileFlags,
+		0,
+		ppShaderBlob,
+		&errors);
 
 	std::wstringstream wsstream;
 	if (errors != nullptr)

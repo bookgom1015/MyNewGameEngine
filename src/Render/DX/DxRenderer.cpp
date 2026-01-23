@@ -101,7 +101,7 @@ DxRenderer::DxRenderer() {
 	mAccelerationStructureManager = std::make_unique<Shading::Util::AccelerationStructureManager>();
 }
 
-DxRenderer::~DxRenderer() {}
+DxRenderer::~DxRenderer() { CleanUp(); }
 
 BOOL DxRenderer::Initialize(
 		Common::Debug::LogFile* const pLogFile, 
@@ -132,9 +132,14 @@ BOOL DxRenderer::Initialize(
 }
 
 void DxRenderer::CleanUp() {
+	if (mbCleanedUp) return;
+
 	mCommandObject->FlushCommandQueue();
 
-	if (mAccelerationStructureManager) mAccelerationStructureManager.reset();
+	if (mAccelerationStructureManager) {
+		mAccelerationStructureManager->CleanUp();
+		mAccelerationStructureManager.reset();
+	}
 
 	mRenderItemRefs.clear();
 	mRenderItems.clear();
@@ -146,11 +151,22 @@ void DxRenderer::CleanUp() {
 	mLightCB.reset();
 	mProjectToCubeCB.reset();
 
-	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; ++i)
-		mFrameResources[i].reset();
+	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; ++i) {
+		auto& resource = mFrameResources[i];
+		if (resource) {
+			resource->CleanUp();
+			resource.reset();
+		}
+	}
 
-	if (mShaderManager) mShaderManager.reset();
-	if (mShadingObjectManager) mShadingObjectManager.reset();
+	if (mShaderManager) {
+		mShaderManager->CleanUp();
+		mShaderManager.reset();
+	}
+	if (mShadingObjectManager) {
+		mShadingObjectManager->CleanUp();
+		mShadingObjectManager.reset();
+	}
 
 	DxLowRenderer::CleanUp();
 }

@@ -13,7 +13,15 @@ namespace ImGuiManager {
 			virtual ~VkImGuiManager();
 
 		public:
-			BOOL InitializeVulkan(const VkInstance& instance);
+			BOOL InitializeVulkan(
+				const VkInstance& instance,
+				const VkPhysicalDevice& physicalDevice,
+				const VkDevice& device,
+				const VkQueue& graphicsQueue,
+				const VkDescriptorPool& descriptorPool,
+				VkFormat swapchainImageFormat,
+				std::uint32_t minImageCount,
+				std::uint32_t imageCount);
 			virtual void CleanUp() override;
 
 		private:

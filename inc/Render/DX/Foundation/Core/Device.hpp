@@ -104,6 +104,7 @@ namespace Render::DX {
 					void** const ppStateObject);
 
 			private:
+				BOOL mbCleanedUp{};
 				Common::Debug::LogFile* mpLogFile{};
 
 				Microsoft::WRL::ComPtr<ID3D12Device5> md3dDevice{};

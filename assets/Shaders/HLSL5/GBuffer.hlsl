@@ -39,7 +39,7 @@ VertexOut VS(in VertexIn vin) {
     
     float4 posV = mul(posW, View);
     float4 posH = mul(posV, Proj);
-    vout.PosH = posH + float4(JitteredOffset * posH.w, 0.f, 0.f);
+    vout.PosH = posH;// + float4(JitteredOffset * posH.w, 0.f, 0.f);
     
     return vout;
 }

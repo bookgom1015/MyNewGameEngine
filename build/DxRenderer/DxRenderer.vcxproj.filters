@@ -225,9 +225,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp">
       <Filter>Header Files\Foundation\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp">
-      <Filter>Header Files\Foundation\Resource</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\Texture.hpp">
       <Filter>Header Files\Foundation\Resource</Filter>
     </ClInclude>
@@ -359,6 +356,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\ChromaticAberration.hpp">
       <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -59,6 +59,8 @@ namespace Render::DX {
 		void ReportLiveDXGIObjects();
 
 	protected:
+		BOOL mbCleanedUp{};
+
 		UINT mClientWidth{};
 		UINT mClientHeight{};
 

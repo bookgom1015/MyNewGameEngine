@@ -10,6 +10,7 @@ namespace Render::DX11 {
 	namespace Foundation::Core {
 		class Device;
 		class SwapChain;
+		class DepthStencilBuffer;
 	}
 
 	class Dx11LowRenderer : public Common::Render::Renderer {
@@ -37,8 +38,11 @@ namespace Render::DX11 {
 		std::unique_ptr<Common::Foundation::Core::Processor> mProcessor{};
 		std::unique_ptr<Foundation::Core::Device> mDevice{};
 		std::unique_ptr<Foundation::Core::SwapChain> mSwapChain{};
+		std::unique_ptr<Foundation::Core::DepthStencilBuffer> mDepthStencilBuffer{};
 
 	protected:
+		BOOL mbCleanedUp{};
+
 		UINT mClientWidth{};
 		UINT mClientHeight{};
 	};

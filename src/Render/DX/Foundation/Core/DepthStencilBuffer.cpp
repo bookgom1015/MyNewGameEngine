@@ -36,7 +36,11 @@ BOOL DepthStencilBuffer::Initialize(Common::Debug::LogFile* const pLogFile, void
 }
 
 void DepthStencilBuffer::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mDepthStencilBuffer) mDepthStencilBuffer.reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL DepthStencilBuffer::BuildDescriptors(DescriptorHeap* const pDescHeap) {

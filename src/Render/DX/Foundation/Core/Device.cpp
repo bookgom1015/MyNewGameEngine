@@ -19,9 +19,13 @@ BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void Device::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (md3dDevice) md3dDevice.Reset();
 
 	mpLogFile = nullptr;
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL Device::QueryInterface(Microsoft::WRL::ComPtr<ID3D12InfoQueue1>& pInfoQueue) {

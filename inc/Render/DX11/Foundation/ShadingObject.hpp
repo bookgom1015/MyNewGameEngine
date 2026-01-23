@@ -15,6 +15,10 @@ namespace Render::DX11 {
 	namespace Foundation {
 		class ShadingObject {
 		public:
+			ShadingObject();
+			virtual ~ShadingObject();
+
+		public:
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData);
 			virtual void CleanUp();
 

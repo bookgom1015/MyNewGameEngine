@@ -122,6 +122,40 @@ BOOL Device::CreateSamplerState(
 	return TRUE;
 }
 
+BOOL Device::CreateVertexShader(
+		const void* pShaderBytecode,
+		SIZE_T BytecodeLength,
+		ID3D11ClassLinkage* pClassLinkage,
+		ID3D11VertexShader** ppVertexShader) {
+	CheckHRESULT(mpLogFile, mDevice->CreateVertexShader(
+		pShaderBytecode, BytecodeLength, pClassLinkage, ppVertexShader));
+	return TRUE;
+}
+
+BOOL Device::CreateGeometryShader(
+		const void* pShaderBytecode,
+		SIZE_T BytecodeLength,
+		ID3D11ClassLinkage* pClassLinkage,
+		ID3D11GeometryShader** ppGeometryShader) {
+	return TRUE;
+}
+
+BOOL Device::CreatePixelShader(
+		const void* pShaderBytecode,
+		SIZE_T BytecodeLength,
+		ID3D11ClassLinkage* pClassLinkage,
+		ID3D11PixelShader** ppPixelShader) {
+	return TRUE;
+}
+
+BOOL Device::CreateComputeShader(
+		const void* pShaderBytecode,
+		SIZE_T BytecodeLength,
+		ID3D11ClassLinkage* pClassLinkage,
+		ID3D11ComputeShader** ppComputeShader) {
+	return TRUE;
+}
+
 BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
 
@@ -135,7 +169,7 @@ BOOL Device::Initialize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void Device::CleanUp() {
-	DumpRefCount(mpLogFile, mDevice.Get(), L"ID3D11Device (before)");
+	if (mbCleanedUp) return;
 
 	if (mContext) {
 		mContext->ClearState();
@@ -144,14 +178,9 @@ void Device::CleanUp() {
 
 	mContext.Reset();
 	mFactory.Reset();
-
-#ifdef _DEBUG
-	ReportLiveObjects();
-#endif
-
-	DumpRefCount(mpLogFile, mDevice.Get(), L"ID3D11Device (after context reset)");
-
 	mDevice.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL Device::FlushDebugMessages() {
@@ -161,6 +190,11 @@ BOOL Device::FlushDebugMessages() {
 #endif 
 
 	return TRUE;
+}
+
+void Device::Flush() {
+	mContext->ClearState();
+	mContext->Flush();
 }
 
 BOOL Device::CreateDevice() {

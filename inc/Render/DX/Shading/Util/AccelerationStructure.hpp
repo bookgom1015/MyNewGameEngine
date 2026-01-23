@@ -106,6 +106,7 @@ namespace Render::DX {
 				UINT numRitems);
 
 		private:
+			BOOL mbCleanedUp{};
 			BOOL mbNeedToRebuildTLAS{};
 
 			Common::Debug::LogFile* mpLogFile{};

@@ -5,6 +5,10 @@
 
 using namespace Render::DX::Foundation;
 
+ShadingObject::ShadingObject() {}
+
+ShadingObject::~ShadingObject() {}
+
 BOOL ShadingObject::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	mpLogFile = pLogFile;
 	NullCheck(mpLogFile, pData);

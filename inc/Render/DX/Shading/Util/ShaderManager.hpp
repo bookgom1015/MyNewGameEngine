@@ -46,6 +46,7 @@ namespace Render::DX::Shading::Util {
 		BOOL BuildPdb(IDxcResult* const result, LPCWSTR fileName);
 
 	private:
+		BOOL mbCleanedUp{};
 		Common::Debug::LogFile* mpLogFile{};
 		UINT mThreadCount{};
 

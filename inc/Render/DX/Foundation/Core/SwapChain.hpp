@@ -64,6 +64,7 @@ namespace Render::DX::Foundation::Core {
 		BOOL BuildDescriptors();
 
 	private:
+		BOOL mbCleanedUp{};
 		InitData mInitData{};
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> mSwapChain{};

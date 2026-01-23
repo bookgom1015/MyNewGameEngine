@@ -59,6 +59,7 @@ namespace Render::DX::Foundation {
 			__forceinline constexpr UINT64 CurrentFence() const noexcept;
 
 		private:
+			BOOL mpCleanedUp{};
 			Common::Debug::LogFile* mpLogFile{};
 			Device* mpDevice{};
 

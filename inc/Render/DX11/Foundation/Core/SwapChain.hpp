@@ -36,6 +36,7 @@ namespace Render::DX11::Foundation::Core {
 	public:
 		virtual BOOL Initialize(
 			Common::Debug::LogFile* const pLogFile, void* const pData) override;
+		virtual void CleanUp() override;
 
 		virtual BOOL OnResize(UINT width, UINT height) override;
 
@@ -48,6 +49,7 @@ namespace Render::DX11::Foundation::Core {
 		BOOL CreateSwapChainBufferView();
 
 	private:
+		BOOL mbCleanedUp{};
 		InitData mInitData{};
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> mSwapChain{};

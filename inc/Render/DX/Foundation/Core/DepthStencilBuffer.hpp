@@ -42,6 +42,7 @@ namespace Render::DX::Foundation::Core {
 		BOOL BuildDescriptors();
 
 	private:
+		BOOL mbCleanedUp{};
 		InitData mInitData{};
 
 		std::unique_ptr<Resource::GpuResource> mDepthStencilBuffer{};

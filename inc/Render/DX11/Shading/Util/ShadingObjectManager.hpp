@@ -15,7 +15,7 @@ namespace Render::DX11::Shading::Util {
 		void CleanUp();
 
 	public:
-		BOOL CompileShaders(Shading::Util::ShaderManager* const pShaderManager, LPCWSTR baseDir);
+		BOOL CompileShaders();
 		BOOL BuildPipelineStates();
 		BOOL OnResize(UINT width, UINT height);
 		BOOL Update();
@@ -30,6 +30,7 @@ namespace Render::DX11::Shading::Util {
 		__forceinline T* Get();
 
 	private:
+		BOOL mbCleanedUp{};
 		Common::Debug::LogFile* mpLogFile{};
 
 		std::vector<std::unique_ptr<Foundation::ShadingObject>> mShadingObjects{};

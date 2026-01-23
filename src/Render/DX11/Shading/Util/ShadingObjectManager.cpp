@@ -16,18 +16,20 @@ BOOL ShadingObjectManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void ShadingObjectManager::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (const auto& obj : mShadingObjects)
 		obj->CleanUp();
 
 	mShadingObjectRefs.clear();
 	mShadingObjects.clear();
+
+	mbCleanedUp = TRUE;
 }
 
-BOOL ShadingObjectManager::CompileShaders(Shading::Util::ShaderManager* const pShaderManager, LPCWSTR baseDir) {
+BOOL ShadingObjectManager::CompileShaders() {
 	for (const auto& obj : mShadingObjects)
 		CheckReturn(mpLogFile, obj->CompileShaders());
-
-	CheckReturn(mpLogFile, pShaderManager->CompileShaders(baseDir));
 
 	return TRUE;
 }

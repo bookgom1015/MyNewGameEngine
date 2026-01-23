@@ -35,6 +35,20 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 	return TRUE;
 }
 
+void SwapChain::CleanUp() {
+	if (mbCleanedUp) return;
+
+	mhSwapChainBufferCopySrv.Reset();
+	mSwapChainBufferCopy.Reset();
+
+	mhSwapChainBufferRtv.Reset();
+	mSwapChainBuffer.Reset();
+
+	mSwapChain.Reset();
+
+	mbCleanedUp = TRUE;
+}
+
 BOOL SwapChain::OnResize(UINT width, UINT height) {
 	mInitData.Width = width;
 	mInitData.Height = height;

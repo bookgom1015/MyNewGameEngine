@@ -30,6 +30,8 @@ BOOL FrameResource::Initialize(
 }
 
 void FrameResource::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < Count; ++i) {
 		auto& allocator = mCmdAllocators[i];
 		if (allocator) allocator.Reset();
@@ -38,6 +40,8 @@ void FrameResource::CleanUp() {
 
 	mpDevice = nullptr;
 	mpLogFile = nullptr;
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL FrameResource::ResetCommandListAllocators() {

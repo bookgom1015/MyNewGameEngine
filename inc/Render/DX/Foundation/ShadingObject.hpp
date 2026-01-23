@@ -29,6 +29,10 @@ namespace Render::DX {
 
 		class ShadingObject {
 		public:
+			ShadingObject();
+			virtual ~ShadingObject();
+
+		public:
 			virtual UINT CbvSrvUavDescCount() const = 0;
 			virtual UINT RtvDescCount() const = 0;
 			virtual UINT DsvDescCount() const = 0;

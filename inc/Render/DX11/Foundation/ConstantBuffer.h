@@ -39,11 +39,12 @@ struct ObjectCB ObjectCB_Struct
 #ifndef MaterialCB_Struct
 #define MaterialCB_Struct {			\
 		DirectX::XMFLOAT4 Albedo;	\
-		DirectX::XMFLOAT4 Specular;	\
+		DirectX::XMFLOAT3 Specular;	\
+		FLOAT __ContantPad0__;		\
 		FLOAT Roughness;			\
 		FLOAT Metalness;			\
-		FLOAT __ContantPad0__;		\
 		FLOAT __ContantPad1__;		\
+		FLOAT __ContantPad2__;		\
 };
 #endif // MaterialCB_Struct
 

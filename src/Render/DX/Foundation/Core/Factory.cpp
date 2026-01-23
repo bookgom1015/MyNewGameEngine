@@ -22,6 +22,8 @@ BOOL Factory::Initialize(Common::Debug::LogFile* const pLogFile) {
 }
 
 void Factory::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (auto& adapter : mAdapters)
 		adapter.second.Reset();
 	mAdapters.clear();
@@ -33,6 +35,7 @@ void Factory::CleanUp() {
 #endif
 
 	mpLogFile = nullptr;
+	mbCleanedUp = TRUE;
 }
 
 BOOL Factory::CreateFactory() {

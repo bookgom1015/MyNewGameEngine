@@ -60,17 +60,37 @@ BOOL DxLowRenderer::Initialize(
 }
 
 void DxLowRenderer::CleanUp() {
-	if (mSwapChain) mSwapChain.reset();
-	if (mDepthStencilBuffer) mDepthStencilBuffer.reset();
-	if (mDescriptorHeap) mDescriptorHeap.reset();
-	if (mCommandObject) mCommandObject.reset();
-	if (mDevice) mDevice.reset();
-	if (mFactory) mFactory.reset();
+	if (mSwapChain) {
+		mSwapChain->CleanUp();
+		mSwapChain.reset();
+	}
+	if (mDepthStencilBuffer) {
+		mDepthStencilBuffer->CleanUp();
+		mDepthStencilBuffer.reset();
+	}
+	if (mDescriptorHeap) {
+		mDescriptorHeap->CleanUp();
+		mDescriptorHeap.reset();
+	}
+	if (mCommandObject) {
+		mCommandObject->CleanUp();
+		mCommandObject.reset();
+	}
+	if (mDevice) {
+		mDevice->CleanUp();
+		mDevice.reset();
+	}
+	if (mFactory) {
+		mFactory->CleanUp();
+		mFactory.reset();
+	}
 	if (mProcessor) mProcessor.reset();
 
 #ifdef _DEBUG
 	ReportLiveDXGIObjects();
 #endif 
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL DxLowRenderer::GetHWInfo() {

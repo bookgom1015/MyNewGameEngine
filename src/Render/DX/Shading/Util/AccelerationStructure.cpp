@@ -185,6 +185,8 @@ BOOL AccelerationStructureManager::Initialize(
 }
 
 void AccelerationStructureManager::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mTLAS) mTLAS.reset();
 
 	mBLASRefs.clear();
@@ -196,6 +198,8 @@ void AccelerationStructureManager::CleanUp() {
 	mpCommandObject = nullptr;
 	mpDevice = nullptr;
 	mpLogFile = nullptr;
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL AccelerationStructureManager::BuildBLAS(

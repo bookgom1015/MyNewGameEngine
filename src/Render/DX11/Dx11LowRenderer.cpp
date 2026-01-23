@@ -5,6 +5,7 @@
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Render/DX11/Foundation/Core/SwapChain.hpp"
+#include "Render/DX11/Foundation/Core/DepthStencilBuffer.hpp"
 
 using namespace Render::DX11;
 
@@ -12,6 +13,7 @@ Dx11LowRenderer::Dx11LowRenderer() {
 	mProcessor = std::make_unique<Common::Foundation::Core::Processor>();
 	mDevice = std::make_unique<Foundation::Core::Device>();
 	mSwapChain = std::make_unique<Foundation::Core::SwapChain>();
+	mDepthStencilBuffer = std::make_unique<Foundation::Core::DepthStencilBuffer>();
 }
 
 Dx11LowRenderer::~Dx11LowRenderer() {}
@@ -38,13 +40,33 @@ BOOL Dx11LowRenderer::Initialize(
 		initData->Device = mDevice.get();
 		CheckReturn(mpLogFile, mSwapChain->Initialize(pLogFile, initData.get()));
 	}
+	// DepthStencilBuffer
+	{
+		decltype(auto) initData = Foundation::Core::DepthStencilBuffer::MakeInitData();
+		initData->Width = width;
+		initData->Height = height;
+		initData->Device = mDevice.get();
+		CheckReturn(mpLogFile, mDepthStencilBuffer->Initialize(pLogFile, initData.get()));
+	}
 
 	return TRUE;
 }
 
 void Dx11LowRenderer::CleanUp() {
-	if (mSwapChain) mSwapChain.reset();
-	if (mDevice) mDevice.reset();
+	if (mDepthStencilBuffer) {
+		mDepthStencilBuffer->CleanUp();
+		mDepthStencilBuffer.reset();
+	}
+	if (mSwapChain) {
+		mSwapChain->CleanUp();
+		mSwapChain.reset();
+	}
+	if (mDevice) {
+		mDevice->CleanUp();
+		mDevice.reset();
+	}
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL Dx11LowRenderer::OnResize(UINT width, UINT height) {

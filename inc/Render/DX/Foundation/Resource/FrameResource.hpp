@@ -48,6 +48,7 @@ namespace Render::DX::Foundation {
 			UINT64 mFence{};
 
 		private:
+			BOOL mbCleanedUp{};
 			Common::Debug::LogFile* mpLogFile{};
 			Core::Device* mpDevice{};
 

@@ -54,7 +54,7 @@ BOOL VkRenderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildFramebuffers());
 
-	CheckReturn(mpLogFile, mpImGuiManager->InitializeVulkan());
+	//CheckReturn(mpLogFile, mpImGuiManager->InitializeVulkan());
 
 	return TRUE;
 }

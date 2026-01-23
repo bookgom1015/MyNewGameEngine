@@ -49,6 +49,7 @@ namespace Render::DX {
 				__forceinline T* Get();
 
 			private:
+				BOOL mbCleanedUp{};
 				Common::Debug::LogFile* mpLogFile{};
 
 				std::vector<std::unique_ptr<Foundation::ShadingObject>> mShadingObjects{};

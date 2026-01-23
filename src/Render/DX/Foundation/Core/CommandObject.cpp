@@ -66,6 +66,8 @@ BOOL CommandObject::Initialize(Common::Debug::LogFile* const pLogFile, Device* c
 }
 
 void CommandObject::CleanUp() {
+	if (mpCleanedUp) return;
+
 	FlushCommandQueue();
 
 	if (mFence) mFence.Reset();
@@ -82,6 +84,8 @@ void CommandObject::CleanUp() {
 #ifdef _DEBUG
 	if (mInfoQueue) mInfoQueue.Reset();
 #endif
+
+	mpCleanedUp = TRUE;
 }
 
 BOOL CommandObject::FlushCommandQueue() {

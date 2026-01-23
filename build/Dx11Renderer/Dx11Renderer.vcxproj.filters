@@ -55,6 +55,18 @@
     <Filter Include="Shader Files">
       <UniqueIdentifier>{b8f60392-370d-4a26-bdc2-f591e2649324}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Foundation\Resource">
+      <UniqueIdentifier>{239de6f8-1a81-441d-ae2a-05ce5c9bb3dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Foundation\Resource">
+      <UniqueIdentifier>{e5da1c20-bb7f-40f7-8744-2ce09b748a48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Foundation\Util">
+      <UniqueIdentifier>{991d8a63-0a02-4363-b36a-90071adf69d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Foundation\Util">
+      <UniqueIdentifier>{fddd53e3-11dd-44a6-b733-944c5fbf53dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Render\DX11\Dx11Renderer.cpp">
@@ -108,6 +120,27 @@
     <ClCompile Include="..\..\src\Render\DX11\Foundation\ConstantBuffer.cpp">
       <Filter>Source Files\Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\FrameResource.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\UploadBuffer.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\RenderItem.cpp">
+      <Filter>Source Files\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\MaterialData.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Resource\MeshGeometry.cpp">
+      <Filter>Source Files\Foundation\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Core\DepthStencilBuffer.cpp">
+      <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Foundation\Util\D3D11Util.cpp">
+      <Filter>Source Files\Foundation\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp">
@@ -149,6 +182,27 @@
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Light.h">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\FrameResource.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\UploadBuffer.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\RenderItem.hpp">
+      <Filter>Header Files\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\MeshGeometry.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\MaterialData.hpp">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Core\DepthStencilBuffer.hpp">
+      <Filter>Header Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.hpp">
+      <Filter>Header Files\Foundation\Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -169,6 +223,15 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL5\HlslCompaction.hlsli">
       <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Foundation\Resource\UploadBuffer.inl">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Foundation\Resource\MeshGeometry.inl">
+      <Filter>Header Files\Foundation\Resource</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Foundation\Core\DepthStencilBuffer.inl">
+      <Filter>Header Files\Foundation\Core</Filter>
     </None>
   </ItemGroup>
 </Project>

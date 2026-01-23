@@ -38,6 +38,7 @@ namespace Render::DX::Foundation {
 			BOOL CreateFactory();
 
 		private:
+			BOOL mbCleanedUp{};
 			Common::Debug::LogFile* mpLogFile{};
 
 			// Debugging

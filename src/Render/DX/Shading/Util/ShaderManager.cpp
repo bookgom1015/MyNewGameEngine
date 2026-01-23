@@ -148,6 +148,8 @@ BOOL ShaderManager::Initialize(Common::Debug::LogFile* const pLogFile, UINT numT
 }
 
 void ShaderManager::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < mThreadCount; ++i) {
 		mCompileMutexes[i].reset();
 
@@ -166,6 +168,7 @@ void ShaderManager::CleanUp() {
 	mUtils.clear();
 
 	mpLogFile = nullptr;
+	mbCleanedUp = TRUE;
 }
 
 BOOL ShaderManager::AddShader(const D3D12ShaderInfo& shaderInfo, Common::Foundation::Hash& hash) {

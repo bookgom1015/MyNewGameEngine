@@ -3,8 +3,16 @@
 #include "Render/DX11/Foundation/ShadingObject.hpp"
 
 namespace Render::DX11 {
-	namespace Foundation::Core {
-		class Device;
+	namespace Foundation {
+		struct RenderItem;
+
+		namespace Core {
+			class Device;
+		}
+
+		namespace Resource {
+			class FrameResource;
+		}
 	}
 
 	namespace Shading {
@@ -74,6 +82,14 @@ namespace Render::DX11 {
 				BOOL BuildResources();
 				BOOL BuildDescriptors();
 
+			public:
+				BOOL DrawGBuffer(
+					Foundation::Resource::FrameResource* const pFrameResource,
+					const D3D11_VIEWPORT& viewport,
+					ID3D11DepthStencilView* const pDsv,
+					Foundation::RenderItem** ppRitems,
+					UINT numRitems);
+
 			private:
 				InitData mInitData{};
 
@@ -86,6 +102,10 @@ namespace Render::DX11 {
 				std::array<Microsoft::WRL::ComPtr<ID3D11Texture2D>, Resource::Count> mResources{};
 				std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, Descriptor::Srv::Count> mhSrvs{};
 				std::array<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>, Descriptor::Rtv::Count> mhRtvs{};				
+
+				Microsoft::WRL::ComPtr<ID3D11VertexShader> mGBufferVS{};
+				Microsoft::WRL::ComPtr<ID3D11PixelShader> mGBufferPS{};
+				Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout{};
 			};
 
 			using InitDataPtr = std::unique_ptr<GBufferClass::InitData>;
