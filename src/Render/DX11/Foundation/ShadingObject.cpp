@@ -1,6 +1,9 @@
 #include "Render/DX11/Foundation/Core/pch_d3d11.h"
 #include "Render/DX11/Foundation/ShadingObject.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Render/DX11/Foundation/Core/Device.hpp"
+#include "Render/DX11/Foundation/Resource/FrameResource.hpp"
+#include "Render/DX11/Foundation/RenderItem.hpp"
 
 using namespace Render::DX11::Foundation;
 

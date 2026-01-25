@@ -137,6 +137,8 @@ BOOL Device::CreateGeometryShader(
 		SIZE_T BytecodeLength,
 		ID3D11ClassLinkage* pClassLinkage,
 		ID3D11GeometryShader** ppGeometryShader) {
+	CheckHRESULT(mpLogFile, mDevice->CreateGeometryShader(
+		pShaderBytecode, BytecodeLength, pClassLinkage, ppGeometryShader));
 	return TRUE;
 }
 
@@ -145,6 +147,8 @@ BOOL Device::CreatePixelShader(
 		SIZE_T BytecodeLength,
 		ID3D11ClassLinkage* pClassLinkage,
 		ID3D11PixelShader** ppPixelShader) {
+	CheckHRESULT(mpLogFile, mDevice->CreatePixelShader(
+		pShaderBytecode, BytecodeLength, pClassLinkage, ppPixelShader));
 	return TRUE;
 }
 
@@ -153,6 +157,8 @@ BOOL Device::CreateComputeShader(
 		SIZE_T BytecodeLength,
 		ID3D11ClassLinkage* pClassLinkage,
 		ID3D11ComputeShader** ppComputeShader) {
+	CheckHRESULT(mpLogFile, mDevice->CreateComputeShader(
+		pShaderBytecode, BytecodeLength, pClassLinkage, ppComputeShader));
 	return TRUE;
 }
 

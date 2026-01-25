@@ -56,6 +56,7 @@ namespace Render {
 			BOOL UpdatePassCB();
 			BOOL UpdateObjectCB();
 			BOOL UpdateMaterialCB();
+			BOOL UpdateLightCB();
 
 		private:
 			BOOL BuildRenderItem(
@@ -84,6 +85,8 @@ namespace Render {
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups{};
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRendableItems{};
 			BOOL mbMeshGeometryAdded{};
+
+			DirectX::BoundingSphere mSceneBounds{};
 		};
 	}
 }

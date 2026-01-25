@@ -8,7 +8,7 @@
 	//#include "./../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
 	//
 	//#include "./../../../inc/Render/DX/Foundation/ShadingConvention.h"
-	//#include "./../../../assets/Shaders/HLSL/ShaderUtil.hlsli"
+	#include "./../../../assets/Shaders/HLSL5/ShaderUtil.hlsli"
 	//
 	//#include "./../../../assets/Shaders/HLSL/Random.hlsli"
 	#include "./../../../inc/Common/Foundation/Mesh/Vertex.h"

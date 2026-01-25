@@ -6,8 +6,8 @@
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Render/DX11/Foundation/Resource/FrameResource.hpp"
 #include "Render/DX11/Foundation/Resource/MeshGeometry.hpp"
+#include "Render/DX11/Foundation/Resource/MaterialData.hpp"
 #include "Render/DX11/Foundation/Util/D3D11Util.hpp"
-#include "Render/DX11/Foundation/RenderItem.hpp"
 #include "Render/DX11/Shading/Util/ShaderManager.hpp"
 
 using namespace Render::DX11::Shading;
@@ -22,7 +22,7 @@ GBuffer::InitDataPtr GBuffer::MakeInitData() {
 
 GBuffer::GBufferClass::GBufferClass() {}
 
-GBuffer::GBufferClass::~GBufferClass() {}
+GBuffer::GBufferClass::~GBufferClass() { CleanUp(); }
 
 BOOL GBuffer::GBufferClass::Initialize(
 		Common::Debug::LogFile* const pLogFile, void* const pData) {
@@ -38,6 +38,8 @@ BOOL GBuffer::GBufferClass::Initialize(
 }
 
 void GBuffer::GBufferClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	mInputLayout.Reset();
 	mGBufferVS.Reset();
 	mGBufferPS.Reset();
@@ -49,6 +51,8 @@ void GBuffer::GBufferClass::CleanUp() {
 	for (auto& srv : mhSrvs) srv.Reset();
 	for (auto& rtv : mhRtvs) rtv.Reset();
 	for (auto& resource : mResources) resource.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL GBuffer::GBufferClass::CompileShaders() {
@@ -245,10 +249,12 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 	context->PSSetShader(mGBufferPS.Get(), nullptr, 0);
 
 	for (UINT i = 0; i < numRitems; ++i) {
+		auto ritem = ppRitems[i];
+
 		// ObjectCB
 		{
 			auto& objCB = pFrameResource->ObjectCB;
-			auto firstConstant = objCB.FirstConstant(i);
+			auto firstConstant = objCB.FirstConstant(ritem->ObjectCBIndex);
 			auto numConstants = objCB.NumConstants();
 			context->VSSetConstantBuffers1(
 				1, 1, objCB.CBAddress(), &firstConstant, &numConstants);
@@ -258,7 +264,7 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 		// MaterialCB
 		{
 			auto& matCB = pFrameResource->MaterialCB;
-			auto firstConstant = matCB.FirstConstant(i);
+			auto firstConstant = matCB.FirstConstant(ritem->Material->MaterialCBIndex);
 			auto numConstants = matCB.NumConstants();
 			context->VSSetConstantBuffers1(
 				2, 1, matCB.CBAddress(), &firstConstant, &numConstants);
@@ -268,8 +274,7 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 
 		static const UINT Stride = sizeof(Common::Foundation::Mesh::Vertex);
 		static const UINT Offset = 0;
-
-		auto ritem = ppRitems[i];
+		
 		context->IASetVertexBuffers(
 			0, 1, ritem->Geometry->VertexBufferAddress(), &Stride, &Offset);
 		context->IASetIndexBuffer(

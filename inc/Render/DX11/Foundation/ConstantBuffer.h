@@ -8,13 +8,15 @@
 #endif
 
 #ifndef PassCB_Struct
-#define PassCB_Struct {					\
-	DirectX::XMFLOAT4X4 View;			\
-	DirectX::XMFLOAT4X4 Proj;			\
-	DirectX::XMFLOAT4X4 ViewProj;		\
-	DirectX::XMFLOAT3	EyePosW;		\
-	DirectX::XMFLOAT2	JitteredOffset;	\
-	UINT FrameCount;					\
+#define PassCB_Struct {							\
+	DirectX::XMFLOAT4X4 View;					\
+	DirectX::XMFLOAT4X4 Proj;					\
+	DirectX::XMFLOAT4X4 ViewProj;				\
+	DirectX::XMFLOAT3	EyePosW;				\
+	FLOAT				__PassCB_ContantPad0__;	\
+	DirectX::XMFLOAT2	JitteredOffset;			\
+	UINT FrameCount;							\
+	FLOAT				__PassCB_ContantPad1__;	\
 };
 #endif // PassCB_Struct
 
@@ -37,14 +39,14 @@ struct PassCB PassCB_Struct
 struct ObjectCB ObjectCB_Struct
 
 #ifndef MaterialCB_Struct
-#define MaterialCB_Struct {			\
-		DirectX::XMFLOAT4 Albedo;	\
-		DirectX::XMFLOAT3 Specular;	\
-		FLOAT __ContantPad0__;		\
-		FLOAT Roughness;			\
-		FLOAT Metalness;			\
-		FLOAT __ContantPad1__;		\
-		FLOAT __ContantPad2__;		\
+#define MaterialCB_Struct {					\
+		DirectX::XMFLOAT4 Albedo;			\
+		DirectX::XMFLOAT3 Specular;			\
+		FLOAT __MatCB_ContantPad0__;		\
+		FLOAT Roughness;					\
+		FLOAT Metalness;					\
+		FLOAT __MatCB_ContantPad1__;		\
+		FLOAT __MatCB_ContantPad2__;		\
 };
 #endif // MaterialCB_Struct
 

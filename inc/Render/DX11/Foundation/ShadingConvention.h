@@ -23,6 +23,11 @@ namespace ShadingConvention {
 		const DXGI_FORMAT DepthStencilViewFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		const DXGI_FORMAT ShaderResourceViewFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	}
+
+	namespace Shadow {
+		const DXGI_FORMAT ZDepthMapFormat = DXGI_FORMAT_R32_TYPELESS;
+		const DXGI_FORMAT ShadowMapFormat = DXGI_FORMAT_R32_UINT;
+	}
 }
 
 #endif // __SHADINGCONVENTION_H__

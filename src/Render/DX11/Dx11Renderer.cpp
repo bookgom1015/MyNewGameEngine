@@ -15,7 +15,10 @@
 #include "Render/DX11/Foundation/RenderItem.hpp"
 #include "Render/DX11/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/DX11/Shading/Util/ShaderManager.hpp"
+#include "Render/DX11/Shading/Util/SamplerUtil.hpp"
 #include "Render/DX11/Shading/GBuffer.hpp"
+#include "Render/DX11/Shading/BRDF.hpp"
+#include "Render/DX11/Shading/Shadow.hpp"
 
 using namespace Render::DX11;
 using namespace DirectX;
@@ -35,6 +38,8 @@ Dx11Renderer::Dx11Renderer() {
 	mFrameResource = std::make_unique<Foundation::Resource::FrameResource>();
 
 	mShadingObjectManager->Add<Shading::GBuffer::GBufferClass>();
+	mShadingObjectManager->Add<Shading::BRDF::BRDFClass>();
+	mShadingObjectManager->Add<Shading::Shadow::ShadowClass>();
 }
 
 Dx11Renderer::~Dx11Renderer() { CleanUp(); }
@@ -47,6 +52,8 @@ BOOL Dx11Renderer::Initialize(
 		UINT width, UINT height) {
 	CheckReturn(pLogFile, Dx11LowRenderer::Initialize(
 		pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
+
+	CheckReturn(mpLogFile, Shading::Util::SamplerUtil::Initialize(mpLogFile, mDevice.get()));
 
 	CheckReturn(mpLogFile, mShadingObjectManager->Initialize(mpLogFile));
 	CheckReturn(mpLogFile, mShaderManager->Initialize(
@@ -64,6 +71,35 @@ BOOL Dx11Renderer::Initialize(
 		const auto obj = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
 		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
+	// BRDF
+	{
+		auto initData = Shading::BRDF::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// Shadow
+	{
+		auto initData = Shading::Shadow::MakeInitData();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		initData->TextureWidth = 4096;
+		initData->TextureHeight = 4096;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+
+	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
+	const FLOAT WidthSquared = 128.f * 128.f;
+	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
+
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	CheckReturn(mpLogFile, shadow->AddLight(LightType_Directional));
 
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
@@ -75,6 +111,8 @@ void Dx11Renderer::CleanUp() {
 	if (mbCleanedUp) return;
 
 	mDevice->Flush();
+
+	Shading::Util::SamplerUtil::CleanUp();
 
 	mRenderItems.clear();
 
@@ -127,6 +165,24 @@ BOOL Dx11Renderer::Draw() {
 		mSwapChain->ScreenViewport(),
 		mDepthStencilBuffer->DepthStencilView(),
 		ritems.data(), static_cast<UINT>(ritems.size())));
+
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	CheckReturn(mpLogFile, shadow->Run(
+		mFrameResource.get(),
+		gbuffer->PositionMapSrv(),
+		ritems.data(), static_cast<UINT>(ritems.size())));
+
+	const auto brdf = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
+	CheckReturn(mpLogFile, brdf->ComputeBRDF(
+		mFrameResource.get(),
+		mSwapChain->ScreenViewport(),
+		mSwapChain->SwapChainBufferRtv(),
+		gbuffer->AlbedoMapSrv(),
+		gbuffer->NormalMapSrv(),
+		gbuffer->PositionMapSrv(),
+		gbuffer->RoughnessMetalnessMapSrv(),
+		shadow->ShadowMapSrv(),
+		shadow->LightCount()));
 
 	CheckReturn(mpLogFile, mSwapChain->Present());
 
@@ -186,6 +242,7 @@ BOOL Dx11Renderer::UpdateCB() {
 	CheckReturn(mpLogFile, UpdatePassCB());
 	CheckReturn(mpLogFile, UpdateObjectCB());
 	CheckReturn(mpLogFile, UpdateMaterialCB());
+	CheckReturn(mpLogFile, UpdateLightCB());
 
 	return TRUE;
 }
@@ -219,7 +276,7 @@ BOOL Dx11Renderer::UpdateObjectCB() {
 	CheckReturn(mpLogFile, mFrameResource->ObjectCB.BeginFrame());
 
 	for (auto& ritem : mRenderItems) {
-		if (ritem->FrameDirty) {
+		if (TRUE) {
 			const XMMATRIX World = XMLoadFloat4x4(&ritem->World);
 
 			ObjectCB objCB{};
@@ -240,7 +297,7 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 	CheckReturn(mpLogFile, mFrameResource->MaterialCB.BeginFrame());
 
 	for (auto& material : mMaterials) {
-		if (material->FrameDirty) {
+		if (TRUE) {
 			MaterialCB matCB{};
 			matCB.Albedo = material->Albedo;
 			matCB.Roughness = material->Roughness;
@@ -254,6 +311,58 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 	}
 
 	mFrameResource->MaterialCB.EndFrame();
+
+	return TRUE;
+}
+
+BOOL Dx11Renderer::UpdateLightCB() {
+	LightCB lightCB{};
+
+	lightCB.AmbientLight = { 20.5f / 255.f, 204.f / 255.f, 230.f / 255.f, 0.05f };
+
+	lightCB._Light.Color = { 1.f, 244.f / 255.f, 185.f / 255.f };
+	lightCB._Light.Intensity = 4.f;
+	lightCB._Light.Type = LightType_Directional;
+	lightCB._Light.Index = 0;
+
+	XMVECTOR lightDir = XMVector3Normalize(XMVectorSet(
+		0.333333f, -0.333333f, 0.333333f, 0.f));
+	XMVECTOR lightPos = -2.f * mSceneBounds.Radius * lightDir;
+	XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
+	XMVECTOR lightUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
+
+	XMFLOAT3 sphereCenterLS;
+	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
+
+	const FLOAT l = sphereCenterLS.x - mSceneBounds.Radius;
+	const FLOAT b = sphereCenterLS.y - mSceneBounds.Radius;
+	const FLOAT n = sphereCenterLS.z - mSceneBounds.Radius;
+	const FLOAT r = sphereCenterLS.x + mSceneBounds.Radius;
+	const FLOAT t = sphereCenterLS.y + mSceneBounds.Radius;
+	const FLOAT f = sphereCenterLS.z + mSceneBounds.Radius;
+
+	const XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+	const XMMATRIX viewProj = XMMatrixMultiply(lightView, lightProj);
+	XMStoreFloat4x4(&lightCB._Light.Mat0, XMMatrixTranspose(viewProj));
+
+	XMMATRIX T(
+		0.5f, 0.f, 0.f, 0.f,
+		0.f, -0.5f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f,
+		0.5f, 0.5f, 0.f, 1.f
+	);
+
+	const XMMATRIX S = lightView * lightProj * T;
+	XMStoreFloat4x4(&lightCB._Light.Mat1, XMMatrixTranspose(S));
+
+	XMStoreFloat3(&lightCB._Light.Position, lightPos);
+	XMStoreFloat3(&lightCB._Light.Direction, lightDir);
+
+	CheckReturn(mpLogFile, mFrameResource->LightCB.BeginFrame());
+	mFrameResource->LightCB.CopyData(lightCB);
+	mFrameResource->LightCB.EndFrame();
 
 	return TRUE;
 }

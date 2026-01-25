@@ -3,18 +3,6 @@
 #include "Render/DX11/Foundation/ShadingObject.hpp"
 
 namespace Render::DX11 {
-	namespace Foundation {
-		struct RenderItem;
-
-		namespace Core {
-			class Device;
-		}
-
-		namespace Resource {
-			class FrameResource;
-		}
-	}
-
 	namespace Shading {
 		namespace GBuffer {
 			namespace Shader {
@@ -71,6 +59,12 @@ namespace Render::DX11 {
 				virtual ~GBufferClass();
 
 			public:
+				__forceinline ID3D11ShaderResourceView* AlbedoMapSrv();
+				__forceinline ID3D11ShaderResourceView* NormalMapSrv();
+				__forceinline ID3D11ShaderResourceView* PositionMapSrv();
+				__forceinline ID3D11ShaderResourceView* RoughnessMetalnessMapSrv();
+
+			public:
 				virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData);
 				virtual void CleanUp() override;
 
@@ -112,5 +106,23 @@ namespace Render::DX11 {
 
 			InitDataPtr MakeInitData();
 		}
+	}
+}
+
+namespace Render::DX11::Shading::GBuffer {
+	__forceinline ID3D11ShaderResourceView* GBufferClass::AlbedoMapSrv() {
+		return mhSrvs[Descriptor::Srv::E_Albedo].Get();
+	}
+
+	__forceinline ID3D11ShaderResourceView* GBufferClass::NormalMapSrv() {
+		return mhSrvs[Descriptor::Srv::E_Normal].Get();
+	}
+
+	__forceinline ID3D11ShaderResourceView* GBufferClass::PositionMapSrv() {
+		return mhSrvs[Descriptor::Srv::E_Position].Get();
+	}
+
+	__forceinline ID3D11ShaderResourceView* GBufferClass::RoughnessMetalnessMapSrv() {
+		return mhSrvs[Descriptor::Srv::E_RoughnessMetalness].Get();
 	}
 }

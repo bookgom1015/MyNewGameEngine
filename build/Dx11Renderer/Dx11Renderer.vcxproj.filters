@@ -141,6 +141,15 @@
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Util\D3D11Util.cpp">
       <Filter>Source Files\Foundation\Util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Shading\BRDF.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Shading\Util\SamplerUtil.cpp">
+      <Filter>Source Files\Shading Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Shading\Shadow.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp">
@@ -203,6 +212,15 @@
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.hpp">
       <Filter>Header Files\Foundation\Util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\BRDF.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\Util\SamplerUtil.hpp">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\Shadow.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -232,6 +250,39 @@
     </None>
     <None Include="..\..\inc\Render\DX11\Foundation\Core\DepthStencilBuffer.inl">
       <Filter>Header Files\Foundation\Core</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\ComputeBRDF.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\ShaderUtil.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Shading\Util\SamplerUtil.inl">
+      <Filter>Header Files\Shading Files\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\Samplers.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\BRDF.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\CookTorrance.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Shading\Shadow.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.inl">
+      <Filter>Header Files\Foundation\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\Shadow.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\DrawShadow.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\DrawZDepth.hlsl">
+      <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
 </Project>
