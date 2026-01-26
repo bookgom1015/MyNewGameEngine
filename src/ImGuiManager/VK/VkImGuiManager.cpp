@@ -43,7 +43,7 @@ BOOL VkImGuiManager::InitializeVulkan(
 	initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
 	CheckReturn(mpLogFile, ImGui_ImplVulkan_Init(&initInfo));
-	CheckReturn(mpLogFile, ImGui_ImplVulkan_CreateFontsTexture());
+	//CheckReturn(mpLogFile, ImGui_ImplVulkan_CreateFontsTexture());
 
 
 	mbIsVulkanInitialized = TRUE;

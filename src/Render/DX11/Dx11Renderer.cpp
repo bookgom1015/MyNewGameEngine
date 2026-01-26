@@ -23,6 +23,7 @@
 #include "Render/DX11/Shading/GammaCorrection.hpp"
 #include "Render/DX11/Shading/ToneMapping.hpp"
 #include "Render/DX11/Shading/TAA.hpp"
+#include "Render/DX11/Shading/EnvironmentMap.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
 using namespace Render::DX11;
@@ -48,6 +49,7 @@ Dx11Renderer::Dx11Renderer() {
 	mShadingObjectManager->Add<Shading::GammaCorrection::GammaCorrectionClass>();
 	mShadingObjectManager->Add<Shading::ToneMapping::ToneMappingClass>();
 	mShadingObjectManager->Add<Shading::TAA::TAAClass>();
+	mShadingObjectManager->Add<Shading::EnvironmentMap::EnvironmentMapClass>();
 }
 
 Dx11Renderer::~Dx11Renderer() { CleanUp(); }
@@ -69,68 +71,7 @@ BOOL Dx11Renderer::Initialize(
 
 	CheckReturn(mpLogFile, mFrameResource->Initalize(mpLogFile, mDevice.get()));
 
-	// GBuffer
-	{
-		auto initData = Shading::GBuffer::MakeInitData();
-		initData->Width = mClientWidth;
-		initData->Height = mClientHeight;
-		initData->Device = mDevice.get();
-		initData->ShaderManager = mShaderManager.get();
-		const auto obj = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
-		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
-	}
-	// BRDF
-	{
-		auto initData = Shading::BRDF::MakeInitData();
-		initData->Width = mClientWidth;
-		initData->Height = mClientHeight;
-		initData->Device = mDevice.get();
-		initData->ShaderManager = mShaderManager.get();
-		const auto obj = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
-		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
-	}
-	// Shadow
-	{
-		auto initData = Shading::Shadow::MakeInitData();
-		initData->ClientWidth = mClientWidth;
-		initData->ClientHeight = mClientHeight;
-		initData->TextureWidth = 4096;
-		initData->TextureHeight = 4096;
-		initData->Device = mDevice.get();
-		initData->ShaderManager = mShaderManager.get();
-		const auto obj = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
-		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
-	}
-	// GammaCorrection
-	{
-		auto initData = Shading::GammaCorrection::MakeInitData();
-		initData->Width = mClientWidth;
-		initData->Height = mClientHeight;
-		initData->Device = mDevice.get();
-		initData->ShaderManager = mShaderManager.get();
-		const auto obj = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
-		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
-	}
-	// ToneMapping
-	{
-		auto initData = Shading::ToneMapping::MakeInitData();
-		initData->Width = mClientWidth;
-		initData->Height = mClientHeight;
-		initData->Device = mDevice.get();
-		initData->ShaderManager = mShaderManager.get();
-		const auto obj = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
-		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
-	}
-	// TAA
-	{
-		auto initData = Shading::TAA::MakeInitData();
-		initData->Width = mClientWidth;
-		initData->Height = mClientHeight;
-		initData->Device = mDevice.get();
-		initData->ShaderManager = mShaderManager.get();
-		const auto obj = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
-		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
-	}
+	CheckReturn(mpLogFile, InitShadingObjects());
 
 	mSceneBounds.Center = XMFLOAT3(0.f, 0.f, 0.f);
 	const FLOAT WidthSquared = 128.f * 128.f;
@@ -142,6 +83,8 @@ BOOL Dx11Renderer::Initialize(
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
 
+	CheckReturn(mpLogFile, BuildSkySphere());
+
 	return TRUE;
 }
 
@@ -152,11 +95,12 @@ void Dx11Renderer::CleanUp() {
 
 	Shading::Util::SamplerUtil::CleanUp();
 
+	if (mSkySphere) mSkySphere.reset();
 	mRenderItems.clear();
 
-	for (auto& meshGeo : mMeshGeometries) {
+	for (auto& meshGeo : mMeshGeometries) 
 		meshGeo.second->CleanUp();
-	}
+	mMeshGeometries.clear();
 
 	if (mFrameResource) {
 		mFrameResource->CleanUp();
@@ -441,6 +385,83 @@ BOOL Dx11Renderer::UpdateGBufferCB() {
 	return TRUE;
 }
 
+BOOL Dx11Renderer::InitShadingObjects() {
+	// GBuffer
+	{
+		auto initData = Shading::GBuffer::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// BRDF
+	{
+		auto initData = Shading::BRDF::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// Shadow
+	{
+		auto initData = Shading::Shadow::MakeInitData();
+		initData->ClientWidth = mClientWidth;
+		initData->ClientHeight = mClientHeight;
+		initData->TextureWidth = 4096;
+		initData->TextureHeight = 4096;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// GammaCorrection
+	{
+		auto initData = Shading::GammaCorrection::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// ToneMapping
+	{
+		auto initData = Shading::ToneMapping::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// TAA
+	{
+		auto initData = Shading::TAA::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// EnvironmentMap
+	{
+		auto initData = Shading::EnvironmentMap::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::EnvironmentMap::EnvironmentMapClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+
+	return TRUE;
+}
+
 BOOL Dx11Renderer::BuildMeshGeometry(
 		Common::Foundation::Mesh::Mesh* const pMesh,
 		Foundation::Resource::MeshGeometry* const pMeshGeo) {
@@ -461,6 +482,29 @@ BOOL Dx11Renderer::BuildMeshGeometry(
 	}
 
 	mbMeshGeometryAdded = TRUE;
+
+	return TRUE;
+}
+
+BOOL Dx11Renderer::BuildMeshGeometry(
+		Common::Foundation::Mesh::Vertex* const pVertices,
+		UINT verticesByteSize,
+		UINT* const pIndices,
+		UINT indicesByteSize,
+		UINT numIndices,
+		Foundation::Resource::MeshGeometry* const pMeshGeo,
+		const std::string& name) {
+	CheckReturn(mpLogFile, pMeshGeo->Initialize(
+		mpLogFile, mDevice.get(),
+		pVertices, verticesByteSize,
+		pIndices, indicesByteSize, numIndices));
+
+	Foundation::Resource::SubmeshGeometry submesh;
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+	submesh.IndexCount = numIndices;
+
+	pMeshGeo->Subsets[name] = submesh;
 
 	return TRUE;
 }
@@ -503,9 +547,23 @@ BOOL Dx11Renderer::BuildRenderItem(
 }
 
 BOOL Dx11Renderer::BuildRenderItem(
-		Common::Foundation::Mesh::Mesh* const pMesh,
-		Foundation::Resource::MeshGeometry*& pMeshGeo) {
-	
+		Common::Foundation::Hash& hash,
+		Foundation::Resource::MeshGeometry* pMeshGeo,
+		const std::string& name,
+		const DirectX::XMMATRIX& world) {
+	auto ritem = std::make_unique<Foundation::RenderItem>();
+	hash = Foundation::RenderItem::Hash(ritem.get());
+
+	ritem->ObjectCBIndex = static_cast<INT>(mRenderItems.size());
+	ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	ritem->Geometry = pMeshGeo;
+	ritem->IndexCount = pMeshGeo->Subsets[name].IndexCount;
+	ritem->StartIndexLocation = pMeshGeo->Subsets[name].StartIndexLocation;
+	ritem->BaseVertexLocation = pMeshGeo->Subsets[name].BaseVertexLocation;
+	XMStoreFloat4x4(&ritem->World, world);
+
+	mSkySphere = std::move(ritem);
+
 	return TRUE;
 }
 
@@ -562,7 +620,7 @@ BOOL Dx11Renderer::BuildSkySphere() {
 	sphereSubmesh.StartIndexLocation = 0;
 	sphereSubmesh.BaseVertexLocation = 0;
 
-	const auto indexCount = static_cast<UINT>(sphere.GetIndices16().size());
+	const auto indexCount = static_cast<UINT>(sphere.Indices32.size());
 	const auto vertexCount = static_cast<UINT>(sphere.Vertices.size());
 
 	sphereSubmesh.IndexCount = indexCount;
@@ -575,16 +633,28 @@ BOOL Dx11Renderer::BuildSkySphere() {
 		vertices[index].TexCoord = sphere.Vertices[i].TexC;
 	}
 
-	std::vector<std::uint16_t> indices(indexCount);
-	for (UINT i = 0, end = static_cast<UINT>(sphere.GetIndices16().size()); i < end; ++i) {
+	std::vector<UINT> indices(indexCount);
+	for (UINT i = 0, end = static_cast<UINT>(sphere.Indices32.size()); i < end; ++i) {
 		const auto index = i + sphereSubmesh.StartIndexLocation;
-		indices[index] = sphere.GetIndices16()[i];
+		indices[index] = sphere.Indices32[i];
 	}
 
 	auto vertexByteSize = static_cast<UINT>(
 		sphere.Vertices.size() * sizeof(Common::Foundation::Mesh::Vertex));
 	auto indexByteSize = static_cast<UINT>(
-		sphere.Indices32.size() * sizeof(std::uint32_t));
+		sphere.Indices32.size() * sizeof(UINT));
+
+	auto meshGeo = std::make_unique<Foundation::Resource::MeshGeometry>();
+	CheckReturn(mpLogFile, BuildMeshGeometry(
+		vertices.data(), vertexByteSize,
+		indices.data(), indexByteSize, indexCount,
+		meshGeo.get(), "SkySphere"));
+
+	Common::Foundation::Hash hash{};
+	CheckReturn(mpLogFile, BuildRenderItem(
+		hash, meshGeo.get(), "SkySphere", XMMatrixScaling(1000.f, 1000.f, 1000.f)));
+
+	mMeshGeometries[hash] = std::move(meshGeo);
 
 	return TRUE;
 }

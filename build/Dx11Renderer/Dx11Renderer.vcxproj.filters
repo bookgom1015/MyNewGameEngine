@@ -168,6 +168,9 @@
     <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp">
       <Filter>External Files\FrankLuna</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Shading\EnvironmentMap.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp">
@@ -246,6 +249,9 @@
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX11\Shading\TAA.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\EnvironmentMap.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -327,6 +333,9 @@
       <Filter>Header Files\Shading Files</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL5\GBuffer.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Shading\GBuffer.inl">
       <Filter>Header Files\Shading Files</Filter>
     </None>
   </ItemGroup>

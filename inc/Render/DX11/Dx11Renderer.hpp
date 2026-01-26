@@ -60,17 +60,29 @@ namespace Render {
 			BOOL UpdateGBufferCB();
 
 		private:
+			BOOL InitShadingObjects();
+
 			BOOL BuildMeshGeometry(
 				Common::Foundation::Mesh::Mesh* const pMesh,
 				Foundation::Resource::MeshGeometry* const pMeshGeo);
+			BOOL BuildMeshGeometry(
+				Common::Foundation::Mesh::Vertex* const pVertices,
+				UINT verticesByteSize,
+				UINT* const pIndices,
+				UINT indicesByteSize,
+				UINT numIndices,
+				Foundation::Resource::MeshGeometry* const pMeshGeo,
+				const std::string& name);
 			BOOL BuildRenderItem(
 				Common::Foundation::Mesh::Mesh* const pMesh, 
 				Common::Foundation::Mesh::Transform* const pTransform,
 				Common::Foundation::Hash& hash,
 				Foundation::Resource::MeshGeometry* pMeshGeo);
 			BOOL BuildRenderItem(
-				Common::Foundation::Mesh::Mesh* const pMesh,
-				Foundation::Resource::MeshGeometry*& pMeshGeo);
+				Common::Foundation::Hash& hash,
+				Foundation::Resource::MeshGeometry* pMeshGeo,
+				const std::string& name,
+				const DirectX::XMMATRIX& world);
 			BOOL BuildMeshMaterial(
 				Common::Foundation::Mesh::Material* const pMaterial,
 				Foundation::Resource::MaterialData*& pMatData);

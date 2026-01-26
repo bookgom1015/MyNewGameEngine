@@ -66,6 +66,7 @@
     <ClCompile Include="..\..\src\Render\DX11\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Util\D3D11Util.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\BRDF.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Shading\EnvironmentMap.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\GBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\Shadow.cpp" />
@@ -94,6 +95,7 @@
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\BRDF.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\EnvironmentMap.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\GBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Shadow.hpp" />
@@ -116,6 +118,7 @@
     <None Include="..\..\inc\Render\DX11\Foundation\Resource\MeshGeometry.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.inl" />
+    <None Include="..\..\inc\Render\DX11\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Shadow.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\TAA.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\ToneMapping.inl" />
