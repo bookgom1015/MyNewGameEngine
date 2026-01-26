@@ -148,11 +148,6 @@ namespace Render {
 			Foundation::Resource::FrameResource* mpCurrentFrameResource{};
 			UINT mCurrentFrameResourceIndex{};
 
-			// Constant buffers
-			std::unique_ptr<ConstantBuffers::PassCB> mMainPassCB{};
-			std::unique_ptr<ConstantBuffers::LightCB> mLightCB{};
-			std::unique_ptr<ConstantBuffers::ProjectToCubeCB> mProjectToCubeCB{};
-
 			// Shading objects
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};
@@ -166,6 +161,7 @@ namespace Render {
 			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs{};
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups{};
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRendableItems{};
+			std::unique_ptr<Foundation::RenderItem> mSkySphere{};
 			BOOL mbMeshGeometryAdded{};
 
 			// Scene bounds

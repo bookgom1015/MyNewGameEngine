@@ -43,6 +43,8 @@ RTAO::RTAOClass::RTAOClass() {
 	mDebugMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+RTAO::RTAOClass::~RTAOClass() { CleanUp(); }
+
 UINT RTAO::RTAOClass::CbvSrvUavDescCount() const { return 0
 	+ Descriptor::AO::Count
 	+ Descriptor::TemporalCache::Count // Frame 0
@@ -69,6 +71,8 @@ BOOL RTAO::RTAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 void RTAO::RTAOClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mDebugMap) mDebugMap.reset();
 
 	for (UINT i = 0; i < 2; ++i) {
@@ -94,6 +98,8 @@ void RTAO::RTAOClass::CleanUp() {
 	mStateObjectProp.Reset();
 	mStateObject.Reset();
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL RTAO::RTAOClass::CompileShaders() {

@@ -8,6 +8,7 @@
 #include "./../../../inc/Render/DX/Foundation/HlslCompaction.h"
 #include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 #include "./../../../assets/Shaders/HLSL/ValuePackaging.hlsli"
+#include "./../../../assets/Shaders/HLSL/GBuffer.hlsli"
 
 ConstantBuffer<ConstantBuffers::PassCB>     cbPass      : register(b0);
 ConstantBuffer<ConstantBuffers::ObjectCB>   cbObject    : register(b1);
@@ -43,73 +44,7 @@ struct PixelOut {
     ShadingConvention::GBuffer::VelocityMapFormat           Velocity           : SV_TARGET6;
     ShadingConvention::GBuffer::PositionMapFormat           Position           : SV_TARGET7;
 };
-                                                                                                                                                                                                                                                                                    
-static const float gThresholdMatrix8x8[8][8] = {
-    {  0.f / 64.f, 48.f / 64.f, 12.f / 64.f, 60.f / 64.f,  3.f / 64.f, 51.f / 64.f, 15.f / 64.f, 63.f / 64.f },
-    { 32.f / 64.f, 16.f / 64.f, 44.f / 64.f, 28.f / 64.f, 35.f / 64.f, 19.f / 64.f, 47.f / 64.f, 31.f / 64.f },
-    {  8.f / 64.f, 56.f / 64.f,  4.f / 64.f, 52.f / 64.f, 11.f / 64.f, 59.f / 64.f,  7.f / 64.f, 55.f / 64.f },
-    { 40.f / 64.f, 24.f / 64.f, 36.f / 64.f, 20.f / 64.f, 43.f / 64.f, 27.f / 64.f, 39.f / 64.f, 23.f / 64.f },
-    {  2.f / 64.f, 50.f / 64.f, 14.f / 64.f, 62.f / 64.f,  1.f / 64.f, 49.f / 64.f, 13.f / 64.f, 61.f / 64.f },
-    { 34.f / 64.f, 18.f / 64.f, 46.f / 64.f, 30.f / 64.f, 33.f / 64.f, 17.f / 64.f, 45.f / 64.f, 29.f / 64.f },
-    { 10.f / 64.f, 58.f / 64.f,  6.f / 64.f, 54.f / 64.f,  9.f / 64.f, 57.f / 64.f,  5.f / 64.f, 53.f / 64.f },
-    { 42.f / 64.f, 26.f / 64.f, 38.f / 64.f, 22.f / 64.f, 41.f / 64.f, 25.f / 64.f, 37.f / 64.f, 21.f / 64.f }
-};     
-
-static const float gThresholdMatrix8x8_Ornament[8][8] = {
-    {  0.f / 64.f,  8.f / 64.f, 16.f / 64.f, 24.f / 64.f, 25.f / 64.f, 17.f / 64.f,  9.f / 64.f,  1.f / 64.f },
-    {  7.f / 64.f, 15.f / 64.f, 23.f / 64.f, 31.f / 64.f, 32.f / 64.f, 26.f / 64.f, 18.f / 64.f, 10.f / 64.f },
-    { 14.f / 64.f, 22.f / 64.f, 30.f / 64.f, 38.f / 64.f, 39.f / 64.f, 33.f / 64.f, 27.f / 64.f, 19.f / 64.f },
-    { 21.f / 64.f, 29.f / 64.f, 37.f / 64.f, 45.f / 64.f, 46.f / 64.f, 40.f / 64.f, 34.f / 64.f, 28.f / 64.f },
-    { 20.f / 64.f, 36.f / 64.f, 44.f / 64.f, 52.f / 64.f, 53.f / 64.f, 47.f / 64.f, 41.f / 64.f, 35.f / 64.f },
-    { 13.f / 64.f, 43.f / 64.f, 51.f / 64.f, 59.f / 64.f, 60.f / 64.f, 54.f / 64.f, 48.f / 64.f, 42.f / 64.f },
-    {  6.f / 64.f, 12.f / 64.f, 58.f / 64.f, 50.f / 64.f, 61.f / 64.f, 55.f / 64.f, 49.f / 64.f, 57.f / 64.f },
-    {  5.f / 64.f,  4.f / 64.f, 11.f / 64.f,  3.f / 64.f, 62.f / 64.f, 56.f / 64.f, 63.f / 64.f,  2.f / 64.f }
-};
-
-static const float gThresholdMatrix8x8_Honey[8][8] = {
-    { 12.f / 64.f, 20.f / 64.f, 28.f / 64.f, 36.f / 64.f, 37.f / 64.f, 29.f / 64.f, 21.f / 64.f, 13.f / 64.f },
-    { 19.f / 64.f,  4.f / 64.f, 44.f / 64.f, 52.f / 64.f, 53.f / 64.f, 45.f / 64.f,  5.f / 64.f, 27.f / 64.f },
-    { 11.f / 64.f, 43.f / 64.f,  2.f / 64.f, 60.f / 64.f, 61.f / 64.f,  3.f / 64.f, 51.f / 64.f, 35.f / 64.f },
-    { 18.f / 64.f, 50.f / 64.f, 59.f / 64.f,  0.f / 64.f,  1.f / 64.f, 58.f / 64.f, 42.f / 64.f, 26.f / 64.f },
-    { 25.f / 64.f, 41.f / 64.f, 57.f / 64.f,  8.f / 64.f,  9.f / 64.f, 56.f / 64.f, 34.f / 64.f, 17.f / 64.f },
-    { 33.f / 64.f, 49.f / 64.f,  7.f / 64.f, 55.f / 64.f, 54.f / 64.f,  6.f / 64.f, 48.f / 64.f, 24.f / 64.f },
-    { 40.f / 64.f, 15.f / 64.f, 47.f / 64.f, 31.f / 64.f, 30.f / 64.f, 46.f / 64.f, 23.f / 64.f, 39.f / 64.f },
-    { 14.f / 64.f, 22.f / 64.f, 38.f / 64.f, 16.f / 64.f, 17.f / 64.f, 37.f / 64.f, 29.f / 64.f, 21.f / 64.f }
-};
-
-static const float gThresholdMatrix8x8_Wave[8][8] = {
-    { 32.f / 64.f, 40.f / 64.f, 48.f / 64.f, 56.f / 64.f, 48.f / 64.f, 40.f / 64.f, 32.f / 64.f, 24.f / 64.f },
-    { 24.f / 64.f, 32.f / 64.f, 40.f / 64.f, 48.f / 64.f, 40.f / 64.f, 32.f / 64.f, 24.f / 64.f, 16.f / 64.f },
-    { 16.f / 64.f, 24.f / 64.f, 32.f / 64.f, 40.f / 64.f, 32.f / 64.f, 24.f / 64.f, 16.f / 64.f,  8.f / 64.f },
-    {  8.f / 64.f, 16.f / 64.f, 24.f / 64.f, 32.f / 64.f, 24.f / 64.f, 16.f / 64.f,  8.f / 64.f,  0.f / 64.f },
-    {  0.f / 64.f,  8.f / 64.f, 16.f / 64.f, 24.f / 64.f, 16.f / 64.f,  8.f / 64.f,  0.f / 64.f,  8.f / 64.f },
-    {  8.f / 64.f, 16.f / 64.f, 24.f / 64.f, 32.f / 64.f, 24.f / 64.f, 16.f / 64.f,  8.f / 64.f, 16.f / 64.f },
-    { 16.f / 64.f, 24.f / 64.f, 32.f / 64.f, 40.f / 64.f, 32.f / 64.f, 24.f / 64.f, 16.f / 64.f, 24.f / 64.f },
-    { 24.f / 64.f, 32.f / 64.f, 40.f / 64.f, 48.f / 64.f, 40.f / 64.f, 32.f / 64.f, 24.f / 64.f, 32.f / 64.f }
-};
-
-static const float gThresholdMatrix8x8_Swirl[8][8] = {
-    { 20.f / 64.f, 28.f / 64.f, 36.f / 64.f, 44.f / 64.f, 52.f / 64.f, 60.f / 64.f, 61.f / 64.f, 53.f / 64.f },
-    { 12.f / 64.f,  4.f / 64.f,  5.f / 64.f, 13.f / 64.f, 21.f / 64.f, 29.f / 64.f, 37.f / 64.f, 45.f / 64.f },
-    { 19.f / 64.f, 11.f / 64.f,  3.f / 64.f,  2.f / 64.f, 10.f / 64.f, 18.f / 64.f, 26.f / 64.f, 34.f / 64.f },
-    { 27.f / 64.f, 35.f / 64.f, 17.f / 64.f,  9.f / 64.f,  1.f / 64.f,  0.f / 64.f,  8.f / 64.f, 16.f / 64.f },
-    { 43.f / 64.f, 51.f / 64.f, 25.f / 64.f, 33.f / 64.f, 41.f / 64.f, 49.f / 64.f, 57.f / 64.f, 56.f / 64.f },
-    { 59.f / 64.f, 58.f / 64.f, 50.f / 64.f, 42.f / 64.f, 34.f / 64.f, 26.f / 64.f, 18.f / 64.f, 10.f / 64.f },
-    { 62.f / 64.f, 54.f / 64.f, 46.f / 64.f, 38.f / 64.f, 30.f / 64.f, 22.f / 64.f, 14.f / 64.f,  6.f / 64.f },
-    { 63.f / 64.f, 55.f / 64.f, 47.f / 64.f, 39.f / 64.f, 31.f / 64.f, 23.f / 64.f, 15.f / 64.f,  7.f / 64.f }
-};
-
-static const float gThresholdMatrix8x8_Organic[8][8] = {
-    {  7.f / 64.f, 35.f / 64.f, 12.f / 64.f, 44.f / 64.f, 18.f / 64.f, 53.f / 64.f, 27.f / 64.f, 60.f / 64.f },
-    { 42.f / 64.f, 16.f / 64.f, 50.f / 64.f,  3.f / 64.f, 38.f / 64.f,  9.f / 64.f, 57.f / 64.f, 24.f / 64.f },
-    { 21.f / 64.f, 46.f / 64.f,  5.f / 64.f, 32.f / 64.f, 14.f / 64.f, 41.f / 64.f, 11.f / 64.f, 55.f / 64.f },
-    { 49.f / 64.f, 28.f / 64.f, 37.f / 64.f,  1.f / 64.f, 58.f / 64.f, 20.f / 64.f, 34.f / 64.f,  8.f / 64.f },
-    {  4.f / 64.f, 52.f / 64.f, 23.f / 64.f, 47.f / 64.f, 10.f / 64.f, 61.f / 64.f, 15.f / 64.f, 40.f / 64.f },
-    { 31.f / 64.f,  6.f / 64.f, 54.f / 64.f, 19.f / 64.f, 45.f / 64.f, 13.f / 64.f, 36.f / 64.f, 26.f / 64.f },
-    { 56.f / 64.f, 17.f / 64.f, 39.f / 64.f, 29.f / 64.f,  2.f / 64.f, 48.f / 64.f, 22.f / 64.f, 51.f / 64.f },
-    { 25.f / 64.f, 59.f / 64.f, 33.f / 64.f, 43.f / 64.f, 30.f / 64.f,  0.f / 64.f, 62.f / 64.f, 63.f / 64.f }
-};
-
+                                                                                                                                                                                                                                                                            
 VertexOut VS(in VertexIn vin) {
     VertexOut vout = (VertexOut) 0;
     
@@ -196,7 +131,7 @@ void MS(
 
 PixelOut PS(in VertexOut pin) {
     pin.CurrPosH /= pin.CurrPosH.w;
-        
+
     const float2 UV = pin.CurrPosH.xy * 0.5f + 0.5f;
     const uint2 ScreenPos = (uint2)floor(UV * gTexDim);
     const uint2 ScreenPos_xN = ScreenPos >> 1;

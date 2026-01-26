@@ -91,7 +91,7 @@ namespace Render::DX::Shading {
 
 		public:
 			SSAOClass();
-			virtual ~SSAOClass() = default;
+			virtual ~SSAOClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* AOCoefficientResource(Resource::AO::Type type) const;

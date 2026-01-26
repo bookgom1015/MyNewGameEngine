@@ -48,8 +48,8 @@ namespace Render::DX::Shading::Util {
 			};
 
 		public:
-			TextureScalerClass() = default;
-			virtual ~TextureScalerClass() = default;
+			TextureScalerClass();
+			virtual ~TextureScalerClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

@@ -40,6 +40,8 @@ SSAO::SSAOClass::SSAOClass() {
 	mDebugMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+SSAO::SSAOClass::~SSAOClass() { CleanUp(); }
+
 UINT SSAO::SSAOClass::CbvSrvUavDescCount() const { return 0
 	+ Descriptor::AO::Count
 	+ Descriptor::TemporalCache::Count // Frame 0
@@ -71,6 +73,8 @@ BOOL SSAO::SSAOClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 void SSAO::SSAOClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mDebugMap) mDebugMap.reset();
 
 	for (UINT i = 0; i < 2; ++i) {
@@ -95,6 +99,8 @@ void SSAO::SSAOClass::CleanUp() {
 
 	mPipelineState.Reset();
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL SSAO::SSAOClass::CompileShaders() {

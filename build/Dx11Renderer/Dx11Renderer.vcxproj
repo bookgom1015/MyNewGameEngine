@@ -19,6 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -62,8 +66,11 @@
     <ClCompile Include="..\..\src\Render\DX11\Foundation\ShadingObject.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Foundation\Util\D3D11Util.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\BRDF.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Shading\GammaCorrection.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\GBuffer.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\Shadow.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Shading\TAA.cpp" />
+    <ClCompile Include="..\..\src\Render\DX11\Shading\ToneMapping.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\Util\SamplerUtil.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\Util\ShaderManager.cpp" />
     <ClCompile Include="..\..\src\Render\DX11\Shading\Util\ShadingObjectManager.cpp" />
@@ -87,8 +94,11 @@
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\ShadingObject.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\BRDF.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\GammaCorrection.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\GBuffer.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Shadow.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\TAA.hpp" />
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\ToneMapping.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Util\SamplerUtil.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Util\ShaderManager.hpp" />
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Util\ShadingObjectManager.hpp" />
@@ -96,6 +106,7 @@
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL5\BRDF.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL5\CookTorrance.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL5\GBuffer.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL5\HlslCompaction.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL5\Samplers.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL5\Shadow.hlsli" />
@@ -106,6 +117,8 @@
     <None Include="..\..\inc\Render\DX11\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Shadow.inl" />
+    <None Include="..\..\inc\Render\DX11\Shading\TAA.inl" />
+    <None Include="..\..\inc\Render\DX11\Shading\ToneMapping.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Util\SamplerUtil.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Util\ShaderManager.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Util\ShadingObjectManager.inl" />
@@ -131,6 +144,21 @@
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\Shaders\HLSL5\DrawZDepth.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL5\GammaCorrection.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL5\ToneMapping.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Shaders\HLSL5\TAA.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

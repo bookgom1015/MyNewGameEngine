@@ -40,7 +40,7 @@ namespace Render::DX::Shading {
 
 		public:
 			RaySortingClass();
-			virtual ~RaySortingClass() = default;
+			virtual ~RaySortingClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* RayIndexOffsetMap() const;

@@ -70,7 +70,7 @@ namespace Render::DX::Shading {
 
 		public:
 			ShadowClass();
-			virtual ~ShadowClass() = default;
+			virtual ~ShadowClass();
 
 		public:
 			void Lights(std::vector<Render::DX::Foundation::Light*>& lights);

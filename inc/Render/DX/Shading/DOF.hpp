@@ -92,7 +92,7 @@ namespace Render::DX::Shading {
 
 		public:
 			DOFClass();
-			virtual ~DOFClass() = default;
+			virtual ~DOFClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

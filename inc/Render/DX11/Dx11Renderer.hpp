@@ -57,19 +57,28 @@ namespace Render {
 			BOOL UpdateObjectCB();
 			BOOL UpdateMaterialCB();
 			BOOL UpdateLightCB();
+			BOOL UpdateGBufferCB();
 
 		private:
+			BOOL BuildMeshGeometry(
+				Common::Foundation::Mesh::Mesh* const pMesh,
+				Foundation::Resource::MeshGeometry* const pMeshGeo);
 			BOOL BuildRenderItem(
 				Common::Foundation::Mesh::Mesh* const pMesh, 
 				Common::Foundation::Mesh::Transform* const pTransform,
 				Common::Foundation::Hash& hash,
 				Foundation::Resource::MeshGeometry* pMeshGeo);
+			BOOL BuildRenderItem(
+				Common::Foundation::Mesh::Mesh* const pMesh,
+				Foundation::Resource::MeshGeometry*& pMeshGeo);
 			BOOL BuildMeshMaterial(
 				Common::Foundation::Mesh::Material* const pMaterial,
 				Foundation::Resource::MaterialData*& pMatData);
 			BOOL BuildMeshTextures(
 				Common::Foundation::Mesh::Material* const pMaterial,
 				Foundation::Resource::MaterialData* const pMatData);
+
+			BOOL BuildSkySphere();
 
 		private:
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
@@ -84,6 +93,7 @@ namespace Render {
 			std::unordered_map<Common::Foundation::Hash, Foundation::RenderItem*> mRenderItemRefs{};
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRenderItemGroups{};
 			std::array<std::vector<Foundation::RenderItem*>, Common::Foundation::Mesh::RenderType::Count> mRendableItems{};
+			std::unique_ptr<Foundation::RenderItem> mSkySphere{};
 			BOOL mbMeshGeometryAdded{};
 
 			DirectX::BoundingSphere mSceneBounds{};

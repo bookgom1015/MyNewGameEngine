@@ -20,6 +20,10 @@ MipmapGenerator::InitDataPtr MipmapGenerator::MakeInitData() {
 	return std::unique_ptr<MipmapGeneratorClass::InitData>(new MipmapGeneratorClass::InitData());
 }
 
+MipmapGenerator::MipmapGeneratorClass::MipmapGeneratorClass() {}
+
+MipmapGenerator::MipmapGeneratorClass::~MipmapGeneratorClass() { CleanUp(); }
+
 UINT MipmapGenerator::MipmapGeneratorClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT MipmapGenerator::MipmapGeneratorClass::RtvDescCount() const { return 0; }
@@ -37,10 +41,14 @@ BOOL MipmapGenerator::MipmapGeneratorClass::Initialize(Common::Debug::LogFile* c
 }
 
 void MipmapGenerator::MipmapGeneratorClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL MipmapGenerator::MipmapGeneratorClass::CompileShaders() {

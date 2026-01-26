@@ -50,6 +50,7 @@ namespace Render::DX {
 			virtual BOOL Update();
 
 		protected:
+			BOOL mbCleanedUp{};
 			Common::Debug::LogFile* mpLogFile{};
 		};
 	}

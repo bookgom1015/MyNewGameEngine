@@ -75,7 +75,7 @@ namespace Render::DX::Shading {
 
 		public:
 			EyeAdaptionClass();
-			virtual ~EyeAdaptionClass() = default;
+			virtual ~EyeAdaptionClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* Luminance() const;

@@ -30,6 +30,8 @@ EyeAdaption::EyeAdaptionClass::EyeAdaptionClass() {
 	mSmoothedLuminance = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+EyeAdaption::EyeAdaptionClass::~EyeAdaptionClass() { CleanUp(); }
+
 UINT EyeAdaption::EyeAdaptionClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT EyeAdaption::EyeAdaptionClass::RtvDescCount() const { return 0; }
@@ -50,6 +52,8 @@ BOOL EyeAdaption::EyeAdaptionClass::Initialize(
 }
 
 void EyeAdaption::EyeAdaptionClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mSmoothedLuminance) mSmoothedLuminance.reset();
 	if (mPrevLuminance) mPrevLuminance.reset();
 	if (mAvgLogLuminance) mAvgLogLuminance.reset();
@@ -60,6 +64,8 @@ void EyeAdaption::EyeAdaptionClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL EyeAdaption::EyeAdaptionClass::CompileShaders() {

@@ -45,6 +45,8 @@ Shadow::ShadowClass::ShadowClass() {
 	mShadowMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+Shadow::ShadowClass::~ShadowClass() { CleanUp(); }
+
 void Shadow::ShadowClass::Lights(std::vector<Render::DX::Foundation::Light*>& lights) {
 	for (UINT i = 0; i < mLightCount; ++i)
 		lights.push_back(mLights[i].get());
@@ -86,6 +88,8 @@ BOOL Shadow::ShadowClass::Initialize(Common::Debug::LogFile* const pLogFile, voi
 }
 
 void Shadow::ShadowClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mShadowMap) mShadowMap.reset();
 
 	for (UINT i = 0; i < MaxLights; ++i) {
@@ -98,6 +102,8 @@ void Shadow::ShadowClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL Shadow::ShadowClass::CompileShaders() {

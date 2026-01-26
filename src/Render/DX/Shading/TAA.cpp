@@ -28,6 +28,8 @@ TAA::TAAClass::TAAClass() {
 	mHistoryMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+TAA::TAAClass::~TAAClass() { CleanUp(); }
+
 UINT TAA::TAAClass::CbvSrvUavDescCount() const { return 1; }
 
 UINT TAA::TAAClass::RtvDescCount() const { return 0; }
@@ -51,12 +53,16 @@ BOOL TAA::TAAClass::Initialize(Common::Debug::LogFile* const pLogFile, void* con
 }
 
 void TAA::TAAClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mHistoryMap) mHistoryMap.reset();
 
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL TAA::TAAClass::CompileShaders() {

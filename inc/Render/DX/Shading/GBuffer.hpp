@@ -96,7 +96,7 @@ namespace Render::DX::Shading {
 
 		public:
 			GBufferClass();
-			virtual ~GBufferClass() = default;
+			virtual ~GBufferClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* AlbedoMap() const;

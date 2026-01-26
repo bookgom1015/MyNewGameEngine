@@ -26,6 +26,8 @@ SSCS::SSCSClass::SSCSClass() {
 	mContactShadowMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+SSCS::SSCSClass::~SSCSClass() { CleanUp(); }
+
 UINT SSCS::SSCSClass::CbvSrvUavDescCount() const { return 3; }
 
 UINT SSCS::SSCSClass::RtvDescCount() const { return 0; }
@@ -44,6 +46,8 @@ BOOL SSCS::SSCSClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 void SSCS::SSCSClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mContactShadowMap) mContactShadowMap.reset();
 	if (mDebugMap) mDebugMap.reset();
 
@@ -52,6 +56,8 @@ void SSCS::SSCSClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL SSCS::SSCSClass::CompileShaders() {

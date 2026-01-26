@@ -19,6 +19,7 @@ namespace Render::DX11 {
 					E_Normal,
 					E_Position,
 					E_RoughnessMetalness,
+					E_Velocity,
 					Count
 				};
 			}
@@ -30,6 +31,7 @@ namespace Render::DX11 {
 						E_Normal,
 						E_Position,
 						E_RoughnessMetalness,
+						E_Velocity,
 						Count
 					};
 				}
@@ -40,6 +42,7 @@ namespace Render::DX11 {
 						E_Normal,
 						E_Position,
 						E_RoughnessMetalness,
+						E_Velocity,
 						Count
 					};
 				}
@@ -63,6 +66,7 @@ namespace Render::DX11 {
 				__forceinline ID3D11ShaderResourceView* NormalMapSrv();
 				__forceinline ID3D11ShaderResourceView* PositionMapSrv();
 				__forceinline ID3D11ShaderResourceView* RoughnessMetalnessMapSrv();
+				__forceinline ID3D11ShaderResourceView* VelocityMapSrv();
 
 			public:
 				virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData);
@@ -110,19 +114,23 @@ namespace Render::DX11 {
 }
 
 namespace Render::DX11::Shading::GBuffer {
-	__forceinline ID3D11ShaderResourceView* GBufferClass::AlbedoMapSrv() {
+	ID3D11ShaderResourceView* GBufferClass::AlbedoMapSrv() {
 		return mhSrvs[Descriptor::Srv::E_Albedo].Get();
 	}
 
-	__forceinline ID3D11ShaderResourceView* GBufferClass::NormalMapSrv() {
+	ID3D11ShaderResourceView* GBufferClass::NormalMapSrv() {
 		return mhSrvs[Descriptor::Srv::E_Normal].Get();
 	}
 
-	__forceinline ID3D11ShaderResourceView* GBufferClass::PositionMapSrv() {
+	ID3D11ShaderResourceView* GBufferClass::PositionMapSrv() {
 		return mhSrvs[Descriptor::Srv::E_Position].Get();
 	}
 
-	__forceinline ID3D11ShaderResourceView* GBufferClass::RoughnessMetalnessMapSrv() {
+	ID3D11ShaderResourceView* GBufferClass::RoughnessMetalnessMapSrv() {
 		return mhSrvs[Descriptor::Srv::E_RoughnessMetalness].Get();
+	}
+
+	ID3D11ShaderResourceView* GBufferClass::VelocityMapSrv() {
+		return mhSrvs[Descriptor::Srv::E_Velocity].Get();
 	}
 }

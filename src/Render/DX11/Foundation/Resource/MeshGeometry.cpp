@@ -54,3 +54,8 @@ void MeshGeometry::CleanUp() {
 
 	mbCleanedUp = TRUE;
 }
+
+Common::Foundation::Hash Render::DX11::Foundation::Resource::MeshGeometry::Hash(MeshGeometry* ptr) {
+	uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+	return Common::Util::HashUtil::HashCombine(0, static_cast<Common::Foundation::Hash>(addr));
+}

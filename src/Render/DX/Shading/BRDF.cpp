@@ -23,6 +23,8 @@ BRDF::InitDataPtr BRDF::MakeInitData() {
 
 BRDF::BRDFClass::BRDFClass() {}
 
+BRDF::BRDFClass::~BRDFClass() { CleanUp(); }
+
 UINT BRDF::BRDFClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT BRDF::BRDFClass::RtvDescCount() const { return 0; }
@@ -39,11 +41,15 @@ BOOL BRDF::BRDFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 void BRDF::BRDFClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL BRDF::BRDFClass::CompileShaders() {

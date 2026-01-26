@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common/Util/HashUtil.hpp"
+
 namespace Common {
 	namespace Debug {
 		struct LogFile;
@@ -42,6 +44,8 @@ namespace Render::DX11::Foundation {
 				UINT const *const pIndexData, UINT indexByteSize,
 				UINT indexCount);
 			void CleanUp();
+
+			static Common::Foundation::Hash Hash(MeshGeometry* ptr);
 
 		public:
 			BOOL mbCleanedUp{};

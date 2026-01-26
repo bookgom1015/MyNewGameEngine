@@ -28,6 +28,8 @@ DOF::DOFClass::DOFClass() {
 	mCircleOfConfusionMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+DOF::DOFClass::~DOFClass() { CleanUp(); }
+
 UINT DOF::DOFClass::CbvSrvUavDescCount() const { return 0 
 	+ 2 // CircleOfConfusionMap Srv Uav
 	; 
@@ -50,6 +52,8 @@ BOOL DOF::DOFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* con
 }
 
 void DOF::DOFClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mCircleOfConfusionMap) mCircleOfConfusionMap.reset();
 	if (mFocalDistanceBuffer) mFocalDistanceBuffer.reset();
 
@@ -58,6 +62,8 @@ void DOF::DOFClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL DOF::DOFClass::CompileShaders() {

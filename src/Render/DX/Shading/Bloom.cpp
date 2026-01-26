@@ -29,6 +29,8 @@ Bloom::BloomClass::BloomClass() {
 	}
 }
 
+Bloom::BloomClass::~BloomClass() { CleanUp(); }
+
 UINT Bloom::BloomClass::CbvSrvUavDescCount() const { return 0 +
 	Resource::Count +	// HightlightMap Srvs
 	Resource::Count +	// HightlightMap Uavs
@@ -52,6 +54,8 @@ BOOL Bloom::BloomClass::Initialize(Common::Debug::LogFile* const pLogFile, void*
 }
 
 void Bloom::BloomClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (auto& resource : mBloomMaps) 
 		if (resource) resource.reset();
 
@@ -63,6 +67,8 @@ void Bloom::BloomClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL Bloom::BloomClass::CompileShaders() {

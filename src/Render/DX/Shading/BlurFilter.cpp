@@ -24,6 +24,8 @@ BlurFilter::InitDataPtr BlurFilter::MakeInitData() {
 
 BlurFilter::BlurFilterClass::BlurFilterClass() {}
 
+BlurFilter::BlurFilterClass::~BlurFilterClass() { CleanUp(); }
+
 UINT BlurFilter::BlurFilterClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT BlurFilter::BlurFilterClass::RtvDescCount() const { return 0; }
@@ -40,10 +42,14 @@ BOOL BlurFilter::BlurFilterClass::Initialize(Common::Debug::LogFile* const pLogF
 }
 
 void BlurFilter::BlurFilterClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL BlurFilter::BlurFilterClass::CompileShaders() {

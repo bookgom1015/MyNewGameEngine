@@ -33,6 +33,8 @@ RayGen::RayGenClass::RayGenClass() {
 	mGeneratorURNG.seed(1729);
 }
 
+RayGen::RayGenClass::~RayGenClass() { CleanUp(); }
+
 UINT RayGen::RayGenClass::CbvSrvUavDescCount() const { return 0 
 	+ 1 // RayDirectionOriginDepthMap
 	+ 1 // DebugMap
@@ -73,6 +75,8 @@ BOOL RayGen::RayGenClass::Initialize(Common::Debug::LogFile* const pLogFile, voi
 }
 
 void RayGen::RayGenClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	mSamplesGPUBuffer.CleanUp();
 	mHemisphereSamplesGPUBuffer.CleanUp();
 
@@ -83,6 +87,8 @@ void RayGen::RayGenClass::CleanUp() {
 	mRootSignature.Reset();
 
 	if (mRandomSampler) mRandomSampler.reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL RayGen::RayGenClass::CompileShaders() {

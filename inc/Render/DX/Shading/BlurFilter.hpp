@@ -62,7 +62,7 @@ namespace Render::DX::Shading {
 
 		public:
 			BlurFilterClass();
-			virtual ~BlurFilterClass() = default;
+			virtual ~BlurFilterClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -88,7 +88,7 @@ namespace Render::DX::Shading {
 				UINT texWidth, UINT texHeight);
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
 			Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature{};
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};

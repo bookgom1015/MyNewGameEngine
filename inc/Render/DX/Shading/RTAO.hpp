@@ -101,7 +101,7 @@ namespace Render::DX::Shading {
 
 		public:
 			RTAOClass();
-			virtual ~RTAOClass() = default;
+			virtual ~RTAOClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* AOCoefficientResource(Resource::AO::Type type) const;

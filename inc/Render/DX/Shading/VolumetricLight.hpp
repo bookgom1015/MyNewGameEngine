@@ -97,7 +97,7 @@ namespace Render::DX::Shading {
 
 		public:
 			VolumetricLightClass();
-			virtual ~VolumetricLightClass() = default;
+			virtual ~VolumetricLightClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

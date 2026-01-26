@@ -23,7 +23,7 @@ ChromaticAberration::InitDataPtr ChromaticAberration::MakeInitData() {
 
 ChromaticAberration::ChromaticAberrationClass::ChromaticAberrationClass() {}
 
-ChromaticAberration::ChromaticAberrationClass::~ChromaticAberrationClass() {}
+ChromaticAberration::ChromaticAberrationClass::~ChromaticAberrationClass() { CleanUp(); }
 
 UINT ChromaticAberration::ChromaticAberrationClass::CbvSrvUavDescCount() const { return 0; }
 
@@ -42,10 +42,14 @@ BOOL ChromaticAberration::ChromaticAberrationClass::Initialize(
 }
 
 void ChromaticAberration::ChromaticAberrationClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL ChromaticAberration::ChromaticAberrationClass::CompileShaders() {

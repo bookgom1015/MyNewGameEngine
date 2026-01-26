@@ -56,7 +56,7 @@ namespace Render::DX::Shading {
 			};
 		public:
 			RayGenClass();
-			virtual ~RayGenClass() = default;
+			virtual ~RayGenClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* RayDirectionOriginDepthMap() const;

@@ -86,7 +86,7 @@ namespace Render::DX::Shading {
 
 		public:
 			BRDFClass();
-			virtual ~BRDFClass() = default;
+			virtual ~BRDFClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

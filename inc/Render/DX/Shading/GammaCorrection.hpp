@@ -45,7 +45,7 @@ namespace Render::DX::Shading {
 
 		public:
 			GammaCorrectionClass();
-			virtual ~GammaCorrectionClass() = default;
+			virtual ~GammaCorrectionClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

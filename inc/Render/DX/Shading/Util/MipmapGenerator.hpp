@@ -45,8 +45,8 @@ namespace Render::DX::Shading::Util {
 			};
 
 		public:
-			MipmapGeneratorClass() = default;
-			virtual ~MipmapGeneratorClass() = default;
+			MipmapGeneratorClass();
+			virtual ~MipmapGeneratorClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

@@ -25,6 +25,8 @@ ToneMapping::ToneMappingClass::ToneMappingClass() {
 	mIntermediateCopyMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+ToneMapping::ToneMappingClass::~ToneMappingClass() { CleanUp(); }
+
 UINT ToneMapping::ToneMappingClass::CbvSrvUavDescCount() const { return 0 +
 	+ 1 // IntermediateMapSrv
 	+ 1 // IntermediateCopyMapSrv
@@ -47,6 +49,8 @@ BOOL ToneMapping::ToneMappingClass::Initialize(Common::Debug::LogFile* const pLo
 }
 
 void ToneMapping::ToneMappingClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mIntermediateCopyMap) mIntermediateCopyMap.reset();
 	if (mIntermediateMap) mIntermediateMap.reset();
 
@@ -54,6 +58,8 @@ void ToneMapping::ToneMappingClass::CleanUp() {
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL ToneMapping::ToneMappingClass::CompileShaders() {

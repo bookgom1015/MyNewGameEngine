@@ -114,7 +114,7 @@ namespace Render::DX::Shading {
 
 		public:
 			EnvironmentMapClass();
-			virtual ~EnvironmentMapClass() = default;
+			virtual ~EnvironmentMapClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* DiffuseIrradianceCubeMap() const;

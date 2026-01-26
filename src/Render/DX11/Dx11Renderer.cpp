@@ -5,6 +5,7 @@
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
 #include "Common/Foundation/Mesh/Transform.hpp"
+#include "Common/Util/MathUtil.hpp"
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Render/DX11/Foundation/Core/SwapChain.hpp"
 #include "Render/DX11/Foundation/Core/DepthStencilBuffer.hpp"
@@ -19,6 +20,10 @@
 #include "Render/DX11/Shading/GBuffer.hpp"
 #include "Render/DX11/Shading/BRDF.hpp"
 #include "Render/DX11/Shading/Shadow.hpp"
+#include "Render/DX11/Shading/GammaCorrection.hpp"
+#include "Render/DX11/Shading/ToneMapping.hpp"
+#include "Render/DX11/Shading/TAA.hpp"
+#include "FrankLuna/GeometryGenerator.h"
 
 using namespace Render::DX11;
 using namespace DirectX;
@@ -40,6 +45,9 @@ Dx11Renderer::Dx11Renderer() {
 	mShadingObjectManager->Add<Shading::GBuffer::GBufferClass>();
 	mShadingObjectManager->Add<Shading::BRDF::BRDFClass>();
 	mShadingObjectManager->Add<Shading::Shadow::ShadowClass>();
+	mShadingObjectManager->Add<Shading::GammaCorrection::GammaCorrectionClass>();
+	mShadingObjectManager->Add<Shading::ToneMapping::ToneMappingClass>();
+	mShadingObjectManager->Add<Shading::TAA::TAAClass>();
 }
 
 Dx11Renderer::~Dx11Renderer() { CleanUp(); }
@@ -91,6 +99,36 @@ BOOL Dx11Renderer::Initialize(
 		initData->Device = mDevice.get();
 		initData->ShaderManager = mShaderManager.get();
 		const auto obj = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// GammaCorrection
+	{
+		auto initData = Shading::GammaCorrection::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// ToneMapping
+	{
+		auto initData = Shading::ToneMapping::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
+		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
+	}
+	// TAA
+	{
+		auto initData = Shading::TAA::MakeInitData();
+		initData->Width = mClientWidth;
+		initData->Height = mClientHeight;
+		initData->Device = mDevice.get();
+		initData->ShaderManager = mShaderManager.get();
+		const auto obj = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
 		CheckReturn(mpLogFile, obj->Initialize(mpLogFile, initData.get()));
 	}
 
@@ -172,17 +210,43 @@ BOOL Dx11Renderer::Draw() {
 		gbuffer->PositionMapSrv(),
 		ritems.data(), static_cast<UINT>(ritems.size())));
 
+	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
 	const auto brdf = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
 	CheckReturn(mpLogFile, brdf->ComputeBRDF(
 		mFrameResource.get(),
 		mSwapChain->ScreenViewport(),
-		mSwapChain->SwapChainBufferRtv(),
+		tone->InterMediateMapRtv(),
 		gbuffer->AlbedoMapSrv(),
 		gbuffer->NormalMapSrv(),
 		gbuffer->PositionMapSrv(),
 		gbuffer->RoughnessMetalnessMapSrv(),
 		shadow->ShadowMapSrv(),
 		shadow->LightCount()));
+
+	CheckReturn(mpLogFile, tone->Apply(
+		mFrameResource.get(),
+		mSwapChain->ScreenViewport(),
+		mSwapChain->SwapChainBuffer(),
+		mSwapChain->SwapChainBufferRtv()));
+
+	const auto gamma = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
+	CheckReturn(mpLogFile, gamma->Apply(
+		mFrameResource.get(),
+		mSwapChain->ScreenViewport(),
+		mSwapChain->SwapChainBuffer(),
+		mSwapChain->SwapChainBufferRtv(),
+		mSwapChain->SwapChainBufferCopy(),
+		mSwapChain->SwapChainBufferCopySrv()));
+
+	const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
+	CheckReturn(mpLogFile, taa->Apply(
+		mFrameResource.get(),
+		mSwapChain->ScreenViewport(),
+		mSwapChain->SwapChainBuffer(),
+		mSwapChain->SwapChainBufferRtv(),
+		mSwapChain->SwapChainBufferCopy(),
+		mSwapChain->SwapChainBufferCopySrv(),
+		gbuffer->VelocityMapSrv()));
 
 	CheckReturn(mpLogFile, mSwapChain->Present());
 
@@ -191,24 +255,8 @@ BOOL Dx11Renderer::Draw() {
 
 BOOL Dx11Renderer::AddMesh(Common::Foundation::Mesh::Mesh* const pMesh, Common::Foundation::Mesh::Transform* const pTransform, Common::Foundation::Hash& hash) {
 	auto meshGeo = std::make_unique<Foundation::Resource::MeshGeometry>();
-	CheckReturn(mpLogFile, meshGeo->Initialize(
-		mpLogFile, mDevice.get(),
-		pMesh->Vertices(), pMesh->VerticesByteSize(),
-		pMesh->Indices(), pMesh->IndicesByteSize(), pMesh->IndexCount()));
 
-	std::vector<Common::Foundation::Mesh::Mesh::SubsetPair> subsets;
-	pMesh->Subsets(subsets);
-
-	for (const auto& subset : subsets) {
-		Foundation::Resource::SubmeshGeometry submesh;
-		submesh.StartIndexLocation = subset.second.StartIndexLocation;
-		submesh.BaseVertexLocation = 0;
-		submesh.IndexCount = subset.second.Size;
-		meshGeo->Subsets[subset.first] = submesh;
-	}
-
-	mbMeshGeometryAdded = TRUE;
-
+	CheckReturn(mpLogFile, BuildMeshGeometry(pMesh, meshGeo.get()));
 	CheckReturn(mpLogFile, BuildRenderItem(pMesh, pTransform, hash, meshGeo.get()));	
 
 	mMeshGeometries[hash] = std::move(meshGeo);
@@ -243,6 +291,7 @@ BOOL Dx11Renderer::UpdateCB() {
 	CheckReturn(mpLogFile, UpdateObjectCB());
 	CheckReturn(mpLogFile, UpdateMaterialCB());
 	CheckReturn(mpLogFile, UpdateLightCB());
+	CheckReturn(mpLogFile, UpdateGBufferCB());
 
 	return TRUE;
 }
@@ -250,20 +299,27 @@ BOOL Dx11Renderer::UpdateCB() {
 BOOL Dx11Renderer::UpdatePassCB() {
 	static UINT counter = 0;
 
-	PassCB passCB{};
+	static PassCB passCB{ .ViewProj = Common::Util::MathUtil::Identity4x4() };
 	passCB.FrameCount = counter++;
 
+	passCB.PrevViewProj = passCB.ViewProj;
 	const XMMATRIX view = XMLoadFloat4x4(&mpCamera->View());
 	const XMMATRIX proj = XMLoadFloat4x4(&mpCamera->Proj());
 	const XMMATRIX viewProj = XMMatrixMultiply(view, proj);
 
+	const XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	const XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+
 	XMStoreFloat4x4(&passCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&passCB.InvView, XMMatrixTranspose(invView));
 	XMStoreFloat4x4(&passCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&passCB.InvProj, XMMatrixTranspose(invProj));
 	XMStoreFloat4x4(&passCB.ViewProj, XMMatrixTranspose(viewProj));
 	XMStoreFloat3(&passCB.EyePosW, mpCamera->Position());
 
-	//const auto OffsetIndex = static_cast<UINT>(counter % mTAA->HaltonSequenceSize());
-	//passCB.JitteredOffset = mTAA->HaltonSequence(OffsetIndex);
+	const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
+	const auto OffsetIndex = static_cast<UINT>(counter % taa->HaltonSequenceSize());
+	passCB.JitteredOffset = taa->HaltonSequence(OffsetIndex);
 
 	CheckReturn(mpLogFile, mFrameResource->PassCB.BeginFrame());
 	mFrameResource->PassCB.CopyData(passCB);
@@ -277,9 +333,12 @@ BOOL Dx11Renderer::UpdateObjectCB() {
 
 	for (auto& ritem : mRenderItems) {
 		if (TRUE) {
+			const XMMATRIX PrevWorld = XMLoadFloat4x4(&ritem->PrevWorld);
 			const XMMATRIX World = XMLoadFloat4x4(&ritem->World);
 
 			ObjectCB objCB{};
+
+			XMStoreFloat4x4(&objCB.PrevWorld, XMMatrixTranspose(PrevWorld));
 			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(World));
 
 			mFrameResource->ObjectCB.CopyData(objCB, ritem->ObjectCBIndex);
@@ -367,6 +426,45 @@ BOOL Dx11Renderer::UpdateLightCB() {
 	return TRUE;
 }
 
+BOOL Dx11Renderer::UpdateGBufferCB() {
+	GBufferCB gbufferCB{};
+
+	gbufferCB.TexDim = { 
+		static_cast<FLOAT>(mClientWidth), static_cast<FLOAT>(mClientHeight) };
+	gbufferCB.DitheringMaxDist = 0.4f;
+	gbufferCB.DitheringMinDist = 0.1f;
+
+	CheckReturn(mpLogFile, mFrameResource->GBufferCB.BeginFrame());
+	mFrameResource->GBufferCB.CopyData(gbufferCB);
+	mFrameResource->GBufferCB.EndFrame();
+
+	return TRUE;
+}
+
+BOOL Dx11Renderer::BuildMeshGeometry(
+		Common::Foundation::Mesh::Mesh* const pMesh,
+		Foundation::Resource::MeshGeometry* const pMeshGeo) {
+	CheckReturn(mpLogFile, pMeshGeo->Initialize(
+		mpLogFile, mDevice.get(),
+		pMesh->Vertices(), pMesh->VerticesByteSize(),
+		pMesh->Indices(), pMesh->IndicesByteSize(), pMesh->IndexCount()));
+
+	std::vector<Common::Foundation::Mesh::Mesh::SubsetPair> subsets;
+	pMesh->Subsets(subsets);
+
+	for (const auto& subset : subsets) {
+		Foundation::Resource::SubmeshGeometry submesh;
+		submesh.StartIndexLocation = subset.second.StartIndexLocation;
+		submesh.BaseVertexLocation = 0;
+		submesh.IndexCount = subset.second.Size;
+		pMeshGeo->Subsets[subset.first] = submesh;
+	}
+
+	mbMeshGeometryAdded = TRUE;
+
+	return TRUE;
+}
+
 BOOL Dx11Renderer::BuildRenderItem(
 		Common::Foundation::Mesh::Mesh* const pMesh,
 		Common::Foundation::Mesh::Transform* const pTransform,
@@ -401,6 +499,13 @@ BOOL Dx11Renderer::BuildRenderItem(
 		mRenderItems.push_back(std::move(ritem));
 	}
 
+	return TRUE;
+}
+
+BOOL Dx11Renderer::BuildRenderItem(
+		Common::Foundation::Mesh::Mesh* const pMesh,
+		Foundation::Resource::MeshGeometry*& pMeshGeo) {
+	
 	return TRUE;
 }
 
@@ -445,6 +550,41 @@ BOOL Dx11Renderer::BuildMeshTextures(
 	if (!pMaterial->SpecularMap.empty()) {
 
 	}
+
+	return TRUE;
+}
+
+BOOL Dx11Renderer::BuildSkySphere() {
+	GeometryGenerator geoGen{};
+	GeometryGenerator::MeshData sphere = geoGen.CreateSphere(1.f, 32, 32);
+
+	Foundation::Resource::SubmeshGeometry sphereSubmesh;
+	sphereSubmesh.StartIndexLocation = 0;
+	sphereSubmesh.BaseVertexLocation = 0;
+
+	const auto indexCount = static_cast<UINT>(sphere.GetIndices16().size());
+	const auto vertexCount = static_cast<UINT>(sphere.Vertices.size());
+
+	sphereSubmesh.IndexCount = indexCount;
+
+	std::vector<Common::Foundation::Mesh::Vertex> vertices(vertexCount);
+	for (UINT i = 0, end = static_cast<UINT>(sphere.Vertices.size()); i < end; ++i) {
+		const auto index = i + sphereSubmesh.BaseVertexLocation;
+		vertices[index].Position = sphere.Vertices[i].Position;
+		vertices[index].Normal = sphere.Vertices[i].Normal;
+		vertices[index].TexCoord = sphere.Vertices[i].TexC;
+	}
+
+	std::vector<std::uint16_t> indices(indexCount);
+	for (UINT i = 0, end = static_cast<UINT>(sphere.GetIndices16().size()); i < end; ++i) {
+		const auto index = i + sphereSubmesh.StartIndexLocation;
+		indices[index] = sphere.GetIndices16()[i];
+	}
+
+	auto vertexByteSize = static_cast<UINT>(
+		sphere.Vertices.size() * sizeof(Common::Foundation::Mesh::Vertex));
+	auto indexByteSize = static_cast<UINT>(
+		sphere.Indices32.size() * sizeof(std::uint32_t));
 
 	return TRUE;
 }

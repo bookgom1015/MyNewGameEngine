@@ -10,8 +10,11 @@
 #ifndef PassCB_Struct
 #define PassCB_Struct {							\
 	DirectX::XMFLOAT4X4 View;					\
+	DirectX::XMFLOAT4X4 InvView;				\
 	DirectX::XMFLOAT4X4 Proj;					\
+	DirectX::XMFLOAT4X4 InvProj;				\
 	DirectX::XMFLOAT4X4 ViewProj;				\
+	DirectX::XMFLOAT4X4 PrevViewProj;			\
 	DirectX::XMFLOAT3	EyePosW;				\
 	FLOAT				__PassCB_ContantPad0__;	\
 	DirectX::XMFLOAT2	JitteredOffset;			\
@@ -29,6 +32,7 @@ struct PassCB PassCB_Struct
 #ifndef ObjectCB_Struct
 #define ObjectCB_Struct {				\
 		DirectX::XMFLOAT4X4 World;		\
+		DirectX::XMFLOAT4X4 PrevWorld;	\
 };
 #endif // ObjectCB_Struct
 
@@ -68,5 +72,19 @@ struct MaterialCB MaterialCB_Struct
 #endif // LightCB_register
 
 struct LightCB LightCB_Struct
+
+#ifndef GBufferCB_Struct
+#define GBufferCB_Struct {				\
+			DirectX::XMFLOAT2 TexDim;	\
+			FLOAT DitheringMaxDist;		\
+			FLOAT DitheringMinDist;		\
+};
+#endif // GBufferCB_Struct
+
+#ifndef GBufferCB_register
+#define GBufferCB_register(__reg) cbuffer GBufferCB : register(__reg) GBufferCB_Struct
+#endif // GBufferCB_register
+
+struct GBufferCB GBufferCB_Struct
 
 #endif // __CONSTANTBUFFER_H__

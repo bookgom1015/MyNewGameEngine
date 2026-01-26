@@ -23,6 +23,16 @@ namespace ShaderUtil {
         
         return viewZ;
     }
+    
+    float2 CalcVelocity(in float4 curr_pos, in float4 prev_pos) {
+        curr_pos.xy = (curr_pos.xy + (float2) 1.f) * 0.5f;
+        curr_pos.y = 1.f - curr_pos.y;
+
+        prev_pos.xy = (prev_pos.xy + (float2) 1.f) * 0.5f;
+        prev_pos.y = 1.f - prev_pos.y;
+
+        return (curr_pos - prev_pos).xy;
+    }
 }
 
 #ifndef FitToScreenVertexOut

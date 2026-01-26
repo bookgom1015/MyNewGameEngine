@@ -25,6 +25,7 @@ namespace Render::DX11::Foundation::Resource {
 		UploadBuffer<ObjectCB> ObjectCB{};
 		UploadBuffer<MaterialCB> MaterialCB{};
 		UploadBuffer<LightCB> LightCB{};
+		UploadBuffer<GBufferCB> GBufferCB{};
 
 	private:
 		BOOL mbCleanedUp{};

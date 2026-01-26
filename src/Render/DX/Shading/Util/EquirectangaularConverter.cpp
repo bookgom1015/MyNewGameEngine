@@ -23,7 +23,7 @@ EquirectangularConverter::InitDataPtr EquirectangularConverter::MakeInitData() {
 
 EquirectangularConverter::EquirectangularConverterClass::EquirectangularConverterClass() {}
 
-EquirectangularConverter::EquirectangularConverterClass::~EquirectangularConverterClass() {}
+EquirectangularConverter::EquirectangularConverterClass::~EquirectangularConverterClass() { CleanUp(); }
 
 UINT EquirectangularConverter::EquirectangularConverterClass::CbvSrvUavDescCount() const { return 0; }
 
@@ -41,11 +41,15 @@ BOOL EquirectangularConverter::EquirectangularConverterClass::Initialize(Common:
 }
 
 void EquirectangularConverter::EquirectangularConverterClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL EquirectangularConverter::EquirectangularConverterClass::CompileShaders() {

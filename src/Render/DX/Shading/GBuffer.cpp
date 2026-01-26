@@ -30,6 +30,8 @@ GBuffer::GBufferClass::GBufferClass() {
 		mResources[i] = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+GBuffer::GBufferClass::~GBufferClass() { CleanUp(); }
+
 UINT GBuffer::GBufferClass::CbvSrvUavDescCount() const { return NumRenderTargtes
 	+ 1 // CachedNormalDepthMap
 	; 
@@ -51,6 +53,8 @@ BOOL GBuffer::GBufferClass::Initialize(Common::Debug::LogFile* const pLogFile, v
 }
 
 void GBuffer::GBufferClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < Resource::Count; ++i)
 		mResources[i].reset();
 
@@ -58,6 +62,8 @@ void GBuffer::GBufferClass::CleanUp() {
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL GBuffer::GBufferClass::CompileShaders() {

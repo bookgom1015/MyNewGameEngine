@@ -22,6 +22,8 @@ MotionBlur::InitDataPtr MotionBlur::MakeInitData() {
 
 MotionBlur::MotionBlurClass::MotionBlurClass() {}
 
+MotionBlur::MotionBlurClass::~MotionBlurClass() { CleanUp(); }
+
 UINT MotionBlur::MotionBlurClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT MotionBlur::MotionBlurClass::RtvDescCount() const { return 0; }
@@ -39,10 +41,14 @@ BOOL MotionBlur::MotionBlurClass::Initialize(Common::Debug::LogFile* const pLogF
 }
 
 void MotionBlur::MotionBlurClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL MotionBlur::MotionBlurClass::CompileShaders() {

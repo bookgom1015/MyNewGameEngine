@@ -26,7 +26,6 @@ namespace Common {
 		enum RenderType {
 			E_Opaque = 0,
 			E_Translucent,
-			E_Sky,
 			Count
 		};
 

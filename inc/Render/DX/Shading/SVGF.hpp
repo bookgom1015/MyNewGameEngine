@@ -212,7 +212,7 @@ namespace Render::DX::Shading {
 
 		public:
 			SVGFClass();
-			virtual ~SVGFClass() = default;
+			virtual ~SVGFClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

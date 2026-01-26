@@ -29,6 +29,8 @@ VolumetricLight::VolumetricLightClass::VolumetricLightClass() {
 		mFrustumVolumeMaps[i] = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+VolumetricLight::VolumetricLightClass::~VolumetricLightClass() { CleanUp(); }
+
 UINT VolumetricLight::VolumetricLightClass::CbvSrvUavDescCount() const { return 0 +
 	+ Descriptor::FrustumVolumeMap::Count // For previous volume maps 
 	+ Descriptor::FrustumVolumeMap::Count // For current volume maps
@@ -51,6 +53,8 @@ BOOL VolumetricLight::VolumetricLightClass::Initialize(Common::Debug::LogFile* c
 }
 
 void VolumetricLight::VolumetricLightClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < 2; ++i) {
 		auto& resource = mFrustumVolumeMaps[i];
 		if (resource) resource.reset();
@@ -61,6 +65,8 @@ void VolumetricLight::VolumetricLightClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL VolumetricLight::VolumetricLightClass::CompileShaders() {

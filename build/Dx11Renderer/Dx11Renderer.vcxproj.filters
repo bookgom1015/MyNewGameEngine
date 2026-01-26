@@ -67,6 +67,12 @@
     <Filter Include="Source Files\Foundation\Util">
       <UniqueIdentifier>{fddd53e3-11dd-44a6-b733-944c5fbf53dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External Files">
+      <UniqueIdentifier>{bf332dac-353c-4fcb-8b17-b12cdecf723f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Files\FrankLuna">
+      <UniqueIdentifier>{4f035144-493c-4121-a2ec-073234687ee0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Render\DX11\Dx11Renderer.cpp">
@@ -150,6 +156,18 @@
     <ClCompile Include="..\..\src\Render\DX11\Shading\Shadow.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Shading\GammaCorrection.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Shading\ToneMapping.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Render\DX11\Shading\TAA.cpp">
+      <Filter>Source Files\Shading Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\FrankLuna\GeometryGenerator.cpp">
+      <Filter>External Files\FrankLuna</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp">
@@ -221,6 +239,15 @@
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Shadow.hpp">
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\GammaCorrection.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\ToneMapping.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Render\DX11\Shading\TAA.hpp">
+      <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -283,6 +310,24 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL5\DrawZDepth.hlsl">
       <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\GammaCorrection.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\ToneMapping.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Shading\ToneMapping.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\TAA.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX11\Shading\TAA.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\GBuffer.hlsli">
+      <Filter>Header Files\Shading Files</Filter>
     </None>
   </ItemGroup>
 </Project>

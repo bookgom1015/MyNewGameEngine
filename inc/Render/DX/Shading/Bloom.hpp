@@ -98,7 +98,7 @@ namespace Render::DX::Shading {
 
 		public:
 			BloomClass();
-			virtual ~BloomClass() = default;
+			virtual ~BloomClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
@@ -145,7 +145,7 @@ namespace Render::DX::Shading {
 				BlurFunc blurFunc);
 
 		private:
-			InitData mInitData;
+			InitData mInitData{};
 
 			std::array<Microsoft::WRL::ComPtr<ID3D12RootSignature>, RootSignature::Count> mRootSignatures{};
 			std::array<Microsoft::WRL::ComPtr<ID3D12PipelineState>, PipelineState::Count> mPipelineStates{};

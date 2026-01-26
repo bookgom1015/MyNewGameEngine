@@ -218,6 +218,7 @@
     <None Include="..\..\assets\Shaders\HLSL\CrossBilateralWeights.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\EquirectangularConverter.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\FloatPrecision.hlsli" />
+    <None Include="..\..\assets\Shaders\HLSL\GBuffer.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli" />
     <None Include="..\..\Assets\Shaders\HLSL\HlslCompaction.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL\Kernels.hlsli" />

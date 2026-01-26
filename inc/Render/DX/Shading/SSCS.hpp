@@ -63,7 +63,7 @@ namespace Render::DX::Shading {
 
 		public:
 			SSCSClass();
-			virtual ~SSCSClass() = default;
+			virtual ~SSCSClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;

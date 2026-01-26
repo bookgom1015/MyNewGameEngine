@@ -35,6 +35,8 @@ SVGF::SVGFClass::SVGFClass() {
 		mDebugMaps[i] = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+SVGF::SVGFClass::~SVGFClass() { CleanUp(); }
+
 UINT SVGF::SVGFClass::CbvSrvUavDescCount() const { return 0 
 	+ Descriptor::Count
 	+ 2 // DebugMap
@@ -57,6 +59,8 @@ BOOL SVGF::SVGFClass::Initialize(Common::Debug::LogFile* const pLogFile, void* c
 }
 
 void SVGF::SVGFClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < 2; ++i) {
 		auto& resource = mDebugMaps[i];
 		if (resource) resource.reset();
@@ -72,6 +76,8 @@ void SVGF::SVGFClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL SVGF::SVGFClass::CompileShaders() {

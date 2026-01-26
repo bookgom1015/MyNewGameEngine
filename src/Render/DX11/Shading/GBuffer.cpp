@@ -152,6 +152,12 @@ BOOL GBuffer::GBufferClass::BuildResources() {
 		CheckReturn(mpLogFile, mInitData.Device->CreateTexture2D(
 			&desc, nullptr, &mResources[Resource::E_RoughnessMetalness]));
 	}
+	// VelocityMap
+	{
+		desc.Format = ShadingConvention::GBuffer::VelocityMapFormat;
+		CheckReturn(mpLogFile, mInitData.Device->CreateTexture2D(
+			&desc, nullptr, &mResources[Resource::E_Velocity]));
+	}
 
 	return TRUE;
 }
@@ -189,6 +195,15 @@ BOOL GBuffer::GBufferClass::BuildDescriptors() {
 		CheckReturn(mpLogFile, mInitData.Device->CreateShaderResourceView(
 			map, nullptr, &mhSrvs[Descriptor::Srv::E_RoughnessMetalness]));
 	}
+	// Velocity
+	{
+		decltype(auto) map = mResources[Resource::E_Velocity].Get();
+		CheckReturn(mpLogFile, mInitData.Device->CreateRenderTargetView(
+			map, nullptr, &mhRtvs[Descriptor::Rtv::E_Velocity]));
+		CheckReturn(mpLogFile, mInitData.Device->CreateShaderResourceView(
+			map, nullptr, &mhSrvs[Descriptor::Srv::E_Velocity]));
+	}
+
 
 	return TRUE;
 }
@@ -214,6 +229,9 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 	context->ClearRenderTargetView(
 		mhRtvs[Descriptor::Rtv::E_RoughnessMetalness].Get(), 
 		ShadingConvention::GBuffer::RoughnessMapClearValues);
+	context->ClearRenderTargetView(
+		mhRtvs[Descriptor::Rtv::E_Velocity].Get(),
+		ShadingConvention::GBuffer::VelocityMapClearValues);
 
 	context->ClearDepthStencilView(
 		pDsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
@@ -222,7 +240,8 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 		mhRtvs[Descriptor::Rtv::E_Albedo].Get(),
 		mhRtvs[Descriptor::Rtv::E_Normal].Get(),
 		mhRtvs[Descriptor::Rtv::E_Position].Get(),
-		mhRtvs[Descriptor::Rtv::E_RoughnessMetalness].Get()
+		mhRtvs[Descriptor::Rtv::E_RoughnessMetalness].Get(),
+		mhRtvs[Descriptor::Rtv::E_Velocity].Get()
 	};
 	context->OMSetRenderTargets(_countof(rtvs), rtvs, pDsv);
 
@@ -239,6 +258,16 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 			0, 1, passCB.CBAddress(), &firstConstant, &numConstants);
 		context->PSSetConstantBuffers1(
 			0, 1, passCB.CBAddress(), &firstConstant, &numConstants);
+	}
+	// GBufferCB
+	{
+		auto& gbufferCB = pFrameResource->GBufferCB;
+		auto firstConstant = gbufferCB.FirstConstant(0);
+		auto numConstants = gbufferCB.NumConstants();
+		context->VSSetConstantBuffers1(
+			3, 1, gbufferCB.CBAddress(), &firstConstant, &numConstants);
+		context->PSSetConstantBuffers1(
+			3, 1, gbufferCB.CBAddress(), &firstConstant, &numConstants);
 	}
 
 	context->IASetInputLayout(mInputLayout.Get());

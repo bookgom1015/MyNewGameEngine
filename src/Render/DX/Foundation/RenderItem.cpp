@@ -4,7 +4,7 @@
 using namespace Render::DX::Foundation;
 
 RenderItem::RenderItem(INT numFrameResource) {
-	NumFramesDirty = numFrameResource;
+	NumFramesDirty = numFrameResource << 1;
 }
 
 Common::Foundation::Hash RenderItem::Hash(const RenderItem* ptr) {

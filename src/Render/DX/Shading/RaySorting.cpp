@@ -25,6 +25,8 @@ RaySorting::RaySortingClass::RaySortingClass() {
 	mRayIndexOffsetMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+RaySorting::RaySortingClass::~RaySortingClass() { CleanUp(); }
+
 UINT RaySorting::RaySortingClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT RaySorting::RaySortingClass::RtvDescCount() const { return 0; }
@@ -43,10 +45,14 @@ BOOL RaySorting::RaySortingClass::Initialize(Common::Debug::LogFile* const pLogF
 }
 
 void RaySorting::RaySortingClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mRayIndexOffsetMap) mRayIndexOffsetMap.reset();
 
 	mPipelineState.Reset();
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL RaySorting::RaySortingClass::CompileShaders() {

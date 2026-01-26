@@ -47,7 +47,7 @@ namespace Render::DX::Shading {
 
 		public:
 			TAAClass();
-			virtual ~TAAClass() = default;
+			virtual ~TAAClass();
 
 		public:
 			__forceinline constexpr UINT HaltonSequenceSize() const;

@@ -46,7 +46,7 @@ namespace Render::DX::Shading {
 
 		public:
 			RaytracedShadowClass();
-			virtual ~RaytracedShadowClass() = default;
+			virtual ~RaytracedShadowClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* ShadowMap() const;

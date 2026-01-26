@@ -46,7 +46,7 @@ namespace Render::DX::Shading {
 
 		public:
 			ToneMappingClass();
-			virtual ~ToneMappingClass() = default;
+			virtual ~ToneMappingClass();
 
 		public:
 			__forceinline Foundation::Resource::GpuResource* InterMediateMapResource();

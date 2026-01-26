@@ -94,13 +94,16 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 	context->OMSetRenderTargets(1, &pBackBufferRtv, nullptr);
 
 	context->RSSetState(mRasterizerState.Get());
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	context->OMSetBlendState(mBlendState.Get(), nullptr, 0xFFFFFFFF);
 
 	context->PSSetShaderResources(0, 1, &pDiffuseMapSrv);
 	context->PSSetShaderResources(1, 1, &pNormalMapSrv);
 	context->PSSetShaderResources(2, 1, &pPositionMapSrv);
 	context->PSSetShaderResources(3, 1, &pRoughnessMetalnessMapSrv);
 	context->PSSetShaderResources(4, 1, &pShadowMapSrv);
-	context->PSSetSamplers(0, Util::SamplerUtil::SamplerCount(), Util::SamplerUtil::GetSamplers());
+	context->PSSetSamplers(
+		0, Util::SamplerUtil::SamplerCount(), Util::SamplerUtil::GetSamplers());
 
 	context->IASetInputLayout(nullptr);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

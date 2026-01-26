@@ -22,6 +22,8 @@ GammaCorrection::InitDataPtr GammaCorrection::MakeInitData() {
 
 GammaCorrection::GammaCorrectionClass::GammaCorrectionClass() {}
 
+GammaCorrection::GammaCorrectionClass::~GammaCorrectionClass() { CleanUp(); }
+
 UINT GammaCorrection::GammaCorrectionClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT GammaCorrection::GammaCorrectionClass::RtvDescCount() const { return 0; }
@@ -38,10 +40,14 @@ BOOL GammaCorrection::GammaCorrectionClass::Initialize(Common::Debug::LogFile* c
 }
 
 void GammaCorrection::GammaCorrectionClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL GammaCorrection::GammaCorrectionClass::CompileShaders() {

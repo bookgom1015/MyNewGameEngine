@@ -875,5 +875,8 @@
     <None Include="..\..\assets\Shaders\HLSL\ChromaticAberration.hlsl">
       <Filter>Shader Files\ChromaticAberration</Filter>
     </None>
+    <None Include="..\..\assets\Shaders\HLSL\GBuffer.hlsli">
+      <Filter>Shader Files\GBuffer</Filter>
+    </None>
   </ItemGroup>
 </Project>

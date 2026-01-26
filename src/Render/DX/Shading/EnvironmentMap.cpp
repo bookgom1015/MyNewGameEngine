@@ -104,6 +104,8 @@ EnvironmentMap::EnvironmentMapClass::EnvironmentMapClass() {
 	mBrdfLutMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+EnvironmentMap::EnvironmentMapClass::~EnvironmentMapClass() { CleanUp(); }
+
 BOOL EnvironmentMap::EnvironmentMapClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, ShadingObject::Initialize(pLogFile, pData));
 
@@ -117,6 +119,8 @@ BOOL EnvironmentMap::EnvironmentMapClass::Initialize(Common::Debug::LogFile* con
 }
 
 void EnvironmentMap::EnvironmentMapClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mBrdfLutMap) mBrdfLutMap.reset();
 	if (mPrefilteredEnvironmentCubeMap) mPrefilteredEnvironmentCubeMap.reset();
 	if (mDiffuseIrradianceCubeMap) mDiffuseIrradianceCubeMap.reset();
@@ -129,6 +133,8 @@ void EnvironmentMap::EnvironmentMapClass::CleanUp() {
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL EnvironmentMap::EnvironmentMapClass::CompileShaders() {

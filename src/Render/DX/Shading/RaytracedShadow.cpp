@@ -30,6 +30,8 @@ RaytracedShadow::RaytracedShadowClass::RaytracedShadowClass() {
 	mShadowMap = std::make_unique<Foundation::Resource::GpuResource>();
 }
 
+RaytracedShadow::RaytracedShadowClass::~RaytracedShadowClass() { CleanUp(); }
+
 UINT RaytracedShadow::RaytracedShadowClass::CbvSrvUavDescCount() const { return 2; }
 
 UINT RaytracedShadow::RaytracedShadowClass::RtvDescCount() const { return 0; }
@@ -49,6 +51,8 @@ BOOL RaytracedShadow::RaytracedShadowClass::Initialize(
 }
 
 void RaytracedShadow::RaytracedShadowClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	if (mShadowMap) mShadowMap.reset();
 
 	for (UINT i = 0; i < ShaderTable::Count; ++i)
@@ -57,6 +61,8 @@ void RaytracedShadow::RaytracedShadowClass::CleanUp() {
 	mStateObjectProp.Reset();
 	mStateObject.Reset();
 	mRootSignature.Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL RaytracedShadow::RaytracedShadowClass::CompileShaders() {

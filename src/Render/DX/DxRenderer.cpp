@@ -92,11 +92,6 @@ DxRenderer::DxRenderer() {
 	mShadingObjectManager->Add<Shading::RaytracedShadow::RaytracedShadowClass>();
 	mShadingObjectManager->Add<Shading::ChromaticAberration::ChromaticAberrationClass>();
 
-	// Constant buffers
-	mMainPassCB = std::make_unique<ConstantBuffers::PassCB>();
-	mLightCB = std::make_unique<ConstantBuffers::LightCB>();
-	mProjectToCubeCB = std::make_unique<ConstantBuffers::ProjectToCubeCB>();
-
 	// Accleration structure manager
 	mAccelerationStructureManager = std::make_unique<Shading::Util::AccelerationStructureManager>();
 }
@@ -141,15 +136,12 @@ void DxRenderer::CleanUp() {
 		mAccelerationStructureManager.reset();
 	}
 
+	if (mSkySphere) mSkySphere.reset();
 	mRenderItemRefs.clear();
 	mRenderItems.clear();
 
 	mMeshGeometries.clear();
 	mMaterials.clear();
-
-	mMainPassCB.reset();
-	mLightCB.reset();
-	mProjectToCubeCB.reset();
 
 	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; ++i) {
 		auto& resource = mFrameResources[i];
@@ -225,7 +217,6 @@ BOOL DxRenderer::Draw() {
 		CheckReturn(mpLogFile, BuildScene());
 	}
 
-	const auto skySphere = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].front();
 	const auto& opaques = mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Opaque];
 
 	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
@@ -293,7 +284,7 @@ BOOL DxRenderer::Draw() {
 		tone->InterMediateMapRtv(),
 		mDepthStencilBuffer->GetDepthStencilBuffer(), 
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
-		skySphere));
+		mSkySphere.get()));
 
 	CheckReturn(mpLogFile, ApplyVolumetricLight());
 
@@ -497,6 +488,10 @@ BOOL DxRenderer::UpdateConstantBuffers() {
 }
 
 BOOL DxRenderer::UpdateMainPassCB() {
+	static ConstantBuffers::PassCB passCB{
+		.ViewProj = Common::Util::MathUtil::Identity4x4()
+	};
+
 	// Transform NDC space [-1 , +1]^2 to texture space [0, 1]^2
 	const XMMATRIX T(
 		0.5f, 0.f,  0.f, 0.f,
@@ -515,37 +510,39 @@ BOOL DxRenderer::UpdateMainPassCB() {
 	
 	const XMMATRIX viewProjTex = XMMatrixMultiply(viewProj, T);
 	
-	mMainPassCB->PrevViewProj = mMainPassCB->ViewProj;
-	XMStoreFloat4x4(&mMainPassCB->View, XMMatrixTranspose(view));
-	XMStoreFloat4x4(&mMainPassCB->InvView, XMMatrixTranspose(invView));
-	XMStoreFloat4x4(&mMainPassCB->Proj, XMMatrixTranspose(proj));
-	XMStoreFloat4x4(&mMainPassCB->InvProj, XMMatrixTranspose(invProj));
-	XMStoreFloat4x4(&mMainPassCB->ViewProj, XMMatrixTranspose(viewProj));
-	XMStoreFloat4x4(&mMainPassCB->InvViewProj, XMMatrixTranspose(invViewProj));
-	XMStoreFloat4x4(&mMainPassCB->ViewProjTex, XMMatrixTranspose(viewProjTex));
-	XMStoreFloat3(&mMainPassCB->EyePosW, mpCamera->Position());
+	passCB.PrevViewProj = passCB.ViewProj;
+	XMStoreFloat4x4(&passCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&passCB.InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&passCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&passCB.InvProj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&passCB.ViewProj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&passCB.InvViewProj, XMMatrixTranspose(invViewProj));
+	XMStoreFloat4x4(&passCB.ViewProjTex, XMMatrixTranspose(viewProjTex));
+	XMStoreFloat3(&passCB.EyePosW, mpCamera->Position());
 
 	const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
 
 	if (mpShadingArgumentSet->TAA.Enabled) {
 		const auto OffsetIndex = static_cast<UINT>(
 			mCommandObject->CurrentFence() % taa->HaltonSequenceSize());
-		mMainPassCB->JitteredOffset = taa->HaltonSequence(OffsetIndex);
+		passCB.JitteredOffset = taa->HaltonSequence(OffsetIndex);
 	}
 	else {
-		mMainPassCB->JitteredOffset = { 0.f, 0.f };
+		passCB.JitteredOffset = { 0.f, 0.f };
 	}
 	
-	mpCurrentFrameResource->MainPassCB.CopyCB(*mMainPassCB.get());
+	mpCurrentFrameResource->MainPassCB.CopyCB(passCB);
 
 	return TRUE;
 }
 
 BOOL DxRenderer::UpdateLightCB() {
+	static ConstantBuffers::LightCB ligthCB{};
+
 	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
 	const auto LightCount = shadow->LightCount();
 
-	mLightCB->LightCount = LightCount;
+	ligthCB.LightCount = LightCount;
 
 	const XMMATRIX T(
 		0.5f,  0.f, 0.f, 0.f,
@@ -679,8 +676,8 @@ BOOL DxRenderer::UpdateLightCB() {
 			XMStoreFloat3(&light->Position3, LightPos3);
 		}
 
-		mLightCB->Lights[i] = *light;
-		mpCurrentFrameResource->LightCB.CopyCB(*mLightCB.get());
+		ligthCB.Lights[i] = *light;
+		mpCurrentFrameResource->LightCB.CopyCB(ligthCB);
 	}
 
 	return TRUE;
@@ -739,11 +736,15 @@ BOOL DxRenderer::UpdateMaterialCB() {
 }
 
 BOOL DxRenderer::UpdateProjectToCubeCB() {
-	XMStoreFloat4x4(&mProjectToCubeCB->Proj, XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 10.f)));
+	ConstantBuffers::ProjectToCubeCB  projToCubeCB{};
+
+	XMStoreFloat4x4(
+		&projToCubeCB.Proj, 
+		XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 10.f)));
 
 	// Positive +X
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->Views[0],
+		&projToCubeCB.Views[0],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(1.f, 0.f, 0.f, 1.f),
@@ -752,7 +753,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive -X
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->Views[1],
+		&projToCubeCB.Views[1],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(-1.f, 0.f, 0.f, 1.f),
@@ -761,7 +762,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive +Y
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->Views[2],
+		&projToCubeCB.Views[2],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 1.f, 0.f, 1.f),
@@ -770,7 +771,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive -Y
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->Views[3],
+		&projToCubeCB.Views[3],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, -1.f, 0.f, 1.f),
@@ -779,7 +780,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive +Z
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->Views[4],
+		&projToCubeCB.Views[4],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 0.f, 1.f, 1.f),
@@ -788,7 +789,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 	);
 	// Positive -Z
 	XMStoreFloat4x4(
-		&mProjectToCubeCB->Views[5],
+		&projToCubeCB.Views[5],
 		XMMatrixTranspose(XMMatrixLookAtLH(
 			XMVectorSet(0.f, 0.f, 0.f, 1.f),
 			XMVectorSet(0.f, 0.f, -1.f, 1.f),
@@ -796,7 +797,7 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 		))
 	);
 
-	mpCurrentFrameResource->ProjectToCubeCB.CopyCB(*mProjectToCubeCB.get());
+	mpCurrentFrameResource->ProjectToCubeCB.CopyCB(projToCubeCB);
 	mCommandObject->FlushCommandQueue();
 
 	return TRUE;
@@ -805,10 +806,15 @@ BOOL DxRenderer::UpdateProjectToCubeCB() {
 BOOL DxRenderer::UpdateAmbientOcclusionCB() {
 	const auto ssao = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
 
-	ConstantBuffers::AmbientOcclusionCB aoCB;
-	aoCB.View = mMainPassCB->View;
-	aoCB.Proj = mMainPassCB->Proj;
-	aoCB.InvProj = mMainPassCB->InvProj;
+	const XMMATRIX view = XMLoadFloat4x4(&mpCamera->View());
+	const XMMATRIX proj = XMLoadFloat4x4(&mpCamera->Proj());
+
+	const XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+
+	ConstantBuffers::AmbientOcclusionCB aoCB{};
+	XMStoreFloat4x4(&aoCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&aoCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&aoCB.InvProj, XMMatrixTranspose(invProj));
 
 	const XMMATRIX P = XMLoadFloat4x4(&mpCamera->Proj());
 	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
@@ -1532,7 +1538,7 @@ BOOL DxRenderer::BuildFrameResources() {
 }
 
 BOOL DxRenderer::BuildSkySphere() {
-	GeometryGenerator geoGen;
+	GeometryGenerator geoGen{};
 	GeometryGenerator::MeshData sphere = geoGen.CreateSphere(1.f, 32, 32);
 
 	Foundation::Resource::SubmeshGeometry sphereSubmesh;
@@ -1558,24 +1564,21 @@ BOOL DxRenderer::BuildSkySphere() {
 		indices[index] = sphere.GetIndices16()[i];
 	}
 
-	auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
+	mSkySphere = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
 
 	CheckReturn(mpLogFile, mCommandObject->ResetDirectCommandList());
 
 	const auto CmdList = mCommandObject->DirectCommandList();
-	CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, &sphereSubmesh, vertices, indices, "SkySphere", ritem->Geometry));
+	CheckReturn(mpLogFile, BuildMeshGeometry(CmdList, &sphereSubmesh, vertices, indices, "SkySphere", mSkySphere->Geometry));
 
 	CheckReturn(mpLogFile, mCommandObject->ExecuteDirectCommandList());
 
-	ritem->ObjectCBIndex = static_cast<INT>(mRenderItems.size());
-	ritem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	ritem->IndexCount = ritem->Geometry->Subsets["SkySphere"].IndexCount;
-	ritem->StartIndexLocation = ritem->Geometry->Subsets["SkySphere"].StartIndexLocation;
-	ritem->BaseVertexLocation = ritem->Geometry->Subsets["SkySphere"].BaseVertexLocation;
-	XMStoreFloat4x4(&ritem->World, XMMatrixScaling(1000.f, 1000.f, 1000.f));
-
-	mRenderItemGroups[Common::Foundation::Mesh::RenderType::E_Sky].push_back(ritem.get());
-	mRenderItems.push_back(std::move(ritem));
+	mSkySphere->ObjectCBIndex = static_cast<INT>(mRenderItems.size());
+	mSkySphere->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	mSkySphere->IndexCount = mSkySphere->Geometry->Subsets["SkySphere"].IndexCount;
+	mSkySphere->StartIndexLocation = mSkySphere->Geometry->Subsets["SkySphere"].StartIndexLocation;
+	mSkySphere->BaseVertexLocation = mSkySphere->Geometry->Subsets["SkySphere"].BaseVertexLocation;
+	XMStoreFloat4x4(&mSkySphere->World, XMMatrixScaling(1000.f, 1000.f, 1000.f));
 
 	return TRUE;
 }

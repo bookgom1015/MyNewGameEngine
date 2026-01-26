@@ -20,6 +20,10 @@ TextureScaler::InitDataPtr TextureScaler::MakeInitData() {
 	return std::unique_ptr<TextureScalerClass::InitData>(new TextureScalerClass::InitData());
 }
 
+TextureScaler::TextureScalerClass::TextureScalerClass() {}
+
+TextureScaler::TextureScalerClass::~TextureScalerClass() { CleanUp(); }
+
 UINT TextureScaler::TextureScalerClass::CbvSrvUavDescCount() const { return 0; }
 
 UINT TextureScaler::TextureScalerClass::RtvDescCount() const { return 0; }
@@ -36,11 +40,15 @@ BOOL TextureScaler::TextureScalerClass::Initialize(Common::Debug::LogFile* const
 }
 
 void TextureScaler::TextureScalerClass::CleanUp() {
+	if (mbCleanedUp) return;
+
 	for (UINT i = 0; i < PipelineState::Count; ++i)
 		mPipelineStates[i].Reset();
 
 	for (UINT i = 0; i < RootSignature::Count; ++i)
 		mRootSignatures[i].Reset();
+
+	mbCleanedUp = TRUE;
 }
 
 BOOL TextureScaler::TextureScalerClass::CompileShaders() {

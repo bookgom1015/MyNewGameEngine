@@ -52,7 +52,7 @@ namespace Render::DX::Shading {
 
 		public:
 			MotionBlurClass();
-			virtual ~MotionBlurClass() = default;
+			virtual ~MotionBlurClass();
 
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
