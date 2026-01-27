@@ -81,16 +81,4 @@ namespace Render::DX11::Shading {
 	}
 }
 
-namespace Render::DX11::Shading::EnvironmentMap {
-	ID3D11ShaderResourceView* EnvironmentMapClass::DiffuseIrradianceMapSrv() {
-		return mhDiffuseIrradianceCubeMapSrv.Get();
-	}
-
-	ID3D11ShaderResourceView* EnvironmentMapClass::PrefilteredEnvironmentCubeMapSrv() {
-		return mhPrefilteredEnvironmentCubeMapSrv.Get();
-	}
-
-	ID3D11ShaderResourceView* EnvironmentMapClass::BrdfLutMapSrv() {
-		return mhBrdfLutMapSrv.Get();
-	}
-}
+#include "EnvironmentMap.inl"

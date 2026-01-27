@@ -95,7 +95,7 @@ BOOL EnvironmentMap::EnvironmentMapClass::BuildPipelineStates() {
 	D3D11_DEPTH_STENCIL_DESC ds{};
 	ds.DepthEnable = TRUE;
 	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	ds.DepthFunc = D3D11_COMPARISON_EQUAL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	ds.StencilEnable = FALSE;
 	CheckReturn(mpLogFile, mInitData.Device->CreateDepthStencilState(&ds, &mDepthStencilState));
 

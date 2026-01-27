@@ -341,5 +341,8 @@
     <None Include="..\..\assets\Shaders\HLSL5\DrawSkySphere.hlsl">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="..\..\inc\Render\DX11\Shading\EnvironmentMap.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

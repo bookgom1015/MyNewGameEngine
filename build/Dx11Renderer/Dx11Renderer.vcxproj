@@ -118,6 +118,7 @@
     <None Include="..\..\inc\Render\DX11\Foundation\Resource\MeshGeometry.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Resource\UploadBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.inl" />
+    <None Include="..\..\inc\Render\DX11\Shading\EnvironmentMap.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\GBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\Shadow.inl" />
     <None Include="..\..\inc\Render\DX11\Shading\TAA.inl" />
