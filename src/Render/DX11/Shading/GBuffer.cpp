@@ -271,7 +271,6 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 	}
 
 	context->IASetInputLayout(mInputLayout.Get());
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	context->VSSetShader(mGBufferVS.Get(), nullptr, 0);
 	context->GSSetShader(nullptr, nullptr, 0);
@@ -279,6 +278,8 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 
 	for (UINT i = 0; i < numRitems; ++i) {
 		auto ritem = ppRitems[i];
+
+		context->IASetPrimitiveTopology(ritem->PrimitiveType);
 
 		// ObjectCB
 		{
@@ -307,7 +308,7 @@ BOOL GBuffer::GBufferClass::DrawGBuffer(
 		context->IASetVertexBuffers(
 			0, 1, ritem->Geometry->VertexBufferAddress(), &Stride, &Offset);
 		context->IASetIndexBuffer(
-			ritem->Geometry->IndexBufferAddress(), DXGI_FORMAT_R32_UINT, 0);
+			ritem->Geometry->IndexBufferAddress(), ritem->Geometry->IndexFormat(), 0);
 
 		context->DrawIndexed(ritem->IndexCount, 0, 0);
 	}

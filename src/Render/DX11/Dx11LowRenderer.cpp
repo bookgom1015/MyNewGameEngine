@@ -73,6 +73,9 @@ BOOL Dx11LowRenderer::OnResize(UINT width, UINT height) {
 	mClientWidth = width;
 	mClientHeight = height;
 
+	CheckReturn(mpLogFile, mSwapChain->OnResize(width, height));
+	CheckReturn(mpLogFile, mDepthStencilBuffer->OnResize(width, height));
+
 	return TRUE;
 }
 

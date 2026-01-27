@@ -303,7 +303,6 @@ BOOL Shadow::ShadowClass::DrawZDepth(
 	context->PSSetShader(mDrawZDepthPS.Get(), nullptr, 0);
 	
 	context->IASetInputLayout(mInputLayout.Get());
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	for (UINT lightIndex = 0; lightIndex < mLightCount; ++lightIndex) {
 		auto dsv = mhZDepthMapDsvs[lightIndex].Get();
@@ -326,6 +325,9 @@ BOOL Shadow::ShadowClass::DrawZDepth(
 
 		for (UINT i = 0; i < numRitems; ++i) {
 			auto ritem = ppRitems[i];
+
+			context->IASetPrimitiveTopology(ritem->PrimitiveType);
+
 			// ObjectCB
 			{
 				auto& objCB = pFrameResource->ObjectCB;
@@ -354,8 +356,10 @@ BOOL Shadow::ShadowClass::DrawZDepth(
 			static const UINT Stride = sizeof(Common::Foundation::Mesh::Vertex);
 			static const UINT Offset = 0;
 
-			context->IASetVertexBuffers(0, 1, ritem->Geometry->VertexBufferAddress(), &Stride, &Offset);
-			context->IASetIndexBuffer(ritem->Geometry->IndexBufferAddress(), DXGI_FORMAT_R32_UINT, 0);
+			context->IASetVertexBuffers(
+				0, 1, ritem->Geometry->VertexBufferAddress(), &Stride, &Offset);
+			context->IASetIndexBuffer(
+				ritem->Geometry->IndexBufferAddress(), ritem->Geometry->IndexFormat(), 0);
 
 			context->DrawIndexed(ritem->IndexCount, 0, 0);
 		}

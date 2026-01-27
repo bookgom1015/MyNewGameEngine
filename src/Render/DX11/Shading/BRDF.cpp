@@ -87,7 +87,10 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 		ID3D11ShaderResourceView* pPositionMapSrv,
 		ID3D11ShaderResourceView* pRoughnessMetalnessMapSrv,
 		ID3D11ShaderResourceView* pShadowMapSrv,
-		UINT numLights) {
+		UINT numLights,
+		ID3D11ShaderResourceView* pDiffuseIrradianceCubeMapSrv,
+		ID3D11ShaderResourceView* pPrefilteredEnvCubeMapSrv,
+		ID3D11ShaderResourceView* pBrdfLutMapSrv) {
 	decltype(auto) context = mInitData.Device->Context();
 	context->RSSetViewports(1, &viewport);
 
@@ -102,6 +105,9 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 	context->PSSetShaderResources(2, 1, &pPositionMapSrv);
 	context->PSSetShaderResources(3, 1, &pRoughnessMetalnessMapSrv);
 	context->PSSetShaderResources(4, 1, &pShadowMapSrv);
+	context->PSSetShaderResources(5, 1, &pDiffuseIrradianceCubeMapSrv);
+	context->PSSetShaderResources(6, 1, &pPrefilteredEnvCubeMapSrv);
+	context->PSSetShaderResources(7, 1, &pBrdfLutMapSrv);
 	context->PSSetSamplers(
 		0, Util::SamplerUtil::SamplerCount(), Util::SamplerUtil::GetSamplers());
 
@@ -139,7 +145,7 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 		context->Draw(6, 0);
 	}
 
-	ID3D11ShaderResourceView* nullSrvs[5] = {};
+	ID3D11ShaderResourceView* nullSrvs[8] = {};
 	context->PSSetShaderResources(0, _countof(nullSrvs), nullSrvs);
 
 	return TRUE;

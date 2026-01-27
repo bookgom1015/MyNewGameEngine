@@ -5,11 +5,11 @@ SamplerState gsamPointWrap          : register(s0);
 SamplerState gsamPointClamp         : register(s1);
 SamplerState gsamLinearWrap         : register(s2);
 SamplerState gsamLinearClamp        : register(s3);
-//SamplerState gsamAnisotropicWrap    : register(s4);
-//SamplerState gsamAnisotropicClamp   : register(s5);
-//SamplerState gsamAnisotropicBorder  : register(s6);
+SamplerState gsamAnisotropicWrap    : register(s4);
+SamplerState gsamAnisotropicClamp   : register(s5);
+SamplerState gsamAnisotropicBorder  : register(s6);
 //SamplerState gsamDepthMap           : register(s7);
-SamplerComparisonState gsamShadow   : register(s4);
+SamplerComparisonState gsamShadow   : register(s7);
 //SamplerState gsamPointMirror        : register(s9);
 //SamplerState gsamLinearMirror       : register(s10);
 

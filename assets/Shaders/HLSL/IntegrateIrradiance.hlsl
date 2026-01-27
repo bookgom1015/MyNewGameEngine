@@ -49,7 +49,6 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
 
     const float4 Albedo = gi_AlbedoMap.Sample(gsamLinearClamp, pin.TexC);
     const float3 ViewW = normalize(cbPass.EyePosW - PosW.xyz);
-
     
     const float3 Specular = gi_SpecularMap.Sample(gsamLinearClamp, pin.TexC).rgb;
     const float2 RoughnessMetalness = gi_RoughnessMetalnessMap.Sample(gsamLinearClamp, pin.TexC);
@@ -59,9 +58,11 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
 
     const float3 ToLightW = reflect(-ViewW, NormalW);
 
-    const float3 PrefilteredColor = gi_PrefilteredEnvCubeMap.SampleLevel(gsamLinearClamp, ToLightW, Roughness * (float)ShadingConvention::MipmapGenerator::MaxMipLevel).rgb;
+    const float3 PrefilteredColor = gi_PrefilteredEnvCubeMap.SampleLevel(
+        gsamLinearClamp, ToLightW, 
+        Roughness * (float)(ShadingConvention::MipmapGenerator::MaxMipLevel - 1)).rgb;
 
-    const float NdotV = max(dot(NormalW, ViewW), 0.f);
+    const float NdotV = saturate(dot(NormalW, ViewW));
     
     const float Shiness = 1.f - Roughness;
     const float3 FresnelR0 = lerp(0.08f * Specular, Albedo.rgb, Metalness);

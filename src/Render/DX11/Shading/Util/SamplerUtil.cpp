@@ -67,6 +67,51 @@ BOOL Shading::Util::SamplerUtil::Initialize(
 
         CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_LinearClamp]));
     }
+    // AnisotropicWrap
+    {
+        D3D11_SAMPLER_DESC desc{};
+        desc.Filter = D3D11_FILTER_ANISOTROPIC;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+        desc.MaxAnisotropy = 1;
+        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        desc.MinLOD = 0;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+        desc.MaxAnisotropy = 8;
+
+        CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_AnisotropicWrap]));
+    }
+    // AnisotropicClamp
+    {
+        D3D11_SAMPLER_DESC desc{};
+        desc.Filter = D3D11_FILTER_ANISOTROPIC;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.MaxAnisotropy = 1;
+        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        desc.MinLOD = 0;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+        desc.MaxAnisotropy = 8;
+
+        CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_AnisotropicClamp]));
+    }
+    // AnisotropicBorder
+    {
+        D3D11_SAMPLER_DESC desc{};
+        desc.Filter = D3D11_FILTER_ANISOTROPIC;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+        desc.MaxAnisotropy = 1;
+        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        desc.MinLOD = 0;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+        desc.MaxAnisotropy = 8;
+
+        CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_AnisotropicBorder]));
+    }
     // Shadow
     {
         D3D11_SAMPLER_DESC desc{};

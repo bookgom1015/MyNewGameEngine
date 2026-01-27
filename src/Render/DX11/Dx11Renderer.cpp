@@ -14,6 +14,7 @@
 #include "Render/DX11/Foundation/Resource/MaterialData.hpp"
 #include "Render/DX11/Foundation/ConstantBuffer.h"
 #include "Render/DX11/Foundation/RenderItem.hpp"
+#include "Render/DX11/Foundation/Util/D3D11Util.hpp"
 #include "Render/DX11/Shading/Util/ShadingObjectManager.hpp"
 #include "Render/DX11/Shading/Util/ShaderManager.hpp"
 #include "Render/DX11/Shading/Util/SamplerUtil.hpp"
@@ -63,6 +64,7 @@ BOOL Dx11Renderer::Initialize(
 	CheckReturn(pLogFile, Dx11LowRenderer::Initialize(
 		pLogFile, pWndManager, pImGuiManager, pArgSet, width, height));
 
+	CheckReturn(mpLogFile, Foundation::Util::D3D11Util::Initialize(mpLogFile));
 	CheckReturn(mpLogFile, Shading::Util::SamplerUtil::Initialize(mpLogFile, mDevice.get()));
 
 	CheckReturn(mpLogFile, mShadingObjectManager->Initialize(mpLogFile));
@@ -156,6 +158,7 @@ BOOL Dx11Renderer::Draw() {
 
 	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
 	const auto brdf = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
+	const auto env = mShadingObjectManager->Get<Shading::EnvironmentMap::EnvironmentMapClass>();
 	CheckReturn(mpLogFile, brdf->ComputeBRDF(
 		mFrameResource.get(),
 		mSwapChain->ScreenViewport(),
@@ -165,7 +168,17 @@ BOOL Dx11Renderer::Draw() {
 		gbuffer->PositionMapSrv(),
 		gbuffer->RoughnessMetalnessMapSrv(),
 		shadow->ShadowMapSrv(),
-		shadow->LightCount()));
+		shadow->LightCount(),
+		env->DiffuseIrradianceMapSrv(),
+		env->PrefilteredEnvironmentCubeMapSrv(),
+		env->BrdfLutMapSrv()));
+
+	CheckReturn(mpLogFile, env->DrawSkySphere(
+		mFrameResource.get(),
+		mSwapChain->ScreenViewport(),
+		tone->InterMediateMapRtv(),
+		mDepthStencilBuffer->DepthStencilView(),
+		mSkySphere.get()));
 
 	CheckReturn(mpLogFile, tone->Apply(
 		mFrameResource.get(),
@@ -468,7 +481,7 @@ BOOL Dx11Renderer::BuildMeshGeometry(
 	CheckReturn(mpLogFile, pMeshGeo->Initialize(
 		mpLogFile, mDevice.get(),
 		pMesh->Vertices(), pMesh->VerticesByteSize(),
-		pMesh->Indices(), pMesh->IndicesByteSize(), pMesh->IndexCount()));
+		pMesh->Indices(), pMesh->IndicesByteSize(), pMesh->IndexCount(), DXGI_FORMAT_R32_UINT));
 
 	std::vector<Common::Foundation::Mesh::Mesh::SubsetPair> subsets;
 	pMesh->Subsets(subsets);
@@ -497,7 +510,7 @@ BOOL Dx11Renderer::BuildMeshGeometry(
 	CheckReturn(mpLogFile, pMeshGeo->Initialize(
 		mpLogFile, mDevice.get(),
 		pVertices, verticesByteSize,
-		pIndices, indicesByteSize, numIndices));
+		pIndices, indicesByteSize, numIndices, DXGI_FORMAT_R32_UINT));
 
 	Foundation::Resource::SubmeshGeometry submesh;
 	submesh.StartIndexLocation = 0;

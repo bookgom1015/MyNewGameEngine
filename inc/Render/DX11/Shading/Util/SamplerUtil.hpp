@@ -11,6 +11,9 @@ namespace Render::DX11 {
 			E_PointClamp,
 			E_LinearWrap,
 			E_LinearClamp,
+			E_AnisotropicWrap,
+			E_AnisotropicClamp,
+			E_AnisotropicBorder,
 			E_Shadow,
 			Count
 		};

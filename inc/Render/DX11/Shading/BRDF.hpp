@@ -41,8 +41,11 @@ namespace Render::DX11::Shading {
 				ID3D11ShaderResourceView* pNormalMapSrv,
 				ID3D11ShaderResourceView* pPositionMapSrv,
 				ID3D11ShaderResourceView* pRoughnessMetalnessMapSrv,
-				ID3D11ShaderResourceView* pShadowMapSrv,
-				UINT numLights);
+				ID3D11ShaderResourceView* pShadowMapSrv, 
+				UINT numLights,
+				ID3D11ShaderResourceView* pDiffuseIrradianceCubeMapSrv,
+				ID3D11ShaderResourceView* pPrefilteredEnvCubeMapSrv,
+				ID3D11ShaderResourceView* pBrdfLutMapSrv);
 
 		private:
 			InitData mInitData{};

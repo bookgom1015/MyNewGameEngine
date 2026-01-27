@@ -35,6 +35,7 @@ namespace Render::DX11::Foundation {
 			__forceinline ID3D11Buffer** VertexBufferAddress() noexcept;
 			__forceinline ID3D11Buffer* IndexBufferAddress() noexcept;
 			__forceinline constexpr UINT IndexCount() const noexcept;
+			__forceinline constexpr DXGI_FORMAT IndexFormat() const noexcept;
 
 		public:
 			BOOL Initialize(
@@ -42,7 +43,7 @@ namespace Render::DX11::Foundation {
 				Core::Device* const pDevice,
 				Common::Foundation::Mesh::Vertex const *const pVertexData, UINT vertexByteSize,
 				UINT const *const pIndexData, UINT indexByteSize,
-				UINT indexCount);
+				UINT indexCount, DXGI_FORMAT indexFormat);
 			void CleanUp();
 
 			static Common::Foundation::Hash Hash(MeshGeometry* ptr);
@@ -53,6 +54,7 @@ namespace Render::DX11::Foundation {
 			Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer{};
 			Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer{};
 			UINT mIndexCount{};
+			DXGI_FORMAT mIndexFormat{};
 
 			std::unordered_map<std::string, SubmeshGeometry> Subsets{};
 		};

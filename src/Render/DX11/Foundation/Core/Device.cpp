@@ -1,6 +1,7 @@
 #include "Render/DX11/Foundation/Core/pch_d3d11.h"
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Common/Debug/Logger.hpp"
+#include "Render/DX11/Foundation/Util/D3D11Util.hpp"
 
 using namespace Render::DX11::Foundation::Core;
 using namespace Microsoft::WRL;

@@ -13,8 +13,10 @@ BOOL MeshGeometry::Initialize(
 		Common::Debug::LogFile* const pLogFile,
 		Core::Device* const pDevice,
 		Common::Foundation::Mesh::Vertex const *const pVertexData, UINT vertexByteSize,
-		UINT const *const pIndexData, UINT indexByteSize, UINT indexCount) {
+		UINT const *const pIndexData, UINT indexByteSize, 
+		UINT indexCount, DXGI_FORMAT indexFormat) {
 	mIndexCount = indexCount;
+	mIndexFormat = indexFormat;
 
 	// VertexBuffer
 	{

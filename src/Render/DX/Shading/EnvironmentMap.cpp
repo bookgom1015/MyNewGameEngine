@@ -54,7 +54,7 @@ namespace {
 			LPCWSTR filePath,
 			LPCWSTR texName) {
 		auto tex = std::make_unique<Render::DX::Foundation::Resource::Texture>();
-
+		
 		CheckReturn(pLogFile, Render::DX::Foundation::Util::D3D12Util::CreateTexture(
 			pDevice,
 			pCmdObject,

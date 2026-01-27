@@ -338,5 +338,8 @@
     <None Include="..\..\inc\Render\DX11\Shading\GBuffer.inl">
       <Filter>Header Files\Shading Files</Filter>
     </None>
+    <None Include="..\..\assets\Shaders\HLSL5\DrawSkySphere.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
