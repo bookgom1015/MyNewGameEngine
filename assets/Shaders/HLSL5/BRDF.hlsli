@@ -4,7 +4,7 @@
 #include "./../../../assets/Shaders/HLSL5/CookTorrance.hlsli"
 
 float3 ComputeDirectionalLight(
-        in Light light, 
+        in Common::Foundation::Light light, 
         in Material mat, 
         in float3 normal, 
         in float3 toEye) {
@@ -17,7 +17,7 @@ float3 ComputeDirectionalLight(
 }
 
 float3 ComputeBRDF(
-        Light light, 
+        in Common::Foundation::Light light, 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
@@ -25,7 +25,7 @@ float3 ComputeBRDF(
         in float shadowFactor) {
     float3 result = 0;
         
-    if (light.Type == LightType_Directional)
+    if (light.Type == Common::Foundation::LightType_Directional)
         result += shadowFactor * ComputeDirectionalLight(light, mat, normal, toEye);
     //else if (light.Type == LightType_Point)
     //    result += shadowFactor * ComputePointLight(light, mat, pos, normal, toEye);

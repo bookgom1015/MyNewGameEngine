@@ -5,6 +5,7 @@
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
 #include "Common/Foundation/Mesh/Transform.hpp"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Common/Util/MathUtil.hpp"
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Render/DX11/Foundation/Core/SwapChain.hpp"
@@ -25,6 +26,7 @@
 #include "Render/DX11/Shading/ToneMapping.hpp"
 #include "Render/DX11/Shading/TAA.hpp"
 #include "Render/DX11/Shading/EnvironmentMap.hpp"
+#include "ImGuiManager/DX11/Dx11ImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
 using namespace Render::DX11;
@@ -67,6 +69,9 @@ BOOL Dx11Renderer::Initialize(
 	CheckReturn(mpLogFile, Foundation::Util::D3D11Util::Initialize(mpLogFile));
 	CheckReturn(mpLogFile, Shading::Util::SamplerUtil::Initialize(mpLogFile, mDevice.get()));
 
+	CheckReturn(mpLogFile, mpImGuiManager->InitializeD3D11(mDevice.get()));
+	mpImGuiManager->HookMsgCallback(mpWindowsManager);
+
 	CheckReturn(mpLogFile, mShadingObjectManager->Initialize(mpLogFile));
 	CheckReturn(mpLogFile, mShaderManager->Initialize(
 		mpLogFile, L".\\..\\..\\..\\assets\\Shaders\\HLSL5\\"));
@@ -80,7 +85,14 @@ BOOL Dx11Renderer::Initialize(
 	mSceneBounds.Radius = sqrtf(WidthSquared + WidthSquared);
 
 	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
-	CheckReturn(mpLogFile, shadow->AddLight(LightType_Directional));
+	{
+		std::shared_ptr<Common::Foundation::Light> light = std::make_shared<Common::Foundation::Light>();
+		light->Type = Common::Foundation::LightType::E_Directional;
+		light->Direction = { 0.577f, -0.577f, 0.577f };
+		light->Color = { 240.f / 255.f, 235.f / 255.f, 223.f / 255.f };
+		light->Intensity = 1.802f;
+		shadow->AddLight(light);
+	}
 
 	CheckReturn(mpLogFile, mShadingObjectManager->CompileShaders());
 	CheckReturn(mpLogFile, mShadingObjectManager->BuildPipelineStates());
@@ -136,6 +148,7 @@ BOOL Dx11Renderer::Update(FLOAT deltaTime) {
 	CheckReturn(mpLogFile, mShadingObjectManager->Update());
 
 	CheckReturn(mpLogFile, UpdateCB());
+	CheckReturn(mpLogFile, ResolvePendingLights());
 
 	return TRUE;
 }
@@ -186,24 +199,38 @@ BOOL Dx11Renderer::Draw() {
 		mSwapChain->SwapChainBuffer(),
 		mSwapChain->SwapChainBufferRtv()));
 
-	const auto gamma = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
-	CheckReturn(mpLogFile, gamma->Apply(
-		mFrameResource.get(),
-		mSwapChain->ScreenViewport(),
-		mSwapChain->SwapChainBuffer(),
-		mSwapChain->SwapChainBufferRtv(),
-		mSwapChain->SwapChainBufferCopy(),
-		mSwapChain->SwapChainBufferCopySrv()));
+	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
+		const auto gamma = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
+		CheckReturn(mpLogFile, gamma->Apply(
+			mFrameResource.get(),
+			mSwapChain->ScreenViewport(),
+			mSwapChain->SwapChainBuffer(),
+			mSwapChain->SwapChainBufferRtv(),
+			mSwapChain->SwapChainBufferCopy(),
+			mSwapChain->SwapChainBufferCopySrv()));
+	}
 
-	const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
-	CheckReturn(mpLogFile, taa->Apply(
-		mFrameResource.get(),
-		mSwapChain->ScreenViewport(),
-		mSwapChain->SwapChainBuffer(),
-		mSwapChain->SwapChainBufferRtv(),
-		mSwapChain->SwapChainBufferCopy(),
-		mSwapChain->SwapChainBufferCopySrv(),
-		gbuffer->VelocityMapSrv()));
+	if (mpShadingArgumentSet->TAA.Enabled) {
+		const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
+		CheckReturn(mpLogFile, taa->Apply(
+			mFrameResource.get(),
+			mSwapChain->ScreenViewport(),
+			mSwapChain->SwapChainBuffer(),
+			mSwapChain->SwapChainBufferRtv(),
+			mSwapChain->SwapChainBufferCopy(),
+			mSwapChain->SwapChainBufferCopySrv(),
+			gbuffer->VelocityMapSrv()));
+	}
+
+	std::vector<Common::Foundation::Light*> lights{};
+	shadow->Lights(lights);
+
+	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
+		mpShadingArgumentSet, 
+		lights.data(),
+		shadow->LightCount(),
+		mPendingLights, 
+		mClientWidth, mClientHeight));
 
 	CheckReturn(mpLogFile, mSwapChain->Present());
 
@@ -275,8 +302,13 @@ BOOL Dx11Renderer::UpdatePassCB() {
 	XMStoreFloat3(&passCB.EyePosW, mpCamera->Position());
 
 	const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
-	const auto OffsetIndex = static_cast<UINT>(counter % taa->HaltonSequenceSize());
-	passCB.JitteredOffset = taa->HaltonSequence(OffsetIndex);
+	if (mpShadingArgumentSet->TAA.Enabled) {
+		const auto OffsetIndex = static_cast<UINT>(counter % taa->HaltonSequenceSize());
+		passCB.JitteredOffset = taa->HaltonSequence(OffsetIndex);
+	}
+	else {
+		passCB.JitteredOffset = { 0.f, 0.f };
+	}
 
 	CheckReturn(mpLogFile, mFrameResource->PassCB.BeginFrame());
 	mFrameResource->PassCB.CopyData(passCB);
@@ -332,52 +364,148 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 }
 
 BOOL Dx11Renderer::UpdateLightCB() {
-	LightCB lightCB{};
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+	const auto LightCount = shadow->LightCount();
 
-	lightCB.AmbientLight = { 20.5f / 255.f, 204.f / 255.f, 230.f / 255.f, 0.05f };
-
-	lightCB._Light.Color = { 1.f, 244.f / 255.f, 185.f / 255.f };
-	lightCB._Light.Intensity = 4.f;
-	lightCB._Light.Type = LightType_Directional;
-	lightCB._Light.Index = 0;
-
-	XMVECTOR lightDir = XMVector3Normalize(XMVectorSet(
-		0.333333f, -0.333333f, 0.333333f, 0.f));
-	XMVECTOR lightPos = -2.f * mSceneBounds.Radius * lightDir;
-	XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
-	XMVECTOR lightUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
-
-	XMFLOAT3 sphereCenterLS;
-	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
-
-	const FLOAT l = sphereCenterLS.x - mSceneBounds.Radius;
-	const FLOAT b = sphereCenterLS.y - mSceneBounds.Radius;
-	const FLOAT n = sphereCenterLS.z - mSceneBounds.Radius;
-	const FLOAT r = sphereCenterLS.x + mSceneBounds.Radius;
-	const FLOAT t = sphereCenterLS.y + mSceneBounds.Radius;
-	const FLOAT f = sphereCenterLS.z + mSceneBounds.Radius;
-
-	const XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
-
-	const XMMATRIX viewProj = XMMatrixMultiply(lightView, lightProj);
-	XMStoreFloat4x4(&lightCB._Light.Mat0, XMMatrixTranspose(viewProj));
-
-	XMMATRIX T(
+	static const XMMATRIX T(
 		0.5f, 0.f, 0.f, 0.f,
 		0.f, -0.5f, 0.f, 0.f,
 		0.f, 0.f, 1.f, 0.f,
 		0.5f, 0.5f, 0.f, 1.f
 	);
 
-	const XMMATRIX S = lightView * lightProj * T;
-	XMStoreFloat4x4(&lightCB._Light.Mat1, XMMatrixTranspose(S));
-
-	XMStoreFloat3(&lightCB._Light.Position, lightPos);
-	XMStoreFloat3(&lightCB._Light.Direction, lightDir);
-
 	CheckReturn(mpLogFile, mFrameResource->LightCB.BeginFrame());
-	mFrameResource->LightCB.CopyData(lightCB);
+
+	for (UINT i = 0; i < LightCount; ++i) {
+		const auto light = shadow->Light(i);
+
+		if (light->Type == Common::Foundation::LightType::E_Directional) {
+			const XMVECTOR lightDir = XMLoadFloat3(&light->Direction);
+			const XMVECTOR lightPos = -2.f * mSceneBounds.Radius * lightDir;
+			const XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
+			const XMVECTOR lightUp = UnitVector::UpVector;
+			const XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
+
+			// Transform bounding sphere to light space.
+			XMFLOAT3 sphereCenterLS;
+			XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
+
+			// Ortho frustum in light space encloses scene.
+			const FLOAT l = sphereCenterLS.x - mSceneBounds.Radius;
+			const FLOAT b = sphereCenterLS.y - mSceneBounds.Radius;
+			const FLOAT n = sphereCenterLS.z - mSceneBounds.Radius;
+			const FLOAT r = sphereCenterLS.x + mSceneBounds.Radius;
+			const FLOAT t = sphereCenterLS.y + mSceneBounds.Radius;
+			const FLOAT f = sphereCenterLS.z + mSceneBounds.Radius;
+
+			const XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+			const XMMATRIX viewProj = XMMatrixMultiply(lightView, lightProj);
+			XMStoreFloat4x4(&light->Mat0, XMMatrixTranspose(viewProj));
+
+			const XMMATRIX S = lightView * lightProj * T;
+			XMStoreFloat4x4(&light->Mat1, XMMatrixTranspose(S));
+
+			XMStoreFloat3(&light->Position, lightPos);
+		}
+		else if (light->Type == Common::Foundation::LightType::E_Point || light->Type == Common::Foundation::LightType::E_Tube) {
+			const auto proj = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 50.f);
+
+			XMVECTOR pos;
+			if (light->Type == Common::Foundation::LightType::E_Tube) {
+				const auto Pos0 = XMLoadFloat3(&light->Position);
+				const auto Pos1 = XMLoadFloat3(&light->Position1);
+
+				pos = (Pos0 + Pos1) * 0.5f;
+			}
+			else {
+				pos = XMLoadFloat3(&light->Position);
+			}
+
+			// Positive +X
+			{
+				const auto target = pos + XMVectorSet(1.f, 0.f, 0.f, 0.f);
+				const auto view_px = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_px = view_px * proj;
+				XMStoreFloat4x4(&light->Mat0, XMMatrixTranspose(vp_px));
+			}
+			// Positive -X
+			{
+				const auto target = pos + XMVectorSet(-1.f, 0.f, 0.f, 0.f);
+				const auto view_nx = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_nx = view_nx * proj;
+				XMStoreFloat4x4(&light->Mat1, XMMatrixTranspose(vp_nx));
+			}
+			// Positive +Y
+			{
+				const auto target = pos + XMVectorSet(0.f, 1.f, 0.f, 0.f);
+				const auto view_py = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 0.f, -1.f, 0.f));
+				const auto vp_py = view_py * proj;
+				XMStoreFloat4x4(&light->Mat2, XMMatrixTranspose(vp_py));
+			}
+			// Positive -Y
+			{
+				const auto target = pos + XMVectorSet(0.f, -1.f, 0.f, 0.f);
+				const auto view_ny = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 0.f, 1.f, 0.f));
+				const auto vp_ny = view_ny * proj;
+				XMStoreFloat4x4(&light->Mat3, XMMatrixTranspose(vp_ny));
+			}
+			// Positive +Z
+			{
+				const auto target = pos + XMVectorSet(0.f, 0.f, 1.f, 0.f);
+				const auto view_pz = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_pz = view_pz * proj;
+				XMStoreFloat4x4(&light->Mat4, XMMatrixTranspose(vp_pz));
+			}
+			// Positive -Z
+			{
+				const auto target = pos + XMVectorSet(0.f, 0.f, -1.f, 0.f);
+				const auto view_nz = XMMatrixLookAtLH(pos, target, XMVectorSet(0.f, 1.f, 0.f, 0.f));
+				const auto vp_nz = view_nz * proj;
+				XMStoreFloat4x4(&light->Mat5, XMMatrixTranspose(vp_nz));
+			}
+		}
+		else if (light->Type == Common::Foundation::LightType::E_Spot) {
+			const auto Proj = XMMatrixPerspectiveFovLH(Common::Util::MathUtil::DegreesToRadians(light->OuterConeAngle) * 2.f, 1.f, 0.1f, light->AttenuationRadius);
+			const auto Pos = XMLoadFloat3(&light->Position);
+
+			const XMVECTOR Direction = XMLoadFloat3(&light->Direction);
+
+			const XMVECTOR UpVector = Common::Util::MathUtil::CalcUpVector(Direction);
+
+			const auto Target = Pos + Direction;
+			const auto View = XMMatrixLookAtLH(Pos, Target, UpVector);
+			const auto ViewProj = View * Proj;
+			XMStoreFloat4x4(&light->Mat0, XMMatrixTranspose(ViewProj));
+
+			const XMMATRIX S = View * Proj * T;
+			XMStoreFloat4x4(&light->Mat1, XMMatrixTranspose(S));
+		}
+		else if (light->Type == Common::Foundation::LightType::E_Rect) {
+			const XMVECTOR lightDir = XMLoadFloat3(&light->Direction);
+			const XMVECTOR lightUp = Common::Util::MathUtil::CalcUpVector(light->Direction);
+			const XMVECTOR lightRight = XMVector3Cross(lightUp, lightDir);
+			XMStoreFloat3(&light->Up, lightUp);
+			XMStoreFloat3(&light->Right, lightRight);
+
+			const XMVECTOR LightCenter = XMLoadFloat3(&light->Center);
+			const FLOAT HalfSizeX = light->Size.x * 0.5f;
+			const FLOAT HalfSizeY = light->Size.y * 0.5f;
+			const XMVECTOR LightPos0 = LightCenter + lightUp * HalfSizeY + lightRight * HalfSizeX;
+			const XMVECTOR LightPos1 = LightCenter + lightUp * HalfSizeY - lightRight * HalfSizeX;
+			const XMVECTOR LightPos2 = LightCenter - lightUp * HalfSizeY - lightRight * HalfSizeX;
+			const XMVECTOR LightPos3 = LightCenter - lightUp * HalfSizeY + lightRight * HalfSizeX;
+			XMStoreFloat3(&light->Position, LightPos0);
+			XMStoreFloat3(&light->Position1, LightPos1);
+			XMStoreFloat3(&light->Position2, LightPos2);
+			XMStoreFloat3(&light->Position3, LightPos3);
+		}
+
+		LightCB lightCB{};
+		lightCB.Light = *light;
+		mFrameResource->LightCB.CopyData(lightCB, i);
+	}
+
 	mFrameResource->LightCB.EndFrame();
 
 	return TRUE;
@@ -394,6 +522,19 @@ BOOL Dx11Renderer::UpdateGBufferCB() {
 	CheckReturn(mpLogFile, mFrameResource->GBufferCB.BeginFrame());
 	mFrameResource->GBufferCB.CopyData(gbufferCB);
 	mFrameResource->GBufferCB.EndFrame();
+
+	return TRUE;
+}
+
+BOOL Dx11Renderer::ResolvePendingLights() {
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+
+	for (UINT i = 0, end = static_cast<UINT>(mPendingLights.size()); i < end; ++i) {
+		const auto& light = mPendingLights.front();
+		shadow->AddLight(light);
+
+		mPendingLights.pop();
+	}
 
 	return TRUE;
 }

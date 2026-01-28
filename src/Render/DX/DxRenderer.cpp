@@ -5,6 +5,7 @@
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Camera/GameCamera.hpp"
 #include "Common/Foundation/Mesh/Transform.hpp"
+#include "Common/Foundation/Light.h"
 #include "Common/Render/ShadingArgument.hpp"
 #include "Common/Util/MathUtil.hpp"
 #include "Render/DX/Foundation/ConstantBuffer.h"
@@ -554,7 +555,7 @@ BOOL DxRenderer::UpdateLightCB() {
 	for (UINT i = 0; i < LightCount; ++i) {
 		const auto light = shadow->Light(i);
 
-		if (light->Type == Common::Render::LightType::E_Directional) {
+		if (light->Type == Common::Foundation::LightType::E_Directional) {
 			const XMVECTOR lightDir = XMLoadFloat3(&light->Direction);
 			const XMVECTOR lightPos = -2.f * mSceneBounds.Radius * lightDir;
 			const XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
@@ -583,11 +584,11 @@ BOOL DxRenderer::UpdateLightCB() {
 
 			XMStoreFloat3(&light->Position, lightPos);
 		}
-		else if (light->Type == Common::Render::LightType::E_Point || light->Type == Common::Render::LightType::E_Tube) {
+		else if (light->Type == Common::Foundation::LightType::E_Point || light->Type == Common::Foundation::LightType::E_Tube) {
 			const auto proj = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.f, 0.1f, 50.f);
 
 			XMVECTOR pos;
-			if (light->Type == Common::Render::LightType::E_Tube) {
+			if (light->Type == Common::Foundation::LightType::E_Tube) {
 				const auto Pos0 = XMLoadFloat3(&light->Position);
 				const auto Pos1 = XMLoadFloat3(&light->Position1);
 
@@ -640,7 +641,7 @@ BOOL DxRenderer::UpdateLightCB() {
 				XMStoreFloat4x4(&light->Mat5, XMMatrixTranspose(vp_nz));
 			}
 		}
-		else if (light->Type == Common::Render::LightType::E_Spot) {
+		else if (light->Type == Common::Foundation::LightType::E_Spot) {
 			const auto Proj = XMMatrixPerspectiveFovLH(Common::Util::MathUtil::DegreesToRadians(light->OuterConeAngle) * 2.f, 1.f, 0.1f, light->AttenuationRadius);
 			const auto Pos = XMLoadFloat3(&light->Position);
 
@@ -656,7 +657,7 @@ BOOL DxRenderer::UpdateLightCB() {
 			const XMMATRIX S = View * Proj * T;
 			XMStoreFloat4x4(&light->Mat1, XMMatrixTranspose(S));
 		}
-		else if (light->Type == Common::Render::LightType::E_Rect) {
+		else if (light->Type == Common::Foundation::LightType::E_Rect) {
 			const XMVECTOR lightDir = XMLoadFloat3(&light->Direction);
 			const XMVECTOR lightUp = Common::Util::MathUtil::CalcUpVector(light->Direction);
 			const XMVECTOR lightRight = XMVector3Cross(lightUp, lightDir);
@@ -1587,8 +1588,8 @@ BOOL DxRenderer::BuildLights() {
 	auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
 	// Directional light 1
 	{
-		std::shared_ptr<Foundation::Light> light = std::make_shared<Foundation::Light>();
-		light->Type = Common::Render::LightType::E_Directional;
+		std::shared_ptr<Common::Foundation::Light> light = std::make_shared<Common::Foundation::Light>();
+		light->Type = Common::Foundation::LightType::E_Directional;
 		light->Direction = { 0.577f, -0.577f, 0.577f };
 		light->Color = { 240.f / 255.f, 235.f / 255.f, 223.f / 255.f };
 		light->Intensity = 1.802f;
@@ -1596,8 +1597,8 @@ BOOL DxRenderer::BuildLights() {
 	}
 	// Directional light 2
 	{
-		std::shared_ptr<Foundation::Light> light = std::make_shared<Foundation::Light>();
-		light->Type = Common::Render::LightType::E_Directional;
+		std::shared_ptr<Common::Foundation::Light> light = std::make_shared<Common::Foundation::Light>();
+		light->Type = Common::Foundation::LightType::E_Directional;
 		light->Direction = { 0.067f, -0.701f, -0.836f };
 		light->Color = { 149.f / 255.f, 142.f / 255.f, 100.f / 255.f };
 		light->Intensity = 1.534f;
@@ -1638,7 +1639,7 @@ BOOL DxRenderer::DrawImGui() {
 
 	auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
 
-	std::vector<Foundation::Light*> lights;
+	std::vector<Common::Foundation::Light*> lights{};
 	shadow->Lights(lights);
 
 	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
@@ -2051,7 +2052,7 @@ BOOL DxRenderer::ApplyVolumetricLight() {
 	const auto tone = mShadingObjectManager->Get<Shading::ToneMapping::ToneMappingClass>();
 	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
 
-	std::vector<Foundation::Light*> lights;
+	std::vector<Common::Foundation::Light*> lights;
 	std::vector<Foundation::Resource::GpuResource*> depthMaps;
 
 	shadow->Lights(lights);

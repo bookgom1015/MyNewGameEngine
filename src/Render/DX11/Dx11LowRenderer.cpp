@@ -6,6 +6,7 @@
 #include "Render/DX11/Foundation/Core/Device.hpp"
 #include "Render/DX11/Foundation/Core/SwapChain.hpp"
 #include "Render/DX11/Foundation/Core/DepthStencilBuffer.hpp"
+#include "ImGuiManager/DX11/Dx11ImGuiManager.hpp"
 
 using namespace Render::DX11;
 
@@ -27,6 +28,10 @@ BOOL Dx11LowRenderer::Initialize(
 	mpLogFile = pLogFile;
 	mClientWidth = width;
 	mClientHeight = height;
+	mpWindowsManager = pWndManager;
+	mpShadingArgumentSet = pShadingArgSet;
+
+	mpImGuiManager = static_cast<ImGuiManager::DX11::Dx11ImGuiManager*>(pImGuiManager);
 
 	CheckReturn(mpLogFile, Common::Foundation::Core::HWInfo::GetCoreInfo(mpLogFile, *mProcessor.get()));
 

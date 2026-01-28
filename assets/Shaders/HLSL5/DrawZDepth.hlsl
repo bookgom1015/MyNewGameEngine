@@ -5,6 +5,10 @@
 #define _HLSL
 #endif
 
+#ifndef HLSL_VERSION_UNDER_6
+#define HLSL_VERSION_UNDER_6
+#endif
+
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
 #include "./../../../assets/Shaders/HLSL5/Samplers.hlsli"
 
@@ -41,12 +45,12 @@ void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
     GeoOut gout = (GeoOut) 0;
 
 	// Directional light or spot light
-    if (_Light.Type == LightType_Directional || _Light.Type == LightType_Spot) {
+    if (Light.Type == Common::Foundation::LightType_Directional || Light.Type == Common::Foundation::LightType_Spot) {
         gout.ArrayIndex = 0;
         
 		[unroll]
         for (uint i = 0; i < 3; ++i) {
-            gout.PosH = mul(gin[i].PosW, _Light.Mat0);
+            gout.PosH = mul(gin[i].PosW, Light.Mat0);
             gout.TexC = gin[i].TexC;
 
             triStream.Append(gout);

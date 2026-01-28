@@ -26,7 +26,7 @@ RWTexture2D<ShadingConvention::Shadow::ShadowMapFormat>    gio_ShadowMap    : re
 void CS(in uint2 DTid : SV_DispatchThreadID) {
     uint value = gLightIndex != 0 ? gio_ShadowMap[DTid] : 0;
 
-    Render::DX::Foundation::Light light = cbLight.Lights[gLightIndex];
+    Common::Foundation::Light light = cbLight.Lights[gLightIndex];
 
     const float4 PosW = gi_PositionMap.Load(uint3(DTid, 0));
     if (!ShadingConvention::GBuffer::IsValidPosition(PosW)) {
@@ -34,13 +34,13 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         return;
     }
     
-    if (light.Type == Common::Render::LightType::E_Directional || light.Type == Common::Render::LightType::E_Spot) {
+    if (light.Type == Common::Foundation::LightType::E_Directional || light.Type == Common::Foundation::LightType::E_Spot) {
         const float ShadowFactor = Shadow::CalcShadowFactor(gi_ZDepthMap, gsamShadow, light.Mat1, PosW.xyz);
         value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, gLightIndex);
     }
-    else if (light.Type == Common::Render::LightType::E_Point || light.Type == Common::Render::LightType::E_Tube) {
+    else if (light.Type == Common::Foundation::LightType::E_Point || light.Type == Common::Foundation::LightType::E_Tube) {
         float3 direction;
-        if (light.Type == Common::Render::LightType::E_Tube) {
+        if (light.Type == Common::Foundation::LightType::E_Tube) {
             direction = PosW.xyz - (light.Position + light.Position1) * 0.5f;
         }
         else {

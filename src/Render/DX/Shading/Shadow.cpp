@@ -23,9 +23,9 @@ namespace {
 	const WCHAR* const HLSL_DrawShadow = L"DrawShadow.hlsl";
 
 	ShadingConvention::Shadow::ShadowMap::Type ResolveShadowMapType(
-			const Render::DX::Foundation::Light* const light) {
-		if (light->Type == Common::Render::LightType::E_Point
-			|| light->Type == Common::Render::LightType::E_Tube)
+			const Common::Foundation::Light* const light) {
+		if (light->Type == Common::Foundation::LightType::E_Point
+			|| light->Type == Common::Foundation::LightType::E_Tube)
 			return ShadingConvention::Shadow::ShadowMap::E_CubeMap;
 		//else if (light->Type == Common::Render::LightType::E_Directional)
 		//	return Shadow::ShadowMap::E_Texture2DArray;
@@ -47,7 +47,7 @@ Shadow::ShadowClass::ShadowClass() {
 
 Shadow::ShadowClass::~ShadowClass() { CleanUp(); }
 
-void Shadow::ShadowClass::Lights(std::vector<Render::DX::Foundation::Light*>& lights) {
+void Shadow::ShadowClass::Lights(std::vector<Common::Foundation::Light*>& lights) {
 	for (UINT i = 0; i < mLightCount; ++i)
 		lights.push_back(mLights[i].get());
 }
@@ -277,13 +277,13 @@ BOOL Shadow::ShadowClass::Run(
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::AddLight(const std::shared_ptr<Foundation::Light>& light) {
+BOOL Shadow::ShadowClass::AddLight(const std::shared_ptr<Common::Foundation::Light>& light) {
 	if (mLightCount >= MaxLights) ReturnFalse(mpLogFile, L"Can not add light due to the light count limit");
 
 	const auto ShadowMapType = ResolveShadowMapType(light.get());
 
-	BuildResource(ShadowMapType);
-	BuildDescriptor(ShadowMapType);
+	CheckReturn(mpLogFile, BuildResource(ShadowMapType));
+	CheckReturn(mpLogFile, BuildDescriptor(ShadowMapType));
 
 	mLights[mLightCount++] = light;
 

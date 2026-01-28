@@ -45,10 +45,10 @@ VertexOut VS(in VertexIn vin) {
 void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
     GeoOut gout = (GeoOut) 0;
 	
-    Render::DX::Foundation::Light light = cbLight.Lights[gLightIndex];
+    Common::Foundation::Light light = cbLight.Lights[gLightIndex];
 
 	// Directional light or spot light
-    if (light.Type == Common::Render::LightType::E_Directional || light.Type == Common::Render::LightType::E_Spot) {
+    if (light.Type == Common::Foundation::LightType::E_Directional || light.Type == Common::Foundation::LightType::E_Spot) {
 		[unroll]
         for (uint i = 0; i < 3; ++i) {
             gout.PosH = mul(gin[i].PosW, light.Mat0);
@@ -58,7 +58,7 @@ void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
         }
     }
 	// Point light or tube light
-    else if (light.Type == Common::Render::LightType::E_Point || light.Type == Common::Render::LightType::E_Tube) {
+    else if (light.Type == Common::Foundation::LightType::E_Point || light.Type == Common::Foundation::LightType::E_Tube) {
 		[loop]
         for (uint face = 0; face < 6; ++face) {
             gout.ArrayIndex = face;

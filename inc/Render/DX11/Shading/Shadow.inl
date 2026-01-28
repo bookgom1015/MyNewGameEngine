@@ -8,6 +8,7 @@ namespace Render::DX11::Shading {
 
 	constexpr UINT Shadow::ShadowClass::LightCount() const noexcept { return mLightCount; }
 
+	Common::Foundation::Light* Shadow::ShadowClass::Light(UINT index) { return mLights[index].get(); }
 }
 
 #endif // __SHADOW_INL__

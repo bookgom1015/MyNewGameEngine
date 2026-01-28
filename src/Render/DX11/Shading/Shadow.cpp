@@ -16,6 +16,18 @@ using namespace Render::DX11::Shading;
 namespace {
 	const WCHAR* const HLSL_DrawZDepth = L"DrawZDepth.hlsl";
 	const WCHAR* const HLSL_DrawShadow = L"DrawShadow.hlsl";
+
+	UINT ResolveShadowMapType(
+		const Common::Foundation::Light* const light) {
+		if (light->Type == Common::Foundation::LightType::E_Point
+			|| light->Type == Common::Foundation::LightType::E_Tube)
+			return ShadingConvention::Shadow::ShadowMapType_CubeMap;
+		//else if (light->Type == Common::Foundation::LightType::E_Directional)
+		//	return ShadingConvention::Shadow::ShadowMapType_Texture2DArray;
+		else
+			return ShadingConvention::Shadow::ShadowMapType_Texture2D;
+
+	}
 }
 
 Shadow::InitDataPtr Shadow::MakeInitData() {
@@ -25,6 +37,11 @@ Shadow::InitDataPtr Shadow::MakeInitData() {
 Shadow::ShadowClass::ShadowClass() {}
 
 Shadow::ShadowClass::~ShadowClass() { CleanUp(); }
+
+void Shadow::ShadowClass::Lights(std::vector<Common::Foundation::Light*>& lights) {
+	for (UINT i = 0; i < mLightCount; ++i)
+		lights.push_back(mLights[i].get());
+}
 
 BOOL Shadow::ShadowClass::Initialize(Common::Debug::LogFile* const pLogFile, void* const pData) {
 	CheckReturn(pLogFile, Foundation::ShadingObject::Initialize(pLogFile, pData));
@@ -55,7 +72,7 @@ void Shadow::ShadowClass::CleanUp() {
 	mhShadowMapUav.Reset();
 	mShadowMap.Reset();
 
-	for (UINT i = 0; i < MAX_LIGHTS; ++i) {
+	for (UINT i = 0; i < MaxLights; ++i) {
 		mhZDepthMapSrvs[i].Reset();
 		mhZDepthMapDsvs[i].Reset();
 		mZDepthMaps[i].Reset();
@@ -154,13 +171,15 @@ BOOL Shadow::ShadowClass::OnResize(UINT width, UINT height) {
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::AddLight(UINT lightType) {
-	bool needCube = lightType == LightType_Point;
+BOOL Shadow::ShadowClass::AddLight(const std::shared_ptr<Common::Foundation::Light>& light) {
+	if (mLightCount >= MaxLights) ReturnFalse(mpLogFile, L"Can not add light due to the light count limit");
 
-	CheckReturn(mpLogFile, BuildResources(needCube));
-	CheckReturn(mpLogFile, BuildDescriptors(needCube));
+	const auto ShadowMapType = ResolveShadowMapType(light.get());
 
-	++mLightCount;
+	CheckReturn(mpLogFile, BuildResource(ShadowMapType));
+	CheckReturn(mpLogFile, BuildDescriptor(ShadowMapType));
+
+	mLights[mLightCount++] = light;
 
 	return TRUE; 
 }
@@ -215,7 +234,7 @@ BOOL Shadow::ShadowClass::BuildDescriptors() {
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::BuildResources(BOOL bCube) {
+BOOL Shadow::ShadowClass::BuildResource(UINT shadowMapType) {
 	D3D11_TEXTURE2D_DESC desc{};
 	desc.Width = mInitData.TextureWidth;
 	desc.Height = mInitData.TextureHeight;
@@ -227,7 +246,7 @@ BOOL Shadow::ShadowClass::BuildResources(BOOL bCube) {
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
 
-	if (bCube) {
+	if (shadowMapType == ShadingConvention::Shadow::ShadowMapType_CubeMap) {
 		desc.ArraySize = 6;
 		desc.Format = ShadingConvention::Shadow::ZDepthMapFormat;
 		CheckReturn(mpLogFile, mInitData.Device->CreateTexture2D(
@@ -243,7 +262,7 @@ BOOL Shadow::ShadowClass::BuildResources(BOOL bCube) {
 	return TRUE;
 }
 
-BOOL Shadow::ShadowClass::BuildDescriptors(BOOL bCube) {
+BOOL Shadow::ShadowClass::BuildDescriptor(UINT shadowMapType) {
 	decltype(auto) map = mZDepthMaps[mLightCount].Get();
 	D3D11_DEPTH_STENCIL_VIEW_DESC ds{};
 	ds.Format = DXGI_FORMAT_D32_FLOAT;
@@ -251,7 +270,7 @@ BOOL Shadow::ShadowClass::BuildDescriptors(BOOL bCube) {
 	D3D11_SHADER_RESOURCE_VIEW_DESC sr{};
 	sr.Format = DXGI_FORMAT_R32_FLOAT;
 
-	if (bCube) {
+	if (shadowMapType == ShadingConvention::Shadow::ShadowMapType_CubeMap) {
 		ds.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 		ds.Texture2DArray.ArraySize = 6;
 		ds.Texture2DArray.FirstArraySlice = 0;

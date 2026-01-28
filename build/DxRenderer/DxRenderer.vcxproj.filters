@@ -31,9 +31,6 @@
     <Filter Include="Shader Files">
       <UniqueIdentifier>{0fb14b19-5fd4-4cbd-bb45-0d49e693b7ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader Files\Foundation">
-      <UniqueIdentifier>{b17c3c8e-dfd2-458d-8602-8890d0eb81f8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Foundation">
       <UniqueIdentifier>{94bb1c29-b173-4e55-b6f9-295e24938dbc}</UniqueIdentifier>
     </Filter>
@@ -115,9 +112,6 @@
     <Filter Include="External Files\ImGui">
       <UniqueIdentifier>{954b57ae-80fe-4fba-a449-1447ebbfcd0b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External Files\ImGuiManager">
-      <UniqueIdentifier>{49368825-054f-417f-a943-922028a8f568}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader Files\SSAO">
       <UniqueIdentifier>{0a55c4c9-991a-49a4-a289-afd7897ee42b}</UniqueIdentifier>
     </Filter>
@@ -181,6 +175,12 @@
     <Filter Include="Shader Files\ChromaticAberration">
       <UniqueIdentifier>{a165be56-35df-400e-9bff-148d10b412cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Foundation">
+      <UniqueIdentifier>{b17c3c8e-dfd2-458d-8602-8890d0eb81f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Util">
+      <UniqueIdentifier>{9a3d1dff-6292-41c2-bf6b-bc66ed82ff9a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX\DxRenderer.hpp">
@@ -235,9 +235,6 @@
       <Filter>Header Files\Foundation\Resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\ConstantBuffer.h">
-      <Filter>Header Files\Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Shading\Util\SamplerUtil.hpp">
@@ -359,6 +356,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\MeshGeometry.hpp">
       <Filter>Header Files\Foundation\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Light.h">
+      <Filter>Common Files\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -494,9 +494,6 @@
     <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_win32.cpp">
       <Filter>External Files\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp">
-      <Filter>External Files\ImGuiManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Shading\SSAO.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
@@ -560,9 +557,6 @@
     <ClCompile Include="..\..\src\Common\Foundation\Sampler\Sampler.cpp">
       <Filter>Common Files\Foundation\Sampler</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Light.cpp">
-      <Filter>Source Files\Foundation</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\ConstantBuffer.cpp">
       <Filter>Source Files\Foundation</Filter>
     </ClCompile>
@@ -600,12 +594,6 @@
       <Filter>Shader Files\MipmapGenerator</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\Samplers.hlsli">
-      <Filter>Shader Files\Foundation</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli">
-      <Filter>Shader Files\Foundation</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli">
       <Filter>Shader Files\Foundation</Filter>
     </None>
     <None Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.inl">
@@ -662,9 +650,6 @@
     <None Include="..\..\assets\Shaders\HLSL\ConvoluteDiffuseIrradiance.hlsl">
       <Filter>Shader Files\EnvironmentMap</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL\LightingUtil.hlsli">
-      <Filter>Shader Files\Foundation</Filter>
-    </None>
     <None Include="..\..\assets\Shaders\HLSL\ShaderConstants.hlsli">
       <Filter>Shader Files\Foundation</Filter>
     </None>
@@ -706,9 +691,6 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\GaussianBlurFilter3x3.hlsl">
       <Filter>Shader Files\BlurFilter</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL\Random.hlsli">
-      <Filter>Shader Files\Foundation</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL\RTAO.hlsl">
       <Filter>Shader Files\RTAO</Filter>
@@ -877,6 +859,18 @@
     </None>
     <None Include="..\..\assets\Shaders\HLSL\GBuffer.hlsli">
       <Filter>Shader Files\GBuffer</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\LightingUtil.hlsli">
+      <Filter>Shader Files\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\Random.hlsli">
+      <Filter>Shader Files\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\ShaderUtil.hlsli">
+      <Filter>Shader Files\Util</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli">
+      <Filter>Shader Files\Util</Filter>
     </None>
   </ItemGroup>
 </Project>

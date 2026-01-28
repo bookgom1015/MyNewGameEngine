@@ -4,14 +4,18 @@
 #include "Common/Util/HashUtil.hpp"
 #include "Render/DX/DxLowRenderer.hpp"
 
-namespace Common::Foundation {
-	namespace Camera {
-		class GameCamera;
-	}
+namespace Common {
+	namespace Foundation {
+		struct Light;
 
-	namespace Mesh {
-		class Mesh;
-		struct Material;
+		namespace Camera {
+			class GameCamera;
+		}
+
+		namespace Mesh {
+			class Mesh;
+			struct Material;
+		}
 	}
 }
 
@@ -27,7 +31,6 @@ namespace Render {
 
 	namespace DX {
 		namespace Foundation {
-			struct Light;
 			struct RenderItem;
 
 			namespace Resource {
@@ -171,7 +174,7 @@ namespace Render {
 			std::unique_ptr<Shading::Util::AccelerationStructureManager> mAccelerationStructureManager{};
 
 			// Pending lights
-			std::queue<std::shared_ptr<Foundation::Light>> mPendingLights{};
+			std::queue<std::shared_ptr<Common::Foundation::Light>> mPendingLights{};
 		};
 	}
 }

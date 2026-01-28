@@ -5,6 +5,10 @@
 #define _HLSL
 #endif
 
+#ifndef HLSL_VERSION_UNDER_6
+#define HLSL_VERSION_UNDER_6
+#endif
+
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
 #include "./../../../assets/Shaders/HLSL5/Samplers.hlsli"
 #include "./../../../assets/Shaders/HLSL5/Shadow.hlsli"
@@ -19,7 +23,7 @@ RWTexture2D<uint> gio_ShadowMap : register(u0);
 
 [numthreads(8, 8, 1)]
 void CS(in uint2 DTid : SV_DispatchThreadID) {    
-    uint value = _Light.Index != 0 ? gio_ShadowMap[DTid] : 0;
+    uint value = Light.Index != 0 ? gio_ShadowMap[DTid] : 0;
     
     float4 posW = gi_PositionMap[DTid]; 
     if (posW.a == -1.f) {
@@ -27,12 +31,12 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         return;
     }
     
-    if (_Light.Type == LightType_Directional || LightType_Spot) {
+    if (Light.Type == Common::Foundation::LightType_Directional || Light.Type == Common::Foundation::LightType_Spot) {
         float shadowFactor = Shadow::CalcShadowFactor(
-            gi_ZDepthMap, gsamShadow, _Light.Mat1, posW.xyz);
-        value = Shadow::CalcShiftedShadowValueF(shadowFactor, value, _Light.Index);
+            gi_ZDepthMap, gsamShadow, Light.Mat1, posW.xyz);
+        value = Shadow::CalcShiftedShadowValueF(shadowFactor, value, Light.Index);
     }
-    else if (_Light.Type == LightType_Point) {
+    else if (Light.Type == Common::Foundation::LightType_Point) {
         
     }
     

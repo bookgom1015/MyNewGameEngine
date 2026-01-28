@@ -5,6 +5,10 @@
 #define _HLSL
 #endif
 
+#ifndef HLSL_VERSION_UNDER_6
+#define HLSL_VERSION_UNDER_6
+#endif
+
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
 #include "./../../../assets/Shaders/HLSL5/Samplers.hlsli"
 

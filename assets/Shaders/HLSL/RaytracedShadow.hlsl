@@ -41,9 +41,9 @@ void RaytracedShadow_RayGen() {
 
 		[loop]
 		for (uint i = 0; i < cbLight.LightCount; ++i) {
-			Render::DX::Foundation::Light light = cbLight.Lights[i];
+			Common::Foundation::Light light = cbLight.Lights[i];
 
-			if (light.Type == Common::Render::LightType::E_Directional) {
+			if (light.Type == Common::Foundation::LightType::E_Directional) {
 				RayDesc ray;
 				ray.Origin = PosW + 0.01f * NormalW;
 				ray.Direction = -light.Direction;

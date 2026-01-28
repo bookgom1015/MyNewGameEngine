@@ -5,6 +5,10 @@
 #define _HLSL
 #endif
 
+#ifndef HLSL_VERSION_UNDER_6
+#define HLSL_VERSION_UNDER_6
+#endif
+
 #ifndef _FIT_TO_SCREEN_COORD
 #define _FIT_TO_SCREEN_COORD
 #endif
@@ -38,7 +42,7 @@ void CalcShadowFactors(out float shadowFactor, in float2 texc) {
     uint2 index = min((uint2)(texc * size + 0.5f), size - 1);                                                                                                                                                                                                                                                                                            
     uint value = gi_ShadowMap.Load(uint3(index, 0));
     
-	shadowFactor = Shadow::GetShiftedShadowValue(value, _Light.Index);
+	shadowFactor = Shadow::GetShiftedShadowValue(value, Light.Index);
 }
 
 void CalcShadowFactorsPCF5x5(out float shadowFactor, in float2 texc) {    
@@ -63,7 +67,7 @@ void CalcShadowFactorsPCF5x5(out float shadowFactor, in float2 texc) {
 
             const uint Value = gi_ShadowMap.Load(uint3((uint2)tap, 0));
 
-            sum += Shadow::GetShiftedShadowValue(Value, _Light.Index);
+            sum += Shadow::GetShiftedShadowValue(Value, Light.Index);
         }
     }
 
@@ -89,7 +93,7 @@ float4 PS(VertexOut pin) : SV_Target {
     Material mat = { albedo, (float3)0.28f, shiness, metalness };
     
     float3 viewW = normalize(EyePosW - posW);
-    float3 radiance = ComputeBRDF(_Light, mat, posW, normalW, viewW, shadowFactor);
+    float3 radiance = ComputeBRDF(Light, mat, posW, normalW, viewW, shadowFactor);
     
     float3 kS = FresnelSchlickRoughness(saturate(dot(normalW, viewW)), fresnelR0, roughness);
     float3 kD = 1.f - kS;

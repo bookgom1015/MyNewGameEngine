@@ -4,6 +4,10 @@ namespace Common::Debug {
 	struct LogFile;
 }
 
+namespace ImGuiManager::DX11 {
+	class Dx11ImGuiManager;
+}
+
 namespace Render::DX11::Foundation {
 	namespace Util {
 		class D3D11Util;
@@ -12,6 +16,7 @@ namespace Render::DX11::Foundation {
 	namespace Core {
 		class Device {
 			friend class Util::D3D11Util;
+			friend class ImGuiManager::DX11::Dx11ImGuiManager;
 
 		public:
 			Device();

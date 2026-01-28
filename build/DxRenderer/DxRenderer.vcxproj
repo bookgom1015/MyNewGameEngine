@@ -17,6 +17,7 @@
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\Geometry.h" />
     <ClInclude Include="..\..\inc\Common\AccelerationStructure\LinearAlgebra.h" />
     <ClInclude Include="..\..\inc\Common\Debug\Logger.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Light.h" />
     <ClInclude Include="..\..\inc\Common\Render\ShadingArgument.hpp" />
     <ClInclude Include="..\..\inc\Common\Render\TonemapperType.h" />
     <ClInclude Include="..\..\inc\Render\DX\DxLowRenderer.hpp" />
@@ -30,7 +31,6 @@
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\pch_d3d12.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Core\SwapChain.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\HlslCompaction.h" />
-    <ClInclude Include="..\..\inc\Render\DX\Foundation\Light.h" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\RenderItem.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\FrameResource.hpp" />
     <ClInclude Include="..\..\inc\Render\DX\Foundation\Resource\GpuResource.hpp" />
@@ -150,10 +150,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\ImGuiManager\DX\DxImGuiManager.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\DxLowRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\DX\DxRenderer.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\CommandObject.cpp" />
@@ -170,7 +166,6 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Render/DX/Foundation/Core/pch_d3d12.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX\Foundation\Core\SwapChain.cpp" />
-    <ClCompile Include="..\..\src\Render\DX\Foundation\Light.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\RenderItem.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\FrameResource.cpp" />
     <ClCompile Include="..\..\src\Render\DX\Foundation\Resource\GpuResource.cpp" />

@@ -6,7 +6,7 @@
 #ifndef __LIGHTINGUTIL_HLSLI__
 #define __LIGHTINGUTIL_HLSLI__
 
-#include "./../../../inc/Render/DX/Foundation/Light.h"
+#include "./../../../inc/Common/Foundation/Light.h"
 #include "./../../../assets/Shaders/HLSL/BRDF.hlsli"
 
 static const float DEG2RAD = 3.14159265359f / 180.f;
@@ -32,7 +32,7 @@ float3 CalcPlaneIntersection(in float3 pos, in float3 r, in float3 dir, in float
 }
 
 float3 ComputeDirectionalLight(
-        in Render::DX::Foundation::Light light, 
+        in Common::Foundation::Light light, 
         in Material mat, 
         in float3 normal, 
         in float3 toEye) {
@@ -51,7 +51,7 @@ float3 ComputeDirectionalLight(
 }
 
 float3 ComputePointLight(
-        in Render::DX::Foundation::Light light, 
+        in Common::Foundation::Light light, 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
@@ -79,7 +79,7 @@ float3 ComputePointLight(
 }
 
 float3 ComputeSpotLight(
-        in Render::DX::Foundation::Light light, 
+        in Common::Foundation::Light light, 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
@@ -116,7 +116,7 @@ float3 ComputeSpotLight(
 }
 
 float3 ComputeTubeLight(
-        in Render::DX::Foundation::Light light, 
+        in Common::Foundation::Light light, 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
@@ -158,7 +158,7 @@ float3 ComputeTubeLight(
 }
 
 float3 ComputeRectLight(
-        in Render::DX::Foundation::Light light, 
+        in Common::Foundation::Light light, 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
@@ -217,7 +217,7 @@ float3 ComputeRectLight(
 }
 
 float3 ComputeBRDF(
-        in Render::DX::Foundation::Light Lights[MaxLights], 
+        in Common::Foundation::Light Lights[MaxLights], 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
@@ -228,19 +228,19 @@ float3 ComputeBRDF(
 
 	[loop]
     for (uint i = 0; i < lightCount; ++i) {
-        Render::DX::Foundation::Light light = Lights[i];
+        Common::Foundation::Light light = Lights[i];
         
         const float factor = shadowFactor[i];
         
-        if (light.Type == Common::Render::LightType::E_Directional)
+        if (light.Type == Common::Foundation::LightType::E_Directional)
             result += factor * ComputeDirectionalLight(light, mat, normal, toEye);
-        else if (light.Type == Common::Render::LightType::E_Point)
+        else if (light.Type == Common::Foundation::LightType::E_Point)
             result += factor * ComputePointLight(light, mat, pos, normal, toEye);
-        else if (light.Type == Common::Render::LightType::E_Spot)
+        else if (light.Type == Common::Foundation::LightType::E_Spot)
             result += factor * ComputeSpotLight(light, mat, pos, normal, toEye);
-        else if (light.Type == Common::Render::LightType::E_Rect)
+        else if (light.Type == Common::Foundation::LightType::E_Rect)
             result += ComputeRectLight(light, mat, pos, normal, toEye);
-        else if (light.Type == Common::Render::LightType::E_Tube)
+        else if (light.Type == Common::Foundation::LightType::E_Tube)
             result += factor * ComputeTubeLight(light, mat, pos, normal, toEye);
     }
 

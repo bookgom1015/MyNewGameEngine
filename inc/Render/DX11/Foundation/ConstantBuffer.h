@@ -2,9 +2,9 @@
 #define __CONSTANTBUFFER_H__
 
 #ifdef _HLSL
-	#include "./../../../inc/Render/DX11/Foundation/Light.h"
+	#include "./../../../inc/Common/Foundation/Light.h"
 #else
-	#include "Render/DX11/Foundation/Light.h"
+	#include "Common/Foundation/Light.h"
 #endif
 
 #ifndef PassCB_Struct
@@ -61,9 +61,8 @@ struct ObjectCB ObjectCB_Struct
 struct MaterialCB MaterialCB_Struct
 
 #ifndef LightCB_Struct
-#define LightCB_Struct {			\
-	DirectX::XMFLOAT4 AmbientLight;	\
-	Light _Light;					\
+#define LightCB_Struct {				\
+	Common::Foundation::Light Light;	\
 };
 #endif // LightCB_Struct
 
@@ -74,10 +73,10 @@ struct MaterialCB MaterialCB_Struct
 struct LightCB LightCB_Struct
 
 #ifndef GBufferCB_Struct
-#define GBufferCB_Struct {				\
-			DirectX::XMFLOAT2 TexDim;	\
-			FLOAT DitheringMaxDist;		\
-			FLOAT DitheringMinDist;		\
+#define GBufferCB_Struct {		\
+	DirectX::XMFLOAT2 TexDim;	\
+	FLOAT DitheringMaxDist;		\
+	FLOAT DitheringMinDist;		\
 };
 #endif // GBufferCB_Struct
 

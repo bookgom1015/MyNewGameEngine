@@ -6,6 +6,10 @@ namespace Common::Foundation::Core {
 	struct Processor;
 }
 
+namespace ImGuiManager::DX11 {
+	class Dx11ImGuiManager;
+}
+
 namespace Render::DX11 {
 	namespace Foundation::Core {
 		class Device;
@@ -45,5 +49,7 @@ namespace Render::DX11 {
 
 		UINT mClientWidth{};
 		UINT mClientHeight{};
+
+		ImGuiManager::DX11::Dx11ImGuiManager* mpImGuiManager{};
 	};
 }

@@ -182,10 +182,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\ImGuiManager\VK\VkImGuiManager.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\CommandObject.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Device.cpp" />
     <ClCompile Include="..\..\src\Render\VK\Foundation\Core\Instance.cpp" />

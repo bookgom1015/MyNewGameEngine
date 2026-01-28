@@ -3,6 +3,16 @@
 #include "Common/Foundation/Mesh/Mesh.hpp"
 #include "Render/DX11/Dx11LowRenderer.hpp"
 
+namespace Common {
+	namespace Foundation {
+		struct Light;
+
+		namespace Camera {
+			class GameCamera;
+		}
+	}
+}
+
 namespace Render {
 	extern "C" RendererAPI Common::Render::Renderer* CreateRenderer();
 	extern "C" RendererAPI void DestroyRenderer(Common::Render::Renderer* const renderer);
@@ -59,6 +69,8 @@ namespace Render {
 			BOOL UpdateLightCB();
 			BOOL UpdateGBufferCB();
 
+			BOOL ResolvePendingLights();
+
 		private:
 			BOOL InitShadingObjects();
 
@@ -109,6 +121,9 @@ namespace Render {
 			BOOL mbMeshGeometryAdded{};
 
 			DirectX::BoundingSphere mSceneBounds{};
+
+			// Pending lights
+			std::queue<std::shared_ptr<Common::Foundation::Light>> mPendingLights{};
 		};
 	}
 }

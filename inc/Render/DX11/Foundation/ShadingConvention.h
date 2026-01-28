@@ -29,6 +29,10 @@ namespace ShadingConvention {
 	namespace Shadow {
 		const DXGI_FORMAT ZDepthMapFormat = DXGI_FORMAT_R32_TYPELESS;
 		const DXGI_FORMAT ShadowMapFormat = DXGI_FORMAT_R32_UINT;
+
+		static const UINT ShadowMapType_Texture2D		= 0;
+		static const UINT ShadowMapType_Texture2DArray	= 1;
+		static const UINT ShadowMapType_CubeMap			= 2;		
 	}
 
 	namespace ToneMapping {

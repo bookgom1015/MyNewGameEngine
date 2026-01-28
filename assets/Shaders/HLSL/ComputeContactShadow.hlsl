@@ -31,7 +31,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
     
     uint result = 0;
     for (uint lightIndex = 0 ; lightIndex < cbLight.LightCount; ++lightIndex) {
-        const Render::DX::Foundation::Light light = cbLight.Lights[lightIndex];
+        const Common::Foundation::Light light = cbLight.Lights[lightIndex];
         
         const uint Seed = Random::InitRand(DTid.x + DTid.y * cbSSCS.TextureDimX, cbSSCS.FrameCount ^ (lightIndex * 9781u));
         const float Noise = lerp(0.75f, 1.25f, Random::Random01(Seed));
@@ -39,10 +39,10 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         const float4 PosW = gi_PositionMap[DTid];
         
         float3 rayDirection;
-        if (light.Type == Common::Render::LightType::E_Directional) {
+        if (light.Type == Common::Foundation::LightType::E_Directional) {
             rayDirection = -light.Direction;
         }
-        else if (light.Type == Common::Render::LightType::E_Point) {
+        else if (light.Type == Common::Foundation::LightType::E_Point) {
             rayDirection = normalize(light.Position - PosW.xyz);
         }
         

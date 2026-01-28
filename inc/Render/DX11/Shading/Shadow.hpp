@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common/Foundation/Light.h"
 #include "Render/DX11/Foundation/ShadingObject.hpp"
 
 namespace Render::DX11::Shading {
@@ -33,7 +34,9 @@ namespace Render::DX11::Shading {
 			__forceinline ID3D11ShaderResourceView* ShadowMapSrv();
 			__forceinline ID3D11UnorderedAccessView* ShadowMapUav();
 
+			void Lights(std::vector<Common::Foundation::Light*>& lights);
 			__forceinline constexpr UINT LightCount() const noexcept;
+			__forceinline Common::Foundation::Light* Light(UINT index) ;
 
 		public:
 			virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile, void* const pData);
@@ -44,7 +47,7 @@ namespace Render::DX11::Shading {
 			virtual BOOL OnResize(UINT width, UINT height);
 
 		public:
-			BOOL AddLight(UINT lightType);
+			BOOL AddLight(const std::shared_ptr<Common::Foundation::Light>& light);
 
 		public:
 			BOOL Run(
@@ -57,8 +60,8 @@ namespace Render::DX11::Shading {
 			BOOL BuildResources();
 			BOOL BuildDescriptors();
 
-			BOOL BuildResources(BOOL bCube);
-			BOOL BuildDescriptors(BOOL bCube);
+			BOOL BuildResource(UINT shadowMapType);
+			BOOL BuildDescriptor(UINT shadowMapType);
 
 			BOOL DrawZDepth(
 				Foundation::Resource::FrameResource* const pFrameResource,
@@ -84,14 +87,16 @@ namespace Render::DX11::Shading {
 
 			Microsoft::WRL::ComPtr<ID3D11ComputeShader> mDrawShadowCS{};
 
-			std::array<Microsoft::WRL::ComPtr<ID3D11Texture2D>, MAX_LIGHTS> mZDepthMaps{};
-			std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, MAX_LIGHTS> mhZDepthMapSrvs{};
-			std::array<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>, MAX_LIGHTS> mhZDepthMapDsvs{};
+			std::array<Microsoft::WRL::ComPtr<ID3D11Texture2D>, MaxLights> mZDepthMaps{};
+			std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, MaxLights> mhZDepthMapSrvs{};
+			std::array<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>, MaxLights> mhZDepthMapDsvs{};
 
 			Microsoft::WRL::ComPtr<ID3D11Texture2D> mShadowMap{};
 			Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mhShadowMapSrv{};
 			Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> mhShadowMapUav{};
 
+			// Lights
+			std::array<std::shared_ptr<Common::Foundation::Light>, MaxLights> mLights{};
 			UINT mLightCount{};
 
 			D3D11_VIEWPORT mViewport{};

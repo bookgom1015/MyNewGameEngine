@@ -43,16 +43,16 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 
 	[loop]
 	for (uint i = 0; i < cbLight.LightCount; ++i) {
-		Render::DX::Foundation::Light light = cbLight.Lights[i];
+		Common::Foundation::Light light = cbLight.Lights[i];
 
 		float3 direction = 0.f;
 		float Ld = 0.f;
 		float falloff = 1.f;
 
-		if (light.Type == Common::Render::LightType::E_Directional) {
+		if (light.Type == Common::Foundation::LightType::E_Directional) {
 			direction = light.Direction;
 		}
-		else if (light.Type == Common::Render::LightType::E_Tube || light.Type == Common::Render::LightType::E_Rect) {
+		else if (light.Type == Common::Foundation::LightType::E_Tube || light.Type == Common::Foundation::LightType::E_Rect) {
 			// Tube and rectangular light do not have shadow(depth) map for now, 
 			//  so these can not calculate visibility.
 			continue;
@@ -63,7 +63,7 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 		}
 		
 		float visibility = 1.f;
-		if (light.Type == Common::Render::LightType::E_Point || light.Type == Common::Render::LightType::E_Tube) {
+		if (light.Type == Common::Foundation::LightType::E_Point || light.Type == Common::Foundation::LightType::E_Tube) {
 			const uint Index = ShaderUtil::GetCubeFaceIndex(direction);
 			const float3 Normalized = normalize(direction);
 			const float2 UV = ShaderUtil::ConvertDirectionToUV(Normalized);
@@ -74,7 +74,7 @@ void CS(in uint3 DTid : SV_DispatchThreadId) {
 
 			falloff = CalcInverseSquareAttenuation(Ld, light.AttenuationRadius);
 		}
-		else if (light.Type == Common::Render::LightType::E_Directional || light.Type == Common::Render::LightType::E_Spot) {			
+		else if (light.Type == Common::Foundation::LightType::E_Directional || light.Type == Common::Foundation::LightType::E_Spot) {			
 			visibility = Shadow::CalcShadowFactor(gi_ZDepthMaps[i], gsamShadow, light.Mat1, PosW);
 		}
 

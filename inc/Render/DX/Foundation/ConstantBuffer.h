@@ -2,9 +2,9 @@
 #define __CONSTANTBUFFER_H__
 
 #ifdef _HLSL
-	#include "./../../../inc/Render/DX/Foundation/Light.h"
+	#include "./../../../inc/Common/Foundation/Light.h"
 #else
-	#include "Render/DX/Foundation/Light.h"
+	#include "Common/Foundation/Light.h"
 #endif
 
 namespace ConstantBuffers {
@@ -32,7 +32,7 @@ namespace ConstantBuffers {
 		FLOAT	__ConstantPad1__;
 		FLOAT	__ConstantPad2__;
 
-		Render::DX::Foundation::Light Lights[MaxLights];
+		Common::Foundation::Light Lights[MaxLights];
 	};
 
 	struct ObjectCB {

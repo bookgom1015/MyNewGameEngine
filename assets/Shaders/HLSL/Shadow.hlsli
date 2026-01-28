@@ -2,7 +2,7 @@
 #define __SHADOW_HLSLI__
 
 namespace Shadow {
-    float4x4 GetViewProjMatrix(in Render::DX::Foundation::Light light, in uint face) {
+    float4x4 GetViewProjMatrix(in Common::Foundation::Light light, in uint face) {
         switch (face) {
             case 0: return light.Mat0;
             case 1: return light.Mat1;

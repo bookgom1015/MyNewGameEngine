@@ -2,6 +2,10 @@
 
 #include "Common/ImGuiManager/ImGuiManager.hpp"
 
+namespace Render::DX11::Foundation::Core {
+	class Device;
+}
+
 namespace ImGuiManager {
 	extern "C" ImGuiManagerAPI Common::ImGuiManager::ImGuiManager* CreateImGuiManager();
 	extern "C" ImGuiManagerAPI void DestroyImGuiManager(Common::ImGuiManager::ImGuiManager* const imGuiManager);
@@ -13,8 +17,17 @@ namespace ImGuiManager {
 			virtual ~Dx11ImGuiManager();
 
 		public:
-			BOOL InitializeD3D11();
-			void CleanUpD3D11();
+			ImGuiManagerAPI BOOL InitializeD3D11(
+				Render::DX11::Foundation::Core::Device* const pDevice);
+			ImGuiManagerAPI virtual void CleanUp() override;
+
+		public:
+			ImGuiManagerAPI BOOL DrawImGui(
+				Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
+				Common::Foundation::Light* lights[],
+				UINT numLights,
+				std::queue<std::shared_ptr<Common::Foundation::Light>>& pendingLights,
+				UINT clientWidth, UINT clientHeight);
 
 		private:
 			BOOL mbIsD3D11Initialized{};

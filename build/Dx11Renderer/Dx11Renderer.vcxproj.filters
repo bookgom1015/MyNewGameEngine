@@ -73,6 +73,9 @@
     <Filter Include="External Files\FrankLuna">
       <UniqueIdentifier>{4f035144-493c-4121-a2ec-073234687ee0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External Files\ImGui">
+      <UniqueIdentifier>{faa4e6fb-2c26-41cd-bf90-0105e672341a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Render\DX11\Dx11Renderer.cpp">
@@ -119,9 +122,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX11\Shading\GBuffer.cpp">
       <Filter>Source Files\Shading Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Render\DX11\Foundation\Light.cpp">
-      <Filter>Source Files\Foundation</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Render\DX11\Foundation\ConstantBuffer.cpp">
       <Filter>Source Files\Foundation</Filter>
@@ -171,6 +171,30 @@
     <ClCompile Include="..\..\src\Render\DX11\Shading\EnvironmentMap.cpp">
       <Filter>Source Files\Shading Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_draw.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_tables.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\imgui_widgets.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_dx11.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\externs\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>External Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\WindowsManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\PowerManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\Render\DX11\Dx11Renderer.hpp">
@@ -207,9 +231,6 @@
       <Filter>Header Files\Shading Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\ConstantBuffer.h">
-      <Filter>Header Files\Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\inc\Render\DX11\Foundation\Light.h">
       <Filter>Header Files\Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX11\Foundation\Resource\FrameResource.hpp">
@@ -253,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\Render\DX11\Shading\EnvironmentMap.hpp">
       <Filter>Header Files\Shading Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Light.h">
+      <Filter>Common Files\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

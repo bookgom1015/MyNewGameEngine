@@ -5,6 +5,10 @@
 #define _HLSL
 #endif
 
+#ifndef HLSL_VERSION_UNDER_6
+#define HLSL_VERSION_UNDER_6
+#endif
+
 #ifndef _FIT_TO_SCREEN_COORD
 #define _FIT_TO_SCREEN_COORD
 #endif

@@ -1,7 +1,7 @@
 #ifndef __SHADOW_INL__
 #define __SHADOW_INL__
 
-Render::DX::Foundation::Light* Render::DX::Shading::Shadow::ShadowClass::Light(UINT index) const {
+Common::Foundation::Light* Render::DX::Shading::Shadow::ShadowClass::Light(UINT index) const {
 	return mLights[index].get();
 }
 
