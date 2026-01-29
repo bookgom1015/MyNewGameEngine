@@ -14,6 +14,7 @@
 #include "./../../../assets/Shaders/HLSL5/Shadow.hlsli"
 
 LightCB_register(b0);
+ShadowCB_register(b1);
 
 Texture2D<float4> gi_PositionMap    : register(t0);
 Texture2D<float>  gi_ZDepthMap      : register(t1);
@@ -23,7 +24,9 @@ RWTexture2D<uint> gio_ShadowMap : register(u0);
 
 [numthreads(8, 8, 1)]
 void CS(in uint2 DTid : SV_DispatchThreadID) {    
-    uint value = Light.Index != 0 ? gio_ShadowMap[DTid] : 0;
+    uint value = LightIndex != 0 ? gio_ShadowMap[DTid] : 0;
+    
+    Common::Foundation::Light light = Lights[LightIndex];
     
     float4 posW = gi_PositionMap[DTid]; 
     if (posW.a == -1.f) {
@@ -31,12 +34,12 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         return;
     }
     
-    if (Light.Type == Common::Foundation::LightType_Directional || Light.Type == Common::Foundation::LightType_Spot) {
+    if (light.Type == Common::Foundation::LightType_Directional || light.Type == Common::Foundation::LightType_Spot) {
         float shadowFactor = Shadow::CalcShadowFactor(
-            gi_ZDepthMap, gsamShadow, Light.Mat1, posW.xyz);
-        value = Shadow::CalcShiftedShadowValueF(shadowFactor, value, Light.Index);
+            gi_ZDepthMap, gsamShadow, light.Mat1, posW.xyz);
+        value = Shadow::CalcShiftedShadowValueF(shadowFactor, value, LightIndex);
     }
-    else if (Light.Type == Common::Foundation::LightType_Point) {
+    else if (light.Type == Common::Foundation::LightType_Point) {
         
     }
     

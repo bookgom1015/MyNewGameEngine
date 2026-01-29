@@ -35,21 +35,27 @@ FitToScreenVertexOut
 
 FitToScreenVertexShader
 
-void CalcShadowFactors(out float shadowFactor, in float2 texc) {    
+void CalcShadowFactors(out float shadowFactors[MaxLights], float2 texc) {    
     uint2 size;
     gi_ShadowMap.GetDimensions(size.x, size.y);
     
     uint2 index = min((uint2)(texc * size + 0.5f), size - 1);                                                                                                                                                                                                                                                                                            
     uint value = gi_ShadowMap.Load(uint3(index, 0));
     
-	shadowFactor = Shadow::GetShiftedShadowValue(value, Light.Index);
+    [loop]
+    for (uint i = 0; i < LightCount; ++i) 
+        shadowFactors[i] = Shadow::GetShiftedShadowValue(value, i);
 }
 
-void CalcShadowFactorsPCF5x5(out float shadowFactor, in float2 texc) {    
+void CalcShadowFactorsPCF5x5(out float shadowFactors[MaxLights], float2 texc) {    
+    if (LightCount == 0) return;
+    
     uint2 size;
     gi_ShadowMap.GetDimensions(size.x, size.y);    
 
-    float sum = 0.f;
+    float sum[MaxLights];
+    [unroll]
+    for (uint i = 0; i < MaxLights; ++i) sum[i] = 0.f;
 
     float2 pixel = texc * size;
     int2 basePixel = (int2)floor(pixel + 0.5f);
@@ -67,11 +73,15 @@ void CalcShadowFactorsPCF5x5(out float shadowFactor, in float2 texc) {
 
             const uint Value = gi_ShadowMap.Load(uint3((uint2)tap, 0));
 
-            sum += Shadow::GetShiftedShadowValue(Value, Light.Index);
+            [loop]
+            for (uint i = 0; i < LightCount; ++i)
+                sum[i] += Shadow::GetShiftedShadowValue(Value, i);
         }
     }
 
-    shadowFactor = sum * invCount;
+    [loop]
+    for (uint i = 0; i < LightCount; ++i)
+        shadowFactors[i] = sum[i] * invCount;
 }
 
 float4 PS(VertexOut pin) : SV_Target {
@@ -83,17 +93,21 @@ float4 PS(VertexOut pin) : SV_Target {
     float roughness = RM.r;
     float metalness = RM.g;
     
-    float shadowFactor = 1.f;
-    CalcShadowFactorsPCF5x5(shadowFactor, pin.TexC);
+    float shadowFactors[MaxLights];
+    [unroll]
+    for (uint i = 0; i < MaxLights; ++i) {
+        shadowFactors[i] = 1;
+    }
+    CalcShadowFactorsPCF5x5(shadowFactors, pin.TexC);
     
     const float3 specular = (float3)0.5f;
     const float shiness = 1.f - roughness;
     const float3 fresnelR0 = lerp(0.08f * specular, albedo.rgb, metalness);
     
     Material mat = { albedo, (float3)0.28f, shiness, metalness };
-    
+        
     float3 viewW = normalize(EyePosW - posW);
-    float3 radiance = ComputeBRDF(Light, mat, posW, normalW, viewW, shadowFactor);
+    float3 radiance = ComputeBRDF(Lights, mat, posW, normalW, viewW, shadowFactors, LightCount);
     
     float3 kS = FresnelSchlickRoughness(saturate(dot(normalW, viewW)), fresnelR0, roughness);
     float3 kD = 1.f - kS;

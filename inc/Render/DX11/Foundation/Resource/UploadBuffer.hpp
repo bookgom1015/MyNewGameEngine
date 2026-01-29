@@ -24,8 +24,10 @@ namespace Render::DX11::Foundation::Resource {
 		void CopyData(const T& data, UINT index = 0);
 		__forceinline ID3D11Buffer** CBAddress();
 
-		bool BeginFrame();
+		BOOL BeginFrame();
 		void EndFrame();
+
+		BOOL SetData(const T& data);
 
 		__forceinline constexpr UINT FirstConstant(UINT index = 0) const noexcept;
 		__forceinline constexpr UINT NumConstants() const noexcept;

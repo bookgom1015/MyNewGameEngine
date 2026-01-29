@@ -364,8 +364,11 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 }
 
 BOOL Dx11Renderer::UpdateLightCB() {
+	static LightCB lightCB{};
+
 	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
 	const auto LightCount = shadow->LightCount();
+	lightCB.LightCount = LightCount;
 
 	static const XMMATRIX T(
 		0.5f, 0.f, 0.f, 0.f,
@@ -374,7 +377,6 @@ BOOL Dx11Renderer::UpdateLightCB() {
 		0.5f, 0.5f, 0.f, 1.f
 	);
 
-	CheckReturn(mpLogFile, mFrameResource->LightCB.BeginFrame());
 
 	for (UINT i = 0; i < LightCount; ++i) {
 		const auto light = shadow->Light(i);
@@ -501,11 +503,11 @@ BOOL Dx11Renderer::UpdateLightCB() {
 			XMStoreFloat3(&light->Position3, LightPos3);
 		}
 
-		LightCB lightCB{};
-		lightCB.Light = *light;
-		mFrameResource->LightCB.CopyData(lightCB, i);
+		lightCB.Lights[i] = *light;
 	}
 
+	CheckReturn(mpLogFile, mFrameResource->LightCB.BeginFrame());
+	mFrameResource->LightCB.CopyData(lightCB);
 	mFrameResource->LightCB.EndFrame();
 
 	return TRUE;

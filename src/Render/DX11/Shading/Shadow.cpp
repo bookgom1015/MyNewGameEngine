@@ -323,30 +323,48 @@ BOOL Shadow::ShadowClass::DrawZDepth(
 	
 	context->IASetInputLayout(mInputLayout.Get());
 
+	// LightCB
+	{
+		auto& lightCB = pFrameResource->LightCB;
+		auto firstConstant = lightCB.FirstConstant(0);
+		auto numConstants = lightCB.NumConstants();
+		context->VSSetConstantBuffers1(
+			0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
+		context->GSSetConstantBuffers1(
+			0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
+		context->PSSetConstantBuffers1(
+			0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
+	}
+
 	for (UINT lightIndex = 0; lightIndex < mLightCount; ++lightIndex) {
 		auto dsv = mhZDepthMapDsvs[lightIndex].Get();
 		context->ClearDepthStencilView(
 			dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 		context->OMSetRenderTargets(0, nullptr, dsv);
 
-		// LightCB
-		{
-			auto& lightCB = pFrameResource->LightCB;
-			auto firstConstant = lightCB.FirstConstant(lightIndex);
-			auto numConstants = lightCB.NumConstants();
-			context->VSSetConstantBuffers1(
-				0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
-			context->GSSetConstantBuffers1(
-				0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
-			context->PSSetConstantBuffers1(
-				0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
-		}
-
 		for (UINT i = 0; i < numRitems; ++i) {
 			auto ritem = ppRitems[i];
 
 			context->IASetPrimitiveTopology(ritem->PrimitiveType);
 
+			// ShadowCB
+			{
+				auto& shadowCB = pFrameResource->ShadowCB;
+
+				ShadowCB cb{};
+				cb.LightIndex = lightIndex;
+
+				CheckReturn(mpLogFile, shadowCB.SetData(cb));
+
+				auto firstConstant = shadowCB.FirstConstant(0);
+				auto numConstants = shadowCB.NumConstants();
+				context->VSSetConstantBuffers1(
+					3, 1, shadowCB.CBAddress(), &firstConstant, &numConstants);
+				context->GSSetConstantBuffers1(
+					3, 1, shadowCB.CBAddress(), &firstConstant, &numConstants);
+				context->PSSetConstantBuffers1(
+					3, 1, shadowCB.CBAddress(), &firstConstant, &numConstants);
+			}
 			// ObjectCB
 			{
 				auto& objCB = pFrameResource->ObjectCB;
@@ -402,16 +420,32 @@ BOOL Shadow::ShadowClass::DrawShadow(
 	UINT initialCounts[] = { 0 };
 	context->CSSetUnorderedAccessViews(0, _countof(uavs), uavs, initialCounts);
 
+	// LightCB
+	{
+		auto& lightCB = pFrameResource->LightCB;
+		auto firstConstant = lightCB.FirstConstant(0);
+		auto numConstants = lightCB.NumConstants();
+		context->CSSetConstantBuffers1(
+			0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
+	}
+
 	for (UINT lightIndex = 0; lightIndex < mLightCount; ++lightIndex) {
 		ID3D11ShaderResourceView* zSrv = mhZDepthMapSrvs[lightIndex].Get();
 		context->CSSetShaderResources(1, 1, &zSrv);
-		// LightCB
+
+		// ShadowCB
 		{
-			auto& lightCB = pFrameResource->LightCB;
-			auto firstConstant = lightCB.FirstConstant(lightIndex);
-			auto numConstants = lightCB.NumConstants();
+			auto& shadowCB = pFrameResource->ShadowCB;
+
+			ShadowCB cb{};
+			cb.LightIndex = lightIndex;
+
+			CheckReturn(mpLogFile, shadowCB.SetData(cb));
+
+			auto firstConstant = shadowCB.FirstConstant(0);
+			auto numConstants = shadowCB.NumConstants();
 			context->CSSetConstantBuffers1(
-				0, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
+				1, 1, shadowCB.CBAddress(), &firstConstant, &numConstants);
 		}
 
 		context->Dispatch(

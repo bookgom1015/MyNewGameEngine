@@ -17,20 +17,32 @@ float3 ComputeDirectionalLight(
 }
 
 float3 ComputeBRDF(
-        in Common::Foundation::Light light, 
+        in Common::Foundation::Light lights[MaxLights], 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
         in float3 toEye, 
-        in float shadowFactor) {
+        in float shadowFactors[MaxLights],
+        in uint lightCount) {    
     float3 result = 0;
+
+	[loop]
+    for (uint i = 0; i < lightCount; ++i) {
+        Common::Foundation::Light light = lights[i];
         
-    if (light.Type == Common::Foundation::LightType_Directional)
-        result += shadowFactor * ComputeDirectionalLight(light, mat, normal, toEye);
-    //else if (light.Type == LightType_Point)
-    //    result += shadowFactor * ComputePointLight(light, mat, pos, normal, toEye);
-    //else if (light.Type == LightType_Spot)
-    //    result += shadowFactor * ComputeSpotLight(light, mat, pos, normal, toEye);    
+        const float factor = shadowFactors[i];
+        
+        if (light.Type == Common::Foundation::LightType_Directional)
+            result += factor * ComputeDirectionalLight(light, mat, normal, toEye);
+        //else if (light.Type == Common::Foundation::LightType::E_Point)
+        //    result += factor * ComputePointLight(light, mat, pos, normal, toEye);
+        //else if (light.Type == Common::Foundation::LightType::E_Spot)
+        //    result += factor * ComputeSpotLight(light, mat, pos, normal, toEye);
+        //else if (light.Type == Common::Foundation::LightType::E_Rect)
+        //    result += ComputeRectLight(light, mat, pos, normal, toEye);
+        //else if (light.Type == Common::Foundation::LightType::E_Tube)
+        //    result += factor * ComputeTubeLight(light, mat, pos, normal, toEye);
+    }
 
     return result;
 }

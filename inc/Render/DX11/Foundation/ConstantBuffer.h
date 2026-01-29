@@ -61,8 +61,12 @@ struct ObjectCB ObjectCB_Struct
 struct MaterialCB MaterialCB_Struct
 
 #ifndef LightCB_Struct
-#define LightCB_Struct {				\
-	Common::Foundation::Light Light;	\
+#define LightCB_Struct {							\
+	Common::Foundation::Light Lights[MaxLights];	\
+	UINT LightCount;								\
+	UINT __ConstantPad4__;							\
+	UINT __ConstantPad5__;							\
+	UINT __ConstantPad6__;							\
 };
 #endif // LightCB_Struct
 
@@ -85,5 +89,20 @@ struct LightCB LightCB_Struct
 #endif // GBufferCB_register
 
 struct GBufferCB GBufferCB_Struct
+
+#ifndef ShadowCB_Struct
+#define ShadowCB_Struct {	\
+	UINT LightIndex;		\
+	UINT __ConstantPad0__;	\
+	UINT __ConstantPad1__;	\
+	UINT __ConstantPad2__;	\
+};
+#endif // ShadowCB_Struct
+
+#ifndef ShadowCB_register
+#define ShadowCB_register(__reg) cbuffer ShadowCB : register(__reg) ShadowCB_Struct
+#endif // ShadowCB_register
+
+struct ShadowCB ShadowCB_Struct
 
 #endif // __CONSTANTBUFFER_H__

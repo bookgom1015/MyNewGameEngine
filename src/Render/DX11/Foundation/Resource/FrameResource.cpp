@@ -34,8 +34,9 @@ BOOL FrameResource::CreateConstantBuffers() {
 	CheckReturn(mpLogFile, PassCB.Initialize(mpLogFile, mpDevice, 1));
 	CheckReturn(mpLogFile, ObjectCB.Initialize(mpLogFile, mpDevice, 32));
 	CheckReturn(mpLogFile, MaterialCB.Initialize(mpLogFile, mpDevice, 32));
-	CheckReturn(mpLogFile, LightCB.Initialize(mpLogFile, mpDevice, MaxLights));
+	CheckReturn(mpLogFile, LightCB.Initialize(mpLogFile, mpDevice, 1));
 	CheckReturn(mpLogFile, GBufferCB.Initialize(mpLogFile, mpDevice, 1));
+	CheckReturn(mpLogFile, ShadowCB.Initialize(mpLogFile, mpDevice, 1));
 
 	return TRUE;
 }

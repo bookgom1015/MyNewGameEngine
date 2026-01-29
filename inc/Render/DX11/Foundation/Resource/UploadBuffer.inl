@@ -44,8 +44,8 @@ namespace Render::DX11::Foundation::Resource {
 	ID3D11Buffer** UploadBuffer<T>::CBAddress() { return mUploadBuffer.GetAddressOf(); }
 
 	template <typename T>
-	bool UploadBuffer<T>::BeginFrame() {
-		D3D11_MAPPED_SUBRESOURCE mapped;
+	BOOL UploadBuffer<T>::BeginFrame() {
+		D3D11_MAPPED_SUBRESOURCE mapped{};
 		CheckHRESULT(mpLogFile, mpDevice->Context()->Map(
 			mUploadBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped));
 
@@ -57,6 +57,20 @@ namespace Render::DX11::Foundation::Resource {
 	template <typename T>
 	void UploadBuffer<T>::EndFrame() {
 		mpDevice->Context()->Unmap(mUploadBuffer.Get(), 0);
+		mpMappedData = nullptr;
+	}
+
+	template <typename T>
+	BOOL UploadBuffer<T>::SetData(const T& data) {
+		D3D11_MAPPED_SUBRESOURCE mapped{};
+		CheckHRESULT(mpLogFile, mpDevice->Context()->Map(
+			mUploadBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped));
+
+		std::memcpy(mapped.pData, &data, sizeof(T));
+
+		mpDevice->Context()->Unmap(mUploadBuffer.Get(), 0);
+
+		return TRUE;
 	}
 
 	template <typename T>

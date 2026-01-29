@@ -59,16 +59,16 @@ namespace Common {
 
 			DirectX::XMFLOAT2	Size;				// rectangle light only
 			FLOAT				Index;				// for d3d11
-			FLOAT				__ConstantPad1__;
+			FLOAT				__ConstantPad0__;
 
 			DirectX::XMFLOAT3	Up;					// rentangle light only
-			FLOAT				__ConstantPad2__;
+			FLOAT				__ConstantPad1__;
 
 			DirectX::XMFLOAT3	Right;				// rentangle light only
-			FLOAT				__ConstantPad3__;
+			FLOAT				__ConstantPad2__;
 
 			DirectX::XMFLOAT3	Center;				// rentangle light only
-			FLOAT				__ConstantPad4__;
+			FLOAT				__ConstantPad3__;
 		};
 	}
 }

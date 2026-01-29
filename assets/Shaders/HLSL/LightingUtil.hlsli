@@ -217,20 +217,20 @@ float3 ComputeRectLight(
 }
 
 float3 ComputeBRDF(
-        in Common::Foundation::Light Lights[MaxLights], 
+        in Common::Foundation::Light lights[MaxLights], 
         in Material mat, 
         in float3 pos, 
         in float3 normal, 
         in float3 toEye, 
-        in float shadowFactor[MaxLights], 
+        in float shadowFactors[MaxLights], 
         in uint lightCount) {
     float3 result = 0;
 
 	[loop]
     for (uint i = 0; i < lightCount; ++i) {
-        Common::Foundation::Light light = Lights[i];
+        Common::Foundation::Light light = lights[i];
         
-        const float factor = shadowFactor[i];
+        const float factor = shadowFactors[i];
         
         if (light.Type == Common::Foundation::LightType::E_Directional)
             result += factor * ComputeDirectionalLight(light, mat, normal, toEye);

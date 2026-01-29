@@ -33,7 +33,7 @@ FitToScreenVertexShader
 
 FitToScreenMeshShader
 
-void CalcShadowFactorsPCF3x3(out float shadowFactors[MaxLights], float2 texc) {    
+void CalcShadowFactorsPCF5x5(out float shadowFactors[MaxLights], float2 texc) {    
     if (cbLight.LightCount == 0) return;
     
     uint2 size;
@@ -78,9 +78,8 @@ void CalcShadowFactors(out float shadowFactors[MaxLights], float2 texc) {
     const uint Value = gi_ShadowMap.Load(uint3(Index, 0));
     
 	[loop]
-    for (uint i = 0; i < cbLight.LightCount; ++i) {
+    for (uint i = 0; i < cbLight.LightCount; ++i) 
         shadowFactors[i] = Shadow::GetShiftedShadowValue(Value, i);
-    }
 }
 
 HDR_FORMAT PS(in VertexOut pin) : SV_Target {
@@ -103,7 +102,7 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
         shadowFactors[i] = 1;
     }
     if (gShadowEnabled) {
-        CalcShadowFactorsPCF3x3(shadowFactors, pin.TexC);
+        CalcShadowFactorsPCF5x5(shadowFactors, pin.TexC);
     }
 
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);

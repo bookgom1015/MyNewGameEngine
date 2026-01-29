@@ -130,20 +130,18 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 			0, 1, passCB.CBAddress(), &firstConstant, &numConstants);
 	}
 
-	for (UINT i = 0; i < numLights; ++i) {
-		// LightCB
-		{
-			auto& lightCB = pFrameResource->LightCB;
-			auto firstConstant = lightCB.FirstConstant(i);
-			auto numConstants = lightCB.NumConstants();
-			context->VSSetConstantBuffers1(
-				1, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
-			context->PSSetConstantBuffers1(
-				1, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
-		}
-
-		context->Draw(6, 0);
+	// LightCB
+	{
+		auto& lightCB = pFrameResource->LightCB;
+		auto firstConstant = lightCB.FirstConstant(0);
+		auto numConstants = lightCB.NumConstants();
+		context->VSSetConstantBuffers1(
+			1, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
+		context->PSSetConstantBuffers1(
+			1, 1, lightCB.CBAddress(), &firstConstant, &numConstants);
 	}
+
+	context->Draw(6, 0);
 
 	ID3D11ShaderResourceView* nullSrvs[8] = {};
 	context->PSSetShaderResources(0, _countof(nullSrvs), nullSrvs);

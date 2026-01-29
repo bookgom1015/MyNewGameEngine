@@ -15,6 +15,7 @@
 LightCB_register(b0);
 ObjectCB_register(b1);
 MaterialCB_register(b2);
+ShadowCB_register(b3);
 
 VERTEX_IN
 
@@ -41,16 +42,18 @@ VertexOut VS(in VertexIn vin) {
 }
 
 [maxvertexcount(18)]
-void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
+void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {    
     GeoOut gout = (GeoOut) 0;
+    
+    Common::Foundation::Light light = Lights[LightIndex];
 
 	// Directional light or spot light
-    if (Light.Type == Common::Foundation::LightType_Directional || Light.Type == Common::Foundation::LightType_Spot) {
+    if (light.Type == Common::Foundation::LightType_Directional || light.Type == Common::Foundation::LightType_Spot) {
         gout.ArrayIndex = 0;
         
 		[unroll]
         for (uint i = 0; i < 3; ++i) {
-            gout.PosH = mul(gin[i].PosW, Light.Mat0);
+            gout.PosH = mul(gin[i].PosW, light.Mat0);
             gout.TexC = gin[i].TexC;
 
             triStream.Append(gout);

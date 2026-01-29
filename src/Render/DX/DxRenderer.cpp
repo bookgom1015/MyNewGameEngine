@@ -52,6 +52,15 @@
 #include "ImGuiManager/DX/DxImGuiManager.hpp"
 #include "FrankLuna/GeometryGenerator.h"
 
+// SSGI
+// https://xtozero.tistory.com/22
+// https://dev.epicgames.com/documentation/ko-kr/unreal-engine/screen-space-global-illumination-in-unreal-engine
+
+// OIT
+// https://brownwind.tistory.com/entry/Order-Independent-Transparency
+// https://kyuhwang.tistory.com/26
+// https://suhyeokkim.github.io/2018/05/27/how-to-represent-transparency-object
+
 using namespace Render::DX;
 using namespace DirectX;
 
