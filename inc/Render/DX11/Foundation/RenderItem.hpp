@@ -16,7 +16,7 @@ namespace Render::DX11::Foundation {
 		DirectX::XMFLOAT4X4 PrevWorld = Common::Util::MathUtil::Identity4x4();
 		DirectX::XMFLOAT4X4 TexTransform = Common::Util::MathUtil::Identity4x4();
 
-		BOOL FrameDirty{ TRUE };
+		INT FrameDirty{ TRUE };
 
 		Resource::MaterialData* Material{};
 		Resource::MeshGeometry* Geometry{};

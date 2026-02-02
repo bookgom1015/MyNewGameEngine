@@ -10,15 +10,15 @@
 #endif
 
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
-#include "./../../../assets/Shaders/HLSL5/Samplers.hlsli"
-#include "./../../../assets/Shaders/HLSL5/Shadow.hlsli"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/Shadow.hlsli"
 
 LightCB_register(b0);
 ShadowCB_register(b1);
 
-Texture2D<float4> gi_PositionMap    : register(t0);
-Texture2D<float>  gi_ZDepthMap      : register(t1);
-Texture2D<float>  gi_ZDepthCubeMap  : register(t2);
+Texture2D<float4>     gi_PositionMap    : register(t0);
+Texture2D<float>      gi_ZDepthMap      : register(t1);
+Texture2DArray<float> gi_ZDepthCubeMap  : register(t2);
 
 RWTexture2D<uint> gio_ShadowMap : register(u0);
 
@@ -40,7 +40,24 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
         value = Shadow::CalcShiftedShadowValueF(shadowFactor, value, LightIndex);
     }
     else if (light.Type == Common::Foundation::LightType_Point) {
+        float3 direction;
+        if (light.Type == Common::Foundation::LightType_Tube) {
+            direction = posW.xyz - (light.Position + light.Position1) * 0.5f;
+        }
+        else {
+            direction = posW.xyz - light.Position;
+        }
         
+        uint index = ShaderUtil::GetCubeFaceIndex(direction);
+        float3 normalized = normalize(direction);
+        
+        float2 uv = ShaderUtil::ConvertDirectionToUV(normalized);
+
+        const float4x4 ViewProj = Shadow::GetViewProjMatrix(light, index);
+        const float ShadowFactor = Shadow::CalcShadowFactorCube(
+            gi_ZDepthCubeMap, gsamShadow, ViewProj, posW.xyz, uv, index);
+
+        value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, LightIndex);
     }
     
     gio_ShadowMap[DTid] = value;

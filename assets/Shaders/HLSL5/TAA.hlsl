@@ -14,7 +14,7 @@
 #endif
 
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
-#include "./../../../assets/Shaders/HLSL5/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
 
 Texture2D<float4> gi_BackBuffer  : register(t0);
 Texture2D<float4> gi_HistoryMap  : register(t1);

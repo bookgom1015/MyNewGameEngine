@@ -10,7 +10,8 @@
 #endif
 
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
-#include "./../../../assets/Shaders/HLSL5/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/Shadow.hlsli"
 
 LightCB_register(b0);
 ObjectCB_register(b1);
@@ -60,24 +61,24 @@ void GS(in triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream) {
         }
     }
 	// Point light
-    //else if (_Light.Type == LightType_Point) {
-	//	[loop]
-    //    for (uint face = 0; face < 6; ++face) {
-    //        gout.ArrayIndex = face;
-    //
-    //        const float4x4 ViewProj = Shadow::GetViewProjMatrix(_Light, face);
-    //
-	//		[unroll]
-    //        for (uint i = 0; i < 3; ++i) {
-    //            gout.PosH = mul(gin[i].PosW, ViewProj);
-    //            gout.TexC = gin[i].TexC;
-    //
-    //            triStream.Append(gout);
-    //        }
-    //
-    //        triStream.RestartStrip();
-    //    }
-    //}
+    else if (light.Type == Common::Foundation::LightType_Point) {
+		[loop]
+        for (uint face = 0; face < 6; ++face) {
+            gout.ArrayIndex = face;
+    
+            const float4x4 ViewProj = Shadow::GetViewProjMatrix(light, face);
+    
+			[unroll]
+            for (uint i = 0; i < 3; ++i) {
+                gout.PosH = mul(gin[i].PosW, ViewProj);
+                gout.TexC = gin[i].TexC;
+    
+                triStream.Append(gout);
+            }
+    
+            triStream.RestartStrip();
+        }
+    }
 }
 
 void PS(GeoOut pin) {

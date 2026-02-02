@@ -263,7 +263,7 @@ BOOL Dx11Renderer::UpdateMeshTransform(Common::Foundation::Hash hash, Common::Fo
 			pTransform->Position
 		)
 	);
-	ritem->FrameDirty = TRUE;
+	ritem->FrameDirty = 2;
 
 	return TRUE;
 }
@@ -310,9 +310,7 @@ BOOL Dx11Renderer::UpdatePassCB() {
 		passCB.JitteredOffset = { 0.f, 0.f };
 	}
 
-	CheckReturn(mpLogFile, mFrameResource->PassCB.BeginFrame());
-	mFrameResource->PassCB.CopyData(passCB);
-	mFrameResource->PassCB.EndFrame();
+	CheckReturn(mpLogFile, mFrameResource->PassCB.SetData(passCB));
 
 	return TRUE;
 }
@@ -321,7 +319,7 @@ BOOL Dx11Renderer::UpdateObjectCB() {
 	CheckReturn(mpLogFile, mFrameResource->ObjectCB.BeginFrame());
 
 	for (auto& ritem : mRenderItems) {
-		if (TRUE) {
+		if (ritem->FrameDirty > 0) {
 			const XMMATRIX PrevWorld = XMLoadFloat4x4(&ritem->PrevWorld);
 			const XMMATRIX World = XMLoadFloat4x4(&ritem->World);
 
@@ -332,7 +330,7 @@ BOOL Dx11Renderer::UpdateObjectCB() {
 
 			mFrameResource->ObjectCB.CopyData(objCB, ritem->ObjectCBIndex);
 
-			ritem->FrameDirty = FALSE;
+			ritem->FrameDirty = --(ritem->FrameDirty);
 		}
 	}
 
@@ -345,7 +343,7 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 	CheckReturn(mpLogFile, mFrameResource->MaterialCB.BeginFrame());
 
 	for (auto& material : mMaterials) {
-		if (TRUE) {
+		if (material->FrameDirty > 0) {
 			MaterialCB matCB{};
 			matCB.Albedo = material->Albedo;
 			matCB.Roughness = material->Roughness;
@@ -354,7 +352,7 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 
 			mFrameResource->MaterialCB.CopyData(matCB, material->MaterialCBIndex);
 
-			material->FrameDirty = FALSE;
+			material->FrameDirty = --material->FrameDirty;
 		}
 	}
 

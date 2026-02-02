@@ -112,6 +112,20 @@ BOOL Shading::Util::SamplerUtil::Initialize(
 
         CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_AnisotropicBorder]));
     }
+    // Depth
+    {
+        D3D11_SAMPLER_DESC desc{};
+        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+        desc.MaxAnisotropy = 0;
+        desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+        desc.MinLOD = 0;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+        CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_Depth]));
+    }
     // Shadow
     {
         D3D11_SAMPLER_DESC desc{};
@@ -125,6 +139,34 @@ BOOL Shading::Util::SamplerUtil::Initialize(
         desc.MaxLOD = D3D11_FLOAT32_MAX;
 
         CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_Shadow]));
+    }
+    // PointMirror
+    {
+        D3D11_SAMPLER_DESC desc{};
+        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+        desc.MaxAnisotropy = 1;
+        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        desc.MinLOD = 0;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+        CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_PointMirror]));
+    }
+    // LinearMirror
+    {
+        D3D11_SAMPLER_DESC desc{};
+        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+        desc.MaxAnisotropy = 1;
+        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        desc.MinLOD = 0;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+        CheckReturn(pLogFile, pDevice->CreateSamplerState(&desc, &msSamplers[SamplerState::E_LinearMirror]));
     }
 
     for (size_t i = 0; i < SamplerState::Type::Count; ++i)

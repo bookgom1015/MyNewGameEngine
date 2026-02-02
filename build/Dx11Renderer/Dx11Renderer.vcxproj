@@ -137,12 +137,7 @@
     <ClInclude Include="..\..\inc\Render\DX11\Shading\Util\ShadingObjectManager.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL5\BRDF.hlsli" />
-    <None Include="..\..\assets\Shaders\HLSL5\CookTorrance.hlsli" />
-    <None Include="..\..\assets\Shaders\HLSL5\GBuffer.hlsli" />
     <None Include="..\..\assets\Shaders\HLSL5\HlslCompaction.hlsli" />
-    <None Include="..\..\assets\Shaders\HLSL5\Samplers.hlsli" />
-    <None Include="..\..\assets\Shaders\HLSL5\Shadow.hlsli" />
     <None Include="..\..\inc\Render\DX11\Foundation\Core\DepthStencilBuffer.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Core\Device.inl" />
     <None Include="..\..\inc\Render\DX11\Foundation\Core\SwapChain.inl" />
@@ -166,11 +161,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Shaders\HLSL5\ComputeBRDF.hlsl">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\assets\Shaders\HLSL5\ShaderUtil.hlsli">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

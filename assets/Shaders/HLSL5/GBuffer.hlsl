@@ -10,8 +10,7 @@
 #endif
 
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
-#include "./../../../assets/Shaders/HLSL5/ShaderUtil.hlsli"
-#include "./../../../assets/Shaders/HLSL5/GBuffer.hlsli"
+#include "./../../../assets/Shaders/HLSL/GBuffer.hlsli"
 
 PassCB_register(b0);
 ObjectCB_register(b1);

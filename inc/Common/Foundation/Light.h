@@ -12,14 +12,14 @@
 
 namespace Common {
 	namespace Foundation {
-#ifdef HLSL_VERSION_UNDER_6
-		static const UINT LightType_None		= 0;
+		static const UINT LightType_None = 0;
 		static const UINT LightType_Directional = 1;
-		static const UINT LightType_Point		= 2;
-		static const UINT LightType_Spot		= 3;
-		static const UINT LightType_Tube		= 4;
-		static const UINT LightType_Rect		= 5;
-#else
+		static const UINT LightType_Point = 2;
+		static const UINT LightType_Spot = 3;
+		static const UINT LightType_Tube = 4;
+		static const UINT LightType_Rect = 5;
+
+#ifndef HLSL_VERSION_UNDER_6
 		enum LightType {
 			E_None = 0,
 			E_Directional,

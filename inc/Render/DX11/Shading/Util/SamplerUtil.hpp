@@ -14,7 +14,10 @@ namespace Render::DX11 {
 			E_AnisotropicWrap,
 			E_AnisotropicClamp,
 			E_AnisotropicBorder,
+			E_Depth,
 			E_Shadow,
+			E_PointMirror,
+			E_LinearMirror,
 			Count
 		};
 	}

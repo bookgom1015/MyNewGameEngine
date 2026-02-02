@@ -13,10 +13,14 @@
 #define _FIT_TO_SCREEN_COORD
 #endif
 
+#ifndef COOK_TORRANCE
+#define COOK_TORRANCE
+#endif
+
 #include "./../../../inc/Render/DX11/Foundation/HlslCompaction.h"
-#include "./../../../assets/Shaders/HLSL5/Samplers.hlsli"
-#include "./../../../assets/shaders/HLSL5/BRDF.hlsli"
-#include "./../../../assets/Shaders/HLSL5/Shadow.hlsli"
+#include "./../../../assets/Shaders/HLSL/Samplers.hlsli"
+#include "./../../../assets/Shaders/HLSL/LightingUtil.hlsli"
+#include "./../../../assets/Shaders/HLSL/Shadow.hlsli"
 
 PassCB_register(b0);
 LightCB_register(b1);
@@ -35,55 +39,6 @@ FitToScreenVertexOut
 
 FitToScreenVertexShader
 
-void CalcShadowFactors(out float shadowFactors[MaxLights], float2 texc) {    
-    uint2 size;
-    gi_ShadowMap.GetDimensions(size.x, size.y);
-    
-    uint2 index = min((uint2)(texc * size + 0.5f), size - 1);                                                                                                                                                                                                                                                                                            
-    uint value = gi_ShadowMap.Load(uint3(index, 0));
-    
-    [loop]
-    for (uint i = 0; i < LightCount; ++i) 
-        shadowFactors[i] = Shadow::GetShiftedShadowValue(value, i);
-}
-
-void CalcShadowFactorsPCF5x5(out float shadowFactors[MaxLights], float2 texc) {    
-    if (LightCount == 0) return;
-    
-    uint2 size;
-    gi_ShadowMap.GetDimensions(size.x, size.y);    
-
-    float sum[MaxLights];
-    [unroll]
-    for (uint i = 0; i < MaxLights; ++i) sum[i] = 0.f;
-
-    float2 pixel = texc * size;
-    int2 basePixel = (int2)floor(pixel + 0.5f);
-
-    int radius = 2;
-    int diameter = (2 * radius) + 1;
-    float invCount = 1.0f / (diameter * diameter);
-
-    [loop]
-    for (int dy = -radius; dy <= radius; ++dy) {
-        [loop]
-        for (int dx = -radius; dx <= radius; ++dx) {
-            int2 tap = basePixel + int2(dx, dy);
-            tap = clamp(tap, int2(0, 0), int2((int)size.x - 1, (int)size.y - 1));
-
-            const uint Value = gi_ShadowMap.Load(uint3((uint2)tap, 0));
-
-            [loop]
-            for (uint i = 0; i < LightCount; ++i)
-                sum[i] += Shadow::GetShiftedShadowValue(Value, i);
-        }
-    }
-
-    [loop]
-    for (uint i = 0; i < LightCount; ++i)
-        shadowFactors[i] = sum[i] * invCount;
-}
-
 float4 PS(VertexOut pin) : SV_Target {
     float4 albedo = gi_AlbedoMap.Sample(gsamLinearClamp, pin.TexC);
     float3 normalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);
@@ -98,13 +53,20 @@ float4 PS(VertexOut pin) : SV_Target {
     for (uint i = 0; i < MaxLights; ++i) {
         shadowFactors[i] = 1;
     }
-    CalcShadowFactorsPCF5x5(shadowFactors, pin.TexC);
+    
+    {
+        uint2 size;
+        gi_ShadowMap.GetDimensions(size.x, size.y);
+    
+        Shadow::CalcShadowFactorsPCF5x5(
+            gi_ShadowMap, size, pin.TexC, LightCount, shadowFactors);
+    }
     
     const float3 specular = (float3)0.5f;
     const float shiness = 1.f - roughness;
     const float3 fresnelR0 = lerp(0.08f * specular, albedo.rgb, metalness);
     
-    Material mat = { albedo, (float3)0.28f, shiness, metalness };
+    Material mat = { albedo, fresnelR0, shiness, metalness };
         
     float3 viewW = normalize(EyePosW - posW);
     float3 radiance = ComputeBRDF(Lights, mat, posW, normalW, viewW, shadowFactors, LightCount);

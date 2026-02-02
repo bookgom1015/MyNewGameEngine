@@ -430,18 +430,23 @@ BOOL Shadow::ShadowClass::DrawShadow(
 	}
 
 	for (UINT lightIndex = 0; lightIndex < mLightCount; ++lightIndex) {
+		auto shadowMapType = ResolveShadowMapType(mLights[lightIndex].get());
 		ID3D11ShaderResourceView* zSrv = mhZDepthMapSrvs[lightIndex].Get();
-		context->CSSetShaderResources(1, 1, &zSrv);
+
+		if (shadowMapType == ShadingConvention::Shadow::ShadowMapType_CubeMap)
+			context->CSSetShaderResources(2, 1, &zSrv);
+		else 
+			context->CSSetShaderResources(1, 1, &zSrv);
 
 		// ShadowCB
 		{
 			auto& shadowCB = pFrameResource->ShadowCB;
-
+		
 			ShadowCB cb{};
 			cb.LightIndex = lightIndex;
-
+		
 			CheckReturn(mpLogFile, shadowCB.SetData(cb));
-
+		
 			auto firstConstant = shadowCB.FirstConstant(0);
 			auto numConstants = shadowCB.NumConstants();
 			context->CSSetConstantBuffers1(

@@ -13,7 +13,7 @@ namespace Render::DX11::Foundation::Resource {
 		INT MetalnessMapIndex{ -1 };
 		INT SpecularMapIndex{ -1 };
 
-		INT FrameDirty{ TRUE };
+		INT FrameDirty{ 2 };
 
 		DirectX::XMFLOAT4 Albedo{ 1.f, 1.f, 1.f, 1.f };
 		DirectX::XMFLOAT3 Specular{ 0.08f, 0.08f, 0.08f };

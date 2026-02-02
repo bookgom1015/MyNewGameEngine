@@ -4,11 +4,11 @@
 #ifdef _HLSL
 	#include "./../../../assets/Shaders/HLSL5/HlslCompaction.hlsli" 
 	#include "./../../../inc/Render/DX11/Foundation/ConstantBuffer.h"
-	//#include "./../../../assets/Shaders/HLSL/HardCodedCoordinates.hlsli"
+	#include "./../../../assets/Shaders/HLSL/HardCodedCoordinates.hlsli"
 	//#include "./../../../assets/Shaders/HLSL/ShaderConstants.hlsli"
 	//
 	//#include "./../../../inc/Render/DX/Foundation/ShadingConvention.h"
-	#include "./../../../assets/Shaders/HLSL5/ShaderUtil.hlsli"
+	#include "./../../../assets/Shaders/HLSL/ShaderUtil.hlsli"
 	//
 	//#include "./../../../assets/Shaders/HLSL/Random.hlsli"
 	#include "./../../../inc/Common/Foundation/Mesh/Vertex.h"

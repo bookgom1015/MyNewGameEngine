@@ -85,5 +85,8 @@ namespace Common::ImGuiManager {
 		Common::Debug::LogFile* mpLogFile{};
 
 		ImGuiContext* mpContext{};
+
+		FLOAT mFrameTimes[3000]{};
+		UINT mFrameOffset{};
 	};
 }

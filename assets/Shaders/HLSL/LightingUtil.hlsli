@@ -232,15 +232,15 @@ float3 ComputeBRDF(
         
         const float factor = shadowFactors[i];
         
-        if (light.Type == Common::Foundation::LightType::E_Directional)
+        if (light.Type == Common::Foundation::LightType_Directional)
             result += factor * ComputeDirectionalLight(light, mat, normal, toEye);
-        else if (light.Type == Common::Foundation::LightType::E_Point)
+        else if (light.Type == Common::Foundation::LightType_Point)
             result += factor * ComputePointLight(light, mat, pos, normal, toEye);
-        else if (light.Type == Common::Foundation::LightType::E_Spot)
+        else if (light.Type == Common::Foundation::LightType_Spot)
             result += factor * ComputeSpotLight(light, mat, pos, normal, toEye);
-        else if (light.Type == Common::Foundation::LightType::E_Rect)
+        else if (light.Type == Common::Foundation::LightType_Rect)
             result += ComputeRectLight(light, mat, pos, normal, toEye);
-        else if (light.Type == Common::Foundation::LightType::E_Tube)
+        else if (light.Type == Common::Foundation::LightType_Tube)
             result += factor * ComputeTubeLight(light, mat, pos, normal, toEye);
     }
 

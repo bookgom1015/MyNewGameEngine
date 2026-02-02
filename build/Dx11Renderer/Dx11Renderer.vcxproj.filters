@@ -76,6 +76,9 @@
     <Filter Include="External Files\ImGui">
       <UniqueIdentifier>{faa4e6fb-2c26-41cd-bf90-0105e672341a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Shadow">
+      <UniqueIdentifier>{bf43d400-aeb6-4226-b260-ff8a78967c12}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Render\DX11\Dx11Renderer.cpp">
@@ -308,38 +311,14 @@
     <None Include="..\..\inc\Render\DX11\Foundation\Core\DepthStencilBuffer.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL5\ComputeBRDF.hlsl">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL5\ShaderUtil.hlsli">
-      <Filter>Shader Files</Filter>
-    </None>
     <None Include="..\..\inc\Render\DX11\Shading\Util\SamplerUtil.inl">
       <Filter>Header Files\Shading Files\Util</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL5\Samplers.hlsli">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL5\BRDF.hlsli">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL5\CookTorrance.hlsli">
-      <Filter>Shader Files</Filter>
     </None>
     <None Include="..\..\inc\Render\DX11\Shading\Shadow.inl">
       <Filter>Header Files\Shading Files</Filter>
     </None>
     <None Include="..\..\inc\Render\DX11\Foundation\Util\D3D11Util.inl">
       <Filter>Header Files\Foundation\Util</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL5\Shadow.hlsli">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL5\DrawShadow.hlsl">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\assets\Shaders\HLSL5\DrawZDepth.hlsl">
-      <Filter>Shader Files</Filter>
     </None>
     <None Include="..\..\assets\Shaders\HLSL5\GammaCorrection.hlsl">
       <Filter>Shader Files</Filter>
@@ -356,9 +335,6 @@
     <None Include="..\..\inc\Render\DX11\Shading\TAA.inl">
       <Filter>Header Files\Shading Files</Filter>
     </None>
-    <None Include="..\..\assets\Shaders\HLSL5\GBuffer.hlsli">
-      <Filter>Shader Files</Filter>
-    </None>
     <None Include="..\..\inc\Render\DX11\Shading\GBuffer.inl">
       <Filter>Header Files\Shading Files</Filter>
     </None>
@@ -367,6 +343,15 @@
     </None>
     <None Include="..\..\inc\Render\DX11\Shading\EnvironmentMap.inl">
       <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\DrawZDepth.hlsl">
+      <Filter>Shader Files\Shadow</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\DrawShadow.hlsl">
+      <Filter>Shader Files\Shadow</Filter>
+    </None>
+    <None Include="..\..\assets\Shaders\HLSL5\ComputeBRDF.hlsl">
+      <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
 </Project>

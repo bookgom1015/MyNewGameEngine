@@ -47,7 +47,7 @@ namespace Render::DX11::Foundation::Resource {
 	BOOL UploadBuffer<T>::BeginFrame() {
 		D3D11_MAPPED_SUBRESOURCE mapped{};
 		CheckHRESULT(mpLogFile, mpDevice->Context()->Map(
-			mUploadBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped));
+			mUploadBuffer.Get(), 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mapped));
 
 		mpMappedData = reinterpret_cast<BYTE*>(mapped.pData);
 
