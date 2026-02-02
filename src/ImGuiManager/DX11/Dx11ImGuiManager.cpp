@@ -27,6 +27,10 @@ BOOL Dx11ImGuiManager::InitializeD3D11(
 	CheckReturn(mpLogFile, ImGui_ImplDX11_Init(
 		pDevice->mDevice.Get(), pDevice->mContext.Get()));
 
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.Fonts->AddFontDefault();
+	io.Fonts->Build();
+
 	mbIsD3D11Initialized = TRUE;
 
 	return TRUE;

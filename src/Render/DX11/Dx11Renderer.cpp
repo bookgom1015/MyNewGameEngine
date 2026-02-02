@@ -185,20 +185,20 @@ BOOL Dx11Renderer::Draw() {
 		env->DiffuseIrradianceMapSrv(),
 		env->PrefilteredEnvironmentCubeMapSrv(),
 		env->BrdfLutMapSrv()));
-
+	
 	CheckReturn(mpLogFile, env->DrawSkySphere(
 		mFrameResource.get(),
 		mSwapChain->ScreenViewport(),
 		tone->InterMediateMapRtv(),
 		mDepthStencilBuffer->DepthStencilView(),
 		mSkySphere.get()));
-
+	
 	CheckReturn(mpLogFile, tone->Apply(
 		mFrameResource.get(),
 		mSwapChain->ScreenViewport(),
 		mSwapChain->SwapChainBuffer(),
 		mSwapChain->SwapChainBufferRtv()));
-
+	
 	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
 		const auto gamma = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
 		CheckReturn(mpLogFile, gamma->Apply(
@@ -209,7 +209,7 @@ BOOL Dx11Renderer::Draw() {
 			mSwapChain->SwapChainBufferCopy(),
 			mSwapChain->SwapChainBufferCopySrv()));
 	}
-
+	
 	if (mpShadingArgumentSet->TAA.Enabled) {
 		const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
 		CheckReturn(mpLogFile, taa->Apply(
@@ -316,47 +316,65 @@ BOOL Dx11Renderer::UpdatePassCB() {
 }
 
 BOOL Dx11Renderer::UpdateObjectCB() {
-	CheckReturn(mpLogFile, mFrameResource->ObjectCB.BeginFrame());
-
-	for (auto& ritem : mRenderItems) {
+	BOOL needToUpdate{};
+	for (auto& ritem : mRenderItems)
 		if (ritem->FrameDirty > 0) {
-			const XMMATRIX PrevWorld = XMLoadFloat4x4(&ritem->PrevWorld);
-			const XMMATRIX World = XMLoadFloat4x4(&ritem->World);
-
-			ObjectCB objCB{};
-
-			XMStoreFloat4x4(&objCB.PrevWorld, XMMatrixTranspose(PrevWorld));
-			XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(World));
-
-			mFrameResource->ObjectCB.CopyData(objCB, ritem->ObjectCBIndex);
-
-			ritem->FrameDirty = --(ritem->FrameDirty);
+			needToUpdate = TRUE;
+			break;
 		}
-	}
 
-	mFrameResource->ObjectCB.EndFrame();
+	if (needToUpdate) {
+		CheckReturn(mpLogFile, mFrameResource->ObjectCB.BeginFrame());
+
+		for (auto& ritem : mRenderItems) {
+			if (ritem->FrameDirty > 0) {
+				const XMMATRIX PrevWorld = XMLoadFloat4x4(&ritem->PrevWorld);
+				const XMMATRIX World = XMLoadFloat4x4(&ritem->World);
+
+				ObjectCB objCB{};
+
+				XMStoreFloat4x4(&objCB.PrevWorld, XMMatrixTranspose(PrevWorld));
+				XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(World));
+
+				mFrameResource->ObjectCB.CopyData(objCB, ritem->ObjectCBIndex);
+
+				ritem->FrameDirty = --(ritem->FrameDirty);
+			}
+		}
+
+		mFrameResource->ObjectCB.EndFrame();
+	}
 
 	return TRUE;
 }
 
 BOOL Dx11Renderer::UpdateMaterialCB() {
-	CheckReturn(mpLogFile, mFrameResource->MaterialCB.BeginFrame());
-
-	for (auto& material : mMaterials) {
+	BOOL needToUpdate{};
+	for (auto& material : mMaterials)
 		if (material->FrameDirty > 0) {
-			MaterialCB matCB{};
-			matCB.Albedo = material->Albedo;
-			matCB.Roughness = material->Roughness;
-			matCB.Metalness = material->Metalness;
-			matCB.Specular = material->Specular;
-
-			mFrameResource->MaterialCB.CopyData(matCB, material->MaterialCBIndex);
-
-			material->FrameDirty = --material->FrameDirty;
+			needToUpdate = TRUE;
+			break;
 		}
-	}
 
-	mFrameResource->MaterialCB.EndFrame();
+	if (needToUpdate) {
+		CheckReturn(mpLogFile, mFrameResource->MaterialCB.BeginFrame());
+
+		for (auto& material : mMaterials) {
+			if (material->FrameDirty > 0) {
+				MaterialCB matCB{};
+				matCB.Albedo = material->Albedo;
+				matCB.Roughness = material->Roughness;
+				matCB.Metalness = material->Metalness;
+				matCB.Specular = material->Specular;
+
+				mFrameResource->MaterialCB.CopyData(matCB, material->MaterialCBIndex);
+
+				material->FrameDirty = --material->FrameDirty;
+			}
+		}
+
+		mFrameResource->MaterialCB.EndFrame();
+	}
 
 	return TRUE;
 }

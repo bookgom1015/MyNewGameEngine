@@ -52,12 +52,9 @@ HDR_FORMAT PS(in VertexOut pin) : SV_Target {
     for (uint i = 0; i < MaxLights; ++i) {
         shadowFactors[i] = 1;
     }
-    if (gShadowEnabled) {
-        uint2 size;
-        gi_ShadowMap.GetDimensions(size.x, size.y);
-    
+    if (gShadowEnabled) {    
         Shadow::CalcShadowFactorsPCF5x5(
-            gi_ShadowMap, size, pin.TexC, cbLight.LightCount, shadowFactors);
+            gi_ShadowMap, gTexDim, pin.TexC, cbLight.LightCount, shadowFactors);
     }
 
     const float3 NormalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);

@@ -18,10 +18,6 @@ BOOL ImGuiManager::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd)
 	IMGUI_CHECKVERSION();
 	mpContext = ImGui::CreateContext();
 
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.Fonts->AddFontDefault();
-	io.Fonts->Build();
-
 	// Setup Dear ImGui style.
 	ImGui::StyleColorsDark();
 

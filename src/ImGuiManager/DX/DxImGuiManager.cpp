@@ -41,6 +41,10 @@ BOOL DxImGuiManager::InitializeD3D12(
 		mhImGuiCpuSrv,
 		mhImGuiGpuSrv));
 
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.Fonts->AddFontDefault();
+	io.Fonts->Build();
+
 	mbIsD3D12Initialized = TRUE;
 
 	return TRUE;

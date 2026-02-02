@@ -365,6 +365,7 @@ BOOL BRDF::BRDFClass::ComputeBRDF(
 			RootSignature::ComputeBRDF::CB_Light, pFrameResource->LightCB.CBAddress());
 
 		ShadingConvention::BRDF::RootConstant::ComputeBRDF::Struct rc;
+		rc.gTexDim = { mInitData.ClientWidth, mInitData.ClientHeight };
 		rc.gShadowEnabled = bShadowEnabled;
 
 		std::array<std::uint32_t, ShadingConvention::BRDF::RootConstant::ComputeBRDF::Count> consts;

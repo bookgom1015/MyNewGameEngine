@@ -325,6 +325,7 @@ namespace ShadingConvention{
 	namespace BRDF {
 #ifndef BRDF_ComputeBRDF_RCSTRUCT
 #define BRDF_ComputeBRDF_RCSTRUCT {	\
+		DirectX::XMUINT2 gTexDim;	\
 		BOOL gShadowEnabled;		\
 	};
 #endif
@@ -348,7 +349,9 @@ namespace ShadingConvention{
 			namespace ComputeBRDF {
 				struct Struct BRDF_ComputeBRDF_RCSTRUCT
 					enum {
-					E_ShadowEnabled = 0,
+					E_TexDim_X = 0,
+					E_TexDim_Y,
+					E_ShadowEnabled,
 					Count
 				};
 			}
