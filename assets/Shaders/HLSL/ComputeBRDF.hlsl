@@ -34,8 +34,10 @@ FitToScreenVertexShader
 FitToScreenMeshShader
 
 HDR_FORMAT PS(in VertexOut pin) : SV_Target {
-    const float4 PosW = gi_PositionMap.Sample(gsamLinearClamp, pin.TexC);    	
     const float4 Albedo = gi_AlbedoMap.Sample(gsamLinearClamp, pin.TexC);
+    if (Albedo.a < 1e-6f) return (float4)0;
+                                                                                                                                                                                                                                                                            
+    const float4 PosW = gi_PositionMap.Sample(gsamLinearClamp, pin.TexC);    	
     const float3 Specular = gi_SpecularMap.Sample(gsamLinearClamp, pin.TexC).rgb;
     const float2 RoughnessMetalness = gi_RoughnessMetalnessMap.Sample(gsamLinearClamp, pin.TexC);
     

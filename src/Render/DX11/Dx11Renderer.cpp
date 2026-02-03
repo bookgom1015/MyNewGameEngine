@@ -44,7 +44,9 @@ Dx11Renderer::Dx11Renderer() {
 	mShadingObjectManager = std::make_unique<Shading::Util::ShadingObjectManager>();
 	mShaderManager = std::make_unique<Shading::Util::ShaderManager>();
 
-	mFrameResource = std::make_unique<Foundation::Resource::FrameResource>();
+	mFrameResources.resize(Foundation::Resource::FrameResource::Count);
+	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; ++i)
+		mFrameResources[i] = std::make_unique<Foundation::Resource::FrameResource>();
 
 	mShadingObjectManager->Add<Shading::GBuffer::GBufferClass>();
 	mShadingObjectManager->Add<Shading::BRDF::BRDFClass>();
@@ -76,7 +78,8 @@ BOOL Dx11Renderer::Initialize(
 	CheckReturn(mpLogFile, mShaderManager->Initialize(
 		mpLogFile, L".\\..\\..\\..\\assets\\Shaders\\HLSL5\\"));
 
-	CheckReturn(mpLogFile, mFrameResource->Initalize(mpLogFile, mDevice.get()));
+	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; ++i)
+		CheckReturn(mpLogFile, mFrameResources[i]->Initalize(mpLogFile, mDevice.get()));
 
 	CheckReturn(mpLogFile, InitShadingObjects());
 
@@ -116,9 +119,12 @@ void Dx11Renderer::CleanUp() {
 		meshGeo.second->CleanUp();
 	mMeshGeometries.clear();
 
-	if (mFrameResource) {
-		mFrameResource->CleanUp();
-		mFrameResource.reset();
+	for (UINT i = 0; i < Foundation::Resource::FrameResource::Count; ++i) {
+		auto& frameResources = mFrameResources[i];
+		if (frameResources) {
+			frameResources->CleanUp();
+			frameResources.reset();
+		}
 	}
 	if (mShaderManager) {
 		mShaderManager->CleanUp();
@@ -145,6 +151,9 @@ BOOL Dx11Renderer::OnResize(UINT width, UINT height) {
 }
 
 BOOL Dx11Renderer::Update(FLOAT deltaTime) {
+	mCurrentFrameResourceIndex = (mCurrentFrameResourceIndex + 1) % Foundation::Resource::FrameResource::Count;
+	mpCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
+
 	CheckReturn(mpLogFile, mShadingObjectManager->Update());
 
 	CheckReturn(mpLogFile, UpdateCB());
@@ -158,14 +167,14 @@ BOOL Dx11Renderer::Draw() {
 
 	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
 	CheckReturn(mpLogFile, gbuffer->DrawGBuffer(
-		mFrameResource.get(),
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mDepthStencilBuffer->DepthStencilView(),
 		ritems.data(), static_cast<UINT>(ritems.size())));
 
 	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
 	CheckReturn(mpLogFile, shadow->Run(
-		mFrameResource.get(),
+		mpCurrentFrameResource,
 		gbuffer->PositionMapSrv(),
 		ritems.data(), static_cast<UINT>(ritems.size())));
 
@@ -173,7 +182,7 @@ BOOL Dx11Renderer::Draw() {
 	const auto brdf = mShadingObjectManager->Get<Shading::BRDF::BRDFClass>();
 	const auto env = mShadingObjectManager->Get<Shading::EnvironmentMap::EnvironmentMapClass>();
 	CheckReturn(mpLogFile, brdf->ComputeBRDF(
-		mFrameResource.get(),
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		tone->InterMediateMapRtv(),
 		gbuffer->AlbedoMapSrv(),
@@ -187,14 +196,14 @@ BOOL Dx11Renderer::Draw() {
 		env->BrdfLutMapSrv()));
 	
 	CheckReturn(mpLogFile, env->DrawSkySphere(
-		mFrameResource.get(),
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		tone->InterMediateMapRtv(),
 		mDepthStencilBuffer->DepthStencilView(),
 		mSkySphere.get()));
 	
 	CheckReturn(mpLogFile, tone->Apply(
-		mFrameResource.get(),
+		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->SwapChainBuffer(),
 		mSwapChain->SwapChainBufferRtv()));
@@ -202,7 +211,7 @@ BOOL Dx11Renderer::Draw() {
 	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
 		const auto gamma = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
 		CheckReturn(mpLogFile, gamma->Apply(
-			mFrameResource.get(),
+			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->SwapChainBuffer(),
 			mSwapChain->SwapChainBufferRtv(),
@@ -213,7 +222,7 @@ BOOL Dx11Renderer::Draw() {
 	if (mpShadingArgumentSet->TAA.Enabled) {
 		const auto taa = mShadingObjectManager->Get<Shading::TAA::TAAClass>();
 		CheckReturn(mpLogFile, taa->Apply(
-			mFrameResource.get(),
+			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->SwapChainBuffer(),
 			mSwapChain->SwapChainBufferRtv(),
@@ -263,7 +272,7 @@ BOOL Dx11Renderer::UpdateMeshTransform(Common::Foundation::Hash hash, Common::Fo
 			pTransform->Position
 		)
 	);
-	ritem->FrameDirty = 2;
+	ritem->FrameDirty = Foundation::Resource::FrameResource::Count << 1;
 
 	return TRUE;
 }
@@ -310,7 +319,7 @@ BOOL Dx11Renderer::UpdatePassCB() {
 		passCB.JitteredOffset = { 0.f, 0.f };
 	}
 
-	CheckReturn(mpLogFile, mFrameResource->PassCB.SetData(passCB));
+	CheckReturn(mpLogFile, mpCurrentFrameResource->PassCB.SetData(passCB));
 
 	return TRUE;
 }
@@ -324,7 +333,7 @@ BOOL Dx11Renderer::UpdateObjectCB() {
 		}
 
 	if (needToUpdate) {
-		CheckReturn(mpLogFile, mFrameResource->ObjectCB.BeginFrame());
+		CheckReturn(mpLogFile, mpCurrentFrameResource->ObjectCB.BeginFrame());
 
 		for (auto& ritem : mRenderItems) {
 			if (ritem->FrameDirty > 0) {
@@ -336,13 +345,13 @@ BOOL Dx11Renderer::UpdateObjectCB() {
 				XMStoreFloat4x4(&objCB.PrevWorld, XMMatrixTranspose(PrevWorld));
 				XMStoreFloat4x4(&objCB.World, XMMatrixTranspose(World));
 
-				mFrameResource->ObjectCB.CopyData(objCB, ritem->ObjectCBIndex);
+				mpCurrentFrameResource->ObjectCB.CopyData(objCB, ritem->ObjectCBIndex);
 
 				ritem->FrameDirty = --(ritem->FrameDirty);
 			}
 		}
 
-		mFrameResource->ObjectCB.EndFrame();
+		mpCurrentFrameResource->ObjectCB.EndFrame();
 	}
 
 	return TRUE;
@@ -357,7 +366,7 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 		}
 
 	if (needToUpdate) {
-		CheckReturn(mpLogFile, mFrameResource->MaterialCB.BeginFrame());
+		CheckReturn(mpLogFile, mpCurrentFrameResource->MaterialCB.BeginFrame());
 
 		for (auto& material : mMaterials) {
 			if (material->FrameDirty > 0) {
@@ -367,13 +376,13 @@ BOOL Dx11Renderer::UpdateMaterialCB() {
 				matCB.Metalness = material->Metalness;
 				matCB.Specular = material->Specular;
 
-				mFrameResource->MaterialCB.CopyData(matCB, material->MaterialCBIndex);
+				mpCurrentFrameResource->MaterialCB.CopyData(matCB, material->MaterialCBIndex);
 
 				material->FrameDirty = --material->FrameDirty;
 			}
 		}
 
-		mFrameResource->MaterialCB.EndFrame();
+		mpCurrentFrameResource->MaterialCB.EndFrame();
 	}
 
 	return TRUE;
@@ -522,9 +531,7 @@ BOOL Dx11Renderer::UpdateLightCB() {
 		lightCB.Lights[i] = *light;
 	}
 
-	CheckReturn(mpLogFile, mFrameResource->LightCB.BeginFrame());
-	mFrameResource->LightCB.CopyData(lightCB);
-	mFrameResource->LightCB.EndFrame();
+	mpCurrentFrameResource->LightCB.SetData(lightCB);
 
 	return TRUE;
 }
@@ -537,9 +544,7 @@ BOOL Dx11Renderer::UpdateGBufferCB() {
 	gbufferCB.DitheringMaxDist = 0.4f;
 	gbufferCB.DitheringMinDist = 0.1f;
 
-	CheckReturn(mpLogFile, mFrameResource->GBufferCB.BeginFrame());
-	mFrameResource->GBufferCB.CopyData(gbufferCB);
-	mFrameResource->GBufferCB.EndFrame();
+	mpCurrentFrameResource->GBufferCB.SetData(gbufferCB);
 
 	return TRUE;
 }
@@ -687,7 +692,7 @@ BOOL Dx11Renderer::BuildRenderItem(
 		Common::Foundation::Hash& hash,
 		Foundation::Resource::MeshGeometry* pMeshGeo) {
 	for (UINT count = 0; const auto& subset : pMeshGeo->Subsets) {
-		auto ritem = std::make_unique<Foundation::RenderItem>();
+		auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
 		hash = Foundation::RenderItem::Hash(ritem.get());
 
 		ritem->ObjectCBIndex = static_cast<INT>(mRenderItems.size());
@@ -723,7 +728,7 @@ BOOL Dx11Renderer::BuildRenderItem(
 		Foundation::Resource::MeshGeometry* pMeshGeo,
 		const std::string& name,
 		const DirectX::XMMATRIX& world) {
-	auto ritem = std::make_unique<Foundation::RenderItem>();
+	auto ritem = std::make_unique<Foundation::RenderItem>(Foundation::Resource::FrameResource::Count);
 	hash = Foundation::RenderItem::Hash(ritem.get());
 
 	ritem->ObjectCBIndex = static_cast<INT>(mRenderItems.size());
@@ -742,7 +747,7 @@ BOOL Dx11Renderer::BuildRenderItem(
 BOOL Dx11Renderer::BuildMeshMaterial(
 		Common::Foundation::Mesh::Material* const pMaterial,
 		Foundation::Resource::MaterialData*& pMatData) {
-	auto matData = std::make_unique<Foundation::Resource::MaterialData>();
+	auto matData = std::make_unique<Foundation::Resource::MaterialData>(Foundation::Resource::FrameResource::Count);
 
 	CheckReturn(mpLogFile, BuildMeshTextures(pMaterial, matData.get()));
 

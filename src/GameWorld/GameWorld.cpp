@@ -15,6 +15,7 @@
 #include "GameWorld/Prefab/MetalSphere.hpp"
 
 using namespace GameWorld;
+using namespace DirectX;
 
 namespace {
 	const UINT InitClientWidth = 1280;
@@ -285,20 +286,20 @@ BOOL GameWorldClass::InitActorManager() {
 }
 
 BOOL GameWorldClass::BuildScene() {
-	new Player::FreeLookActor(mpLogFile, "free_look_actor", DirectX::XMFLOAT3(0.f, 2.f, -6.f));
+	new Player::FreeLookActor(mpLogFile, "free_look_actor", XMFLOAT3(0.f, 2.f, -6.f));
 	new Prefab::LampShade(mpLogFile, "lamp_shade");
 	new Prefab::FineDonut(
 		mpLogFile, 
 		"fine_donut",
-		DirectX::XMFLOAT3(0.f, 8.f, 0.f),
-		DirectX::XMFLOAT4(0.f, 0.f, 0.f, 1.f),
-		DirectX::XMFLOAT3(3.f, 2.f, 3.f));
+		XMFLOAT3(0.f, 8.f, 0.f),
+		XMFLOAT4(0.f, 0.f, 0.f, 1.f),
+		XMFLOAT3(3.f, 2.f, 3.f));
 	new Prefab::MetalSphere(
 		mpLogFile, 
 		"metal_sphere", 
-		DirectX::XMFLOAT3(0.f, 2.f, 0.f), 
-		DirectX::XMFLOAT4(0.f, 0.f, 0.f, 1.f),
-		DirectX::XMFLOAT3(1.9f, 1.9f, 1.9f));
+		XMFLOAT3(0.f, 2.f, 0.f), 
+		XMFLOAT4(0.f, 0.f, 0.f, 1.f),
+		XMFLOAT3(1.9f, 1.9f, 1.9f));
 
 	return TRUE;
 }
@@ -334,8 +335,6 @@ BOOL GameWorldClass::Update() {
 		if (mWindowsManager->Destroyed()) break;
 
 		const auto dt = mGameTimer->DeltaTime();
-		//std::cout << dt << std::endl;
-
 		CheckReturn(mpLogFile, mActorManager->Update(dt));
 		CheckReturn(mpLogFile, mRenderer->Update(dt));
 

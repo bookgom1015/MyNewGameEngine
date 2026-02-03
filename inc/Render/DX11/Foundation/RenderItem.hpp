@@ -10,13 +10,15 @@ namespace Render::DX11::Foundation {
 	}
 
 	struct RenderItem {		
+		RenderItem(UINT numFrameResources);
+
 		INT ObjectCBIndex{ -1 };
 
 		DirectX::XMFLOAT4X4 World = Common::Util::MathUtil::Identity4x4();
 		DirectX::XMFLOAT4X4 PrevWorld = Common::Util::MathUtil::Identity4x4();
 		DirectX::XMFLOAT4X4 TexTransform = Common::Util::MathUtil::Identity4x4();
 
-		INT FrameDirty{ TRUE };
+		INT FrameDirty{};
 
 		Resource::MaterialData* Material{};
 		Resource::MeshGeometry* Geometry{};

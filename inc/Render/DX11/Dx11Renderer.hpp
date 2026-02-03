@@ -108,7 +108,9 @@ namespace Render {
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};
 
-			std::unique_ptr<Foundation::Resource::FrameResource> mFrameResource;
+			std::vector<std::unique_ptr<Foundation::Resource::FrameResource>> mFrameResources{};
+			Foundation::Resource::FrameResource* mpCurrentFrameResource{};
+			UINT mCurrentFrameResourceIndex{};
 
 			std::unordered_map<Common::Foundation::Hash, std::unique_ptr<Foundation::Resource::MeshGeometry>> mMeshGeometries{};
 			std::vector<std::unique_ptr<Foundation::Resource::MaterialData>> mMaterials{};

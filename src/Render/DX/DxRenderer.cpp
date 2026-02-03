@@ -457,7 +457,7 @@ BOOL DxRenderer::UpdateMeshTransform(Common::Foundation::Hash hash, Common::Foun
 			pTransform->Position
 		)
 	);
-	ritem->NumFramesDirty = Foundation::Resource::FrameResource::Count;
+	ritem->NumFramesDirty = Foundation::Resource::FrameResource::Count << 1;
 	ritem->RebuildAccerationStructure = TRUE;
 
 	return TRUE;

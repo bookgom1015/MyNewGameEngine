@@ -5,6 +5,10 @@
 
 using namespace Render::DX11::Foundation;
 
+RenderItem::RenderItem(UINT numFrameResources) {
+	FrameDirty = numFrameResources << 1;
+}
+
 Common::Foundation::Hash RenderItem::Hash(const RenderItem* ptr) {
 	uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
 	return Common::Util::HashUtil::HashCombine(

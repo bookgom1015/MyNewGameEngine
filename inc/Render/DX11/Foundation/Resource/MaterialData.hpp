@@ -4,6 +4,8 @@
 
 namespace Render::DX11::Foundation::Resource {
 	struct MaterialData {
+		MaterialData(UINT numFrameResources);
+
 		INT MaterialCBIndex{ -1 };
 
 		INT AlbedoMapIndex{ -1 };
@@ -13,7 +15,7 @@ namespace Render::DX11::Foundation::Resource {
 		INT MetalnessMapIndex{ -1 };
 		INT SpecularMapIndex{ -1 };
 
-		INT FrameDirty{ 2 };
+		INT FrameDirty{};
 
 		DirectX::XMFLOAT4 Albedo{ 1.f, 1.f, 1.f, 1.f };
 		DirectX::XMFLOAT3 Specular{ 0.08f, 0.08f, 0.08f };

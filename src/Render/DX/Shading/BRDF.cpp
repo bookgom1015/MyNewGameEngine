@@ -320,6 +320,13 @@ BOOL BRDF::BRDFClass::BuildPipelineStates() {
 	return TRUE;
 }
 
+BOOL BRDF::BRDFClass::OnResize(UINT width, UINT height) {
+	mInitData.ClientWidth = width;
+	mInitData.ClientHeight = height;
+
+	return TRUE;
+}
+
 BOOL BRDF::BRDFClass::ComputeBRDF(
 		Foundation::Resource::FrameResource* const pFrameResource,
 		D3D12_VIEWPORT viewport,

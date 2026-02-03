@@ -29,6 +29,7 @@ SDR_FORMAT PS(VertexOut pin) : SV_TARGET {
 	float3 colorSum = gi_BackBuffer.Sample(gsamPointWrap, pin.TexC).rgb;
 
 	if (!ShadingConvention::GBuffer::IsValidVelocity(velocity)) velocity = (float2)0.f;
+	if (all(velocity < 1e-6f)) return float4(colorSum, 1.f);
 
 	velocity *= gIntensity;
 	velocity = clamp(velocity, (float2)-gLimit,(float2)gLimit);

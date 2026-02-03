@@ -13,7 +13,7 @@ namespace ShadingConvention {
 		const DXGI_FORMAT RoughnessMetalnessMapFormat	= DXGI_FORMAT_R16G16_UNORM;
 		const DXGI_FORMAT VelocityMapFormat				= DXGI_FORMAT_R16G16_FLOAT;
 
-		const FLOAT AlbedoMapClearValues[4]{ 0.f, 0.f, 0.f, -1.f };		
+		const FLOAT AlbedoMapClearValues[4]{ 0.f, 0.f, 0.f, 0.f };		
 		const FLOAT NormalMapClearValues[4]{ 0.f, 0.f, 0.f, -1.f };
 		const FLOAT PositionMapClearValues[4]{ 0.f, 0.f, 0.f, -1.f };
 		const FLOAT RoughnessMapClearValues[4]{ 0.f, 0.f, 0.f, 0.f };

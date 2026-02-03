@@ -100,6 +100,7 @@ namespace Render::DX::Shading {
 			virtual BOOL CompileShaders() override;
 			virtual BOOL BuildRootSignatures() override;
 			virtual BOOL BuildPipelineStates() override;
+			virtual BOOL OnResize(UINT width, UINT height) override;
 
 		public:
 			BOOL ComputeBRDF(

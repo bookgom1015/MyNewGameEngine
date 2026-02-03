@@ -103,6 +103,8 @@ BOOL DxLowRenderer::OnResize(UINT width, UINT height) {
 	mClientWidth = width;
 	mClientHeight = height;
 
+	//CheckReturn(mpLogFile, mCommandObject->FlushCommandQueue());
+
 	CheckReturn(mpLogFile, mSwapChain->OnResize(mClientWidth, mClientHeight));
 	CheckReturn(mpLogFile, mDepthStencilBuffer->OnResize(mClientWidth, mClientHeight));
 

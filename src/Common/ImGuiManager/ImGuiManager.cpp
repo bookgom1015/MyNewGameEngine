@@ -56,7 +56,7 @@ void ImGuiManager::FrameRateText(UINT clientWidth, UINT clientHeight) {
 		mFrameOffset,
 		nullptr,
 		0.0f,
-		100.0f,
+		16.0f,
 		ImVec2(0.f, 100.f));
 	ImGui::NewLine();
 }

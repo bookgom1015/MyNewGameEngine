@@ -6,6 +6,9 @@
 namespace Render::DX11::Foundation::Resource {
 	class FrameResource {
 	public:
+		static const UINT Count = 3;
+		
+	public:
 		FrameResource();
 		virtual ~FrameResource();
 

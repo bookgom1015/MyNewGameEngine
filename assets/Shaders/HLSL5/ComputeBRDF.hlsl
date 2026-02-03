@@ -40,7 +40,9 @@ FitToScreenVertexOut
 FitToScreenVertexShader
 
 float4 PS(VertexOut pin) : SV_Target {
-    float4 albedo = gi_AlbedoMap.Sample(gsamLinearClamp, pin.TexC);
+    float4 albedo = gi_AlbedoMap.Sample(gsamLinearClamp, pin.TexC);  
+    if (albedo.a == 0.f) return (float4)0;
+    
     float3 normalW = normalize(gi_NormalMap.Sample(gsamLinearClamp, pin.TexC).xyz);
     float3 posW = gi_PositionMap.Sample(gsamLinearClamp, pin.TexC).xyz;
     float2 RM = gi_RoughnessMetalnessMap.Sample(gsamLinearClamp, pin.TexC);
