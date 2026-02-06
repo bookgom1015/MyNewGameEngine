@@ -1,3 +1,4 @@
+#include "Physics/pch_cyclone.h"
 #include "Physics/ParticlePointGravity.hpp"
 #include "Physics/Particle.hpp"
 
@@ -5,9 +6,10 @@ using namespace Physics::Cyclone;
 using namespace DirectX;
 
 void ParticlePointGravity::UpdateForce(Particle* pParticle, float dt) {
-	auto diff = XMVectorSubtract(mGravityPoint, pParticle->GetPosition());
-	auto dist = XMVectorGetX(XMVector3Length(diff));
-	auto dir = XMVector3Normalize(diff);
+	auto diff = mGravityPoint - pParticle->GetPosition();
+	auto dist = diff.Length();
+	auto dir = diff;
+	dir.Normalize();
 
 	auto dist2 = dist * dist;
 	auto magnitude = mMagnitude / dist2;

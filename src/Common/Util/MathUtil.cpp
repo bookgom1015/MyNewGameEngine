@@ -3,10 +3,8 @@
 using namespace Common::Util;
 using namespace DirectX;
 
-#include <sstream>
-
-FLOAT MathUtil::AngleFromXY(FLOAT x, FLOAT y) {
-	FLOAT theta = 0.f;
+float MathUtil::AngleFromXY(float x, float y) {
+	float theta = 0.f;
 
 	// Quadrant I or IV
 	if (x >= 0.f) {
@@ -25,7 +23,7 @@ FLOAT MathUtil::AngleFromXY(FLOAT x, FLOAT y) {
 	return theta;
 }
 
-XMVECTOR MathUtil::SphericalToCartesian(FLOAT radius, FLOAT theta, FLOAT phi) {
+XMVECTOR MathUtil::SphericalToCartesian(float radius, float theta, float phi) {
 	return XMVectorSet(
 		radius * sinf(phi) * cosf(theta),
 		radius * cosf(phi),
@@ -60,7 +58,7 @@ XMVECTOR MathUtil::RandUnitVec3() {
 	const XMVECTOR Zero = XMVectorZero();
 
 	// Keep trying until we get a point on/in the hemisphere.
-	while (TRUE) {
+	while (true) {
 		// Generate random point in the cube [-1,1]^3.
 		const XMVECTOR v = XMVectorSet(MathUtil::RandF(-1.f, 1.f), MathUtil::RandF(-1.f, 1.f), MathUtil::RandF(-1.f, 1.f), 0.f);
 
@@ -80,7 +78,7 @@ XMVECTOR MathUtil::RandHemisphereUnitVec3(XMVECTOR n) {
 	const XMVECTOR Zero = XMVectorZero();
 
 	// Keep trying until we get a point on/in the hemisphere.
-	while (TRUE) {
+	while (true) {
 		// Generate random point in the cube [-1,1]^3.
 		const XMVECTOR v = XMVectorSet(MathUtil::RandF(-1.f, 1.f), MathUtil::RandF(-1.f, 1.f), MathUtil::RandF(-1.f, 1.f), 0.f);
 
@@ -97,35 +95,4 @@ XMVECTOR MathUtil::RandHemisphereUnitVec3(XMVECTOR n) {
 
 		return XMVector3Normalize(v);
 	}
-}
-
-std::string MathUtil::to_string(DirectX::XMFLOAT2 vec) {
-	std::stringstream sstream;
-	sstream << "[ " << vec.x << ", " << vec.y << " ]";
-
-	return sstream.str();
-}
-
-std::string MathUtil::to_string(DirectX::XMFLOAT3 vec) {
-	std::stringstream sstream;
-	sstream << "[ " << vec.x << ", " << vec.y << ", " << vec.z << " ]";
-
-	return sstream.str();
-}
-
-std::string MathUtil::to_string(DirectX::XMFLOAT4 vec) {
-	std::stringstream sstream;
-	sstream << "[ " << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << " ]";
-
-	return sstream.str();
-}
-
-std::string MathUtil::to_string(DirectX::XMFLOAT4X4 mat) {
-	std::stringstream sstream;
-	sstream << "| " << mat.m[0][0] << ' ' << mat.m[0][1] << ' ' << mat.m[0][2] << ' ' << mat.m[0][3] << " |" << std::endl;
-	sstream << "| " << mat.m[1][0] << ' ' << mat.m[1][1] << ' ' << mat.m[1][2] << ' ' << mat.m[1][3] << " |" << std::endl;
-	sstream << "| " << mat.m[2][0] << ' ' << mat.m[2][1] << ' ' << mat.m[2][2] << ' ' << mat.m[2][3] << " |" << std::endl;
-	sstream << "| " << mat.m[3][0] << ' ' << mat.m[3][1] << ' ' << mat.m[3][2] << ' ' << mat.m[3][3] << " |";
-
-	return sstream.str();
 }

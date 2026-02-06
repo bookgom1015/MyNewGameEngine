@@ -1,6 +1,6 @@
 #pragma once
 
-#include <directxtex_desktop_win10.2025.3.25.2/include/DirectXTex.h>
+#include <directxtex_desktop_win10.2025.10.28.1/include/DirectXTex.h>
 
 #ifndef ReleaseCom
 #define ReleaseCom(x) { if (x){ x->Release(); x = NULL; } }

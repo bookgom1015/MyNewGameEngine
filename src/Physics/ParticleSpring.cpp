@@ -1,3 +1,4 @@
+#include "Physics/pch_cyclone.h"
 #include "Physics/ParticleSpring.hpp"
 #include "Physics/Particle.hpp"
 
@@ -9,13 +10,14 @@ ParticleSpring::ParticleSpring(
 	: mpOther{ pOther }, mSpringConstant{ springConstant }, mRestLength{ restLength } {}
 
 void ParticleSpring::UpdateForce(Particle* pParticle, float dt) {
-	auto diff = XMVectorSubtract(pParticle->GetPosition(), mpOther->GetPosition());
+	auto diff = pParticle->GetPosition() - mpOther->GetPosition();
 
-	auto magnitude = XMVectorGetX(XMVector3Length(diff));
+	auto magnitude = diff.Length();
 	magnitude = std::abs(magnitude - mRestLength);
 	magnitude *= mSpringConstant;
 
-	auto force = XMVector3Normalize(diff);
+	auto force = diff;
+	force.Normalize();
 	force *= magnitude;
 
 	pParticle->AddForce(force);

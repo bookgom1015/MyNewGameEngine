@@ -459,7 +459,7 @@ BOOL Shadow::ShadowClass::DrawShadow(
 			1);
 	}
 
-	ID3D11ShaderResourceView* nullSrvs[2] = {};
+	ID3D11ShaderResourceView* nullSrvs[3] = {};
 	context->CSSetShaderResources(0, _countof(nullSrvs), nullSrvs);
 
 	ID3D11UnorderedAccessView* nullUavs[1] = {};

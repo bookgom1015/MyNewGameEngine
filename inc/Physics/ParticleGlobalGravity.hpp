@@ -12,6 +12,6 @@ namespace Physics::Cyclone {
 		virtual void UpdateForce(Particle* pParticle, float dt) override;
 
 	protected:
-		DirectX::XMVECTOR mGravity = DirectX::XMVectorSet(0.f, -9.8f, 0.f, 0.f);
+		DirectX::SimpleMath::Vector3 mGravity{ 0.f, -9.8f, 0.f };
 	};
 }

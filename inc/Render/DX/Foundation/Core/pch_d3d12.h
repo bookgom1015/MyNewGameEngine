@@ -11,7 +11,7 @@
 
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3dx12/d3dx12.h>
-#include <directxtex_desktop_win10.2025.3.25.2/include/DirectXTex.h>
+#include <directxtex_desktop_win10.2025.10.28.1/include/DirectXTex.h>
 #include <dxgidebug.h>
 #include <dxgi1_6.h>
 #include <dxcapi.h>

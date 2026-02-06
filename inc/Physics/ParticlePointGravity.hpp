@@ -12,7 +12,7 @@ namespace Physics::Cyclone {
 		virtual void UpdateForce(Particle* pParticle, float dt) override;
 
 	private:
-		DirectX::XMVECTOR mGravityPoint{};
+		DirectX::SimpleMath::Vector3 mGravityPoint{};
 
 		float mMagnitude{ 9.8f };
 	};

@@ -1,15 +1,26 @@
-#
-
 .vs/
+.vs/**
 
 assets/Models/
-assets/Textures/
+assets/Models/**
+
 assets/Shaders/HLSL/PDB/
+assets/Shaders/HLSL/PDB/**
+
+assets/Textures/
+assets/Textures/**
 
 bin/
-obj/
+bin/**
 
-lib/
+build/**/**.config
+
 externs/
+externs/**
+
+obj/
+obj/**
 
 packages/
+packages/**
+

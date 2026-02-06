@@ -58,5 +58,6 @@
     <None Include="..\..\inc\Common\Input\InputProcessor.inl">
       <Filter>Common Files\Input</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

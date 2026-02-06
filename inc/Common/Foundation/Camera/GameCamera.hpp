@@ -11,16 +11,16 @@ namespace Common::Foundation {
 		class GameCamera {
 		public:
 			GameCamera(
-				Core::WindowsManager* const pWndManager, 
-				FLOAT nearZ = 0.1f, 
-				FLOAT farZ = 1000.f, 
-				FLOAT fovY = 90.f);
-			virtual ~GameCamera() = default;
+				Core::WindowsManager* const pWndManager,
+				float nearZ = 0.1f,
+				float farZ = 1000.f,
+				float fovY = 90.f);
+			virtual ~GameCamera();
 
 		public:
-			__forceinline FLOAT FovY() const;
-			__forceinline FLOAT NearZ() const;
-			__forceinline FLOAT FarZ() const;
+			__forceinline float FovY() const;
+			__forceinline float NearZ() const;
+			__forceinline float FarZ() const;
 
 			__forceinline DirectX::XMVECTOR RightVector() const;
 			__forceinline DirectX::XMVECTOR UpVector() const;
@@ -37,26 +37,26 @@ namespace Common::Foundation {
 		public:
 			void UpdateViewMatrix();
 
-			void Pitch(FLOAT rad);
-			void Yaw(FLOAT rad);
-			void Roll(FLOAT rad);
+			void Pitch(float rad);
+			void Yaw(float rad);
+			void Roll(float rad);
 
 			void AddPosition(const DirectX::XMVECTOR& pos);
 			void SetPosition(const DirectX::XMVECTOR& pos);
 
 		private:
-			Core::WindowsManager* mpWndManager = nullptr;
+			Core::WindowsManager* mpWndManager{};
 
 			DirectX::XMVECTOR mPosition = DirectX::XMVectorZero();
 			DirectX::XMVECTOR mRight = UnitVector::RightVector;
 			DirectX::XMVECTOR mUp = UnitVector::UpVector;
 			DirectX::XMVECTOR mForward = UnitVector::ForwardVector;
 
-			FLOAT mNearZ;
-			FLOAT mFarZ;
-			FLOAT mFovY;
+			float mNearZ{};
+			float mFarZ{};
+			float mFovY{};
 
-			BOOL mbViewDirty = TRUE;
+			bool mbViewDirty{ TRUE };
 
 			DirectX::XMFLOAT4X4 mView = Util::MathUtil::Identity4x4();
 			DirectX::XMFLOAT4X4 mProj = Util::MathUtil::Identity4x4();

@@ -61,6 +61,17 @@
 // https://kyuhwang.tistory.com/26
 // https://suhyeokkim.github.io/2018/05/27/how-to-represent-transparency-object
 
+// SDF
+// https://youtu.be/il-TXbn5iMA
+
+// GI - idTheck(SIGGRAPH 2025)
+// https://www.youtube.com/watch?v=VTrdeqMMMK0&t=429s
+
+// Interior mapping
+// https://www.gamedeveloper.com/programming/interior-mapping-rendering-real-rooms-without-geometry
+
+
+
 using namespace Render::DX;
 using namespace DirectX;
 

@@ -12,8 +12,8 @@ namespace Physics::Cyclone {
 		virtual void UpdateForce(Particle* pParticle, float dt) override;
 
 	private:
-		DirectX::XMVECTOR mOrigin{};
-		DirectX::XMVECTOR mForce{};
+		DirectX::SimpleMath::Vector3 mOrigin{};
+		DirectX::SimpleMath::Vector3 mForce{};
 
 		float mRadius{};
 	};

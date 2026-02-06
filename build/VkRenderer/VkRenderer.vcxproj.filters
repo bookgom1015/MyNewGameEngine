@@ -262,5 +262,6 @@
     <None Include="..\..\inc\Render\VK\Foundation\Core\SwapChain.inl">
       <Filter>Header Files\Foundation\Core</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

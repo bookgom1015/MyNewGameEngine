@@ -90,4 +90,7 @@
       <Filter>Common Files\ImGuiManager</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
