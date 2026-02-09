@@ -3,6 +3,11 @@
 //
 // Contains API for shader lighting.
 //***************************************************************************************
+
+// [ References ]
+//  - https://alextardif.com/arealights.html
+//  - https://learnopengl.com/Guest-Articles/2022/Area-Lights
+
 #ifndef __LIGHTINGUTIL_HLSLI__
 #define __LIGHTINGUTIL_HLSLI__
 

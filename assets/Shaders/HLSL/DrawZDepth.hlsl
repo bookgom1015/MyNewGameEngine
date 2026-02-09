@@ -1,3 +1,7 @@
+// [ References ]
+//  - https://learnopengl.com/Guest-Articles/2021/CSM
+//  - https://scahp.tistory.com/39
+
 #ifndef __DRAWZDEPTH_HLSL__
 #define __DRAWZDEPTH_HLSL__
 

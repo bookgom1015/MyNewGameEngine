@@ -24,29 +24,7 @@ FitToScreenVertexOut
 
 FitToScreenVertexShader
 
-float4 PS(in VertexOut pin) : SV_TARGET {    
-    //float3 scene = gi_BackBuffer.SampleLevel(gsamLinearClamp, pin.TexC, 0).rgb;
-    //float3 history = gi_HistoryMap.SampleLevel(gsamLinearClamp, pin.TexC, 0).rgb;
-    //        
-    //uint2 size;
-    //gi_BackBuffer.GetDimensions(size.x, size.y);
-    //
-    //float2 ddxy = 1.f / size;
-    //
-    //float3 minC = scene;
-    //float3 maxC = scene;
-    //[unroll] for(int oy = -1; oy <= 1; ++oy)
-    //[unroll] for(int ox = -1; ox <= 1; ++ox) {
-    //  float2 uv = pin.TexC + float2(ox, oy) * ddxy;
-    //  float3 c = gi_BackBuffer.SampleLevel(gsamPointClamp, saturate(uv), 0).rgb;
-    //  minC = min(minC, c);
-    //  maxC = max(maxC, c);
-    //}
-    //history = clamp(history, minC, maxC);    
-    //                                                                                                                                                                                                                                                                                        
-    //float3 color = lerp(scene, history, 0.8f);
-    //return float4(color, 1.f);
-        
+float4 PS(in VertexOut pin) : SV_TARGET {        
     float2 velocity = gi_VelocityMap.Sample(gsamLinearClamp, pin.TexC);
     float3 scene = gi_BackBuffer.SampleLevel(gsamLinearClamp, pin.TexC, 0).rgb;
     
