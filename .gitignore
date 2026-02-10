@@ -13,8 +13,6 @@ assets/Textures/**
 bin/
 bin/**
 
-build/**/**.config
-
 externs/
 externs/**
 

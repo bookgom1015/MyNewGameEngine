@@ -81,7 +81,7 @@ void MS(                                                     \
 
 namespace ShaderUtil {
     float4 TexCoordToScreen(in float2 texc) {
-        return float4(2.f * texc.x - 1.f, 1.f - 2.f * texc.y, 0.f, 1.f);;
+        return float4(2.f * texc.x - 1.f, 1.f - 2.f * texc.y, 0.f, 1.f);
     }
     
     uint GetIndex16(in ByteAddressBuffer buf, in uint index) {
