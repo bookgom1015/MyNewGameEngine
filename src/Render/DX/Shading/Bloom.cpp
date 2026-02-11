@@ -315,46 +315,46 @@ BOOL Bloom::BloomClass::ExtractHighlights(
 		QuarterHeight,
 		2));
 
-	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
-		pFrameResource->CommandAllocator(0),
-		0,
-		mPipelineStates[PipelineState::CP_ExtractHighlights].Get()));
-
-	const auto CmdList = mInitData.CommandObject->CommandList(0);
-	mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
-
-	{
-		CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_ExtractHighlights].Get());
-
-		const auto QuaerterMap = mHighlightMaps[Resource::E_4thRes].get();
-
-		QuaerterMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		Foundation::Util::D3D12Util::UavBarrier(CmdList, QuaerterMap);
-
-		ShadingConvention::Bloom::RootConstant::ExtractHighlights::Struct rc;
-		rc.gThreshold = threshold;
-		rc.gSoftKnee = softknee;
-
-		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::Bloom::RootConstant::ExtractHighlights::Struct>(
-			RootSignature::ExtractHighlights::RC_Consts,
-			ShadingConvention::Bloom::RootConstant::ExtractHighlights::Count,
-			&rc,
-			0,
-			CmdList,
-			TRUE);
-
-		CmdList->SetComputeRootDescriptorTable(
-			RootSignature::ExtractHighlights::UIO_HighlightMap, mhHighlightMapGpuUavs[Resource::E_4thRes]);
-
-		CmdList->Dispatch(
-			Foundation::Util::D3D12Util::CeilDivide(
-				QuarterWidth, ShadingConvention::Bloom::ThreadGroup::Default::Width),
-			Foundation::Util::D3D12Util::CeilDivide(
-				QuarterHeight, ShadingConvention::Bloom::ThreadGroup::Default::Height),
-			ShadingConvention::Bloom::ThreadGroup::Default::Depth);
-	}
-
-	CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
+	//CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
+	//	pFrameResource->CommandAllocator(0),
+	//	0,
+	//	mPipelineStates[PipelineState::CP_ExtractHighlights].Get()));
+	//
+	//const auto CmdList = mInitData.CommandObject->CommandList(0);
+	//mInitData.DescriptorHeap->SetDescriptorHeap(CmdList);
+	//
+	//{
+	//	CmdList->SetComputeRootSignature(mRootSignatures[RootSignature::GR_ExtractHighlights].Get());
+	//
+	//	const auto QuaerterMap = mHighlightMaps[Resource::E_4thRes].get();
+	//
+	//	QuaerterMap->Transite(CmdList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	//	Foundation::Util::D3D12Util::UavBarrier(CmdList, QuaerterMap);
+	//
+	//	ShadingConvention::Bloom::RootConstant::ExtractHighlights::Struct rc;
+	//	rc.gThreshold = threshold;
+	//	rc.gSoftKnee = softknee;
+	//
+	//	Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::Bloom::RootConstant::ExtractHighlights::Struct>(
+	//		RootSignature::ExtractHighlights::RC_Consts,
+	//		ShadingConvention::Bloom::RootConstant::ExtractHighlights::Count,
+	//		&rc,
+	//		0,
+	//		CmdList,
+	//		TRUE);
+	//
+	//	CmdList->SetComputeRootDescriptorTable(
+	//		RootSignature::ExtractHighlights::UIO_HighlightMap, mhHighlightMapGpuUavs[Resource::E_4thRes]);
+	//
+	//	CmdList->Dispatch(
+	//		Foundation::Util::D3D12Util::CeilDivide(
+	//			QuarterWidth, ShadingConvention::Bloom::ThreadGroup::Default::Width),
+	//		Foundation::Util::D3D12Util::CeilDivide(
+	//			QuarterHeight, ShadingConvention::Bloom::ThreadGroup::Default::Height),
+	//		ShadingConvention::Bloom::ThreadGroup::Default::Depth);
+	//}
+	//
+	//CheckReturn(mpLogFile, mInitData.CommandObject->ExecuteCommandList(0));
 
 	return TRUE;
 }

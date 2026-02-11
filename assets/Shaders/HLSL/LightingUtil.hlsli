@@ -36,6 +36,37 @@ float3 CalcPlaneIntersection(in float3 pos, in float3 r, in float3 dir, in float
     return pos + r * (dot(dir, center - pos) / dot(dir, r));
 }
 
+bool CalcPlaneIntersectionSafe(
+        in float3 pos,
+        in float3 r,
+        in float3 planeNormal,
+        in float3 planePoint,
+        out float3 outPoint) {
+    const float EPS = 1e-4f;
+
+    float denom = dot(planeNormal, r);
+    if (abs(denom) < EPS) return false;
+
+    float t = dot(planeNormal, planePoint - pos) / denom;
+    if (t <= EPS) return false;
+
+    outPoint = pos + r * t;
+    
+    return true;
+}
+
+float SolidAngleTriangle(float3 a, float3 b, float3 c) {
+    // a,b,c are vectors from P to vertices (A-P etc.)
+    float la = length(a), lb = length(b), lc = length(c);
+    if (la < 1e-6f || lb < 1e-6f || lc < 1e-6f) return 0;
+
+    float numerator = dot(a, cross(b, c));
+    float denom = la * lb * lc + dot(a, b) * lc + dot(b, c) * la + dot(c, a) * lb;
+
+    // atan2 gives signed solid angle; abs() for magnitude
+    return 2.f * atan2(numerator, denom);
+}
+
 float3 ComputeDirectionalLight(
         in Common::Foundation::Light light, 
         in Material mat, 
@@ -170,7 +201,7 @@ float3 ComputeRectLight(
         in float3 toEye) {
     if (light.Size.x < FLT_EPSILON || 
         light.Size.y < FLT_EPSILON || 
-        dot(normalize(pos - light.Center), light.Direction) < 0) return 0;
+        dot(pos - light.Center, light.Direction) <= 0) return 0;
     
     const float3 L0 = light.Position - pos;
     const float3 L1 = light.Position1 - pos;
@@ -187,31 +218,39 @@ float3 ComputeRectLight(
     const float G2 = acos(saturate(dot(-n2, n3)));            
     const float G3 = acos(saturate(dot(-n3, n0)));
 
-    const float SolidAngle = G0 + G1 + G2 + G3 - 2.f * 3.14159265359f;
-
-    const float NoL = SolidAngle * 0.2f * (
-		saturate(dot(normalize(L0), normal)) +
-		saturate(dot(normalize(L1), normal)) +
-		saturate(dot(normalize(L2), normal)) +
-		saturate(dot(normalize(L3), normal)) +
-		saturate(dot(normalize(light.Center - pos), normal)));
+    float omega = SolidAngleTriangle(L0, L1, L2) + SolidAngleTriangle(L0, L2, L3);
+    omega = abs(omega);                    // magnitude
+    omega = clamp(omega, 0.0f, 2.0f * PI); // safet
+    
+    //const float SolidAngle = G0 + G1 + G2 + G3 - 2.f * 3.14159265359f;
+    const float SolidAngle = omega;
 
     const float3 r = reflect(-toEye, normal);
-    const float3 IntersectPoint = CalcPlaneIntersection(pos, r, light.Direction, light.Center);
-
-    const float3 IntersectionVector = IntersectPoint - light.Center;
-    const float2 IntersectPlanePoint = float2(dot(IntersectionVector, light.Right), dot(IntersectionVector, light.Up));
-    const float2 Nearest2DPoint = float2(clamp(IntersectPlanePoint.x, -light.Size.x, light.Size.x), clamp(IntersectPlanePoint.y, -light.Size.y, light.Size.y));
     
-    const float3 NearestPoint = light.Center + (light.Right * Nearest2DPoint.x + light.Up * Nearest2DPoint.y);
-    const float d = distance(pos, NearestPoint);
+    float3 intersectPoint;
+    float3 nearestPoint;
+    if (CalcPlaneIntersectionSafe(pos, r, light.Direction, light.Center, intersectPoint)) {
+        const float3 IntersectionVector = intersectPoint - light.Center;
+        const float2 IntersectPlanePoint = float2(dot(IntersectionVector, light.Right), dot(IntersectionVector, light.Up));
+        const float2 Nearest2DPoint = float2(clamp(IntersectPlanePoint.x, -light.Size.x, light.Size.x), clamp(IntersectPlanePoint.y, -light.Size.y, light.Size.y));
+        
+        nearestPoint = light.Center + (light.Right * Nearest2DPoint.x + light.Up * Nearest2DPoint.y);
+    }
+    else {
+        nearestPoint = light.Center;
+    }   
+    
+    const float d = distance(pos, nearestPoint);
 
-    const float Area = light.Size.x * light.Size.y;
+    const float Area = (2 * light.Size.x) * (2 * light.Size.y);
     const float Falloff = CalcLinearAttenuation(d, light.AttenuationRadius);
     const float3 Li = light.Color * light.Intensity * Falloff / Area;
 
-    const float3 L = normalize(NearestPoint - pos);
-
+    const float3 L = normalize(nearestPoint - pos);
+    
+    const float NdotL = saturate(dot(normal, L));
+    const float NoL = SolidAngle * NdotL;
+    
 #if defined(BLINN_PHONG)
 	return 0;
 #elif defined(COOK_TORRANCE)
