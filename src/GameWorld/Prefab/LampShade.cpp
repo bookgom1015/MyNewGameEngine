@@ -10,11 +10,8 @@ using namespace DirectX;
 
 LampShade::LampShade(
 		Common::Debug::LogFile* const pLogFile,
-		const std::string& name,
-		XMFLOAT3 pos,
-		XMFLOAT4 rot,
-		XMFLOAT3 scale) 
-	: Actor(pLogFile, name, pos, rot, scale) {
+		const std::string& name) 
+	: Actor(pLogFile, name) {
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
 
@@ -28,16 +25,16 @@ LampShade::LampShade(
 
 LampShade::~LampShade() {}
 
-BOOL LampShade::OnInitialzing() {
+bool LampShade::OnInitialzing() {
 	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("field", "./../../../assets/Models/", "obj"));
 
-	return TRUE;
+	return true;
 }
 
-BOOL LampShade::ProcessActorInput(Common::Input::InputState* const pInputState) {
-	return TRUE;
+bool LampShade::ProcessActorInput(Common::Input::InputState* const pInputState) {
+	return true;
 }
 
-BOOL LampShade::UpdateActor(FLOAT delta) {
-	return TRUE;
+bool LampShade::UpdateActor(float delta) {
+	return true;
 }

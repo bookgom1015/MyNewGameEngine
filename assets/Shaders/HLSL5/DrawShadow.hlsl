@@ -18,7 +18,7 @@ ShadowCB_register(b1);
 
 Texture2D<float4>     gi_PositionMap    : register(t0);
 Texture2D<float>      gi_ZDepthMap      : register(t1);
-Texture2DArray<float> gi_ZDepthCubeMap  : register(t2);
+Texture2DArray<float> gi_ZDepthMapArray : register(t2);
 
 RWTexture2D<uint> gio_ShadowMap : register(u0);
 
@@ -55,7 +55,7 @@ void CS(in uint2 DTid : SV_DispatchThreadID) {
 
         const float4x4 ViewProj = Shadow::GetViewProjMatrix(light, index);
         const float ShadowFactor = Shadow::CalcShadowFactorCube(
-            gi_ZDepthCubeMap, gsamShadow, ViewProj, posW.xyz, uv, index);
+            gi_ZDepthMapArray, gsamShadow, ViewProj, posW.xyz, uv, index);
 
         value = Shadow::CalcShiftedShadowValueF(ShadowFactor, value, LightIndex);
     }

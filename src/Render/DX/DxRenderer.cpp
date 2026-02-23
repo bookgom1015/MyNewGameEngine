@@ -70,7 +70,9 @@
 // Interior mapping
 // https://www.gamedeveloper.com/programming/interior-mapping-rendering-real-rooms-without-geometry
 
-
+// CSM
+// https://cutecatgame.tistory.com/6
+// https://learnopengl.com/Guest-Articles/2021/CSM
 
 using namespace Render::DX;
 using namespace DirectX;

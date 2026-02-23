@@ -10,13 +10,12 @@ using namespace DirectX;
 
 MetalSphere::MetalSphere(
 	Common::Debug::LogFile* const pLogFile,
-	const std::string& name,
-	XMFLOAT3 pos,
-	XMFLOAT4 rot,
-	XMFLOAT3 scale)
-	: Actor(pLogFile, name, pos, rot, scale) {
+	const std::string& name)
+	: Actor(pLogFile, name) {
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
+
+MetalSphere::~MetalSphere() {}
 
 MetalSphere::MetalSphere(
 	Common::Debug::LogFile* const pLogFile,
@@ -26,16 +25,16 @@ MetalSphere::MetalSphere(
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
 
-BOOL MetalSphere::OnInitialzing() {
+bool MetalSphere::OnInitialzing() {
 	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("metal_sphere", "./../../../assets/Models/", "obj"));
 
-	return TRUE;
+	return true;
 }
 
-BOOL MetalSphere::ProcessActorInput(Common::Input::InputState* const pInputState) {
-	return TRUE;
+bool MetalSphere::ProcessActorInput(Common::Input::InputState* const pInputState) {
+	return true;
 }
 
-BOOL MetalSphere::UpdateActor(FLOAT delta) {
-	return TRUE;
+bool MetalSphere::UpdateActor(float delta) {
+	return true;
 }

@@ -22,11 +22,11 @@ namespace GameWorld::Foundation::Core {
 		__forceinline Actor* GetActor(const std::string& name);
 
 	public:
-		BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+		bool Initialize(Common::Debug::LogFile* const pLogFile);
 		void CleanUp();
 
-		BOOL ProcessInput(Common::Input::InputState* const pInputState);
-		BOOL Update(FLOAT delta);
+		bool ProcessInput(Common::Input::InputState* const pInputState);
+		bool Update(float delta);
 
 		void AddActor(Actor* const pActor);
 		void RemoveActor(Actor* const pActor);
@@ -34,7 +34,7 @@ namespace GameWorld::Foundation::Core {
 	private:
 		Common::Debug::LogFile* mpLogFile{};
 
-		BOOL mbUpdating{};
+		bool mbUpdating{};
 
 		std::vector<std::unique_ptr<Actor>> mActors{};
 		std::vector<std::unique_ptr<Actor>> mPendingActors{};

@@ -7,6 +7,7 @@
 
 using namespace GameWorld::Foundation::Camera;
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 CameraComponent::CameraComponent(Common::Debug::LogFile* const pLogFile, Core::Actor* const pOwner)
 	: Component(pLogFile, pOwner) {
@@ -15,64 +16,64 @@ CameraComponent::CameraComponent(Common::Debug::LogFile* const pLogFile, Core::A
 
 CameraComponent::~CameraComponent() {}
 
-BOOL CameraComponent::OnInitialzing() {
+bool CameraComponent::OnInitialzing() {
 	GameWorldClass::spGameWorld->Renderer()->SetCamera(mCamera.get());
 	
-	return TRUE;
+	return true;
 }
 
 void CameraComponent::OnCleaningUp() {}
 
-BOOL CameraComponent::ProcessInput(Common::Input::InputState* const pInput) { return TRUE; }
+bool CameraComponent::ProcessInput(Common::Input::InputState* const pInput) { return true; }
 
-BOOL CameraComponent::Update(FLOAT delta) { return TRUE; }
+bool CameraComponent::Update(FLOAT delta) { return true; }
 
-BOOL CameraComponent::OnUpdateWorldTransform() {
+bool CameraComponent::OnUpdateWorldTransform() {
 	mCamera->SetPosition(ActorTransform().Position);
 	mCamera->UpdateViewMatrix();
 
-	return TRUE;
+	return true;
 }
 
-XMVECTOR CameraComponent::Position() const { return mCamera->Position(); }
+Vector3 CameraComponent::Position() const { return mCamera->Position(); }
 
-XMVECTOR CameraComponent::Rotation() const { return mCamera->Rotation(); }
+Vector3 CameraComponent::Rotation() const { return mCamera->Rotation(); }
 
-XMFLOAT4X4 CameraComponent::View() const { return mCamera->View(); }
+Matrix CameraComponent::View() const { return mCamera->View(); }
 
-XMVECTOR CameraComponent::RightVector() const { return mCamera->RightVector(); }
+Vector3 CameraComponent::RightVector() const { return mCamera->RightVector(); }
 
-XMVECTOR CameraComponent::UpVector() const { return mCamera->UpVector(); }
+Vector3 CameraComponent::UpVector() const { return mCamera->UpVector(); }
 
-XMVECTOR CameraComponent::ForwardVector() const { return mCamera->ForwardVector(); }
+Vector3 CameraComponent::ForwardVector() const { return mCamera->ForwardVector(); }
 
-void CameraComponent::Pitch(FLOAT rad) {
+void CameraComponent::Pitch(float degree) {
 	if (mbLimitPitch) {
-		const FLOAT newPitch = mPitch + rad;
-		if (newPitch >= mPitchLimit) rad = mPitchLimit - mPitch;
-		else if (newPitch <= -mPitchLimit) rad = -mPitchLimit - mPitch;
-		mPitch += rad;
+		const FLOAT newPitch = mPitch + degree;
+		if (newPitch >= mPitchLimit) degree = mPitchLimit - mPitch;
+		else if (newPitch <= -mPitchLimit) degree = -mPitchLimit - mPitch;
+		mPitch += degree;
 	}
 	else {
-		mPitch += rad;
+		mPitch += degree;
 		if (mPitch >= XM_2PI) mPitch = 0.f;
 		else if (mPitch <= -XM_2PI) mPitch = 0.f;
 	}
-	mCamera->Pitch(rad);
+	mCamera->Pitch(degree);
 }
 
-void CameraComponent::Yaw(FLOAT rad) {
-	mCamera->Yaw(rad);
+void CameraComponent::Yaw(float degree) {
+	mCamera->Yaw(degree);
 }
 
-void CameraComponent::Roll(FLOAT rad) {
-	mCamera->Roll(rad);
+void CameraComponent::Roll(float degree) {
+	mCamera->Roll(degree);
 }
 
-void CameraComponent::AddPosition(const XMVECTOR& pos) {
+void CameraComponent::AddPosition(const Vector3& pos) {
 	mCamera->AddPosition(pos);
 }
 
-void CameraComponent::SetPosition(const XMVECTOR& pos) {
+void CameraComponent::SetPosition(const Vector3& pos) {
 	mCamera->SetPosition(pos);
 }

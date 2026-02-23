@@ -22,44 +22,44 @@ namespace Common::Foundation {
 			__forceinline float NearZ() const;
 			__forceinline float FarZ() const;
 
-			__forceinline DirectX::XMVECTOR RightVector() const;
-			__forceinline DirectX::XMVECTOR UpVector() const;
-			__forceinline DirectX::XMVECTOR ForwardVector() const;
+			__forceinline DirectX::SimpleMath::Vector3 RightVector() const;
+			__forceinline DirectX::SimpleMath::Vector3 UpVector() const;
+			__forceinline DirectX::SimpleMath::Vector3 ForwardVector() const;
 
-			__forceinline DirectX::XMFLOAT4X4 View() const;
-			__forceinline DirectX::XMFLOAT4X4 Proj() const;
+			__forceinline DirectX::SimpleMath::Matrix View() const;
+			__forceinline DirectX::SimpleMath::Matrix Proj() const;
 
-			__forceinline DirectX::XMVECTOR Position() const;
+			__forceinline DirectX::SimpleMath::Vector3 Position() const;
 
 		public:
-			DirectX::XMVECTOR Rotation() const;
+			DirectX::SimpleMath::Vector3 Rotation() const;
 
 		public:
 			void UpdateViewMatrix();
 
-			void Pitch(float rad);
-			void Yaw(float rad);
-			void Roll(float rad);
+			void Pitch(float degree);
+			void Yaw(float degree);
+			void Roll(float degree);
 
-			void AddPosition(const DirectX::XMVECTOR& pos);
-			void SetPosition(const DirectX::XMVECTOR& pos);
+			void AddPosition(const DirectX::SimpleMath::Vector3& pos);
+			void SetPosition(const DirectX::SimpleMath::Vector3& pos);
 
 		private:
 			Core::WindowsManager* mpWndManager{};
 
-			DirectX::XMVECTOR mPosition = DirectX::XMVectorZero();
-			DirectX::XMVECTOR mRight = UnitVector::RightVector;
-			DirectX::XMVECTOR mUp = UnitVector::UpVector;
-			DirectX::XMVECTOR mForward = UnitVector::ForwardVector;
+			DirectX::SimpleMath::Vector3 mPosition = DirectX::SimpleMath::Vector3::Zero;
+			DirectX::SimpleMath::Vector3 mRight = DirectX::SimpleMath::Vector3::Right;
+			DirectX::SimpleMath::Vector3 mUp = DirectX::SimpleMath::Vector3::Up;
+			DirectX::SimpleMath::Vector3 mForward = DirectX::SimpleMath::Vector3::Forward;
 
 			float mNearZ{};
 			float mFarZ{};
 			float mFovY{};
 
-			bool mbViewDirty{ TRUE };
+			bool mbViewDirty{ true };
 
-			DirectX::XMFLOAT4X4 mView = Util::MathUtil::Identity4x4();
-			DirectX::XMFLOAT4X4 mProj = Util::MathUtil::Identity4x4();
+			DirectX::SimpleMath::Matrix mView = DirectX::SimpleMath::Matrix::Identity;
+			DirectX::SimpleMath::Matrix mProj = DirectX::SimpleMath::Matrix::Identity;
 		};
 	}
 }

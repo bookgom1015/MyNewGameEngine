@@ -1,5 +1,6 @@
 #pragma once
 
+#pragma comment(lib, "DirectXTK.lib")
 #pragma comment(lib, "Renderer.lib")
 #pragma comment(lib, "InputProcessor.lib")
 #pragma comment(lib, "ImGuiManager.lib")

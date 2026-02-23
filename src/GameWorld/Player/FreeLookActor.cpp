@@ -5,14 +5,12 @@
 
 using namespace GameWorld::Player;
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 FreeLookActor::FreeLookActor(
 		Common::Debug::LogFile* const pLogFile, 
-		const std::string& name, 
-		const XMFLOAT3& pos, 
-		const XMFLOAT4& rot, 
-		const XMFLOAT3& scale) 
-	: Actor(pLogFile, name, pos, rot, scale) {
+		const std::string& name) 
+	: Actor(pLogFile, name) {
 	mpCameraComp = new GameWorld::Foundation::Camera::CameraComponent(pLogFile, this);
 }
 
@@ -26,15 +24,15 @@ FreeLookActor::FreeLookActor(
 
 FreeLookActor::~FreeLookActor() {}
 
-const XMVECTOR& FreeLookActor::CameraForwardVector() const { return mpCameraComp->ForwardVector(); }
+const Vector3& FreeLookActor::CameraForwardVector() const { return mpCameraComp->ForwardVector(); }
 
-const XMVECTOR& FreeLookActor::CameraRightVector() const { return mpCameraComp->RightVector(); }
+const Vector3& FreeLookActor::CameraRightVector() const { return mpCameraComp->RightVector(); }
 
-const XMVECTOR& FreeLookActor::CameraUpVector() const {	return mpCameraComp->UpVector(); }
+const Vector3& FreeLookActor::CameraUpVector() const {	return mpCameraComp->UpVector(); }
 
-XMVECTOR FreeLookActor::CameraRotation() const { return mpCameraComp->Rotation(); }
+Vector3 FreeLookActor::CameraRotation() const { return mpCameraComp->Rotation(); }
 
-BOOL FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
+bool FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 	mForwardSpeed = 0.f;
 	mStrapeSpeed = 0.f;
 
@@ -72,20 +70,21 @@ BOOL FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 	return TRUE;
 }
 
-BOOL FreeLookActor::UpdateActor(FLOAT delta) {
-	const XMVECTOR Strape = mpCameraComp->RightVector() * mStrapeSpeed;
-	const XMVECTOR Forward = mpCameraComp->ForwardVector() * mForwardSpeed;
-	const XMVECTOR Direction = Strape + Forward;
-	const XMVECTOR Normalized = XMVector3Normalize(Direction);
+bool FreeLookActor::UpdateActor(float delta) {
+	Vector3 strape = mpCameraComp->RightVector() * mStrapeSpeed;
+	Vector3 forward = mpCameraComp->ForwardVector() * mForwardSpeed;
 
-	FLOAT yaw = mTurnSpeed * mLookSensitivity;
-	FLOAT pitch = mLookUpSpeed * mTurnSensitivity;
+	Vector3 direction = strape + forward;
+	direction.Normalize();
 
-	AddPosition(Normalized * mActualWalkSpeed * delta);
+	float yaw = mTurnSpeed * mLookSensitivity;
+	float pitch = mLookUpSpeed * mTurnSensitivity;
+
+	AddPosition(direction * mActualWalkSpeed * delta);
 	AddRotationYaw(yaw);
 
 	mpCameraComp->Yaw(yaw);
 	mpCameraComp->Pitch(pitch);
 
-	return TRUE;
+	return true;
 }

@@ -18,45 +18,45 @@ namespace GameWorld::Foundation {
 			virtual ~CameraComponent();
 
 		public:
-			virtual BOOL OnInitialzing() override;
+			virtual bool OnInitialzing() override;
 			virtual void OnCleaningUp() override;
 
-			virtual BOOL ProcessInput(Common::Input::InputState* const pInput) override;
-			virtual BOOL Update(FLOAT delta) override;
-			virtual BOOL OnUpdateWorldTransform() override;
+			virtual bool ProcessInput(Common::Input::InputState* const pInput) override;
+			virtual bool Update(float delta) override;
+			virtual bool OnUpdateWorldTransform() override;
 
 		public:
-			DirectX::XMVECTOR Position() const;
-			DirectX::XMVECTOR Rotation() const;
+			DirectX::SimpleMath::Vector3 Position() const;
+			DirectX::SimpleMath::Vector3 Rotation() const;
 
-			DirectX::XMFLOAT4X4 View() const;
+			DirectX::SimpleMath::Matrix View() const;
 
-			DirectX::XMVECTOR RightVector() const;
-			DirectX::XMVECTOR UpVector() const;
-			DirectX::XMVECTOR ForwardVector() const;
+			DirectX::SimpleMath::Vector3 RightVector() const;
+			DirectX::SimpleMath::Vector3 UpVector() const;
+			DirectX::SimpleMath::Vector3 ForwardVector() const;
 
 		public: // Controlling transform functions
-			void Pitch(FLOAT rad);
-			void Yaw(FLOAT rad);
-			void Roll(FLOAT rad);
+			void Pitch(float degree);
+			void Yaw(float degree);
+			void Roll(float degree);
 
-			void AddPosition(const DirectX::XMVECTOR& pos);
-			void SetPosition(const DirectX::XMVECTOR& pos);
+			void AddPosition(const DirectX::SimpleMath::Vector3& pos);
+			void SetPosition(const DirectX::SimpleMath::Vector3& pos);
 
 		private:
 			std::unique_ptr<Common::Foundation::Camera::GameCamera> mCamera{};
 
-			FLOAT mPitch{};
-			FLOAT mYaw{};
-			FLOAT mRoll{};
+			float mPitch{};
+			float mYaw{};
+			float mRoll{};
 
-			BOOL mbLimitPitch{ TRUE };
-			BOOL mbLimitYaw{};
-			BOOL mbLimitRoll{};
+			bool mbLimitPitch{ true };
+			bool mbLimitYaw{};
+			bool mbLimitRoll{};
 
-			FLOAT mPitchLimit{ DirectX::XM_PIDIV2 - 0.1f };
-			FLOAT mYawLimit{};
-			FLOAT mRollLimit{};
+			float mPitchLimit{ 85.f };
+			float mYawLimit{};
+			float mRollLimit{};
 		};
 	}
 }

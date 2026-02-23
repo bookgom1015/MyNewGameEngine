@@ -43,6 +43,5 @@
 #include <wrl.h>
 #include <Windows.h>
 
-#include <DirectXCollision.h>
 #include <DirectXColors.h>
-#include <DirectXMath.h>
+#include <SimpleMath.h>

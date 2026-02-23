@@ -18,10 +18,7 @@ namespace GameWorld::Foundation::Core {
 	public:
 		Actor(
 			Common::Debug::LogFile* const pLogFile,
-			const std::string& name,
-			DirectX::XMFLOAT3 pos = { 0.f, 0.f, 0.f },
-			DirectX::XMFLOAT4 rot = { 0.f, 0.f, 0.f, 1.f },
-			DirectX::XMFLOAT3 scale = { 1.f, 1.f, 1.f });
+			const std::string& name);
 		Actor(
 			Common::Debug::LogFile* const pLogFile, 
 			const std::string& name, 
@@ -32,54 +29,49 @@ namespace GameWorld::Foundation::Core {
 		__forceinline constexpr const std::string& Name() const;
 		__forceinline constexpr const Common::Foundation::Mesh::Transform& GetTransform() const;
 
-		__forceinline constexpr BOOL Initialized() const;
-		__forceinline constexpr BOOL IsDead() const;
+		__forceinline constexpr bool Initialized() const;
+		__forceinline constexpr bool IsDead() const;
 
 	protected:
-		virtual BOOL OnInitialzing();
-		virtual BOOL ProcessActorInput(Common::Input::InputState* const pInputState);
-		virtual BOOL UpdateActor(FLOAT delta);
+		virtual bool OnInitialzing();
+		virtual bool ProcessActorInput(Common::Input::InputState* const pInputState);
+		virtual bool UpdateActor(float delta);
 
 	private:
-		BOOL UpdateComponents(FLOAT delta);
-		BOOL OnUpdateWorldTransform();
+		bool UpdateComponents(float delta);
+		bool OnUpdateWorldTransform();
 
 	public:
-		BOOL Initialize();
+		bool Initialize();
 		void CleanUp();
 
-		BOOL ProcessInput(Common::Input::InputState* const pInputState);
-		BOOL Update(FLOAT delta);
+		virtual bool ProcessInput(Common::Input::InputState* const pInputState);
+		virtual bool Update(float delta);
 
 	public: // Associated with components
 		void AddComponent(Component* const pComponent);
 		void RemoveComponent(Component* const pComponent);
-
+		
 	public: // Controlling transform functions
-		void SetPosition(const DirectX::XMFLOAT3& pos);
-		void SetPosition(const DirectX::XMVECTOR& pos);
-		void AddPosition(const DirectX::XMFLOAT3& pos);
-		void AddPosition(const DirectX::XMVECTOR& pos);
+		__forceinline void SetPosition(const DirectX::SimpleMath::Vector3& pos);
+		__forceinline void AddPosition(const DirectX::SimpleMath::Vector3& pos);
+		
+		__forceinline void SetRotation(const DirectX::SimpleMath::Vector3& rot);
+		__forceinline void AddRotation(const DirectX::SimpleMath::Vector3& rot);
 
-		void SetRotation(const DirectX::XMFLOAT4& rot);
-		void SetRotation(const DirectX::XMVECTOR& rot);
-		void AddRotation(const DirectX::XMFLOAT4& rot);
-		void AddRotation(const DirectX::XMVECTOR& rot);
+		__forceinline void AddRotationPitch(float degree);
+		__forceinline void AddRotationYaw(float degree);
+		__forceinline void AddRotationRoll(float degree);
 
-		void AddRotationPitch(FLOAT rad);
-		void AddRotationYaw(FLOAT rad);
-		void AddRotationRoll(FLOAT rad);
-
-		void SetScale(const DirectX::XMFLOAT3& scale);
-		void SetScale(const DirectX::XMVECTOR& scale);
+		__forceinline void SetScale(const DirectX::SimpleMath::Vector3& scale);
 
 	protected:
 		Common::Debug::LogFile* mpLogFile{};
 
 	private:
-		BOOL mbInitialized{};
-		BOOL mbIsDead{};
-		BOOL mbNeedToUpdate{ TRUE };
+		bool mbInitialized{};
+		bool mbIsDead{};
+		bool mbNeedToUpdate{ true };
 
 		std::string mName{};
 

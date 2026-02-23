@@ -274,6 +274,5 @@
     <None Include="..\..\inc\Common\Util\MathUtil.inl">
       <Filter>Common Files\Util</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

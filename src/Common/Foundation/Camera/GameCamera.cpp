@@ -3,6 +3,7 @@
 
 using namespace Common::Foundation::Camera;
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 GameCamera::GameCamera(
 		Core::WindowsManager* const pWndManager, 
@@ -15,7 +16,7 @@ GameCamera::GameCamera(
 
 GameCamera::~GameCamera() {}
 
-XMVECTOR GameCamera::Rotation() const {
+Vector3 GameCamera::Rotation() const {
 	return XMQuaternionRotationMatrix(XMMatrixLookAtLH(
 		XMVectorZero(),
 		UnitVector::ForwardVector,
@@ -47,7 +48,8 @@ void GameCamera::UpdateViewMatrix() {
 	);
 }
 
-void GameCamera::Pitch(float rad) {
+void GameCamera::Pitch(float degree) {
+	const float rad = degree * DegToRad;
 	const auto quat = XMQuaternionRotationAxis(mRight, rad);
 
 	mUp = XMVector3Rotate(mUp, quat);
@@ -56,7 +58,8 @@ void GameCamera::Pitch(float rad) {
 	mbViewDirty = true;
 }
 
-void GameCamera::Yaw(float rad) {
+void GameCamera::Yaw(float degree) {
+	const float rad = degree * DegToRad;
 	const auto quat = XMQuaternionRotationAxis(UnitVector::UpVector, rad);
 
 	mRight = XMVector3Rotate(mRight, quat);
@@ -66,7 +69,8 @@ void GameCamera::Yaw(float rad) {
 	mbViewDirty = true;
 }
 
-void GameCamera::Roll(float rad) {
+void GameCamera::Roll(float degree) {
+	const float rad = degree * DegToRad;
 	const auto quat = XMQuaternionRotationAxis(mForward, rad);
 
 	mRight = XMVector3Rotate(mRight, quat);
@@ -75,13 +79,13 @@ void GameCamera::Roll(float rad) {
 	mbViewDirty = true;
 }
 
-void GameCamera::AddPosition(const XMVECTOR& pos) {
+void GameCamera::AddPosition(const Vector3& pos) {
 	mPosition += pos;
 
 	mbViewDirty = true;
 }
 
-void GameCamera::SetPosition(const XMVECTOR& pos) {
+void GameCamera::SetPosition(const Vector3& pos) {
 	mPosition = pos;
 
 	mbViewDirty = true;

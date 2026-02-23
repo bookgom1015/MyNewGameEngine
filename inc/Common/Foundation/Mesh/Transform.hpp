@@ -1,11 +1,11 @@
 #pragma once
 
-#include <DirectXMath.h>
+#include <SimpleMath.h>
 
 namespace Common::Foundation::Mesh {
 	struct Transform {
-		DirectX::XMVECTOR Position;
-		DirectX::XMVECTOR Rotation;
-		DirectX::XMVECTOR Scale;
+		DirectX::SimpleMath::Vector3 Position;
+		DirectX::SimpleMath::Vector3 Rotation;
+		DirectX::SimpleMath::Vector3 Scale;
 	};
 }

@@ -11,21 +11,21 @@ namespace GameWorld::Foundation {
 		class MeshComponent : public Foundation::Core::Component {
 		public:
 			MeshComponent(Common::Debug::LogFile* const pLogFile, Core::Actor* const pOwner);
-			virtual ~MeshComponent() = default;
+			virtual ~MeshComponent();
 
 		public:
-			virtual BOOL OnInitialzing() override;
+			virtual bool OnInitialzing() override;
 			virtual void OnCleaningUp() override;
 
-			virtual BOOL ProcessInput(Common::Input::InputState* const pInput) override;
-			virtual BOOL Update(FLOAT delta) override;
-			virtual BOOL OnUpdateWorldTransform() override;
+			virtual bool ProcessInput(Common::Input::InputState* const pInput) override;
+			virtual bool Update(float delta) override;
+			virtual bool OnUpdateWorldTransform() override;
 
 		public:
-			BOOL LoadMesh(LPCSTR fileName, LPCSTR baseDir, LPCSTR extension);
+			bool LoadMesh(LPCSTR fileName, LPCSTR baseDir, LPCSTR extension);
 
 		private:
-			BOOL mbAddedMesh{};
+			bool mbAddedMesh{};
 
 			Common::Foundation::Hash mMeshHash{};
 		};

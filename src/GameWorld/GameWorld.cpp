@@ -286,20 +286,21 @@ BOOL GameWorldClass::InitActorManager() {
 }
 
 BOOL GameWorldClass::BuildScene() {
-	new Player::FreeLookActor(mpLogFile, "free_look_actor", XMFLOAT3(0.f, 2.f, -6.f));
+	{
+		auto actor = new Player::FreeLookActor(mpLogFile, "free_look_actor");
+		actor->SetPosition({ 0.f, 2.f, -6.f });
+	}
 	new Prefab::LampShade(mpLogFile, "lamp_shade");
-	new Prefab::FineDonut(
-		mpLogFile, 
-		"fine_donut",
-		XMFLOAT3(0.f, 8.f, 0.f),
-		XMFLOAT4(0.f, 0.f, 0.f, 1.f),
-		XMFLOAT3(3.f, 2.f, 3.f));
-	new Prefab::MetalSphere(
-		mpLogFile, 
-		"metal_sphere", 
-		XMFLOAT3(0.f, 2.f, 0.f), 
-		XMFLOAT4(0.f, 0.f, 0.f, 1.f),
-		XMFLOAT3(1.9f, 1.9f, 1.9f));
+	{
+		auto actor = new Prefab::FineDonut(mpLogFile, "fine_donut");
+		actor->SetPosition({ 0.f, 8.f, 0.f });
+		actor->SetScale({ 3.f, 2.f, 3.f });
+	}
+	{
+		auto actor = new Prefab::MetalSphere(mpLogFile, "metal_sphere");
+		actor->SetPosition({ 0.f, 2.f, 0.f });
+		actor->SetScale({ 1.9f, 1.9f, 1.9f });
+	}
 
 	return TRUE;
 }

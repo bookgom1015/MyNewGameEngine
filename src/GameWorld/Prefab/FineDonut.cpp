@@ -8,14 +8,12 @@
 
 using namespace GameWorld::Prefab;
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 FineDonut::FineDonut(
 		Common::Debug::LogFile* const pLogFile,
-		const std::string& name,
-		XMFLOAT3 pos,
-		XMFLOAT4 rot,
-		XMFLOAT3 scale)
-	: Actor(pLogFile, name, pos, rot, scale) {
+		const std::string& name)
+	: Actor(pLogFile, name) {
 	mpMeshComp = new GameWorld::Foundation::Mesh::MeshComponent(pLogFile, this);
 }
 
@@ -29,29 +27,23 @@ FineDonut::FineDonut(
 
 FineDonut::~FineDonut() {}
 
-BOOL FineDonut::OnInitialzing() {
+bool FineDonut::OnInitialzing() {
 	CheckReturn(mpLogFile, mpMeshComp->LoadMesh("fine_donut", "./../../../assets/Models/", "obj"));
 
-	return TRUE;
+	return true;
 }
 
-BOOL FineDonut::ProcessActorInput(Common::Input::InputState* const pInputState) {
-	return TRUE;
+bool FineDonut::ProcessActorInput(Common::Input::InputState* const pInputState) {
+	return true;
 }
 
-BOOL FineDonut::UpdateActor(FLOAT delta) {
-	static FLOAT elapsed = 0.f;
+bool FineDonut::UpdateActor(float delta) {
+	static float elapsed = 0.f;
 	elapsed += delta;
 
-	auto rad = Common::Util::MathUtil::DegreesToRadians(elapsed * 45.f);
+	float degree = elapsed * 45.f;
 
-	auto q1 = XMQuaternionRotationAxis(UnitVector::UpVector, rad);
-	auto q2 = XMQuaternionMultiply(UnitVector::RightVector, q1);
+	SetRotation(Vector3(degree, degree, 0.f));
 
-	XMFLOAT4 rot;
-	XMStoreFloat4(&rot, XMQuaternionRotationAxis(q2, rad));
-
-	SetRotation(rot);
-
-	return TRUE;
+	return true;
 }

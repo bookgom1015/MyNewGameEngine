@@ -22,12 +22,12 @@ namespace GameWorld::Foundation::Core {
 		virtual ~Component();
 
 	public:
-		virtual BOOL OnInitialzing() = 0;
+		virtual bool OnInitialzing() = 0;
 		virtual void OnCleaningUp() = 0;
 
-		virtual BOOL ProcessInput(Common::Input::InputState* const pInput) = 0;
-		virtual BOOL Update(FLOAT delta) = 0;
-		virtual BOOL OnUpdateWorldTransform() = 0;
+		virtual bool ProcessInput(Common::Input::InputState* const pInput) = 0;
+		virtual bool Update(float delta) = 0;
+		virtual bool OnUpdateWorldTransform() = 0;
 
 	protected:
 		const Common::Foundation::Mesh::Transform& ActorTransform();

@@ -10,10 +10,10 @@ ActorManager::ActorManager() {}
 
 ActorManager::~ActorManager() {}
 
-BOOL ActorManager::Initialize(Common::Debug::LogFile* const pLogFile) {
+bool ActorManager::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
 
-	return TRUE;
+	return true;
 }
 
 void ActorManager::CleanUp() {
@@ -24,19 +24,19 @@ void ActorManager::CleanUp() {
 		actor->CleanUp();
 }
 
-BOOL ActorManager::ProcessInput(Common::Input::InputState* const pInputState) {	
+bool ActorManager::ProcessInput(Common::Input::InputState* const pInputState) {	
 	for (size_t i = 0, end = mActors.size(); i < end; ++i)
 		CheckReturn(mpLogFile, mActors[i]->ProcessInput(pInputState));
 
-	return TRUE;
+	return true;
 }
 
-BOOL ActorManager::Update(FLOAT delta) {
+bool ActorManager::Update(float delta) {
 	for (auto& actor : mPendingActors)
 		mActors.push_back(std::move(actor));
 	mPendingActors.clear();
 
-	mbUpdating = TRUE;
+	mbUpdating = true;
 	for (size_t i = 0, end = mActors.size(); i < end; ++i) {
 		if (!mActors[i]->Initialized())
 			CheckReturn(mpLogFile, mActors[i]->Initialize());
@@ -47,7 +47,7 @@ BOOL ActorManager::Update(FLOAT delta) {
 		if (mActors[i]->IsDead()) 
 			mDeadActors.push_back(mActors[i].get());
 	}
-	mbUpdating = FALSE;
+	mbUpdating = false;
 
 	for (const auto actor : mDeadActors) {
 		const auto begin = mActors.begin();
@@ -65,7 +65,7 @@ BOOL ActorManager::Update(FLOAT delta) {
 	}
 	mDeadActors.clear();
 
-	return TRUE;
+	return true;
 }
 
 

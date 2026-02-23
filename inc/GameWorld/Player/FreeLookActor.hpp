@@ -12,10 +12,7 @@ namespace GameWorld {
 		public:
 			FreeLookActor(
 				Common::Debug::LogFile* const pLogFile,
-				const std::string& name,
-				const DirectX::XMFLOAT3& pos = { 0.f, 0.f, 0.f },
-				const DirectX::XMFLOAT4& rot = { 0.f, 0.f, 0.f, 1.f },
-				const DirectX::XMFLOAT3& scale = { 1.f, 1.f, 1.f });
+				const std::string& name);
 			FreeLookActor(
 				Common::Debug::LogFile* const pLogFile, 
 				const std::string& name, 
@@ -23,32 +20,32 @@ namespace GameWorld {
 			virtual ~FreeLookActor();
 
 		public:
-			__forceinline const DirectX::XMVECTOR& CameraForwardVector() const;
-			__forceinline const DirectX::XMVECTOR& CameraRightVector() const;
-			__forceinline const DirectX::XMVECTOR& CameraUpVector() const;
+			__forceinline const DirectX::SimpleMath::Vector3& CameraForwardVector() const;
+			__forceinline const DirectX::SimpleMath::Vector3& CameraRightVector() const;
+			__forceinline const DirectX::SimpleMath::Vector3& CameraUpVector() const;
 
-			__forceinline DirectX::XMVECTOR CameraRotation() const;
+			__forceinline DirectX::SimpleMath::Vector3 CameraRotation() const;
 
 		public:
-			virtual BOOL ProcessActorInput(Common::Input::InputState* const pInput) override;
-			virtual BOOL UpdateActor(FLOAT delta) override;
+			virtual bool ProcessActorInput(Common::Input::InputState* const pInputState) override;
+			virtual bool UpdateActor(float delta)override;
 
 		public:
 			Foundation::Camera::CameraComponent* mpCameraComp{};
 
-			FLOAT mForwardSpeed{};
-			FLOAT mStrapeSpeed{};
+			float mForwardSpeed{};
+			float mStrapeSpeed{};
 
-			FLOAT mWalkSpeed{ 4.f };
-			FLOAT mActualWalkSpeed{ 4.f };
+			float mWalkSpeed{ 4.f };
+			float mActualWalkSpeed{ 4.f };
 
-			FLOAT mLookUpSpeed{};
-			FLOAT mTurnSpeed{};
+			float mLookUpSpeed{};
+			float mTurnSpeed{};
 
-			FLOAT mLookSensitivity{ 0.004f };
-			FLOAT mTurnSensitivity{ 0.004f };
+			float mLookSensitivity{ 0.004f };
+			float mTurnSensitivity{ 0.004f };
 
-			DirectX::XMFLOAT2 mPrevMousePos{};
+			DirectX::SimpleMath::Vector2 mPrevMousePos{};
 		};
 	}
 }
