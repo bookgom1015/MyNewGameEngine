@@ -12,6 +12,8 @@
 #include "Render/DX11/Shading/Util/SamplerUtil.hpp"
 
 using namespace Render::DX11::Shading;
+using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 namespace {
 	const WCHAR* const HLSL_DrawZDepth = L"DrawZDepth.hlsl";
@@ -466,4 +468,17 @@ BOOL Shadow::ShadowClass::DrawShadow(
 	context->CSSetUnorderedAccessViews(0, _countof(nullUavs), nullUavs, nullptr);
 
 	return TRUE;
+}
+
+void Shadow::ShadowClass::CalcFrustumCornerPositions(const Matrix& view, const Matrix& proj) {
+	 Matrix viewProj = view * proj;
+	 for (UINT x = 0; x < 2; ++x) {
+		 for (UINT y = 0; y < 2; ++y) {
+			 for (UINT z = 0; z < 2; ++z) {
+				 Vector3 pos = Vector3(2.f * x - 1.f, 2.f * y - 1.f, 2.f * z - 1.f);
+				 pos = XMVector3TransformCoord(pos, viewProj);
+				 mFrustumCorners.push_back(pos);
+			 }
+		 }
+	 }
 }
