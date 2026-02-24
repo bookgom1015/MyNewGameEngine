@@ -12,7 +12,7 @@ namespace Input {
 		virtual ~SimpleInputProcessor();
 
 	public:
-		InputProcessorAPI virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile) override;
+		InputProcessorAPI virtual bool Initialize(Common::Debug::LogFile* const pLogFile) override;
 		InputProcessorAPI virtual void CleanUp() override;
 
 	private:

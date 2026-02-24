@@ -1,14 +1,24 @@
 #ifndef __INPUTPROCESSOR_INL__
 #define __INPUTPROCESSOR_INL__
 
-DirectX::XMFLOAT2 Common::Input::MouseState::MousePosition() const { return mMousePos; }
-DirectX::XMFLOAT2 Common::Input::MouseState::MouseDelta() const { return mMouseDelta; }
+DirectX::SimpleMath::Vector2 Common::Input::MouseState::MousePosition() const { 
+	return mMousePos; 
+}
 
-FLOAT Common::Input::MouseState::ScrollWheel() const { return mScrollWheel; }
+DirectX::SimpleMath::Vector2 Common::Input::MouseState::MouseDelta() const { 
+	return mMouseDelta; 
+}
 
-BOOL Common::Input::MouseState::IsInputIgnored() const { return mbIsIgnored; }
-BOOL Common::Input::MouseState::IsRelativeMouseMode() const { return mMouseMode == MouseModes::E_Relative; }
+float Common::Input::MouseState::ScrollWheel() const { return mScrollWheel; }
 
-Common::Input::InputState Common::Input::InputProcessor::GetInputState() const { return mInputState; }
+bool Common::Input::MouseState::IsInputIgnored() const { return mbIsIgnored; }
+
+bool Common::Input::MouseState::IsRelativeMouseMode() const { 
+	return mMouseMode == MouseModes::E_Relative; 
+}
+
+Common::Input::InputState Common::Input::InputProcessor::GetInputState() const { 
+	return mInputState; 
+}
 
 #endif // __INPUTPROCESSOR_INL__

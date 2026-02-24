@@ -2,6 +2,7 @@
 
 using namespace Input;
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 extern "C" InputProcessorAPI Common::Input::InputProcessor* Input::CreateInputProcessor() {
 	return new SimpleInputProcessor();
@@ -17,10 +18,10 @@ SimpleInputProcessor::~SimpleInputProcessor() {
 	CleanUp();
 }
 
-BOOL SimpleInputProcessor::Initialize(Common::Debug::LogFile* const pLogFile) {
+bool SimpleInputProcessor::Initialize(Common::Debug::LogFile* const pLogFile) {
 	CheckReturn(mpLogFile, InputProcessor::Initialize(pLogFile));
 
-	return TRUE;
+	return true;
 }
 
 void SimpleInputProcessor::CleanUp() {}
@@ -39,20 +40,20 @@ void SimpleInputProcessor::OnMouseInput(HWND hWnd) {
 	GetCursorPos(&cursorPos);
 	
 	SetMousePosition(
-		static_cast<FLOAT>(cursorPos.x) - static_cast<FLOAT>(wndRect.left),
-		static_cast<FLOAT>(cursorPos.y) - static_cast<FLOAT>(wndRect.top));
+		static_cast<float>(cursorPos.x) - static_cast<float>(wndRect.left),
+		static_cast<float>(cursorPos.y) - static_cast<float>(wndRect.top));
 
 	if (mInputState.Mouse.IsRelativeMouseMode()) {
-		const auto centerX = static_cast<INT>((wndRect.left + wndRect.right) * 0.5f);
-		const auto centerY = static_cast<INT>((wndRect.top + wndRect.bottom) * 0.5f);
+		const auto centerX = static_cast<int>((wndRect.left + wndRect.right) * 0.5f);
+		const auto centerY = static_cast<int>((wndRect.top + wndRect.bottom) * 0.5f);
 
 		SetCursorPos(centerX, centerY);
 
-		prevPos.x = static_cast<FLOAT>(centerX) - static_cast<FLOAT>(wndRect.left);
-		prevPos.y = static_cast<FLOAT>(centerY) - static_cast<FLOAT>(wndRect.top);
+		prevPos.x = static_cast<float>(centerX) - static_cast<float>(wndRect.left);
+		prevPos.y = static_cast<float>(centerY) - static_cast<float>(wndRect.top);
 	}
 
-	XMFLOAT2 currPos = mInputState.Mouse.MousePosition();
+	Vector2 currPos = mInputState.Mouse.MousePosition();
 	SetMouseDelta(currPos.x - prevPos.x, currPos.y - prevPos.y);
 
 	ProcessInputIgnorance();

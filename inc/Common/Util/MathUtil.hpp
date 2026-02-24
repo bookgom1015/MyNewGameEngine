@@ -8,6 +8,7 @@
 #include <random>
 
 namespace UnitVector {
+	const DirectX::XMVECTOR ZeroVector		= DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f);
 	const DirectX::XMVECTOR RightVector		= DirectX::XMVectorSet( 1.f,  0.f,  0.f, 0.f);
 	const DirectX::XMVECTOR UpVector		= DirectX::XMVectorSet( 0.f,  1.f,  0.f, 0.f);
 	const DirectX::XMVECTOR ForwardVector	= DirectX::XMVectorSet( 0.f,  0.f,  1.f, 0.f);

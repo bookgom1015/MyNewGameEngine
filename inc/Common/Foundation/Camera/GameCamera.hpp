@@ -47,10 +47,10 @@ namespace Common::Foundation {
 		private:
 			Core::WindowsManager* mpWndManager{};
 
-			DirectX::SimpleMath::Vector3 mPosition = DirectX::SimpleMath::Vector3::Zero;
-			DirectX::SimpleMath::Vector3 mRight = DirectX::SimpleMath::Vector3::Right;
-			DirectX::SimpleMath::Vector3 mUp = DirectX::SimpleMath::Vector3::Up;
-			DirectX::SimpleMath::Vector3 mForward = DirectX::SimpleMath::Vector3::Forward;
+			DirectX::SimpleMath::Vector3 mPosition = UnitVector::ZeroVector;
+			DirectX::SimpleMath::Vector3 mRight = UnitVector::RightVector;
+			DirectX::SimpleMath::Vector3 mUp = UnitVector::UpVector;
+			DirectX::SimpleMath::Vector3 mForward = UnitVector::ForwardVector;
 
 			float mNearZ{};
 			float mFarZ{};

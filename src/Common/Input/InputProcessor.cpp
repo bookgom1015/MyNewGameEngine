@@ -2,15 +2,16 @@
 
 using namespace Common::Input;
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 namespace {
-	BOOL GetKeyButtonValue(INT key) {
+	bool GetKeyButtonValue(int key) {
 		SHORT status = GetAsyncKeyState(key);
-		if (status & 0x8000 || status & 0x8001) return TRUE;
-		else return FALSE;
+		if (status & 0x8000 || status & 0x8001) return true;
+		else return false;
 	}
 
-	ButtonStates GetKeyButtonState(INT key) {
+	ButtonStates GetKeyButtonState(int key) {
 		SHORT status = GetAsyncKeyState(key);
 		if (status & 0x0000) return ButtonStates::E_None;
 		else if (status & 0x8000) return ButtonStates::E_Pressed;
@@ -19,11 +20,11 @@ namespace {
 	}
 }
 
-BOOL KeyboardState::KeyValue(INT key) const {
+bool KeyboardState::KeyValue(int key) const {
 	return GetKeyButtonValue(key);
 }
 
-ButtonStates KeyboardState::KeyState(INT key) const {
+ButtonStates KeyboardState::KeyState(int key) const {
 	return GetKeyButtonState(key);
 }
 
@@ -35,21 +36,21 @@ void MouseState::WheelDown() {
 	mScrollWheelAccum -= 1.f;
 }
 
-BOOL MouseState::ButtonValue(INT button) const { 
+bool MouseState::ButtonValue(int button) const { 
 	return GetKeyButtonValue(button);
 }
 
-ButtonStates MouseState::ButtonState(INT button) const { 
+ButtonStates MouseState::ButtonState(int button) const { 
 	return GetKeyButtonState(button); 
 }
 
-BOOL InputProcessor::Initialize(Common::Debug::LogFile* const pLogFile) {
+bool InputProcessor::Initialize(Common::Debug::LogFile* const pLogFile) {
 	mpLogFile = pLogFile;
 
-	return TRUE;
+	return true;
 }
 
-void InputProcessor::SetCursorVisibility(BOOL visible) {
+void InputProcessor::SetCursorVisibility(bool visible) {
 	ShowCursor(visible);
 }
 
@@ -58,30 +59,30 @@ void InputProcessor::SetMouseMode(MouseState::MouseModes mode) {
 }
 
 void InputProcessor::IgnoreMouseInput() {
-	mInputState.Mouse.mbIsIgnored = TRUE;
+	mInputState.Mouse.mbIsIgnored = true;
 }
 
-void InputProcessor::SetMousePosition(FLOAT x, FLOAT y) {
+void InputProcessor::SetMousePosition(float x, float y) {
 	mInputState.Mouse.mMousePos.x = x;
 	mInputState.Mouse.mMousePos.y = y;
 }
 
-void InputProcessor::SetMousePosition(DirectX::XMFLOAT2 pos) {
+void InputProcessor::SetMousePosition(const Vector2& pos) {
 	mInputState.Mouse.mMousePos = pos;
 }
 
-void InputProcessor::SetMouseDelta(FLOAT dx, FLOAT dy) {
+void InputProcessor::SetMouseDelta(float dx, float dy) {
 	mInputState.Mouse.mMouseDelta.x = dx;
 	mInputState.Mouse.mMouseDelta.y = dy;
 }
 
-void InputProcessor::SetMouseDelta(DirectX::XMFLOAT2 delta) {
+void InputProcessor::SetMouseDelta(const Vector2& delta) {
 	mInputState.Mouse.mMouseDelta = delta;
 }
 
 void InputProcessor::ProcessInputIgnorance() {
 	if (mInputState.Mouse.mbIsIgnored) {
-		mInputState.Mouse.mbIsIgnored = FALSE;
+		mInputState.Mouse.mbIsIgnored = false;
 		mInputState.Mouse.mMouseDelta = { 0.f,0.f };
 	}
 }

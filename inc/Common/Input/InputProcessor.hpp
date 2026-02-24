@@ -8,7 +8,7 @@
 #endif // NOMINMAX
 #include <Windows.h>
 
-#include <DirectXMath.h>
+#include <SimpleMath.h>
 
 #include "Common/Debug/Logger.hpp"
 #include "Input/KeyCodes.hpp"
@@ -40,8 +40,8 @@ namespace Common::Input {
 		virtual ~KeyboardState() = default;
 
 	public:
-		InputProcessorAPI virtual BOOL KeyValue(INT key) const;
-		InputProcessorAPI virtual ButtonStates KeyState(INT key) const;
+		InputProcessorAPI virtual bool KeyValue(int key) const;
+		InputProcessorAPI virtual ButtonStates KeyState(int key) const;
 	};
 
 	class MouseState {
@@ -59,29 +59,29 @@ namespace Common::Input {
 		virtual ~MouseState() = default;
 
 	public:
-		__forceinline DirectX::XMFLOAT2 MousePosition() const;
-		__forceinline DirectX::XMFLOAT2 MouseDelta() const;
-		__forceinline FLOAT ScrollWheel() const;
-		__forceinline BOOL IsInputIgnored() const;
-		__forceinline BOOL IsRelativeMouseMode() const;
+		__forceinline DirectX::SimpleMath::Vector2 MousePosition() const;
+		__forceinline DirectX::SimpleMath::Vector2 MouseDelta() const;
+		__forceinline float ScrollWheel() const;
+		__forceinline bool IsInputIgnored() const;
+		__forceinline bool IsRelativeMouseMode() const;
 
 	public:
 		InputProcessorAPI virtual void WheelUp();
 		InputProcessorAPI virtual void WheelDown();
 
-		InputProcessorAPI virtual BOOL ButtonValue(INT button) const;
-		InputProcessorAPI virtual ButtonStates ButtonState(INT button) const;
+		InputProcessorAPI virtual bool ButtonValue(int button) const;
+		InputProcessorAPI virtual ButtonStates ButtonState(int button) const;
 
 	private:
-		DirectX::XMFLOAT2 mMousePos = { 0.f, 0.0f };
-		DirectX::XMFLOAT2 mMouseDelta = { 0.f, 0.0f };
+		DirectX::SimpleMath::Vector2 mMousePos{ 0.f, 0.0f };
+		DirectX::SimpleMath::Vector2 mMouseDelta{ 0.f, 0.0f };
 
-		FLOAT mScrollWheel = 0.f;
-		FLOAT mScrollWheelAccum = 0.f;
+		float mScrollWheel{};
+		float mScrollWheelAccum{};
 
-		BOOL mbIsIgnored = TRUE;
+		bool mbIsIgnored{ true };
 
-		MouseModes mMouseMode = MouseModes::E_Absolute;
+		MouseModes mMouseMode{ MouseModes::E_Absolute };
 	};
 
 	class ControllerState {
@@ -101,11 +101,11 @@ namespace Common::Input {
 
 	class InputProcessor {
 	public:
-		InputProcessorAPI virtual BOOL Initialize(Common::Debug::LogFile* const pLogFile);
+		InputProcessorAPI virtual bool Initialize(Common::Debug::LogFile* const pLogFile);
 		InputProcessorAPI virtual void CleanUp() = 0;
 				
 	public:
-		InputProcessorAPI virtual void SetCursorVisibility(BOOL visible);
+		InputProcessorAPI virtual void SetCursorVisibility(bool visible);
 		InputProcessorAPI virtual void SetMouseMode(MouseState::MouseModes mode);
 		InputProcessorAPI virtual void IgnoreMouseInput();
 
@@ -116,18 +116,18 @@ namespace Common::Input {
 		__forceinline InputState GetInputState() const;
 
 	protected:
-		void SetMousePosition(FLOAT x, FLOAT y);
-		void SetMousePosition(DirectX::XMFLOAT2 pos);
+		void SetMousePosition(float x, float y);
+		void SetMousePosition(const DirectX::SimpleMath::Vector2& pos);
 
-		void SetMouseDelta(FLOAT dx, FLOAT dy);
-		void SetMouseDelta(DirectX::XMFLOAT2 delta);
+		void SetMouseDelta(float dx, float dy);
+		void SetMouseDelta(const DirectX::SimpleMath::Vector2& delta);
 
 		void ProcessInputIgnorance();
 
 	protected:
-		Common::Debug::LogFile* mpLogFile = nullptr;
+		Common::Debug::LogFile* mpLogFile{};
 
-		InputState mInputState;
+		InputState mInputState{};
 	};
 }
 

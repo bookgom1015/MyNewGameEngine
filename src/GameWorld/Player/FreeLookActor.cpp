@@ -52,16 +52,15 @@ bool FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 	mTurnSpeed = 0.f;
 
 	if (pInput->Mouse.ButtonState(VK_RBUTTON) == Common::Input::ButtonStates::E_Pressed) {
-		const auto CurrMousePos = pInput->Mouse.MousePosition();
-		const auto CurrMousePosV = XMLoadFloat2(&CurrMousePos);
-		const auto PrevMousePosV = XMLoadFloat2(&mPrevMousePos);
+		Vector2 currMousePos = pInput->Mouse.MousePosition();
+		Vector2 prevMousePos = mPrevMousePos;
 
-		const auto Displacement = CurrMousePosV - PrevMousePosV;
+		Vector2 displacement = currMousePos - prevMousePos;
 
-		mLookUpSpeed = Displacement.m128_f32[1];
-		mTurnSpeed = Displacement.m128_f32[0];
+		mLookUpSpeed = displacement.y;
+		mTurnSpeed = displacement.x;
 
-		XMStoreFloat2(&mPrevMousePos, CurrMousePosV);
+		mPrevMousePos = currMousePos;
 	}
 	else {
 		mPrevMousePos = pInput->Mouse.MousePosition();
@@ -69,7 +68,7 @@ bool FreeLookActor::ProcessActorInput(Common::Input::InputState* const pInput) {
 
 	return TRUE;
 }
-
+#include <iostream>
 bool FreeLookActor::UpdateActor(float delta) {
 	Vector3 strape = mpCameraComp->RightVector() * mStrapeSpeed;
 	Vector3 forward = mpCameraComp->ForwardVector() * mForwardSpeed;
