@@ -6,6 +6,9 @@
 #include "Common/Render/ShadingArgument.hpp"
 #include "Common/Render/TonemapperType.h"
 
+// ImGuiImage
+// https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 using namespace Common::ImGuiManager;
@@ -14,12 +17,41 @@ using namespace DirectX;
 BOOL ImGuiManager::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd) {
 	mpLogFile = pLogFile;
 
-	// Setup dear ImGui context.
+	// Make process DPI aware and obtain main monitor scale
+	ImGui_ImplWin32_EnableDpiAwareness();
+	float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+
+	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	mpContext = ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigWindowsMoveFromTitleBarOnly = true;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+	//io.ConfigViewportsNoAutoMerge = true;
+	//io.ConfigViewportsNoTaskBarIcon = true;
 
-	// Setup Dear ImGui style.
+	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsLight();
+
+	// Setup scaling
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowMenuButtonPosition = ImGuiDir_None;
+	style.WindowRounding = 0.f;
+	style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+	style.FontScaleDpi = main_scale;        // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
+	io.ConfigDpiScaleFonts = true;          // [Experimental] Automatically overwrite style.FontScaleDpi in Begin() when Monitor DPI changes. This will scale fonts but _NOT_ scale sizes/padding for now.
+	io.ConfigDpiScaleViewports = true;      // [Experimental] Scale Dear ImGui and Platform Windows when Monitor DPI changes.
+
+	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
 
 	// Setup platform/renderer backends
 	CheckReturn(mpLogFile, ImGui_ImplWin32_Init(hWnd));
@@ -42,7 +74,7 @@ void ImGuiManager::FrameRateText(UINT clientWidth, UINT clientHeight) {
 	CHAR buffer[64];
 	snprintf(buffer, sizeof(buffer), "%.1f FPS \n(%.3f ms)", 
 		ImGui::GetIO().Framerate, 1000.f / ImGui::GetIO().Framerate);
-
+	
 	const float TextWidth = ImGui::CalcTextSize(buffer).x;
 	const float RegionWidth = ImGui::GetContentRegionAvail().x;
 
@@ -711,4 +743,10 @@ void ImGuiManager::ChromaticAberrationTree(
 
 		ImGui::TreePop();
 	}
+}
+
+void ImGuiManager::MarginalSpacing() {
+	ImGui::Dummy(ImVec2(0.f, 2.f));
+	ImGui::Separator();
+	ImGui::Dummy(ImVec2(0.f, 2.f));
 }

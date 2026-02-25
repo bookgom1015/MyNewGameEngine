@@ -73,6 +73,9 @@ BOOL D3D12Util::CreateSwapChain1(
 		nullptr, nullptr,
 		ppSwapChain1));
 
+	CheckHRESULT(mpLogFile, pFactory->mDxgiFactory->MakeWindowAssociation(
+		hWnd, DXGI_MWA_NO_ALT_ENTER));
+
 	return TRUE;
 }
 

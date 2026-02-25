@@ -9,8 +9,20 @@ namespace Common {
 			E_Reinhard,
 			E_ReinhardExt,
 			E_Uncharted2,
-			E_Log
+			E_Log,
+			Count
 		};
+
+#ifndef _HLSL
+		static const char* TonemapperTypeNames[] = {
+			"ACES",
+			"Exponential",
+			"Reinhard",
+			"ReinhardExt",
+			"Uncharted2",
+			"Log"
+		};
+#endif
 	}
 }
 

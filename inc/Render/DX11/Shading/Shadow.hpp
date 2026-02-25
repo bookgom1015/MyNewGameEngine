@@ -71,10 +71,6 @@ namespace Render::DX11::Shading {
 				Foundation::Resource::FrameResource* const pFrameResource,
 				ID3D11ShaderResourceView* pPositionMapSrv);
 
-			void CalcFrustumCornerPositions(
-				const DirectX::SimpleMath::Matrix& view, 
-				const DirectX::SimpleMath::Matrix& proj);
-
 		private:
 			InitData mInitData{};
 
@@ -104,8 +100,6 @@ namespace Render::DX11::Shading {
 			UINT mLightCount{};
 
 			D3D11_VIEWPORT mViewport{};
-
-			std::vector<DirectX::SimpleMath::Vector3> mFrustumCorners{};
 		};
 
 		using InitDataPtr = std::unique_ptr<ShadowClass::InitData>;

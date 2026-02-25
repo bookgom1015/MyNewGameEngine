@@ -22,8 +22,6 @@ Dx11ImGuiManager::~Dx11ImGuiManager() {}
 
 BOOL Dx11ImGuiManager::InitializeD3D11(
 		Render::DX11::Foundation::Core::Device* const pDevice) {
-	ImGui::SetCurrentContext(mpContext);
-
 	CheckReturn(mpLogFile, ImGui_ImplDX11_Init(
 		pDevice->mDevice.Get(), pDevice->mContext.Get()));
 
@@ -51,37 +49,42 @@ BOOL Dx11ImGuiManager::DrawImGui(
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	const auto Width = static_cast<FLOAT>(clientWidth);
-	const auto Height = static_cast<FLOAT>(clientHeight);
+	ImGui::DockSpaceOverViewport(
+		0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-	// Setup window properties
-	{
-		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f), ImGuiCond_Once);
-
-		const ImVec2 MinSize(300.f, Height);
-		const ImVec2 MaxSize(std::max(Width, 300.f), Height);
-		ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
-
-		//ImGui::SetNextWindowSize(ImVec2(450.f, static_cast<FLOAT>(clientHeight)), ImGuiCond_Always);
-		ImGui::SetNextWindowCollapsed(TRUE, ImGuiCond_Once);
-	}
 	// Create new window
 	{
-		ImGui::Begin("Control Panel", nullptr, ImGuiWindowFlags_NoMove); // ImGuiWindowFlags_NoResize
+		//ImGui::Begin("Control Panel");
+		//
+		//// Framerate text
+		//FrameRateText(clientWidth, clientHeight);
+		////if (bRaytracingSupported) RaytraycingEnableCheckBox(pArgSet);
+		//// Lights
+		//LightHeader(pArgSet, lights, numLights, pendingLights);
+		//// Shading objects
+		//ShadingObjectHeader(pArgSet);
+		//
+		//ImGuiContext* ctx = ImGui::GetCurrentContext();
+		//ImGuiIO& io = ImGui::GetIO();
+		//ImGui::Text("ctx=%p backend=%p", ctx, io.BackendPlatformUserData);
+		//
+		//ImGui::End();
 
-		// Framerate text
-		FrameRateText(clientWidth, clientHeight);
-		//if (bRaytracingSupported) RaytraycingEnableCheckBox(pArgSet);
-		// Lights
-		LightHeader(pArgSet, lights, numLights, pendingLights);
-		// Shading objects
-		ShadingObjectHeader(pArgSet);
+		ImGui::Begin("Scene");
+		ImGui::End();
 
+		ImGui::Begin("Inspector");
 		ImGui::End();
 	}
 
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+	// Update and Render additional Platform Windows
+	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
 
 	return TRUE;
 }

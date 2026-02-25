@@ -39,8 +39,12 @@ namespace Render::DX::Foundation::Core {
 		__forceinline Resource::GpuResource* BackBuffer() const;
 		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE BackBufferRtv() const;
 
-		__forceinline Resource::GpuResource* BackBufferCopy() const;
-		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE BackBufferCopySrv() const;
+		__forceinline Resource::GpuResource* SceneMap() const;
+		__forceinline D3D12_CPU_DESCRIPTOR_HANDLE SceneMapRtv() const;
+		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE SceneMapSrv() const;
+
+		__forceinline Resource::GpuResource* SceneMapCopy() const;
+		__forceinline D3D12_GPU_DESCRIPTOR_HANDLE SceneMapCopySrv() const;
 
 		__forceinline constexpr D3D12_VIEWPORT ScreenViewport() const;
 		__forceinline constexpr D3D12_RECT ScissorRect() const;
@@ -73,9 +77,14 @@ namespace Render::DX::Foundation::Core {
 		std::array<D3D12_GPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferGpuSrvs{};
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, SwapChainBufferCount> mhBackBufferCpuRtvs{};
 
-		std::unique_ptr<Resource::GpuResource> mBackBufferCopy{};
-		D3D12_CPU_DESCRIPTOR_HANDLE mhBackBufferCopyCpuSrv{};
-		D3D12_GPU_DESCRIPTOR_HANDLE mhBackBufferCopyGpuSrv{};
+		std::unique_ptr<Resource::GpuResource> mSceneMap{};
+		D3D12_CPU_DESCRIPTOR_HANDLE mhSceneMapCpuRtv{};
+		D3D12_CPU_DESCRIPTOR_HANDLE mhSceneMapCpuSrv{};
+		D3D12_GPU_DESCRIPTOR_HANDLE mhSceneMapGpuSrv{};
+
+		std::unique_ptr<Resource::GpuResource> mSceneMapCopy{};
+		D3D12_CPU_DESCRIPTOR_HANDLE mhSceneMapCopyCpuSrv{};
+		D3D12_GPU_DESCRIPTOR_HANDLE mhSceneMapCopyGpuSrv{};
 
 		UINT mCurrBackBuffer{};
 

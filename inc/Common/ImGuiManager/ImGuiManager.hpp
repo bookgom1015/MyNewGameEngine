@@ -80,6 +80,9 @@ namespace Common::ImGuiManager {
 			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
 	protected:
+		void MarginalSpacing();
+
+	protected:
 		BOOL mbIsWin32Initialized{};
 
 		Common::Debug::LogFile* mpLogFile{};

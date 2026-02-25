@@ -14,14 +14,15 @@ SwapChain::SwapChain() {
 	for (UINT i = 0; i < SwapChainBufferCount; ++i)
 		mSwapChainBuffers[i] = std::make_unique<Resource::GpuResource>();
 
-	mBackBufferCopy = std::make_unique<Resource::GpuResource>();
+	mSceneMap = std::make_unique<Resource::GpuResource>();
+	mSceneMapCopy = std::make_unique<Resource::GpuResource>();
 }
 
 SwapChain::~SwapChain() { CleanUp(); }
 
 UINT SwapChain::CbvSrvUavDescCount() const { return SwapChainBufferCount + 1; }
 
-UINT SwapChain::RtvDescCount() const { return SwapChainBufferCount; }
+UINT SwapChain::RtvDescCount() const { return SwapChainBufferCount + 1; }
 
 UINT SwapChain::DsvDescCount() const { return 0; }
 
@@ -48,7 +49,8 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 void SwapChain::CleanUp() {
 	if (mbCleanedUp) return;
 
-	if (mBackBufferCopy) mBackBufferCopy.reset();
+	if (mSceneMap) mSceneMap.reset();
+	if (mSceneMapCopy) mSceneMapCopy.reset();
 
 	for (UINT i = 0; i < SwapChainBufferCount; ++i) {
 		auto& buffer = mSwapChainBuffers[i];
@@ -68,8 +70,12 @@ BOOL SwapChain::BuildDescriptors(DescriptorHeap* const pDescHeap) {
 		mhBackBufferCpuRtvs[i] = pDescHeap->RtvCpuOffset(offset);
 	}
 
-	mhBackBufferCopyCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
-	mhBackBufferCopyGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+	mhSceneMapCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhSceneMapGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
+	mhSceneMapCpuRtv = pDescHeap->RtvCpuOffset(1);
+
+	mhSceneMapCopyCpuSrv = pDescHeap->CbvSrvUavCpuOffset(1);
+	mhSceneMapCopyGpuSrv = pDescHeap->CbvSrvUavGpuOffset(1);
 
 	CheckReturn(mpLogFile, BuildDescriptors());
 
@@ -161,16 +167,32 @@ BOOL SwapChain::BuildResources() {
 	rscDesc.SampleDesc.Count = 1;
 	rscDesc.SampleDesc.Quality = 0;
 	rscDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	rscDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	CheckReturn(mpLogFile, mBackBufferCopy->Initialize(
-		mInitData.Device,
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&rscDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		nullptr,
-		L"SwapChain_BackBufferCopy"));
+	{
+		rscDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+		CheckReturn(mpLogFile, mSceneMap->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&rscDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			L"SwapChain_SceneMap"));
+	}
+
+	{
+		rscDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		CheckReturn(mpLogFile, mSceneMapCopy->Initialize(
+			mInitData.Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&rscDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			L"SwapChain_SceneMapCopy"));
+	}
 
 	return TRUE;
 }
@@ -184,13 +206,25 @@ BOOL SwapChain::BuildDescriptors() {
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.f;
 	srvDesc.Texture2D.MipLevels = 1;
 
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	rtvDesc.Format = ShadingConvention::SwapChain::BackBufferFormat;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.Texture2D.PlaneSlice = 0;
+
 	for (UINT i = 0; i < SwapChainBufferCount; ++i) {
 		const auto backBuffer = mSwapChainBuffers[i]->Resource();
 		Util::D3D12Util::CreateShaderResourceView(mInitData.Device, backBuffer, &srvDesc, mhBackBufferCpuSrvs[i]);
 		Util::D3D12Util::CreateRenderTargetView(mInitData.Device, backBuffer, nullptr, mhBackBufferCpuRtvs[i]);
 	}
 
-	Util::D3D12Util::CreateShaderResourceView(mInitData.Device, mBackBufferCopy->Resource(), &srvDesc, mhBackBufferCopyCpuSrv);
+	Util::D3D12Util::CreateShaderResourceView(
+		mInitData.Device, mSceneMap->Resource(), &srvDesc, mhSceneMapCpuSrv);
+	Util::D3D12Util::CreateRenderTargetView(
+		mInitData.Device, mSceneMap->Resource(), &rtvDesc, mhSceneMapCpuRtv);
+
+	Util::D3D12Util::CreateShaderResourceView(
+		mInitData.Device, mSceneMapCopy->Resource(), &srvDesc, mhSceneMapCopyCpuSrv);
 
 	return TRUE;
 }

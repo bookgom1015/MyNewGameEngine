@@ -76,6 +76,7 @@
 
 using namespace Render::DX;
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 extern "C" RendererAPI Common::Render::Renderer* Render::CreateRenderer() {
 	return new DxRenderer();
@@ -309,7 +310,8 @@ BOOL DxRenderer::Draw() {
 		mDepthStencilBuffer->DepthStencilBufferDsv(),
 		mSkySphere.get()));
 
-	CheckReturn(mpLogFile, ApplyVolumetricLight());
+	if (mpShadingArgumentSet->VolumetricLight.Enabled)
+		CheckReturn(mpLogFile, ApplyVolumetricLight());
 
 	if (mpShadingArgumentSet->Bloom.Enabled)
 		CheckReturn(mpLogFile, ApplyBloom());
@@ -356,8 +358,8 @@ BOOL DxRenderer::Draw() {
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
 		mSwapChain->ScissorRect(),
-		mSwapChain->BackBuffer(),
-		mSwapChain->BackBufferRtv(),
+		mSwapChain->SceneMap(),
+		mSwapChain->SceneMapRtv(),
 		eye->Luminance(),
 		mpShadingArgumentSet->ToneMapping.Exposure,
 		mpShadingArgumentSet->ToneMapping.MiddleGrayKey,
@@ -369,10 +371,10 @@ BOOL DxRenderer::Draw() {
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->ScissorRect(),
-			mSwapChain->BackBuffer(),
-			mSwapChain->BackBufferRtv(),
-			mSwapChain->BackBufferCopy(),
-			mSwapChain->BackBufferCopySrv(),
+			mSwapChain->SceneMap(),
+			mSwapChain->SceneMapRtv(),
+			mSwapChain->SceneMapCopy(),
+			mSwapChain->SceneMapCopySrv(),
 			mpShadingArgumentSet->GammaCorrection.Gamma));
 	}
 
@@ -382,10 +384,10 @@ BOOL DxRenderer::Draw() {
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
 			mSwapChain->ScissorRect(),
-			mSwapChain->BackBuffer(),
-			mSwapChain->BackBufferRtv(),
-			mSwapChain->BackBufferCopy(),
-			mSwapChain->BackBufferCopySrv(),
+			mSwapChain->SceneMap(),
+			mSwapChain->SceneMapRtv(),
+			mSwapChain->SceneMapCopy(),
+			mSwapChain->SceneMapCopySrv(),
 			mDepthStencilBuffer->GetDepthStencilBuffer(),
 			mDepthStencilBuffer->DepthStencilBufferSrv(),
 			gbuffer->VelocityMap(),
@@ -597,6 +599,11 @@ BOOL DxRenderer::UpdateLightCB() {
 			const FLOAT f = sphereCenterLS.z + mSceneBounds.Radius;
 
 			const XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+			{
+				std::vector<Vector3> points{};
+				shadow->CalcFrustumCornerPositions(lightView, lightProj, points);
+			}
 
 			const XMMATRIX viewProj = XMMatrixMultiply(lightView, lightProj);
 			XMStoreFloat4x4(&light->Mat0, XMMatrixTranspose(viewProj));
@@ -1657,12 +1664,16 @@ BOOL DxRenderer::DrawImGui() {
 
 	mSwapChain->BackBuffer()->Transite(CmdList, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
+	FLOAT clearValues[4] = { 0.1f, 0.1f, 0.1, 1.f };
+	CmdList->ClearRenderTargetView(mSwapChain->BackBufferRtv(), clearValues, 0, nullptr);
 	CmdList->OMSetRenderTargets(1, &mSwapChain->BackBufferRtv(), TRUE, nullptr);
 
 	auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
 
 	std::vector<Common::Foundation::Light*> lights{};
 	shadow->Lights(lights);
+
+	mpImGuiManager->SetSceneImage(mSwapChain->SceneMapSrv());
 
 	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
 		CmdList, 

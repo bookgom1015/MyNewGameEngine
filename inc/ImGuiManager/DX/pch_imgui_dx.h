@@ -1,5 +1,8 @@
 #pragma once
 
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3d12.lib")
+
 #include "Common/ImGuiManager/pch_imgui_common.h"
 
 #include <Microsoft.Direct3D.D3D12.1.615.1/build/native/include/d3d12.h>

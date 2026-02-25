@@ -40,11 +40,23 @@ namespace ImGuiManager {
 				UINT clientWidth, UINT clientHeight,
 				BOOL bRaytracingSupported);
 
+		public:
+			ImGuiManagerAPI void SetSceneImage(D3D12_GPU_DESCRIPTOR_HANDLE srv);
+
+		private:
+			void MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+			void Scene();
+			void Inspector();
+			void Outliner();
+			void Content();
+
 		private:
 			BOOL mbIsD3D12Initialized{};
 
 			D3D12_CPU_DESCRIPTOR_HANDLE mhImGuiCpuSrv{};
 			D3D12_GPU_DESCRIPTOR_HANDLE mhImGuiGpuSrv{};
+
+			D3D12_GPU_DESCRIPTOR_HANDLE mhSceneImageGpuSrv{};
 		};
 	}
 }

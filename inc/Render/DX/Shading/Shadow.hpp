@@ -84,6 +84,7 @@ namespace Render::DX::Shading {
 			void ZDepthMaps(std::vector<Render::DX::Foundation::Resource::GpuResource*>& maps);
 			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE ZDepthMapSrv() const;
 
+
 		public:
 			virtual UINT CbvSrvUavDescCount() const override;
 			virtual UINT RtvDescCount() const override;
@@ -107,6 +108,11 @@ namespace Render::DX::Shading {
 				const std::vector<Render::DX::Foundation::RenderItem*>& ritems);
 
 			BOOL AddLight(const std::shared_ptr<Common::Foundation::Light>& light);
+
+			void CalcFrustumCornerPositions(
+				const DirectX::SimpleMath::Matrix& view,
+				const DirectX::SimpleMath::Matrix& proj,
+				std::vector<DirectX::SimpleMath::Vector3>& frustumCorners);
 
 		private:
 			BOOL BuildResources();

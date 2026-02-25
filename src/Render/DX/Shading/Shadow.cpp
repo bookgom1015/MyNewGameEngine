@@ -13,9 +13,8 @@
 #include "Render/DX/Shading/Util/ShaderManager.hpp"
 #include "Render/DX/Shading/Util/SamplerUtil.hpp"
 
-// Cascase Shadow
-// https://scahp.tistory.com/39
-
+using namespace DirectX;
+using namespace DirectX::SimpleMath;
 using namespace Render::DX::Shading;
 
 namespace {
@@ -288,6 +287,23 @@ BOOL Shadow::ShadowClass::AddLight(const std::shared_ptr<Common::Foundation::Lig
 	mLights[mLightCount++] = light;
 
 	return TRUE;
+}
+
+void Shadow::ShadowClass::CalcFrustumCornerPositions(
+		const Matrix& view, const Matrix& proj,
+		std::vector<DirectX::SimpleMath::Vector3>& frustumCorners) {
+	Matrix invViewProj = view * proj;
+	invViewProj.Invert();
+
+	for (UINT x = 0; x < 2; ++x) {
+		for (UINT y = 0; y < 2; ++y) {
+			for (UINT z = 0; z < 2; ++z) {
+				Vector3 pos = Vector3(2.f * x - 1.f, 2.f * y - 1.f, 2.f * z - 1.f);
+				pos = XMVector3TransformCoord(pos, invViewProj);
+				frustumCorners.push_back(pos);
+			}
+		}
+	}
 }
 
 BOOL Shadow::ShadowClass::BuildResources() {
