@@ -33,7 +33,7 @@ namespace Common {
 }
 
 namespace Common::ImGuiManager {
-	using DisplayTexture = std::unordered_map<std::string, ImTextureID>;
+	using DisplayTexture = std::map<std::string, ImTextureID>;
 
 	class ImGuiManager {
 	public:
@@ -57,6 +57,7 @@ namespace Common::ImGuiManager {
 			std::queue<std::shared_ptr<Common::Foundation::Light>>& pendingLights);
 
 		ImGuiManagerAPI virtual void MarginalSpacing();
+		ImGuiManagerAPI virtual void TextWithBg(const char* pTxt);
 
 		ImGuiManagerAPI virtual void MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 		ImGuiManagerAPI virtual void Scene() = 0;
@@ -84,6 +85,6 @@ namespace Common::ImGuiManager {
 		bool mbProfilerOpened{ false };
 
 		DisplayTexture mDisplayTextures{};
-		int mSelectedTexture{ -1 };
+		std::string mSelectedTexture{};
 	};
 }

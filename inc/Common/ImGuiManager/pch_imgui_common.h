@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include <map>
 #include <queue>
 #include <unordered_map>
 

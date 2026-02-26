@@ -1678,18 +1678,33 @@ BOOL DxRenderer::DrawImGui() {
 	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
 	const auto ssao = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
 
+	gbuffer->AlbedoMap()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	mpImGuiManager->AddDisplayTexture(
 		"GBuffer_Albedo",
 		static_cast<ImTextureID>(gbuffer->AlbedoMapSrv().ptr));
+
+	gbuffer->NormalMap()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	mpImGuiManager->AddDisplayTexture(
 		"GBuffer_Normal",
 		static_cast<ImTextureID>(gbuffer->NormalMapSrv().ptr));
+
+	gbuffer->VelocityMap()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	mpImGuiManager->AddDisplayTexture(
 		"GBuffer_Velocity",
 		static_cast<ImTextureID>(gbuffer->VelocityMapSrv().ptr));
+
+	gbuffer->PositionMap()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	mpImGuiManager->AddDisplayTexture(
+		"GBuffer_Position",
+		static_cast<ImTextureID>(gbuffer->PositionMapSrv().ptr));
+
+	mDepthStencilBuffer->GetDepthStencilBuffer()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	mpImGuiManager->AddDisplayTexture(
 		"DepthStencilBuffer",
 		static_cast<ImTextureID>(mDepthStencilBuffer->DepthStencilBufferSrv().ptr));
+
+	ssao->TemporalAOCoefficientResource(ssao->CurrentTemporalCacheFrameIndex())->Transite(
+		CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	mpImGuiManager->AddDisplayTexture(
 		"SSAO_TemporalAO",
 		static_cast<ImTextureID>(ssao->TemporalAOCoefficientSrv(

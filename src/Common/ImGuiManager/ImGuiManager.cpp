@@ -493,6 +493,22 @@ void ImGuiManager::MarginalSpacing() {
 	ImGui::Dummy(ImVec2(0.f, 2.f));
 }
 
+void ImGuiManager::TextWithBg(const char* pTxt) {
+	ImVec2 size(ImGui::GetContentRegionAvail().x, 28.f);
+	ImVec2 pos = ImGui::GetCursorScreenPos();
+
+	auto* draw = ImGui::GetWindowDrawList();
+	draw->AddRectFilled(
+		pos,
+		ImVec2(pos.x + size.x, pos.y + size.y),
+		IM_COL32(66, 150, 250, 102),
+		6.f);
+
+	ImGui::Dummy(size);
+	ImGui::SetCursorScreenPos(ImVec2(pos.x + 8, pos.y + 6));
+	ImGui::TextUnformatted(pTxt);
+}
+
 void ImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
@@ -735,34 +751,65 @@ void ImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* 
 
 void ImGuiManager::Texture() {
 	ImGui::Begin("Texture", &mbTextureOpened);
-
-	ImVec2 avail = ImGui::GetContentRegionAvail();   // 지금 커서 위치에서 남은 영역
-	if (avail.x < 1.f) avail.x = 1.f;
-	if (avail.y < 1.f) avail.y = 1.f;
 		
+	//if (ImGui::BeginPopupContextWindow()) {		
+	//	ImGui::Text("Select Texture");
+	//
+	//	MarginalSpacing();
+	//
+	//	ImGui::Combo(
+	//		"##Textures",
+	//		&mSelectedTexture,
+	//		keys.data(),
+	//		keys.size());
+	//
+	//	ImGui::EndPopup();	
+	//}
+	//
+	
 	std::vector<const char*> keys{};
 	keys.reserve(mDisplayTextures.size());
 
 	for (const auto& key : mDisplayTextures | std::views::keys)
 		keys.push_back(key.c_str());
 
-	if (ImGui::BeginPopupContextWindow()) {		
-		ImGui::Text("Select Texture");
+	float availWidth = ImGui::GetContentRegionAvail().x;
+	float leftWidth = availWidth * 0.8f;
+	float rightWidth = availWidth - leftWidth;
 
-		MarginalSpacing();
+	{
+		ImGui::BeginChild("Left", ImVec2(leftWidth, 0), true);
 
-		ImGui::Combo(
-			"##Textures",
-			&mSelectedTexture,
-			keys.data(),
-			keys.size());
+		ImVec2 avail = ImGui::GetContentRegionAvail();
+		if (avail.x < 1.f) avail.x = 1.f;
+		if (avail.y < 1.f) avail.y = 1.f;
 
-		ImGui::EndPopup();	
+		auto iter = std::find(keys.begin(), keys.end(), mSelectedTexture);
+		if (iter != keys.end()) 
+			ImGui::Image(mDisplayTextures[*iter], avail);
+
+		ImGui::EndChild();
 	}
 
-	if (mSelectedTexture != -1) 
-		ImGui::Image(
-			mDisplayTextures[keys[mSelectedTexture]], avail);
+	ImGui::SameLine();
+
+	{
+		ImGui::BeginChild("Right", ImVec2(0, 0), true);
+
+		TextWithBg("Select Texture");
+
+		MarginalSpacing();
+		
+		for (size_t i = 0, end = keys.size(); i < end; ++i) {
+			bool selected = mSelectedTexture == keys[i];
+
+			if (ImGui::Selectable(keys[i], selected)) 
+				mSelectedTexture = keys[i];
+		}
+		
+
+		ImGui::EndChild();
+	}
 
 	ImGui::End();
 }
