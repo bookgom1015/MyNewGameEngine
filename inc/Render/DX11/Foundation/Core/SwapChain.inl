@@ -10,20 +10,32 @@ namespace Render::DX11::Foundation::Core {
 		return mScreenViewport;
 	}
 
-	ID3D11Texture2D* SwapChain::SwapChainBuffer() {
+	ID3D11Texture2D* SwapChain::BackBuffer() {
 		return mSwapChainBuffer.Get();
 	}
 
-	ID3D11RenderTargetView* SwapChain::SwapChainBufferRtv() noexcept {
+	ID3D11RenderTargetView* SwapChain::BackBufferRtv() noexcept {
 		return mhSwapChainBufferRtv.Get();
 	}
 
-	ID3D11Texture2D* SwapChain::SwapChainBufferCopy() {
-		return mSwapChainBufferCopy.Get();
+	ID3D11Texture2D* SwapChain::SceneMap() {
+		return mSceneMap.Get();
 	}
 
-	ID3D11ShaderResourceView* SwapChain::SwapChainBufferCopySrv() noexcept {
-		return mhSwapChainBufferCopySrv.Get();
+	ID3D11RenderTargetView* SwapChain::SceneMapRtv() noexcept {
+		return mhSceneMapRtv.Get();
+	}
+
+	ID3D11ShaderResourceView* SwapChain::SceneMapSrv() noexcept {
+		return mhSceneMapSrv.Get();
+	}
+
+	ID3D11Texture2D* SwapChain::SceneMapCopy() {
+		return mSceneMapCopy.Get();
+	}
+
+	ID3D11ShaderResourceView* SwapChain::SceneMapCopySrv() noexcept {
+		return mhSceneMapCopySrv.Get();
 	}
 }
 

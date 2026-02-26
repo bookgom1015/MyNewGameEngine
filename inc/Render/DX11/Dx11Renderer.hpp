@@ -104,6 +104,8 @@ namespace Render {
 
 			BOOL BuildSkySphere();
 
+			BOOL DrawImGui();
+
 		private:
 			std::unique_ptr<Shading::Util::ShadingObjectManager> mShadingObjectManager{};
 			std::unique_ptr<Shading::Util::ShaderManager> mShaderManager{};

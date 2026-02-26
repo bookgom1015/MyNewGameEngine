@@ -1,8 +1,13 @@
 #pragma once
 
+#include <string>
+
+#include <ranges>
+
 #include <memory>
 
 #include <queue>
+#include <unordered_map>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

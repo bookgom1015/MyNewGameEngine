@@ -43,12 +43,8 @@ namespace ImGuiManager {
 		public:
 			ImGuiManagerAPI void SetSceneImage(D3D12_GPU_DESCRIPTOR_HANDLE srv);
 
-		private:
-			void MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-			void Scene();
-			void Inspector();
-			void Outliner();
-			void Content();
+		protected:
+			ImGuiManagerAPI virtual void Scene() override;
 
 		private:
 			BOOL mbIsD3D12Initialized{};

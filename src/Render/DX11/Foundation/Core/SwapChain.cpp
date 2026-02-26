@@ -38,8 +38,12 @@ BOOL SwapChain::Initialize(Common::Debug::LogFile* const pLogFile, void* const p
 void SwapChain::CleanUp() {
 	if (mbCleanedUp) return;
 
-	mhSwapChainBufferCopySrv.Reset();
-	mSwapChainBufferCopy.Reset();
+	mhSceneMapCopySrv.Reset();
+	mSceneMapCopy.Reset();
+
+	mhSceneMapRtv.Reset();
+	mhSceneMapSrv.Reset();
+	mSceneMap.Reset();
 
 	mhSwapChainBufferRtv.Reset();
 	mSwapChainBuffer.Reset();
@@ -122,8 +126,11 @@ BOOL SwapChain::CreateSwapChainBuffer() {
 	desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
+
 	CheckReturn(mpLogFile, mInitData.Device->CreateTexture2D(
-		&desc, nullptr, &mSwapChainBufferCopy));
+		&desc, nullptr, &mSceneMap));
+	CheckReturn(mpLogFile, mInitData.Device->CreateTexture2D(
+		&desc, nullptr, &mSceneMapCopy));
 
 	return TRUE;
 }
@@ -133,7 +140,12 @@ BOOL SwapChain::CreateSwapChainBufferView() {
 		mSwapChainBuffer.Get(), nullptr, &mhSwapChainBufferRtv));
 
 	CheckReturn(mpLogFile, mInitData.Device->CreateShaderResourceView(
-		mSwapChainBufferCopy.Get(), nullptr, &mhSwapChainBufferCopySrv));
+		mSceneMap.Get(), nullptr, &mhSceneMapSrv));
+	CheckReturn(mpLogFile, mInitData.Device->CreateRenderTargetView(
+		mSceneMap.Get(), nullptr, &mhSceneMapRtv));
+
+	CheckReturn(mpLogFile, mInitData.Device->CreateShaderResourceView(
+		mSceneMapCopy.Get(), nullptr, &mhSceneMapCopySrv));
 
 	return TRUE;
 }

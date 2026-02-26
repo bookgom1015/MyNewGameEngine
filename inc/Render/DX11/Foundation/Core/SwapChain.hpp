@@ -27,11 +27,15 @@ namespace Render::DX11::Foundation::Core {
 		__forceinline constexpr D3D11_VIEWPORT& ScreenViewport() noexcept;
 		__forceinline constexpr const D3D11_VIEWPORT& ScreenViewport() const noexcept;
 
-		__forceinline ID3D11Texture2D* SwapChainBuffer();
-		__forceinline ID3D11RenderTargetView* SwapChainBufferRtv() noexcept;
+		__forceinline ID3D11Texture2D* BackBuffer();
+		__forceinline ID3D11RenderTargetView* BackBufferRtv() noexcept;
 
-		__forceinline ID3D11Texture2D* SwapChainBufferCopy();
-		__forceinline ID3D11ShaderResourceView* SwapChainBufferCopySrv() noexcept;
+		__forceinline ID3D11Texture2D* SceneMap();
+		__forceinline ID3D11RenderTargetView* SceneMapRtv() noexcept;
+		__forceinline ID3D11ShaderResourceView* SceneMapSrv() noexcept;
+
+		__forceinline ID3D11Texture2D* SceneMapCopy();
+		__forceinline ID3D11ShaderResourceView* SceneMapCopySrv() noexcept;
 
 	public:
 		virtual BOOL Initialize(
@@ -57,8 +61,12 @@ namespace Render::DX11::Foundation::Core {
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> mSwapChainBuffer{};
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> mhSwapChainBufferRtv{};
 
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> mSwapChainBufferCopy{};
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mhSwapChainBufferCopySrv{};
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> mSceneMap{};
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mhSceneMapSrv{};
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> mhSceneMapRtv{};
+
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> mSceneMapCopy{};
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mhSceneMapCopySrv{};
 
 		D3D11_VIEWPORT mScreenViewport{};
 	};

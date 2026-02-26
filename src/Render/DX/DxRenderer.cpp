@@ -1675,6 +1675,26 @@ BOOL DxRenderer::DrawImGui() {
 
 	mpImGuiManager->SetSceneImage(mSwapChain->SceneMapSrv());
 
+	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
+	const auto ssao = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
+
+	mpImGuiManager->AddDisplayTexture(
+		"GBuffer_Albedo",
+		static_cast<ImTextureID>(gbuffer->AlbedoMapSrv().ptr));
+	mpImGuiManager->AddDisplayTexture(
+		"GBuffer_Normal",
+		static_cast<ImTextureID>(gbuffer->NormalMapSrv().ptr));
+	mpImGuiManager->AddDisplayTexture(
+		"GBuffer_Velocity",
+		static_cast<ImTextureID>(gbuffer->VelocityMapSrv().ptr));
+	mpImGuiManager->AddDisplayTexture(
+		"DepthStencilBuffer",
+		static_cast<ImTextureID>(mDepthStencilBuffer->DepthStencilBufferSrv().ptr));
+	mpImGuiManager->AddDisplayTexture(
+		"SSAO_TemporalAO",
+		static_cast<ImTextureID>(ssao->TemporalAOCoefficientSrv(
+			ssao->CurrentTemporalCacheFrameIndex()).ptr));
+
 	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
 		CmdList, 
 		mpShadingArgumentSet, 

@@ -2,6 +2,8 @@
 #include "ImGuiManager/DX11/Dx11ImGuiManager.hpp"
 #include "Common/Debug/Logger.hpp"
 #include "Common/Foundation/Core/WindowsManager.hpp"
+#include "Common/Render/TonemapperType.h"
+#include "Common/Render/ShadingArgument.hpp"
 #include "Render/DX11/Foundation/Core/Device.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -52,30 +54,12 @@ BOOL Dx11ImGuiManager::DrawImGui(
 	ImGui::DockSpaceOverViewport(
 		0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-	// Create new window
-	{
-		//ImGui::Begin("Control Panel");
-		//
-		//// Framerate text
-		//FrameRateText(clientWidth, clientHeight);
-		////if (bRaytracingSupported) RaytraycingEnableCheckBox(pArgSet);
-		//// Lights
-		//LightHeader(pArgSet, lights, numLights, pendingLights);
-		//// Shading objects
-		//ShadingObjectHeader(pArgSet);
-		//
-		//ImGuiContext* ctx = ImGui::GetCurrentContext();
-		//ImGuiIO& io = ImGui::GetIO();
-		//ImGui::Text("ctx=%p backend=%p", ctx, io.BackendPlatformUserData);
-		//
-		//ImGui::End();
-
-		ImGui::Begin("Scene");
-		ImGui::End();
-
-		ImGui::Begin("Inspector");
-		ImGui::End();
-	}
+	MenuBar(pArgSet);
+	Scene();
+	Inspector();
+	Outliner();
+	Content();
+	Profiler();
 
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -87,4 +71,23 @@ BOOL Dx11ImGuiManager::DrawImGui(
 	}
 
 	return TRUE;
+}
+
+void Dx11ImGuiManager::SetSceneImage(ID3D11ShaderResourceView* const pSrv) {
+	mhSceneImageSrv = pSrv;
+}
+
+void Dx11ImGuiManager::Scene() {
+	if (!mbSceneOpened) return;
+
+	ImGui::Begin("Scene", &mbSceneOpened);
+
+	ImVec2 avail = ImGui::GetContentRegionAvail();   // 지금 커서 위치에서 남은 영역
+	if (avail.x < 1.f) avail.x = 1.f;
+	if (avail.y < 1.f) avail.y = 1.f;
+
+	ImGui::Image(
+		static_cast<ImTextureID>(reinterpret_cast<intptr_t>(mhSceneImageSrv)), avail);
+
+	ImGui::End();
 }

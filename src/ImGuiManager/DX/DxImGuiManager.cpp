@@ -87,9 +87,11 @@ BOOL DxImGuiManager::DrawImGui(
 
 	MenuBar(pArgSet);
 	Scene();
+	Texture();
 	Inspector();
 	Outliner();
 	Content();
+	Profiler();
 
 	ImGui::Render();
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), pCmdList);
@@ -107,156 +109,10 @@ void DxImGuiManager::SetSceneImage(D3D12_GPU_DESCRIPTOR_HANDLE srv) {
 	mhSceneImageGpuSrv = srv;
 }
 
-void DxImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet) {
-	if (ImGui::BeginMainMenuBar()) {
-		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("Level Save")) {
-
-			}
-
-			if (ImGui::MenuItem("Level Load")) {
-
-			}
-
-			ImGui::EndMenu();
-		}
-
-		if (ImGui::BeginMenu("Render")) {
-			ImGui::MenuItem("Raytracing", NULL, &pArgSet->RaytracingEnabled);
-
-			MarginalSpacing();
-
-			if (ImGui::BeginMenu("Shadow")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->ShadowEnabled);
-
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("AO")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->AOEnabled);
-
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Volumetric Light")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->VolumetricLight.Enabled);
-
-				MarginalSpacing();
-
-				ImGui::Text("Anisotropic Coefficient");
-				ImGui::SliderFloat(
-					"##Anisotropic Coefficient",
-					&pArgSet->VolumetricLight.AnisotropicCoefficient,
-					pArgSet->VolumetricLight.MinAnisotropicCoefficient,
-					pArgSet->VolumetricLight.MaxAnisotropicCoefficient);
-
-				ImGui::Text("Uniform Density");
-				ImGui::SliderFloat(
-					"##Uniform Density",
-					&pArgSet->VolumetricLight.UniformDensity,
-					pArgSet->VolumetricLight.MinUniformDensity,
-					pArgSet->VolumetricLight.MaxUniformDensity);
-
-				ImGui::Text("Density Scale");
-				ImGui::SliderFloat(
-					"##Density Scale",
-					&pArgSet->VolumetricLight.DensityScale,
-					pArgSet->VolumetricLight.MinDensityScale,
-					pArgSet->VolumetricLight.MaxDensityScale);
-
-				ImGui::EndMenu();
-			}
-
-			MarginalSpacing();
-
-			if (ImGui::BeginMenu("Gamma Correction")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->GammaCorrection.Enabled);
-
-				MarginalSpacing();
-
-				if (!pArgSet->GammaCorrection.Enabled) ImGui::BeginDisabled();
-				{
-					ImGui::Text("Gamma");
-					ImGui::SameLine(80);
-					ImGui::SliderFloat(
-						"##Gamma",
-						reinterpret_cast<float*>(&pArgSet->GammaCorrection.Gamma),
-						pArgSet->GammaCorrection.MinGamma,
-						pArgSet->GammaCorrection.MaxGamma);
-				}
-				if (!pArgSet->GammaCorrection.Enabled) ImGui::EndDisabled();
-
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Tone Mapping")) {
-				ImGui::Text("Type");
-				ImGui::SameLine(100);
-				if (ImGui::Combo(
-					"##Type",
-					reinterpret_cast<INT*>(&pArgSet->ToneMapping.TonemapperType),
-					Common::Render::TonemapperTypeNames,
-					Common::Render::TonemapperType::Count));
-
-				ImGui::Text("Middle Grey");
-				ImGui::SameLine(100);
-				ImGui::SliderFloat(
-					"##Middle Grey",
-					reinterpret_cast<float*>(&pArgSet->ToneMapping.MiddleGrayKey),
-					pArgSet->ToneMapping.MinMiddleGrayKey, pArgSet->ToneMapping.MaxMiddleGrayKey);
-
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("TAA")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->TAA.Enabled);
-
-				MarginalSpacing();
-
-				ImGui::Text("Modulation Factor");
-				ImGui::SliderFloat(
-					"##Modulation Factor",
-					&pArgSet->TAA.ModulationFactor, 0.f, 1.f);
-
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("SSCS")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->SSCS.Enabled);
-
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Bloom")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->Bloom.Enabled);
-
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Chromatric Aberration")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->ChromaticAberration.Enabled);
-
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Motion Blur")) {
-				ImGui::MenuItem("Enable", NULL, &pArgSet->MotionBlur.Enabled);
-
-				MarginalSpacing();
-
-				ImGui::Text("Samples");
-				ImGui::SameLine(80);
-				ImGui::SliderInt(
-					"##Samples",
-					reinterpret_cast<int*>(&pArgSet->MotionBlur.SampleCount),
-					pArgSet->MotionBlur.MinSampleCount,
-					pArgSet->MotionBlur.MaxSampleCount);
-
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMainMenuBar();
-	}
-}
-
 void DxImGuiManager::Scene() {
-	ImGui::Begin("Scene");
+	if (!mbSceneOpened) return;
+	
+	ImGui::Begin("Scene", &mbSceneOpened);
 
 	ImVec2 avail = ImGui::GetContentRegionAvail();   // 지금 커서 위치에서 남은 영역
 	if (avail.x < 1.f) avail.x = 1.f;
@@ -265,20 +121,5 @@ void DxImGuiManager::Scene() {
 	ImGui::Image(
 		static_cast<ImTextureID>(mhSceneImageGpuSrv.ptr), avail);
 
-	ImGui::End();
-}
-
-void DxImGuiManager::Inspector() {
-	ImGui::Begin("Inspector");
-	ImGui::End();
-}
-
-void DxImGuiManager::Outliner() {
-	ImGui::Begin("Outliner");
-	ImGui::End();
-}
-
-void DxImGuiManager::Content() {
-	ImGui::Begin("Content");
 	ImGui::End();
 }

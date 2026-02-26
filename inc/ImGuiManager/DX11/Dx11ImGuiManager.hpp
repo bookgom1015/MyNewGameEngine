@@ -29,8 +29,16 @@ namespace ImGuiManager {
 				std::queue<std::shared_ptr<Common::Foundation::Light>>& pendingLights,
 				UINT clientWidth, UINT clientHeight);
 
+		public:
+			ImGuiManagerAPI void SetSceneImage(ID3D11ShaderResourceView* const pSrv);
+
+		protected:
+			ImGuiManagerAPI virtual void Scene() override;
+
 		private:
 			BOOL mbIsD3D11Initialized{};
+
+			ID3D11ShaderResourceView* mhSceneImageSrv{};
 		};
 	}
 }

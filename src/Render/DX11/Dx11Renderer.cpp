@@ -205,18 +205,18 @@ BOOL Dx11Renderer::Draw() {
 	CheckReturn(mpLogFile, tone->Apply(
 		mpCurrentFrameResource,
 		mSwapChain->ScreenViewport(),
-		mSwapChain->SwapChainBuffer(),
-		mSwapChain->SwapChainBufferRtv()));
+		mSwapChain->SceneMap(),
+		mSwapChain->SceneMapRtv()));
 	
 	if (mpShadingArgumentSet->GammaCorrection.Enabled) {
 		const auto gamma = mShadingObjectManager->Get<Shading::GammaCorrection::GammaCorrectionClass>();
 		CheckReturn(mpLogFile, gamma->Apply(
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
-			mSwapChain->SwapChainBuffer(),
-			mSwapChain->SwapChainBufferRtv(),
-			mSwapChain->SwapChainBufferCopy(),
-			mSwapChain->SwapChainBufferCopySrv()));
+			mSwapChain->SceneMap(),
+			mSwapChain->SceneMapRtv(),
+			mSwapChain->SceneMapCopy(),
+			mSwapChain->SceneMapCopySrv()));
 	}
 	
 	if (mpShadingArgumentSet->TAA.Enabled) {
@@ -224,22 +224,14 @@ BOOL Dx11Renderer::Draw() {
 		CheckReturn(mpLogFile, taa->Apply(
 			mpCurrentFrameResource,
 			mSwapChain->ScreenViewport(),
-			mSwapChain->SwapChainBuffer(),
-			mSwapChain->SwapChainBufferRtv(),
-			mSwapChain->SwapChainBufferCopy(),
-			mSwapChain->SwapChainBufferCopySrv(),
+			mSwapChain->SceneMap(),
+			mSwapChain->SceneMapRtv(),
+			mSwapChain->SceneMapCopy(),
+			mSwapChain->SceneMapCopySrv(),
 			gbuffer->VelocityMapSrv()));
 	}
 
-	std::vector<Common::Foundation::Light*> lights{};
-	shadow->Lights(lights);
-
-	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
-		mpShadingArgumentSet, 
-		lights.data(),
-		shadow->LightCount(),
-		mPendingLights, 
-		mClientWidth, mClientHeight));
+	CheckReturn(mpLogFile, DrawImGui());
 
 	CheckReturn(mpLogFile, mSwapChain->Present());
 
@@ -832,6 +824,37 @@ BOOL Dx11Renderer::BuildSkySphere() {
 		hash, meshGeo.get(), "SkySphere", XMMatrixScaling(1000.f, 1000.f, 1000.f)));
 
 	mMeshGeometries[hash] = std::move(meshGeo);
+
+	return TRUE;
+}
+
+BOOL Dx11Renderer::DrawImGui() {
+	const auto shadow = mShadingObjectManager->Get<Shading::Shadow::ShadowClass>();
+
+	std::vector<Common::Foundation::Light*> lights{};
+	shadow->Lights(lights);
+
+	mpImGuiManager->SetSceneImage(mSwapChain->SceneMapSrv());
+
+	decltype(auto) context = mDevice->Context();
+	context->RSSetViewports(1, &mSwapChain->ScreenViewport());
+
+	context->RSSetState(nullptr);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
+	auto rtv = mSwapChain->BackBufferRtv();
+	context->OMSetRenderTargets(1, &rtv, nullptr);
+
+	FLOAT clearValues[4] = { 0.1f, 0.1f, 0.1f, 1.f };
+	context->ClearRenderTargetView(rtv, clearValues);
+
+	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
+		mpShadingArgumentSet,
+		lights.data(),
+		shadow->LightCount(),
+		mPendingLights,
+		mClientWidth, mClientHeight));
 
 	return TRUE;
 }

@@ -10,6 +10,8 @@
 	#endif
 #endif
 
+#include <imgui/imgui.h>
+
 struct ImGuiContext;
 
 namespace Common::Debug {
@@ -31,6 +33,8 @@ namespace Common {
 }
 
 namespace Common::ImGuiManager {
+	using DisplayTexture = std::unordered_map<std::string, ImTextureID>;
+
 	class ImGuiManager {
 	public:
 		ImGuiManager() = default;
@@ -43,44 +47,24 @@ namespace Common::ImGuiManager {
 		ImGuiManagerAPI void HookMsgCallback(
 			Common::Foundation::Core::WindowsManager* const pWndManager);
 
+		ImGuiManagerAPI void AddDisplayTexture(const std::string& name, ImTextureID id);
+
 	protected:
-		ImGuiManagerAPI void FrameRateText(UINT clientWidth, UINT clientHeight);
-		ImGuiManagerAPI void RaytraycingEnableCheckBox(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 		ImGuiManagerAPI void LightHeader(
 			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet,
 			Common::Foundation::Light* lights[],
 			UINT numLights,
 			std::queue<std::shared_ptr<Common::Foundation::Light>>& pendingLights);
-		ImGuiManagerAPI void ShadingObjectHeader(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
 
-	private:
-		void ShadowTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void GammaCorrectionTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void ToneMappingTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void TAATree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void AOTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void VolumetricLightTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void SSCSTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void MotionBlurTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void BloomTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void DOFTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
-		void ChromaticAberrationTree(
-			Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+		ImGuiManagerAPI virtual void MarginalSpacing();
 
-	protected:
-		void MarginalSpacing();
+		ImGuiManagerAPI virtual void MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* const pArgSet);
+		ImGuiManagerAPI virtual void Scene() = 0;
+		ImGuiManagerAPI virtual void Texture();
+		ImGuiManagerAPI virtual void Inspector();
+		ImGuiManagerAPI virtual void Outliner();
+		ImGuiManagerAPI virtual void Content();
+		ImGuiManagerAPI virtual void Profiler();
 
 	protected:
 		BOOL mbIsWin32Initialized{};
@@ -91,5 +75,15 @@ namespace Common::ImGuiManager {
 
 		FLOAT mFrameTimes[3000]{};
 		UINT mFrameOffset{};
+
+		bool mbSceneOpened{ true };
+		bool mbTextureOpened{ true };
+		bool mbInspectorOpened{ true };
+		bool mbOutlinerOpened{ true };
+		bool mbContentOpened{ true };
+		bool mbProfilerOpened{ false };
+
+		DisplayTexture mDisplayTextures{};
+		int mSelectedTexture{ -1 };
 	};
 }
