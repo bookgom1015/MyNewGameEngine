@@ -92,6 +92,7 @@ BOOL DxImGuiManager::DrawImGui(
 	Outliner();
 	Content();
 	Profiler();
+	LogUI();
 
 	ImGui::Render();
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), pCmdList);

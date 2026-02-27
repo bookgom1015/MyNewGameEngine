@@ -101,6 +101,10 @@ namespace Render::DX::Shading {
 			virtual ~BloomClass();
 
 		public:
+			__forceinline Foundation::Resource::GpuResource* BloomMap() const;
+			__forceinline constexpr D3D12_GPU_DESCRIPTOR_HANDLE BloomMapSrv() const;
+
+		public:
 			virtual UINT CbvSrvUavDescCount() const override;
 			virtual UINT RtvDescCount() const override;
 			virtual UINT DsvDescCount() const override;
@@ -170,3 +174,5 @@ namespace Render::DX::Shading {
 		InitDataPtr MakeInitData();
 	}
 }
+
+#include "Bloom.inl"

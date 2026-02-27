@@ -1677,6 +1677,9 @@ BOOL DxRenderer::DrawImGui() {
 
 	const auto gbuffer = mShadingObjectManager->Get<Shading::GBuffer::GBufferClass>();
 	const auto ssao = mShadingObjectManager->Get<Shading::SSAO::SSAOClass>();
+	const auto rtao = mShadingObjectManager->Get<Shading::RTAO::RTAOClass>();
+	const auto bloom = mShadingObjectManager->Get<Shading::Bloom::BloomClass>();
+	const auto dof = mShadingObjectManager->Get<Shading::DOF::DOFClass>();
 
 	gbuffer->AlbedoMap()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	mpImGuiManager->AddDisplayTexture(
@@ -1709,6 +1712,23 @@ BOOL DxRenderer::DrawImGui() {
 		"SSAO_TemporalAO",
 		static_cast<ImTextureID>(ssao->TemporalAOCoefficientSrv(
 			ssao->CurrentTemporalCacheFrameIndex()).ptr));
+
+	rtao->TemporalAOCoefficientResource(rtao->CurrentTemporalCacheFrameIndex())->Transite(
+		CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	mpImGuiManager->AddDisplayTexture(
+		"RTAO_TemporalAO",
+		static_cast<ImTextureID>(rtao->TemporalAOCoefficientSrv(
+			rtao->CurrentTemporalCacheFrameIndex()).ptr));
+
+	bloom->BloomMap()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	mpImGuiManager->AddDisplayTexture(
+		"Bloom_BloomMap",
+		static_cast<ImTextureID>(bloom->BloomMapSrv().ptr));
+
+	dof->CoCMap()->Transite(CmdList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	mpImGuiManager->AddDisplayTexture(
+		"DOF_CicleOfConfusionMap",
+		static_cast<ImTextureID>(dof->CoCMapSrv().ptr));
 
 	CheckReturn(mpLogFile, mpImGuiManager->DrawImGui(
 		CmdList, 

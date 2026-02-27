@@ -872,5 +872,11 @@
     <None Include="..\..\assets\Shaders\HLSL\HardCodedCoordinates.hlsli">
       <Filter>Shader Files\Util</Filter>
     </None>
+    <None Include="..\..\inc\Render\DX\Shading\Bloom.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
+    <None Include="..\..\inc\Render\DX\Shading\DOF.inl">
+      <Filter>Header Files\Shading Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

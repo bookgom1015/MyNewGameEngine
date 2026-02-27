@@ -16,6 +16,7 @@ using namespace DirectX;
 
 BOOL ImGuiManager::Initialize(Common::Debug::LogFile* const pLogFile, HWND hWnd) {
 	mpLogFile = pLogFile;
+	mhMainWnd = hWnd;
 
 	// Make process DPI aware and obtain main monitor scale
 	ImGui_ImplWin32_EnableDpiAwareness();
@@ -529,6 +530,7 @@ void ImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* 
 			ImGui::MenuItem("Inspector", NULL, &mbInspectorOpened);
 			ImGui::MenuItem("Outliner", NULL, &mbOutlinerOpened);
 			ImGui::MenuItem("Content", NULL, &mbContentOpened);
+			ImGui::MenuItem("Log", NULL, &mbLogOpened);
 
 			MarginalSpacing();
 
@@ -653,35 +655,35 @@ void ImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* 
 					pArgSet->ChromaticAberration.MinStrength,
 					pArgSet->ChromaticAberration.MaxStrength);
 
-				ImGui::Text("Threshold");
-				ImGui::SameLine(120);
-				ImGui::SliderFloat("##Threshold",
-					&pArgSet->ChromaticAberration.Threshold,
-					pArgSet->ChromaticAberration.MinThreshold,
-					pArgSet->ChromaticAberration.MaxThreshold);
+					ImGui::Text("Threshold");
+					ImGui::SameLine(120);
+					ImGui::SliderFloat("##Threshold",
+						&pArgSet->ChromaticAberration.Threshold,
+						pArgSet->ChromaticAberration.MinThreshold,
+						pArgSet->ChromaticAberration.MaxThreshold);
 
-				ImGui::Text("Feather");
-				ImGui::SameLine(120);
-				ImGui::SliderFloat("##Feather",
-					&pArgSet->ChromaticAberration.Feather,
-					pArgSet->ChromaticAberration.MinFeather,
-					pArgSet->ChromaticAberration.MaxFeather);
+					ImGui::Text("Feather");
+					ImGui::SameLine(120);
+					ImGui::SliderFloat("##Feather",
+						&pArgSet->ChromaticAberration.Feather,
+						pArgSet->ChromaticAberration.MinFeather,
+						pArgSet->ChromaticAberration.MaxFeather);
 
-				ImGui::Text("Exponent");
-				ImGui::SameLine(120);
-				ImGui::SliderFloat("##Exponent",
-					&pArgSet->ChromaticAberration.Exponent,
-					pArgSet->ChromaticAberration.MinExponent,
-					pArgSet->ChromaticAberration.MaxExponent);
+					ImGui::Text("Exponent");
+					ImGui::SameLine(120);
+					ImGui::SliderFloat("##Exponent",
+						&pArgSet->ChromaticAberration.Exponent,
+						pArgSet->ChromaticAberration.MinExponent,
+						pArgSet->ChromaticAberration.MaxExponent);
 
-				ImGui::Text("Max Shift Pixel");
-				ImGui::SameLine(120);
-				ImGui::SliderInt("##Max Shift Pixel",
-					reinterpret_cast<int*>(&pArgSet->ChromaticAberration.ShiftPx),
-					pArgSet->ChromaticAberration.MinShiftPx,
-					pArgSet->ChromaticAberration.MaxShiftPx);
+					ImGui::Text("Max Shift Pixel");
+					ImGui::SameLine(120);
+					ImGui::SliderInt("##Max Shift Pixel",
+						reinterpret_cast<int*>(&pArgSet->ChromaticAberration.ShiftPx),
+						pArgSet->ChromaticAberration.MinShiftPx,
+						pArgSet->ChromaticAberration.MaxShiftPx);
 
-				ImGui::EndMenu();
+					ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Motion Blur")) {
 				ImGui::MenuItem("Enable", NULL, &pArgSet->MotionBlur.Enabled);
@@ -744,6 +746,37 @@ void ImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* 
 			ImGui::EndMenu();
 		}
 
+		//bool emptySpaceHovered = ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered();
+		//if (emptySpaceHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+		//	ReleaseCapture();
+		//	SendMessage(
+		//		mhMainWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+		//}
+
+		//{
+		//	// 메뉴바 높이(버튼 높이)
+		//	const float bar_h = ImGui::GetFrameHeight();
+		//
+		//	// 아이콘처럼 보이게: "X" 버튼 폭은 높이 정도로 맞추면 자연스러움
+		//	const float btn_w = bar_h;
+		//
+		//	// 현재 메뉴바 윈도우의 오른쪽 끝으로 커서를 이동
+		//	float right = ImGui::GetWindowWidth();
+		//	ImGui::SetCursorPosX(right - btn_w);
+		//
+		//	// 스타일 조금: 패딩 줄여서 꽉 찬 느낌
+		//	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+		//
+		//	// (선택) hover 시 색 강조를 원하면 PushStyleColor로 커스텀 가능
+		//
+		//	if (ImGui::Button("X", ImVec2(btn_w, bar_h))) {
+		//		// 가장 안전: 메시지로 닫기(윈도우 스레드가 처리)
+		//		::PostMessage(mhMainWnd, WM_CLOSE, 0, 0);
+		//	}
+		//
+		//	ImGui::PopStyleVar();
+		//}
+
 		ImGui::EndMainMenuBar();
 	}
 
@@ -752,21 +785,6 @@ void ImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* 
 void ImGuiManager::Texture() {
 	ImGui::Begin("Texture", &mbTextureOpened);
 		
-	//if (ImGui::BeginPopupContextWindow()) {		
-	//	ImGui::Text("Select Texture");
-	//
-	//	MarginalSpacing();
-	//
-	//	ImGui::Combo(
-	//		"##Textures",
-	//		&mSelectedTexture,
-	//		keys.data(),
-	//		keys.size());
-	//
-	//	ImGui::EndPopup();	
-	//}
-	//
-	
 	std::vector<const char*> keys{};
 	keys.reserve(mDisplayTextures.size());
 
@@ -796,10 +814,10 @@ void ImGuiManager::Texture() {
 	{
 		ImGui::BeginChild("Right", ImVec2(0, 0), true);
 
-		TextWithBg("Select Texture");
-
-		MarginalSpacing();
+		ImGui::Text("Select Texture");
 		
+		MarginalSpacing();
+
 		for (size_t i = 0, end = keys.size(); i < end; ++i) {
 			bool selected = mSelectedTexture == keys[i];
 
@@ -859,6 +877,49 @@ void ImGuiManager::Profiler() {
 		0.0f,
 		16.0f,
 		ImVec2(0.f, 100.f));
+
+	ImGui::End();
+}
+
+void ImGuiManager::LogUI() {
+	ImGui::Begin("Log", &mbLogOpened);
+
+	ImGui::Checkbox("Auto-scroll", &mbAutoScroll);
+
+	ImGui::SameLine();
+	if (ImGui::Button("At Bottom")) {
+		mbScrollToBottom = true;
+		mbAutoScroll = true;
+	}
+
+	ImGui::Separator();
+
+	const float scrollY = ImGui::GetScrollY();
+	const float scrollMaxY = ImGui::GetScrollMaxY();
+	const bool  atBottom = (scrollY >= scrollMaxY - 1.0f);
+
+	for (const auto& log : mLogs) {
+		ImVec4 color{};
+
+		switch (log.Level) {
+		case LogLevel::E_Info:     color = ImVec4(1, 1, 1, 1); break;
+		case LogLevel::E_Warning:  color = ImVec4(1, 1, 0, 1); break;
+		case LogLevel::E_Error:    color = ImVec4(1, 0, 0, 1); break;
+		case LogLevel::E_Critical: color = ImVec4(1, 0, 1, 1); break;
+		}
+
+		ImGui::TextColored(color, log.Message.c_str());
+	}
+
+	if (mbScrollToBottom || (mbAutoScroll && atBottom))
+		ImGui::SetScrollHereY(1.0f);
+
+	mbScrollToBottom = false;
+
+	if (mbAutoScroll && !atBottom
+		&& ImGui::IsWindowHovered()
+		&& ImGui::GetIO().MouseWheel != 0.0f)
+		mbAutoScroll = false;
 
 	ImGui::End();
 }

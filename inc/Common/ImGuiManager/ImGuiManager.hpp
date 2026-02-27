@@ -33,6 +33,21 @@ namespace Common {
 }
 
 namespace Common::ImGuiManager {
+	namespace LogLevel {
+		enum Type {
+			E_Info = 0,
+			E_Warning,
+			E_Error,
+			E_Critical,
+			Count
+		};
+	}
+
+	struct LogEntry {
+		LogLevel::Type Level;
+		std::string Message;
+	};
+
 	using DisplayTexture = std::map<std::string, ImTextureID>;
 
 	class ImGuiManager {
@@ -66,11 +81,13 @@ namespace Common::ImGuiManager {
 		ImGuiManagerAPI virtual void Outliner();
 		ImGuiManagerAPI virtual void Content();
 		ImGuiManagerAPI virtual void Profiler();
+		ImGuiManagerAPI virtual void LogUI();
 
 	protected:
 		BOOL mbIsWin32Initialized{};
 
 		Common::Debug::LogFile* mpLogFile{};
+		HWND mhMainWnd{};
 
 		ImGuiContext* mpContext{};
 
@@ -83,8 +100,14 @@ namespace Common::ImGuiManager {
 		bool mbOutlinerOpened{ true };
 		bool mbContentOpened{ true };
 		bool mbProfilerOpened{ false };
+		bool mbLogOpened{ false };
 
 		DisplayTexture mDisplayTextures{};
 		std::string mSelectedTexture{};
+
+		bool mbAutoScroll{ true };
+		bool mbScrollToBottom{ false };
+
+		std::vector<LogEntry> mLogs{};
 	};
 }
