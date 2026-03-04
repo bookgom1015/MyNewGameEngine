@@ -882,6 +882,8 @@ void ImGuiManager::Profiler() {
 }
 
 void ImGuiManager::LogUI() {
+	if (!mbLogOpened) return;
+
 	ImGui::Begin("Log", &mbLogOpened);
 
 	ImGui::Checkbox("Auto-scroll", &mbAutoScroll);
@@ -891,6 +893,8 @@ void ImGuiManager::LogUI() {
 		mbScrollToBottom = true;
 		mbAutoScroll = true;
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Clear Logs")) mLogs.clear();
 
 	ImGui::Separator();
 

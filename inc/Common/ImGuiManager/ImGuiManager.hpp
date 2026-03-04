@@ -100,7 +100,7 @@ namespace Common::ImGuiManager {
 		bool mbOutlinerOpened{ true };
 		bool mbContentOpened{ true };
 		bool mbProfilerOpened{ false };
-		bool mbLogOpened{ false };
+		bool mbLogOpened{ true };
 
 		DisplayTexture mDisplayTextures{};
 		std::string mSelectedTexture{};

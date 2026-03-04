@@ -600,11 +600,6 @@ BOOL DxRenderer::UpdateLightCB() {
 
 			const XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
 
-			{
-				std::vector<Vector3> points{};
-				shadow->CalcFrustumCornerPositions(lightView, lightProj, points);
-			}
-
 			const XMMATRIX viewProj = XMMatrixMultiply(lightView, lightProj);
 			XMStoreFloat4x4(&light->Mat0, XMMatrixTranspose(viewProj));
 

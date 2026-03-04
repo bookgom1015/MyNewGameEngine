@@ -56,10 +56,12 @@ BOOL Dx11ImGuiManager::DrawImGui(
 
 	MenuBar(pArgSet);
 	Scene();
+	Texture();
 	Inspector();
 	Outliner();
 	Content();
 	Profiler();
+	LogUI();
 
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
