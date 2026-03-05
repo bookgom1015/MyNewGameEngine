@@ -115,6 +115,8 @@ void DxImGuiManager::Scene() {
 	
 	ImGui::Begin("Scene", &mbSceneOpened);
 
+	GetActiveWindow();
+
 	ImVec2 avail = ImGui::GetContentRegionAvail();   // 지금 커서 위치에서 남은 영역
 	if (avail.x < 1.f) avail.x = 1.f;
 	if (avail.y < 1.f) avail.y = 1.f;
