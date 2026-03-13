@@ -39,8 +39,10 @@ ShadingConvention::ToneMapping::IntermediateMapFormat PS(VertexOut pin) : SV_TAR
 	const float3 Bloom = gi_BloomMap.SampleLevel(gsamLinearClamp, pin.TexC, 0).rgb;
 	
 	const float3 Color = SoftAddBloom(Scene, Bloom);
+
+	const float3 Sharpend = Color + (Color - Bloom) * 0.75f;
 	
-	return float4(Color, 1.f);
+	return float4(Sharpend, 1.f);
 }
 
 #endif // __APPLYBLOOM_HLSL__
