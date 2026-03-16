@@ -162,8 +162,12 @@ BOOL Bloom::BloomClass::BuildRootSignatures() {
 		index = 0;
 
 		CD3DX12_ROOT_PARAMETER slotRootParameter[RootSignature::ApplyBloom::Count]{};
-		slotRootParameter[RootSignature::ApplyBloom::SI_BackBuffer].InitAsDescriptorTable(1, &texTables[index++]);
-		slotRootParameter[RootSignature::ApplyBloom::SI_BloomMap].InitAsDescriptorTable(1, &texTables[index++]);
+		slotRootParameter[RootSignature::ApplyBloom::RC_Consts].InitAsConstants(
+			ShadingConvention::Bloom::RootConstant::ApplyBloom::Count, 0);
+		slotRootParameter[RootSignature::ApplyBloom::SI_BackBuffer].InitAsDescriptorTable(
+			1, &texTables[index++]);
+		slotRootParameter[RootSignature::ApplyBloom::SI_BloomMap].InitAsDescriptorTable(
+			1, &texTables[index++]);
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(
 			_countof(slotRootParameter), slotRootParameter,
@@ -376,7 +380,8 @@ BOOL Bloom::BloomClass::ApplyBloom(
 		Foundation::Resource::GpuResource* const pBackBuffer,
 		D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 		Foundation::Resource::GpuResource* const pBackBufferCopy,
-		D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy) {
+		D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy,
+		FLOAT sharpness) {
 	CheckReturn(mpLogFile, mInitData.CommandObject->ResetCommandList(
 		pFrameResource->CommandAllocator(0),
 		0,
@@ -405,6 +410,17 @@ BOOL Bloom::BloomClass::ApplyBloom(
 
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::ApplyBloom::SI_BackBuffer, si_backBufferCopy);
 		CmdList->SetGraphicsRootDescriptorTable(RootSignature::ApplyBloom::SI_BloomMap, mhBloomMapGpuSrvs[0]);
+
+		ShadingConvention::Bloom::RootConstant::ApplyBloom::Struct rc{};
+		rc.gSharpness = sharpness;
+		
+		Foundation::Util::D3D12Util::SetRoot32BitConstants<ShadingConvention::Bloom::RootConstant::ApplyBloom::Struct>(
+			RootSignature::ApplyBloom::RC_Consts,
+			ShadingConvention::Bloom::RootConstant::ApplyBloom::Count,
+			&rc,
+			0,
+			CmdList,
+			FALSE);
 
 		if (mInitData.MeshShaderSupported) {
 			CmdList->DispatchMesh(1, 1, 1);

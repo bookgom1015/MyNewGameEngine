@@ -159,6 +159,12 @@
     <ClInclude Include="..\..\inc\GameWorld\Foundation\Core\pch_world.h">
       <Filter>Header Files\Foundation\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\LightManager.hpp">
+      <Filter>Common Files\Foundation\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\Common\Foundation\Light.h">
+      <Filter>Common Files\Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Common\Debug\Logger.cpp">
@@ -238,6 +244,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\GameWorld\Foundation\Core\pch_world.cpp">
       <Filter>Source Files\Foundation\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\LightManager.cpp">
+      <Filter>Common Files\Foundation\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

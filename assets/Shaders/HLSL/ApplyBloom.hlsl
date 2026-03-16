@@ -15,7 +15,7 @@
 Texture2D<ShadingConvention::ToneMapping::IntermediateMapFormat>	gi_BackBuffer	: register(t0);
 Texture2D<ShadingConvention::Bloom::HighlightMapFormat>				gi_BloomMap		: register(t1);
 
-Bloom_ExtractHighlights_RootConstants(b0)
+Bloom_ApplyBloom_RootConstants(b0)
 
 FitToScreenVertexOut
 
@@ -40,7 +40,7 @@ ShadingConvention::ToneMapping::IntermediateMapFormat PS(VertexOut pin) : SV_TAR
 	
 	const float3 Color = SoftAddBloom(Scene, Bloom);
 
-	const float3 Sharpend = Color + (Color - Bloom) * 0.75f;
+	const float3 Sharpend = Color + (Color - Bloom) * gSharpness;
 	
 	return float4(Sharpend, 1.f);
 }

@@ -228,10 +228,12 @@
     <ClInclude Include="..\..\inc\Common\Foundation\Core\DataStructure.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\GameTimer.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\HWInfo.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Core\LightManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\MemoryManagement.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\pch_common.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\PowerManager.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Core\WindowsManager.hpp" />
+    <ClInclude Include="..\..\inc\Common\Foundation\Light.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Material.h" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Mesh.hpp" />
     <ClInclude Include="..\..\inc\Common\Foundation\Mesh\Transform.hpp" />
@@ -292,6 +294,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='D3D11Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='D3D12Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='D3D11Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Common\Foundation\Core\LightManager.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='D3D11Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='VkDebug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='D3D12Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='VkRelease|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='D3D11Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='D3D12Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\Common\Foundation\Core\MemoryManagement.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='VkDebug|x64'">NotUsing</PrecompiledHeader>

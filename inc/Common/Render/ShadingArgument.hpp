@@ -210,6 +210,8 @@ namespace Common::Render {
 
 			float Threshold = 1.f;
 			float SoftKnee = 0.5f;
+
+			float Sharpness = 0.75f;
 		};
 
 		struct DOFArguments {

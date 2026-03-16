@@ -4,6 +4,7 @@
 #include "Common/Foundation/Core/WindowsManager.hpp"
 #include "Common/Foundation/Core/HWInfo.hpp"
 #include "Common/Foundation/Core/GameTimer.hpp"
+#include "Common/Foundation/Core/LightManager.hpp"
 #include "Common/Render/Renderer.hpp"
 #include "Common/Render/ShadingArgument.hpp"
 #include "Common/Input/InputProcessor.hpp"

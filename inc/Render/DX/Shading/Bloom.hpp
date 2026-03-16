@@ -42,7 +42,8 @@ namespace Render::DX::Shading {
 
 			namespace ApplyBloom {
 				enum {
-					SI_BackBuffer = 0,
+					RC_Consts = 0,
+					SI_BackBuffer,
 					SI_BloomMap,
 					Count
 				};
@@ -137,7 +138,8 @@ namespace Render::DX::Shading {
 				Foundation::Resource::GpuResource* const pBackBuffer,
 				D3D12_CPU_DESCRIPTOR_HANDLE ro_backBuffer,
 				Foundation::Resource::GpuResource* const pBackBufferCopy,
-				D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy);
+				D3D12_GPU_DESCRIPTOR_HANDLE si_backBufferCopy,
+				FLOAT sharpness);
 
 		private:
 			BOOL BuildResources();

@@ -963,6 +963,12 @@ namespace ShadingConvention{
 	};
 #endif
 
+#ifndef Bloom_ApplyBloom_RCSTRUCT
+#define Bloom_ApplyBloom_RCSTRUCT {		\
+		FLOAT gSharpness;				\
+	};
+#endif
+
 		namespace ThreadGroup {
 			namespace Default {
 				enum {
@@ -983,7 +989,11 @@ namespace ShadingConvention{
 	#define Bloom_BlendBloomWithDownSampled_RootConstants(reg) cbuffer cbRootConstants : register(reg) Bloom_BlendBloomWithDownSampled_RCSTRUCT
 	#endif
 
-		typedef HDR_FORMAT HighlightMapFormat;
+	#ifndef Bloom_ApplyBloom_RootConstants
+	#define Bloom_ApplyBloom_RootConstants(reg) cbuffer cbRootConstants : register(reg) Bloom_ApplyBloom_RCSTRUCT
+	#endif
+
+	typedef HDR_FORMAT HighlightMapFormat;
 #else
 		const DXGI_FORMAT HighlightMapFormat = HDR_FORMAT;
 #endif
@@ -1003,6 +1013,14 @@ namespace ShadingConvention{
 					enum {
 					E_InvTexDimX = 0,
 					E_InvTexDimY,
+					Count
+				};
+			}
+
+			namespace ApplyBloom {
+				struct Struct Bloom_ApplyBloom_RCSTRUCT
+					enum {
+					E_Sharpness = 0,
 					Count
 				};
 			}

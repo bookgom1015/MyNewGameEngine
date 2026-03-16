@@ -2291,7 +2291,8 @@ BOOL DxRenderer::ApplyBloom() {
 		tone->InterMediateMapResource(),
 		tone->InterMediateMapRtv(),
 		tone->InterMediateCopyMapResource(),
-		tone->InterMediateCopyMapSrv()));
+		tone->InterMediateCopyMapSrv(),
+		mpShadingArgumentSet->Bloom.Sharpness));
 
 	return TRUE;
 }

@@ -643,6 +643,11 @@ void ImGuiManager::MenuBar(Common::Render::ShadingArgument::ShadingArgumentSet* 
 			if (ImGui::BeginMenu("Bloom")) {
 				ImGui::MenuItem("Enable", NULL, &pArgSet->Bloom.Enabled);
 
+				ImGui::Text("Sharpness");
+				ImGui::SliderFloat(
+					"##Sharpness",
+					&pArgSet->Bloom.Sharpness, 0.f, 1.f);
+
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Chromatric Aberration")) {
